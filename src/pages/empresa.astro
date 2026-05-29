@@ -5,6 +5,7 @@ import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import CapabilitiesBlock from '../components/home/CapabilitiesBlock.astro';
+import PageHero from '../components/ui/PageHero.astro';
 
 const instalaciones = [
   { title: 'Taller industrial', value: '3.000 m²', description: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
@@ -33,18 +34,16 @@ const maquinaria = [
   title="Empresa"
   description="Hidromont Chile S.A. — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con taller propio y equipo técnico especializado."
 >
-  <!-- Page hero -->
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Quiénes somos</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Empresa
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Quiénes somos"
+    title="Empresa"
+    subtitle="Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica."
+    imageSrc="/fotos/curadas/empresa-taller.png"
+    imageAlt="Taller industrial de Hidromont Chile S.A."
+    imageWidth={662}
+    imageHeight={463}
+    breadcrumbs={[{ label: 'Empresa' }]}
+  />
 
   <!-- Historia y descripción -->
   <Section variant="default">
@@ -177,7 +176,7 @@ const maquinaria = [
           ¿Quiere conocer nuestras capacidades?
         </h2>
         <p class="text-white/70 mb-8">
-          Conversemos sobre su proyecto. Evaluamos cada requerimiento con precisión técnica.
+          Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.
         </p>
         <Button href="/contacto" size="lg">Contactar equipo técnico</Button>
       </div>

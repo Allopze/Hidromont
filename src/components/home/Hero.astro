@@ -21,35 +21,116 @@ const {
 } = Astro.props;
 ---
 
-<section
-  class="relative bg-background-strong text-white overflow-hidden"
-  style={imageSrc
-    ? `background-image: linear-gradient(rgba(15, 36, 51, 0.70), rgba(15, 36, 51, 0.75)), url('${imageSrc}'); background-size: cover; background-position: center;`
-    : undefined}
->
-  <div class="w-full mx-auto px-6 max-w-container py-24 md:py-32 lg:py-40">
-    <div class="max-w-3xl">
-      <Eyebrow light>{eyebrow}</Eyebrow>
+<section class="relative bg-background-strong text-white overflow-hidden min-h-[100dvh] flex items-center">
+  <!-- Subtle technical grid motif -->
+  <div
+    class="absolute inset-0 pointer-events-none"
+    aria-hidden="true"
+    style="background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 48px 48px;"
+  ></div>
 
-      <h1 class="font-heading text-white leading-tight mb-6" style="font-size: var(--font-size-display); font-weight: 700;">
-        {title}
-      </h1>
+  <!-- Top accent line -->
+  <div
+    class="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+    style="background: linear-gradient(90deg, transparent, var(--color-primary) 30%, var(--color-accent) 70%, transparent);"
+    aria-hidden="true"
+  ></div>
 
-      <p class="text-white/80 mb-10 max-w-2xl" style="font-size: var(--font-size-body-lg); line-height: 1.6;">
-        {subtitle}
-      </p>
+  <div class="relative z-10 w-full">
+    <div class="w-full mx-auto px-6 max-w-wide py-20 lg:py-24">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:gap-16 xl:gap-20">
 
-      <div class="flex flex-wrap gap-4">
-        <Button href={ctaPrimary.href} size="lg">{ctaPrimary.label}</Button>
-        {ctaSecondary && (
-          <Button href={ctaSecondary.href} variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
-            {ctaSecondary.label}
-          </Button>
+        <!-- Text column -->
+        <div class="flex-1 lg:max-w-[52%]">
+          <Eyebrow light>{eyebrow}</Eyebrow>
+
+          <h1
+            class="font-heading text-white leading-tight mb-6 mt-3"
+            style="font-size: var(--font-size-display); font-weight: 700; letter-spacing: -0.02em;"
+            data-reveal
+          >
+            {title}
+          </h1>
+
+          <p
+            class="text-white/75 mb-10 max-w-lg"
+            style="font-size: var(--font-size-body-lg); line-height: 1.65; --reveal-delay: 0.1s;"
+            data-reveal
+          >
+            {subtitle}
+          </p>
+
+          <div class="flex flex-wrap gap-4" data-reveal style="--reveal-delay: 0.18s;">
+            <Button href={ctaPrimary.href} size="lg">{ctaPrimary.label}</Button>
+            {ctaSecondary && (
+              <Button
+                href={ctaSecondary.href}
+                variant="secondary"
+                size="lg"
+                class="!text-white !border-white/50 hover:!bg-white/10"
+              >
+                {ctaSecondary.label}
+              </Button>
+            )}
+          </div>
+
+          <!-- Stats strip -->
+          <div class="mt-14 pt-8 border-t border-white/10 grid grid-cols-3 gap-6 max-w-sm">
+            <div>
+              <p class="font-mono font-bold text-accent" style="font-size: var(--font-size-h3);" data-count="40" data-suffix="+">40+</p>
+              <p class="text-white/50 text-xs mt-0.5 uppercase tracking-wide">Años</p>
+            </div>
+            <div>
+              <p class="font-mono font-bold text-accent" style="font-size: var(--font-size-h3);" data-count="100" data-suffix="+">100+</p>
+              <p class="text-white/50 text-xs mt-0.5 uppercase tracking-wide">Proyectos</p>
+            </div>
+            <div>
+              <p class="font-mono font-bold text-accent" style="font-size: var(--font-size-h3);" data-count="8">8</p>
+              <p class="text-white/50 text-xs mt-0.5 uppercase tracking-wide">Países</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image panel -->
+        {imageSrc && (
+          <div
+            class="mt-12 lg:mt-0 lg:flex-shrink-0 lg:w-[45%]"
+            data-parallax="0.08"
+            data-reveal
+            style="--reveal-delay: 0.2s;"
+          >
+            <div
+              class="relative overflow-hidden rounded-lg"
+              style="border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 32px 64px -16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);"
+            >
+              <img
+                src={imageSrc}
+                alt="Instalaciones y taller industrial de Hidromont Chile S.A."
+                width="1280"
+                height="640"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                class="block w-full h-auto object-cover"
+              />
+              <!-- Subtle brand overlay -->
+              <div
+                class="absolute inset-0 pointer-events-none"
+                style="background: linear-gradient(135deg, rgba(0,101,169,0.08) 0%, transparent 60%);"
+                aria-hidden="true"
+              ></div>
+            </div>
+          </div>
         )}
+
       </div>
     </div>
   </div>
 
-  <!-- Decorative bottom gradient -->
-  <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background-strong/60 to-transparent pointer-events-none"></div>
+  <!-- Bottom gradient -->
+  <div
+    class="absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+    style="background: linear-gradient(to top, var(--color-background-strong), transparent);"
+    aria-hidden="true"
+  ></div>
 </section>

@@ -4,6 +4,7 @@ import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
+import PageHero from '../components/ui/PageHero.astro';
 
 const principios = [
   {
@@ -29,18 +30,12 @@ const principios = [
   title="Calidad y Medioambiente"
   description="Hidromont Chile S.A. mantiene un sistema de gestión de calidad basado en ISO 9001, con foco en mejora continua y satisfacción del cliente."
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Gestión de Calidad</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Calidad y Medioambiente
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        La calidad como compromiso para cumplir y satisfacer las necesidades de nuestros clientes,
-        fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Gestión de Calidad"
+    title="Calidad y Medioambiente"
+    subtitle="La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
+    breadcrumbs={[{ label: 'Calidad' }]}
+  />
 
   <Section variant="default">
     <Container size="lg">

@@ -19,14 +19,43 @@ const categoriaLabels: Record<string, string> = {
 };
 
 const isDestacado = proyecto.data.tipo === 'destacado';
+
+// Per-project photos (same map as in [slug].astro — kept in sync)
+const projectPhotos: Record<string, { src: string; alt: string }> = {
+  'ch-los-condores':   { src: '/fotos/curadas/proyecto-tunel-blindaje.jpg',  alt: 'Blindaje instalado en túnel' },
+  'embalse-chironta':  { src: '/fotos/curadas/proyecto-valvula-tunel.jpg',   alt: 'Válvula en túnel de central' },
+  'ch-besaya':         { src: '/fotos/curadas/proyecto-montaje-tuberia.jpg', alt: 'Montaje de tubería forzada' },
+  'ch-dorias':         { src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',alt: 'Bifurcación en obra' },
+  'ch-queltehues':     { src: '/fotos/curadas/proyecto-tuberia-terreno.jpg', alt: 'Instalación en terreno' },
+  'ch-rio-frio':       { src: '/fotos/curadas/proyecto-tuberia-montana.png', alt: 'Tubería en ladera' },
+  'embalse-chacrillas':{ src: '/fotos/curadas/proyecto-bifurcacion-taller.jpg', alt: 'Bifurcación en taller' },
+};
+
+const photo = projectPhotos[proyecto.slug];
 ---
 
-<article class="bg-surface border border-border rounded-lg overflow-hidden flex flex-col transition-[box-shadow,transform] duration-slow ease-standard hover:shadow-md hover:-translate-y-0.5">
-  {isDestacado ? (
-    <div class="bg-primary-light px-5 py-4 border-b border-border">
+<article class="bg-surface border border-border rounded-lg overflow-hidden flex flex-col transition-[box-shadow,transform] duration-slow ease-standard hover:shadow-md hover:-translate-y-0.5" data-reveal>
+  <!-- Project photo (only for destacado projects that have a curated image) -->
+  {isDestacado && photo && (
+    <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
+      <img
+        src={photo.src}
+        alt={photo.alt}
+        loading="lazy"
+        decoding="async"
+        class="w-full h-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.02]"
+        width="640"
+        height="360"
+      />
+    </div>
+  )}
+
+  <!-- Header band for destacado without photo -->
+  {isDestacado && !photo && (
+    <div class="bg-primary-light px-5 py-3 border-b border-border">
       <Badge variant="accent" class="text-[10px]">Caso Destacado</Badge>
     </div>
-  ) : null}
+  )}
 
   <div class="p-6 flex flex-col flex-1 gap-4">
     <div>
@@ -52,7 +81,7 @@ const isDestacado = proyecto.data.tipo === 'destacado';
     {isDestacado && (
       <Button href={`/proyectos/${proyecto.slug}`} variant="link" class="self-start">
         Ver detalle
-        <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 8h10M9 4l4 4-4 4" />
         </svg>
       </Button>

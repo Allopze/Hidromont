@@ -4,6 +4,7 @@ import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import Eyebrow from '../../components/ui/Eyebrow.astro';
 import Button from '../../components/ui/Button.astro';
+import PageHero from '../../components/ui/PageHero.astro';
 import ServiceCard from '../../components/services/ServiceCard.astro';
 import { getCollection } from 'astro:content';
 
@@ -15,18 +16,16 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   title="Servicios"
   description="Servicios hidromecánicos de Hidromont Chile S.A.: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC llave en mano."
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Servicios</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Soluciones hidromecánicas llave en mano
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor de los proyectos
-        hidromecánicos: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Servicios"
+    title="Soluciones hidromecánicas llave en mano"
+    subtitle="Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales."
+    imageSrc="/fotos/curadas/otros-montajes.jpg"
+    imageAlt="Fabricación de grandes equipos hidromecánicos en taller"
+    imageWidth={471}
+    imageHeight={629}
+    breadcrumbs={[{ label: 'Servicios' }]}
+  />
 
   <Section variant="default">
     <Container>
@@ -81,9 +80,9 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
           ¿Necesita un servicio específico?
         </h2>
         <p class="text-white/70 mb-8">
-          Cuéntenos su requerimiento. Evaluamos cada proyecto con precisión técnica.
+          Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.
         </p>
-        <Button href="/contacto" size="lg">Solicitar cotización</Button>
+        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
       </div>
     </Container>
   </Section>

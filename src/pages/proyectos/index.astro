@@ -4,6 +4,7 @@ import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import Eyebrow from '../../components/ui/Eyebrow.astro';
 import Button from '../../components/ui/Button.astro';
+import PageHero from '../../components/ui/PageHero.astro';
 import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
@@ -48,18 +49,16 @@ const bancoPorCategoria = categorias.map((c) => ({
   title="Proyectos"
   description="Banco de proyectos de Hidromont Chile S.A. — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas."
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Experiencia</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Proyectos
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Más de 40 años de experiencia en proyectos hidráulicos nacionales e internacionales.
-        Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Experiencia"
+    title="Proyectos"
+    subtitle="Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos."
+    imageSrc="/fotos/curadas/proyecto-tunel-blindaje.jpg"
+    imageAlt="Montaje de blindaje en túnel de central hidroeléctrica"
+    imageWidth={1024}
+    imageHeight={768}
+    breadcrumbs={[{ label: 'Proyectos' }]}
+  />
 
   <!-- Proyectos destacados -->
   {destacados.length > 0 && (
@@ -105,12 +104,12 @@ const bancoPorCategoria = categorias.map((c) => ({
     <Container size="md">
       <div class="text-center">
         <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Tiene un proyecto similar?
+          Más de 40 años de proyectos en Chile y el exterior
         </h2>
         <p class="text-white/70 mb-8">
-          Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos y entregar soluciones precisas.
+          Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.
         </p>
-        <Button href="/contacto" size="lg">Solicitar asesoría técnica</Button>
+        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
       </div>
     </Container>
   </Section>

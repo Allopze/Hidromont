@@ -1,0 +1,71 @@
+/* ============================================================
+   motion.css — Expressive-but-sober motion layer
+   Relies on html.js class being present (set by BaseLayout inline
+   script before first paint). Without .js, all content is visible
+   immediately — no flash, no hidden content for non-JS visitors.
+   ============================================================ */
+
+/* ── Reveal animations ─────────────────────────────────────── */
+
+/* Initial hidden state: only applied when JS is available */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.52s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.52s cubic-bezier(0.2, 0, 0, 1);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+html.js [data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger siblings: each nth child gets an incremental delay */
+html.js [data-reveal-group] > * {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.48s cubic-bezier(0.2, 0, 0, 1),
+    transform 0.48s cubic-bezier(0.2, 0, 0, 1);
+}
+
+html.js [data-reveal-group].is-visible > *:nth-child(1)  { opacity: 1; transform: none; transition-delay: 0.00s; }
+html.js [data-reveal-group].is-visible > *:nth-child(2)  { opacity: 1; transform: none; transition-delay: 0.07s; }
+html.js [data-reveal-group].is-visible > *:nth-child(3)  { opacity: 1; transform: none; transition-delay: 0.14s; }
+html.js [data-reveal-group].is-visible > *:nth-child(4)  { opacity: 1; transform: none; transition-delay: 0.21s; }
+html.js [data-reveal-group].is-visible > *:nth-child(5)  { opacity: 1; transform: none; transition-delay: 0.28s; }
+html.js [data-reveal-group].is-visible > *:nth-child(6)  { opacity: 1; transform: none; transition-delay: 0.35s; }
+html.js [data-reveal-group].is-visible > *:nth-child(7)  { opacity: 1; transform: none; transition-delay: 0.40s; }
+html.js [data-reveal-group].is-visible > *:nth-child(8)  { opacity: 1; transform: none; transition-delay: 0.44s; }
+html.js [data-reveal-group].is-visible > *:nth-child(n+9) { opacity: 1; transform: none; transition-delay: 0.47s; }
+
+/* ── Parallax ───────────────────────────────────────────────── */
+
+/* Parallax elements: JS updates --parallax-y via inline style.
+   Using transform so it's GPU-composited. Touch / reduced-motion
+   get no transform (JS won't run those paths). */
+[data-parallax] {
+  will-change: transform;
+}
+
+/* ── Counter ────────────────────────────────────────────────── */
+
+/* No CSS needed — JS directly sets textContent */
+
+/* ── Respect prefers-reduced-motion ────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal],
+  html.js [data-reveal-group] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  [data-parallax] {
+    will-change: auto;
+    transform: none !important;
+  }
+}

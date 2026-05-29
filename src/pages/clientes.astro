@@ -4,6 +4,7 @@ import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
+import PageHero from '../components/ui/PageHero.astro';
 import { getEntry } from 'astro:content';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
@@ -25,18 +26,12 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
   title="Clientes"
   description="Referencias de Hidromont Chile S.A. — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Referencias</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Clientes
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en
-        Hidromont para sus proyectos hidráulicos e hidroeléctricos.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Referencias"
+    title="Clientes"
+    subtitle="Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos."
+    breadcrumbs={[{ label: 'Clientes' }]}
+  />
 
   <Section variant="default">
     <Container>
@@ -87,12 +82,12 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
     <Container size="md">
       <div class="text-center">
         <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Su empresa puede ser nuestro próximo cliente?
+          Empresas que trabajan con infraestructura hidráulica e hidroeléctrica
         </h2>
         <p class="text-white/70 mb-8">
-          Cuéntenos sobre su proyecto. Evaluamos cada requerimiento con precisión técnica.
+          Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.
         </p>
-        <Button href="/contacto" size="lg">Solicitar asesoría técnica</Button>
+        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
       </div>
     </Container>
   </Section>

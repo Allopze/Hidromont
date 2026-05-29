@@ -9,6 +9,10 @@ interface Props {
 
 const { clientes } = Astro.props;
 const lista = clientes.data.items;
+
+// Split into those with logos and those without
+const conLogo = lista.filter((c) => c.logo);
+const sinLogo = lista.filter((c) => !c.logo);
 ---
 
 <Container>
@@ -19,18 +23,45 @@ const lista = clientes.data.items;
     </h2>
   </div>
 
-  <div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
-    {lista.map((c) => (
-      <span class="text-sm font-semibold text-text-muted hover:text-primary-dark transition-colors duration-fast">
-        {c.nombre}
-      </span>
-    ))}
-  </div>
+  <!-- Logo wall — clients with logos -->
+  {conLogo.length > 0 && (
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 items-center mb-8">
+      {conLogo.map((c) => (
+        <div
+          class="flex items-center justify-center p-3 rounded-md transition-all duration-base ease-standard opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+          title={c.nombre}
+        >
+          <img
+            src={c.logo}
+            alt={c.nombre}
+            loading="lazy"
+            decoding="async"
+            class="max-h-10 w-auto object-contain"
+          />
+        </div>
+      ))}
+    </div>
+  )}
+
+  <!-- Text fallback for clients without logos, grouped in a subdued list -->
+  {sinLogo.length > 0 && (
+    <div class="border-t border-border pt-6">
+      <p class="text-xs text-text-muted uppercase tracking-wider mb-3 text-center">También trabajamos con</p>
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+        {sinLogo.map((c) => (
+          <span class="text-sm text-text-muted">{c.nombre}</span>
+        ))}
+      </div>
+    </div>
+  )}
 
   <div class="text-center mt-8">
-    <a href="/clientes" class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast">
+    <a
+      href="/clientes"
+      class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast inline-flex items-center gap-1"
+    >
       Ver todos los clientes
-      <svg class="inline-block ml-1 w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M3 8h10M9 4l4 4-4 4" />
       </svg>
     </a>

@@ -2,50 +2,61 @@
 import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
-import Eyebrow from '../../components/ui/Eyebrow.astro';
 import Button from '../../components/ui/Button.astro';
 import Badge from '../../components/ui/Badge.astro';
-import { getEntry } from 'astro:content';
+import PageHero from '../../components/ui/PageHero.astro';
+import { getCollection } from 'astro:content';
 
-const servicio = await getEntry('servicios', 'otros-montajes');
-if (!servicio) return Astro.redirect('/servicios');
+// Per-service hero images (curated from project photo library)
+const serviceImages: Record<string, { src: string; alt: string; width: number; height: number }> = {
+  'tuberias-forzadas': { src: '/fotos/curadas/tuberias-forzadas.jpg', alt: 'Tubería forzada instalada en ladera de montaña', width: 600, height: 455 },
+  'compuertas':        { src: '/fotos/curadas/compuertas.jpg',        alt: 'Compuerta hidráulica instalada en presa', width: 446, height: 621 },
+  'valvulas':          { src: '/fotos/curadas/valvulas.jpg',           alt: 'Válvula mariposa de gran diámetro en taller', width: 473, height: 473 },
+  'turbinas':          { src: '/fotos/curadas/turbinas.jpg',           alt: 'Sala de máquinas con turbinas hidráulicas', width: 474, height: 271 },
+  'limpiarrejas':      { src: '/fotos/curadas/limpiarrejas.jpg',       alt: 'Limpiarreja instalada en obra hidroeléctrica', width: 471, height: 314 },
+  'otros-montajes':    { src: '/fotos/curadas/otros-montajes.jpg',     alt: 'Montaje de gran componente hidromecánico', width: 471, height: 629 },
+};
+
+export async function getStaticPaths() {
+  const servicios = await getCollection('servicios');
+  return servicios.map((s) => ({
+    params: { slug: s.slug },
+    props: { servicio: s },
+  }));
+}
+
+const { servicio } = Astro.props;
 const { titulo, resumen, tipos, aplicaciones, normas, procesos } = servicio.data;
 const { Content } = await servicio.render();
-
+const heroImg = serviceImages[servicio.slug];
 ---
 
 <PageLayout
   title={titulo}
   description={resumen}
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <div class="mb-4">
-        <a href="/servicios" class="text-white/50 hover:text-white text-sm no-underline transition-colors duration-fast">
-          Servicios
-        </a>
-        <span class="text-white/30 mx-2">›</span>
-        <span class="text-white/80 text-sm">{titulo}</span>
-      </div>
-      <Eyebrow light>Servicio</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        {titulo}
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        {resumen}
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Servicio"
+    title={titulo}
+    subtitle={resumen}
+    imageSrc={heroImg?.src}
+    imageAlt={heroImg?.alt}
+    imageWidth={heroImg?.width}
+    imageHeight={heroImg?.height}
+    breadcrumbs={[{ label: 'Servicios', href: '/servicios' }, { label: titulo }]}
+  />
 
   <Section variant="default">
     <Container>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Contenido principal -->
         <div class="lg:col-span-2">
-          <div class="prose prose-lg max-w-none text-text-muted" style="line-height: 1.75;">
+          <div class="prose prose-lg max-w-none">
             <Content />
           </div>
         </div>
 
+        <!-- Sidebar técnico -->
         <aside class="space-y-6">
           {tipos && tipos.length > 0 && (
             <div class="p-5 border border-border rounded-lg bg-surface">
@@ -53,7 +64,7 @@ const { Content } = await servicio.render();
               <ul class="space-y-1.5">
                 {tipos.map((t: string) => (
                   <li class="flex items-start gap-2 text-sm text-text-muted">
-                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
                     {t}
                   </li>
                 ))}
@@ -67,7 +78,7 @@ const { Content } = await servicio.render();
               <ul class="space-y-1.5">
                 {aplicaciones.map((a: string) => (
                   <li class="flex items-start gap-2 text-sm text-text-muted">
-                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent" />
+                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
                     {a}
                   </li>
                 ))}
@@ -86,9 +97,12 @@ const { Content } = await servicio.render();
             </div>
           )}
 
+          <!-- Contacto (corporate presence — no sales language) -->
           <div class="p-5 bg-primary rounded-lg text-white">
-            <p class="font-semibold text-sm mb-3">¿Necesita este servicio?</p>
-            <p class="text-white/80 text-xs mb-4">Solicite una cotización o consulta técnica directamente con nuestro equipo.</p>
+            <p class="font-semibold text-sm mb-3">¿Trabaja en proyectos de este tipo?</p>
+            <p class="text-white/80 text-xs mb-4 leading-relaxed">
+              Converse con nuestro equipo técnico sobre las capacidades y experiencia de Hidromont.
+            </p>
             <Button href="/contacto" variant="secondary" class="w-full justify-center !text-white !border-white/60 hover:!bg-white/10">
               Contactar
             </Button>
@@ -123,12 +137,12 @@ const { Content } = await servicio.render();
     <Container size="md">
       <div class="text-center">
         <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Tiene un proyecto de {titulo.toLowerCase()}?
+          Vea nuestra experiencia en {titulo.toLowerCase()}
         </h2>
         <div class="flex flex-wrap justify-center gap-4">
-          <Button href="/contacto" size="lg">Solicitar cotización</Button>
-          <Button href="/proyectos" variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
-            Ver proyectos relacionados
+          <Button href="/proyectos" size="lg">Ver proyectos</Button>
+          <Button href="/contacto" variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
+            Ponerse en contacto
           </Button>
         </div>
       </div>

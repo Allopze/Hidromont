@@ -1,3 +1,5 @@
+import typography from '@tailwindcss/typography';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./src/**/*.{astro,html,md,mdx,ts,tsx,js,jsx}'],
@@ -54,7 +56,41 @@ export default {
       transitionTimingFunction: {
         standard: 'cubic-bezier(0.2, 0, 0, 1)',
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            // colors
+            '--tw-prose-body': '#1F2933',
+            '--tw-prose-headings': '#004B7D',
+            '--tw-prose-lead': '#5B6770',
+            '--tw-prose-links': '#0065A9',
+            '--tw-prose-bold': '#1F2933',
+            '--tw-prose-counters': '#5B6770',
+            '--tw-prose-bullets': '#0065A9',
+            '--tw-prose-hr': '#D9E2EC',
+            '--tw-prose-quotes': '#004B7D',
+            '--tw-prose-quote-borders': '#0065A9',
+            '--tw-prose-captions': '#5B6770',
+            '--tw-prose-code': '#1F2933',
+            '--tw-prose-pre-code': '#E6F2FA',
+            '--tw-prose-pre-bg': '#0F2433',
+            '--tw-prose-th-borders': '#D9E2EC',
+            '--tw-prose-td-borders': '#D9E2EC',
+            // headings → heading font
+            h1: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '700', letterSpacing: '-0.01em' },
+            h2: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '700', letterSpacing: '-0.01em' },
+            h3: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '600', letterSpacing: '-0.01em' },
+            h4: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '600' },
+            // tables → design-system style
+            'thead th': { backgroundColor: '#E6F2FA', color: '#004B7D', fontWeight: '700', padding: '12px 16px' },
+            'tbody td': { padding: '12px 16px', borderBottomColor: '#D9E2EC' },
+            // links
+            'a': { fontWeight: '500', textDecorationThickness: '1px', textUnderlineOffset: '4px' },
+            'a:hover': { color: '#004B7D' },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [typography],
 };

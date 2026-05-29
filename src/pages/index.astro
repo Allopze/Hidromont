@@ -59,7 +59,7 @@ const propuestaValor = [
     subtitle="Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983."
     ctaPrimary={{ label: 'Conocer nuestros servicios', href: '/servicios' }}
     ctaSecondary={{ label: 'Ver proyectos', href: '/proyectos' }}
-    imageSrc="/fotos/hero-bg.jpg"
+    imageSrc="/fotos/curadas/taller-aereo.png"
   />
 
   <!-- Servicios principales -->
@@ -74,7 +74,7 @@ const propuestaValor = [
           Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.
         </p>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
         {servicios.map((s) => (
           <ServiceCard
             title={s.data.titulo}
@@ -124,7 +124,7 @@ const propuestaValor = [
           </div>
           <Button href="/proyectos" variant="secondary">Ver todos los proyectos</Button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
           {proyectosDestacados.slice(0, 6).map((p) => (
             <ProjectCard proyecto={p} />
           ))}

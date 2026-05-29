@@ -3,6 +3,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
+import PageHero from '../components/ui/PageHero.astro';
 import ContactForm from '../components/contact/ContactForm.astro';
 import ContactInfo from '../components/contact/ContactInfo.astro';
 ---
@@ -11,19 +12,12 @@ import ContactInfo from '../components/contact/ContactInfo.astro';
   title="Contacto"
   description="Contáctese con el equipo técnico de Hidromont Chile S.A. para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
 >
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <Eyebrow light>Contacto</Eyebrow>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        Conversemos sobre su proyecto
-      </h1>
-      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y
-        rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales
-        hidroeléctricas.
-      </p>
-    </Container>
-  </section>
+  <PageHero
+    eyebrow="Contacto"
+    title="Conversemos"
+    subtitle="Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
+    breadcrumbs={[{ label: 'Contacto' }]}
+  />
 
   <Section variant="default">
     <Container>

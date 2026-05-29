@@ -1,0 +1,126 @@
+---
+/**
+ * PageHero — unified split/framed inner-page hero.
+ * Left column: breadcrumb + eyebrow + H1 + subtitle.
+ * Right column: contained image panel (crisp at ~660px source).
+ * Falls back to a text-only navy band with a subtle technical grid motif.
+ */
+import Eyebrow from './Eyebrow.astro';
+import Container from './Container.astro';
+
+interface Breadcrumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  breadcrumbs?: Breadcrumb[];
+  imageSrc?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
+}
+
+const {
+  eyebrow,
+  title,
+  subtitle,
+  breadcrumbs,
+  imageSrc,
+  imageAlt = '',
+  imageWidth = 660,
+  imageHeight = 495,
+} = Astro.props;
+---
+
+<section class="relative bg-background-strong text-white overflow-hidden">
+  <!-- Subtle technical grid motif (always visible, very low opacity) -->
+  <div
+    class="absolute inset-0 pointer-events-none"
+    aria-hidden="true"
+    style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 48px 48px;"
+  ></div>
+
+  <Container size="2xl">
+    <div class={`relative z-10 flex flex-col ${imageSrc ? 'lg:flex-row lg:items-center lg:gap-12' : ''} py-16 md:py-20 lg:py-24`}>
+
+      <!-- Text column -->
+      <div class={imageSrc ? 'flex-1 lg:max-w-[55%]' : 'max-w-3xl'}>
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav class="flex items-center gap-1.5 mb-5 text-xs text-white/40 font-body" aria-label="Breadcrumb">
+            {breadcrumbs.map((crumb, i) => (
+              <>
+                {i > 0 && <span aria-hidden="true">›</span>}
+                {crumb.href
+                  ? <a href={crumb.href} class="hover:text-white/80 transition-colors duration-fast no-underline">{crumb.label}</a>
+                  : <span class="text-white/70">{crumb.label}</span>
+                }
+              </>
+            ))}
+          </nav>
+        )}
+
+        {eyebrow && <Eyebrow light>{eyebrow}</Eyebrow>}
+
+        <h1
+          class="font-heading font-bold text-white leading-tight mb-4"
+          style="font-size: var(--font-size-h1);"
+          data-reveal
+        >
+          {title}
+        </h1>
+
+        {subtitle && (
+          <p
+            class="text-white/70 max-w-xl"
+            style="font-size: var(--font-size-body-lg); line-height: 1.65; --reveal-delay: 0.1s;"
+            data-reveal
+          >
+            {subtitle}
+          </p>
+        )}
+
+        <slot />
+      </div>
+
+      <!-- Image panel (only if src provided) -->
+      {imageSrc && (
+        <div
+          class="mt-10 lg:mt-0 lg:flex-shrink-0 lg:w-[42%]"
+          data-reveal
+          style="--reveal-delay: 0.18s;"
+        >
+          <div class="relative overflow-hidden rounded-lg" style="border: 1px solid rgba(255,255,255,0.08);">
+            <!-- Edge refraction inner border -->
+            <div
+              class="absolute inset-0 z-10 rounded-lg pointer-events-none"
+              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2);"
+              aria-hidden="true"
+            ></div>
+            <img
+              src={imageSrc}
+              alt={imageAlt}
+              width={imageWidth}
+              height={imageHeight}
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              class="block w-full h-auto object-cover"
+              style="max-height: 380px;"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  </Container>
+
+  <!-- Bottom gradient fade -->
+  <div
+    class="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
+    style="background: linear-gradient(to top, rgba(15,36,51,0.5), transparent);"
+    aria-hidden="true"
+  ></div>
+</section>

@@ -4,7 +4,19 @@ import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import Button from '../../components/ui/Button.astro';
 import Badge from '../../components/ui/Badge.astro';
+import PageHero from '../../components/ui/PageHero.astro';
 import { getCollection } from 'astro:content';
+
+// Per-project hero images mapped by slug
+const projectImages: Record<string, { src: string; alt: string; width: number; height: number }> = {
+  'ch-los-condores':  { src: '/fotos/curadas/proyecto-tunel-blindaje.jpg',  alt: 'Blindaje de gran diámetro instalado en túnel', width: 1024, height: 768 },
+  'embalse-chironta': { src: '/fotos/curadas/proyecto-valvula-tunel.jpg',   alt: 'Válvula instalada en túnel de central', width: 1024, height: 768 },
+  'ch-besaya':        { src: '/fotos/curadas/proyecto-montaje-tuberia.jpg', alt: 'Montaje de tubería forzada de gran diámetro', width: 481, height: 640 },
+  'ch-dorias':        { src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',alt: 'Bifurcación instalada en obra', width: 473, height: 354 },
+  'ch-queltehues':    { src: '/fotos/curadas/proyecto-tuberia-terreno.jpg', alt: 'Instalación de tubería en terreno', width: 639, height: 480 },
+  'ch-rio-frio':      { src: '/fotos/curadas/proyecto-tuberia-montana.png', alt: 'Tubería forzada en ladera de montaña', width: 467, height: 697 },
+  'embalse-chacrillas':{ src: '/fotos/curadas/proyecto-bifurcacion-taller.jpg', alt: 'Bifurcación de gran diámetro en taller', width: 478, height: 448 },
+};
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
@@ -17,6 +29,7 @@ export async function getStaticPaths() {
 const { proyecto } = Astro.props;
 const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas } = proyecto.data;
 const { Content } = await proyecto.render();
+const heroImg = projectImages[proyecto.slug];
 
 const categoriaLabels: Record<string, string> = {
   tuberias: 'Tuberías y Blindajes',
@@ -39,23 +52,16 @@ const servicioHref: Record<string, string> = {
   title={nombre}
   description={alcance}
 >
-  <!-- Breadcrumb + header -->
-  <section class="bg-background-strong text-white py-16 md:py-24">
-    <Container>
-      <div class="mb-4 text-sm">
-        <a href="/proyectos" class="text-white/50 hover:text-white no-underline transition-colors duration-fast">Proyectos</a>
-        <span class="text-white/30 mx-2">›</span>
-        <span class="text-white/80">{nombre}</span>
-      </div>
-      <Badge variant="accent" class="mb-4">{categoriaLabels[categoria] ?? categoria}</Badge>
-      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
-        {nombre}
-      </h1>
-      {cliente && (
-        <p class="text-accent font-semibold text-sm uppercase tracking-wide">{cliente}</p>
-      )}
-    </Container>
-  </section>
+  <PageHero
+    eyebrow={categoriaLabels[categoria] ?? categoria}
+    title={nombre}
+    subtitle={cliente ? `Cliente: ${cliente}` : undefined}
+    imageSrc={heroImg?.src}
+    imageAlt={heroImg?.alt}
+    imageWidth={heroImg?.width}
+    imageHeight={heroImg?.height}
+    breadcrumbs={[{ label: 'Proyectos', href: '/proyectos' }, { label: nombre }]}
+  />
 
   <Section variant="default">
     <Container>
@@ -114,8 +120,8 @@ const servicioHref: Record<string, string> = {
           )}
 
           <div class="p-5 bg-primary rounded-lg text-white">
-            <p class="font-semibold text-sm mb-2">¿Proyecto similar?</p>
-            <p class="text-white/80 text-xs mb-4 leading-relaxed">Cuéntenos su requerimiento. Evaluamos cada proyecto con precisión técnica.</p>
+            <p class="font-semibold text-sm mb-2">¿Trabaja en proyectos similares?</p>
+            <p class="text-white/80 text-xs mb-4 leading-relaxed">Converse con nuestro equipo sobre las capacidades y trayectoria de Hidromont.</p>
             <Button href="/contacto" variant="secondary" class="w-full justify-center !text-white !border-white/60 hover:!bg-white/10">
               Contactar
             </Button>

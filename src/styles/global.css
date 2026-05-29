@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './base.css';
+@import './motion.css';
 
 @tailwind base;
 @tailwind components;
