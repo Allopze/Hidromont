@@ -1,0 +1,25 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Container from '../components/ui/Container.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<PageLayout title="Página no encontrada" noindex>
+  <section class="bg-background py-24 md:py-32">
+    <Container size="sm">
+      <div class="text-center">
+        <p class="font-mono font-bold text-accent text-7xl mb-4">404</p>
+        <h1 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          Página no encontrada
+        </h1>
+        <p class="text-text-muted mb-8">
+          La página que busca no existe o fue movida. Vuelva al inicio para navegar por el sitio.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <Button href="/" variant="primary">Ir al inicio</Button>
+          <Button href="/contacto" variant="secondary">Contactar</Button>
+        </div>
+      </div>
+    </Container>
+  </section>
+</PageLayout>

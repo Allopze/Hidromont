@@ -1,0 +1,51 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Container from '../components/ui/Container.astro';
+import Eyebrow from '../components/ui/Eyebrow.astro';
+import ContactForm from '../components/contact/ContactForm.astro';
+import ContactInfo from '../components/contact/ContactInfo.astro';
+---
+
+<PageLayout
+  title="Contacto"
+  description="Contáctese con el equipo técnico de Hidromont Chile S.A. para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
+>
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <Eyebrow light>Contacto</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        Conversemos sobre su proyecto
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y
+        rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales
+        hidroeléctricas.
+      </p>
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Formulario -->
+        <div class="lg:col-span-2">
+          <Eyebrow>Formulario de contacto</Eyebrow>
+          <h2 class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
+            Envíe su consulta
+          </h2>
+          <ContactForm />
+        </div>
+
+        <!-- Info lateral -->
+        <div class="lg:col-span-1">
+          <Eyebrow>Datos de contacto</Eyebrow>
+          <h2 class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
+            Información directa
+          </h2>
+          <ContactInfo />
+        </div>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

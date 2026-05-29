@@ -1,0 +1,37 @@
+---
+// @ts-ignore - Props interface is used implicitly by Astro for Astro.props typing
+interface Props {
+  variant?: 'default' | 'alt' | 'strong';
+  padding?: 'normal' | 'tight' | 'hero';
+  id?: string;
+  class?: string;
+  as?: 'section' | 'div' | 'article';
+}
+
+const {
+  variant,
+  padding,
+  id,
+  class: className = '',
+  as: Tag = 'section',
+} = Astro.props;
+
+function getVariantClass(v: string | undefined) {
+  if (v === 'alt') return 'bg-background-alt';
+  if (v === 'strong') return 'bg-background-strong text-white';
+  return 'bg-background';
+}
+
+function getPaddingClass(p: string | undefined) {
+  if (p === 'tight') return 'py-12 md:py-16';
+  if (p === 'hero') return 'py-20 md:py-32';
+  return 'py-16 md:py-20';
+}
+---
+
+<Tag
+  id={id}
+  class={`${getVariantClass(variant)} ${getPaddingClass(padding)} ${className}`}
+>
+  <slot />
+</Tag>

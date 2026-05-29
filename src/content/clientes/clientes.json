@@ -1,0 +1,32 @@
+{
+  "items": [
+    { "nombre": "Acciona", "sector": "construccion" },
+    { "nombre": "AES Andes", "sector": "electrica" },
+    { "nombre": "Arauco", "sector": "industrial" },
+    { "nombre": "Besalco", "sector": "construccion" },
+    { "nombre": "Besalco - Dragados", "sector": "construccion" },
+    { "nombre": "Besalco - Ferrovial", "sector": "construccion" },
+    { "nombre": "Colbún", "sector": "electrica" },
+    { "nombre": "Conpax", "sector": "construccion" },
+    { "nombre": "EDP", "sector": "electrica" },
+    { "nombre": "HC Energía", "sector": "electrica" },
+    { "nombre": "Elecnor", "sector": "electrica" },
+    { "nombre": "Eléctrica Puntilla", "sector": "electrica" },
+    { "nombre": "Engie", "sector": "electrica" },
+    { "nombre": "Endesa", "sector": "electrica" },
+    { "nombre": "FCC", "sector": "construccion" },
+    { "nombre": "Ferrovial", "sector": "construccion" },
+    { "nombre": "Gas Natural Fenosa", "sector": "electrica" },
+    { "nombre": "GPE", "sector": "electrica" },
+    { "nombre": "Iberdrola", "sector": "electrica" },
+    { "nombre": "M.O.P. / D.O.H.", "sector": "publica" },
+    { "nombre": "Mainco", "sector": "construccion" },
+    { "nombre": "NaturEner", "sector": "electrica" },
+    { "nombre": "Navarro SiC", "sector": "construccion" },
+    { "nombre": "Norvento", "sector": "electrica" },
+    { "nombre": "OHL", "sector": "construccion" },
+    { "nombre": "Pacific Hydro", "sector": "electrica" },
+    { "nombre": "Plenium Partners", "sector": "electrica" },
+    { "nombre": "Viesgo", "sector": "electrica" }
+  ]
+}

@@ -1,0 +1,20 @@
+---
+interface Props {
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  class?: string;
+}
+
+const { size = 'xl', class: className = '' } = Astro.props;
+
+const maxWidths = {
+  sm: 'max-w-[640px]',
+  md: 'max-w-[768px]',
+  lg: 'max-w-[1024px]',
+  xl: 'max-w-container',
+  '2xl': 'max-w-wide',
+};
+---
+
+<div class={`w-full mx-auto px-6 ${maxWidths[size]} ${className}`}>
+  <slot />
+</div>

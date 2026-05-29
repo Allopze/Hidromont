@@ -1,0 +1,98 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource/roboto-condensed/600.css';
+import '@fontsource/roboto-condensed/700.css';
+import '@fontsource/roboto-mono/400.css';
+import '@fontsource/roboto-mono/500.css';
+import '../styles/global.css';
+import { company } from '../data/company';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+  jsonLd?: object | object[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = company.descripcionCorta,
+  image = '/og/og-default.jpg',
+  canonical,
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${company.nombre}` : company.nombre;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageUrl = new URL(image, Astro.site).toString();
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: company.nombre,
+  url: company.sitioWeb,
+  logo: new URL('/logo.png', Astro.site).toString(),
+  telephone: company.telefono,
+  email: company.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: company.domicilio,
+    addressLocality: 'Los Ángeles',
+    addressRegion: 'Biobío',
+    addressCountry: 'CL',
+  },
+  foundingDate: '1983',
+  description: company.descripcionCorta,
+};
+
+const allJsonLd = [
+  organizationJsonLd,
+  ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
+];
+---
+
+<!doctype html>
+<html lang="es-CL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content="es_CL" />
+    <meta property="og:site_name" content={company.nombre} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- JSON-LD -->
+    {
+      allJsonLd.map((ld) => (
+        <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+      ))
+    }
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

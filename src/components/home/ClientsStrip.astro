@@ -1,0 +1,38 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Eyebrow from '../ui/Eyebrow.astro';
+import Container from '../ui/Container.astro';
+
+interface Props {
+  clientes: CollectionEntry<'clientes'>;
+}
+
+const { clientes } = Astro.props;
+const lista = clientes.data.items;
+---
+
+<Container>
+  <div class="text-center mb-10">
+    <Eyebrow>Clientes y referencias</Eyebrow>
+    <h2 class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
+      Empresas que confían en Hidromont
+    </h2>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
+    {lista.map((c) => (
+      <span class="text-sm font-semibold text-text-muted hover:text-primary-dark transition-colors duration-fast">
+        {c.nombre}
+      </span>
+    ))}
+  </div>
+
+  <div class="text-center mt-8">
+    <a href="/clientes" class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast">
+      Ver todos los clientes
+      <svg class="inline-block ml-1 w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 8h10M9 4l4 4-4 4" />
+      </svg>
+    </a>
+  </div>
+</Container>

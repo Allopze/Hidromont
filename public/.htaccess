@@ -1,0 +1,24 @@
+Options -Indexes
+
+RewriteEngine On
+ErrorDocument 404 /404.html
+
+# Cache static assets
+<FilesMatch "\.(woff2|woff|avif|webp|jpg|jpeg|png|svg|ico|css|js|gz)$">
+  Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+# Cache HTML with short TTL
+<FilesMatch "\.html$">
+  Header set Cache-Control "public, max-age=600, must-revalidate"
+</FilesMatch>
+
+# Gzip compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Security headers
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "SAMEORIGIN"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"

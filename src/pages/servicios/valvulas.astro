@@ -1,0 +1,137 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Container from '../../components/ui/Container.astro';
+import Eyebrow from '../../components/ui/Eyebrow.astro';
+import Button from '../../components/ui/Button.astro';
+import Badge from '../../components/ui/Badge.astro';
+import { getEntry } from 'astro:content';
+
+const servicio = await getEntry('servicios', 'valvulas');
+if (!servicio) return Astro.redirect('/servicios');
+const { titulo, resumen, tipos, aplicaciones, normas, procesos } = servicio.data;
+const { Content } = await servicio.render();
+
+---
+
+<PageLayout
+  title={titulo}
+  description={resumen}
+>
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <div class="mb-4">
+        <a href="/servicios" class="text-white/50 hover:text-white text-sm no-underline transition-colors duration-fast">
+          Servicios
+        </a>
+        <span class="text-white/30 mx-2">›</span>
+        <span class="text-white/80 text-sm">{titulo}</span>
+      </div>
+      <Eyebrow light>Servicio</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        {titulo}
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        {resumen}
+      </p>
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="lg:col-span-2">
+          <div class="prose prose-lg max-w-none text-text-muted" style="line-height: 1.75;">
+            <Content />
+          </div>
+        </div>
+
+        <aside class="space-y-6">
+          {tipos && tipos.length > 0 && (
+            <div class="p-5 border border-border rounded-lg bg-surface">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Tipos</h3>
+              <ul class="space-y-1.5">
+                {tipos.map((t: string) => (
+                  <li class="flex items-start gap-2 text-sm text-text-muted">
+                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {aplicaciones && aplicaciones.length > 0 && (
+            <div class="p-5 border border-border rounded-lg bg-primary-light">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Aplicaciones</h3>
+              <ul class="space-y-1.5">
+                {aplicaciones.map((a: string) => (
+                  <li class="flex items-start gap-2 text-sm text-text-muted">
+                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent" />
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {normas && normas.length > 0 && (
+            <div class="p-5 border border-border rounded-lg bg-background-alt">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Normas de referencia</h3>
+              <div class="flex flex-wrap gap-2">
+                {normas.map((n: string) => (
+                  <Badge variant="muted">{n}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="p-5 bg-primary rounded-lg text-white">
+            <p class="font-semibold text-sm mb-3">¿Necesita este servicio?</p>
+            <p class="text-white/80 text-xs mb-4">Solicite una cotización o consulta técnica directamente con nuestro equipo.</p>
+            <Button href="/contacto" variant="secondary" class="w-full justify-center !text-white !border-white/60 hover:!bg-white/10">
+              Contactar
+            </Button>
+          </div>
+        </aside>
+      </div>
+
+      {procesos && procesos.length > 0 && (
+        <div class="mt-16">
+          <h2 class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
+            Proceso de trabajo
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {procesos.map((p: { titulo: string; descripcion: string }, i: number) => (
+              <div class="flex gap-4 p-5 border border-border rounded-lg bg-surface">
+                <div class="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-mono font-bold text-sm">
+                  {i + 1}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-primary-dark mb-1">{p.titulo}</h3>
+                  <p class="text-sm text-text-muted leading-relaxed">{p.descripcion}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Container>
+  </Section>
+
+  <Section variant="strong">
+    <Container size="md">
+      <div class="text-center">
+        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          ¿Tiene un proyecto de {titulo.toLowerCase()}?
+        </h2>
+        <div class="flex flex-wrap justify-center gap-4">
+          <Button href="/contacto" size="lg">Solicitar cotización</Button>
+          <Button href="/proyectos" variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
+            Ver proyectos relacionados
+          </Button>
+        </div>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

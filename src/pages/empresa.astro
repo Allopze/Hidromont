@@ -1,0 +1,186 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Container from '../components/ui/Container.astro';
+import Eyebrow from '../components/ui/Eyebrow.astro';
+import Button from '../components/ui/Button.astro';
+import CapabilitiesBlock from '../components/home/CapabilitiesBlock.astro';
+
+const instalaciones = [
+  { title: 'Taller industrial', value: '3.000 m²', description: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
+  { title: 'Oficinas e ingeniería', value: '320 m²', description: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
+  { title: 'Cilindradora hidráulica', value: '65 mm', description: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
+  { title: 'Puentes grúa', value: '5 unidades', description: 'Capacidades de 10, 15, 16 y 20 toneladas para maniobras de fabricación y montaje.' },
+];
+
+const maquinaria = [
+  'Soldadura arco sumergido ESAB A2 Automatic LAF1000 (4 unidades)',
+  'Equipos semiautomáticos ESAB Origo Mig 502c',
+  'Fresadora DYE600 de carrera 7 m',
+  'Fresadora ZAYER de carrera 1,5 m',
+  'Tornos paralelos de 2 m y 6 m',
+  'Torno al aire con volteo 4,5 m',
+  'Cizalla LOIRE 3 m/16 mm',
+  'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
+  'Plegadora MEBUSA 200 Tn × 3 m',
+  'Oxicorte hasta 100 mm',
+  'Grúa autopropulsada 50 Tn',
+  'Grupos electrógenos de 100 a 200 KVA',
+];
+---
+
+<PageLayout
+  title="Empresa"
+  description="Hidromont Chile S.A. — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con taller propio y equipo técnico especializado."
+>
+  <!-- Page hero -->
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <Eyebrow light>Quiénes somos</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        Empresa
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica.
+      </p>
+    </Container>
+  </section>
+
+  <!-- Historia y descripción -->
+  <Section variant="default">
+    <Container size="lg">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div>
+          <Eyebrow>Historia</Eyebrow>
+          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            Más de 40 años en infraestructura hidráulica
+          </h2>
+          <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-body-lg); line-height: 1.7;">
+            <p>
+              Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde
+              1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa
+              en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e
+              internacional.
+            </p>
+            <p>
+              La compañía se especializa en la ingeniería, fabricación y montaje de equipos
+              hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite
+              abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones
+              adaptadas a las necesidades de cada obra.
+            </p>
+            <p>
+              Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías
+              forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos
+              ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas
+              a cada proyecto hidroeléctrico o hidráulico.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            {[
+              { label: 'Fundación', value: '1983', desc: 'Origen español' },
+              { label: 'Chile desde', value: '1997', desc: 'Los Ángeles, Biobío' },
+              { label: 'Modalidad', value: 'EPC', desc: 'Llave en mano' },
+              { label: 'Calidad', value: 'ISO 9001', desc: 'Sistema de gestión' },
+            ].map((item) => (
+              <div class="p-5 border border-border rounded-lg bg-surface">
+                <p class="font-mono font-bold text-accent text-2xl">{item.value}</p>
+                <p class="font-semibold text-text text-sm mt-1">{item.label}</p>
+                <p class="text-text-muted text-xs mt-0.5">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div class="p-6 bg-primary-light border border-border rounded-lg">
+            <h3 class="font-heading font-semibold text-primary-dark mb-3">Ubicación</h3>
+            <p class="text-sm text-text-muted">
+              Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513<br />
+              Los Ángeles, Región del Biobío, Chile
+            </p>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <!-- Instalaciones -->
+  <Section variant="alt">
+    <CapabilitiesBlock
+      eyebrow="Infraestructura"
+      title="Instalaciones y medios productivos"
+      subtitle="Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión."
+      items={instalaciones}
+      columns={4}
+    />
+  </Section>
+
+  <!-- Maquinaria -->
+  <Section variant="default">
+    <Container>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div>
+          <Eyebrow>Equipamiento</Eyebrow>
+          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            Maquinaria especializada
+          </h2>
+          <p class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+            Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado,
+            soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.
+          </p>
+          <ul class="space-y-2.5">
+            {maquinaria.map((item) => (
+              <li class="flex items-start gap-2.5 text-sm text-text-muted">
+                <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <Eyebrow>Capacidad de montaje</Eyebrow>
+          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            Medios de obra
+          </h2>
+          <p class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+            Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de
+            acceso difícil que requieren medios especiales de transporte.
+          </p>
+          <ul class="space-y-2.5">
+            {[
+              'Grúa autopropulsada 50 Tn',
+              'Camiones pluma para maniobras en altura',
+              'Vehículos Pick-Up 4×4 para acceso a terreno',
+              'Grupos electrógenos de 100 a 200 KVA',
+              'Equipos de arenado y pintura industrial',
+              'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
+              'Plataformas y teleférico para montajes en pendiente',
+            ].map((item) => (
+              <li class="flex items-start gap-2.5 text-sm text-text-muted">
+                <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <!-- CTA -->
+  <Section variant="strong">
+    <Container size="md">
+      <div class="text-center">
+        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          ¿Quiere conocer nuestras capacidades?
+        </h2>
+        <p class="text-white/70 mb-8">
+          Conversemos sobre su proyecto. Evaluamos cada requerimiento con precisión técnica.
+        </p>
+        <Button href="/contacto" size="lg">Contactar equipo técnico</Button>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

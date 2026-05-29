@@ -1,0 +1,113 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Container from '../components/ui/Container.astro';
+import Eyebrow from '../components/ui/Eyebrow.astro';
+import Button from '../components/ui/Button.astro';
+
+const principios = [
+  {
+    title: 'Satisfacción del cliente',
+    description: 'Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto.',
+  },
+  {
+    title: 'Mejora continua',
+    description: 'Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega.',
+  },
+  {
+    title: 'Cumplimiento normativo',
+    description: 'Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto.',
+  },
+  {
+    title: 'Planificación y organización',
+    description: 'El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios.',
+  },
+];
+---
+
+<PageLayout
+  title="Calidad y Medioambiente"
+  description="Hidromont Chile S.A. mantiene un sistema de gestión de calidad basado en ISO 9001, con foco en mejora continua y satisfacción del cliente."
+>
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <Eyebrow light>Gestión de Calidad</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        Calidad y Medioambiente
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        La calidad como compromiso para cumplir y satisfacer las necesidades de nuestros clientes,
+        fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables.
+      </p>
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container size="lg">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <Eyebrow>Sistema de gestión</Eyebrow>
+          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            ISO 9001
+          </h2>
+          <div class="space-y-4 text-text-muted" style="line-height: 1.7;">
+            <p>
+              Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la
+              planificación, organización y prestación de sus servicios. Este enfoque refuerza su
+              posicionamiento como proveedor técnico para proyectos de alta exigencia en
+              infraestructura hidráulica e hidroeléctrica.
+            </p>
+            <p>
+              El propósito declarado de la empresa es enfocar la calidad como un compromiso para
+              cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y
+              cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center">
+          <div class="p-10 border-2 border-primary rounded-xl bg-primary-light text-center">
+            <p class="font-mono font-bold text-primary text-5xl mb-2">ISO</p>
+            <p class="font-mono font-bold text-primary text-4xl mb-4">9001</p>
+            <p class="text-sm text-text-muted">Sistema de gestión de calidad</p>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section variant="alt">
+    <Container>
+      <div class="text-center mb-12">
+        <Eyebrow>Principios</Eyebrow>
+        <h2 class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
+          Nuestros compromisos de calidad
+        </h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {principios.map((p) => (
+          <div class="p-6 bg-surface border border-border rounded-lg">
+            <h3 class="font-heading font-semibold text-primary-dark mb-2" style="font-size: var(--font-size-h4);">
+              {p.title}
+            </h3>
+            <p class="text-sm text-text-muted leading-relaxed">{p.description}</p>
+          </div>
+        ))}
+      </div>
+    </Container>
+  </Section>
+
+  <Section variant="strong">
+    <Container size="md">
+      <div class="text-center">
+        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          Proyectos que exigen calidad certificada
+        </h2>
+        <p class="text-white/70 mb-8">
+          Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.
+        </p>
+        <Button href="/contacto" size="lg">Contactar equipo técnico</Button>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

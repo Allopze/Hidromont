@@ -1,0 +1,61 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Badge from '../ui/Badge.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  proyecto: CollectionEntry<'proyectos'>;
+}
+
+const { proyecto } = Astro.props;
+const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion } = proyecto.data;
+
+const categoriaLabels: Record<string, string> = {
+  tuberias: 'Tuberías y Blindajes',
+  compuertas: 'Compuertas y Válvulas',
+  electromecanicos: 'Montajes Electromecánicos',
+  limpiarrejas: 'Limpiarrejas',
+  estructuras: 'Estructuras y Estanques',
+};
+
+const isDestacado = proyecto.data.tipo === 'destacado';
+---
+
+<article class="bg-surface border border-border rounded-lg overflow-hidden flex flex-col transition-[box-shadow,transform] duration-slow ease-standard hover:shadow-md hover:-translate-y-0.5">
+  {isDestacado ? (
+    <div class="bg-primary-light px-5 py-4 border-b border-border">
+      <Badge variant="accent" class="text-[10px]">Caso Destacado</Badge>
+    </div>
+  ) : null}
+
+  <div class="p-6 flex flex-col flex-1 gap-4">
+    <div>
+      <Badge>{categoriaLabels[categoria] ?? categoria}</Badge>
+      <h3 class="font-heading font-semibold text-primary-dark mt-3 mb-1" style="font-size: var(--font-size-h4);">
+        {nombre}
+      </h3>
+      {cliente && (
+        <p class="text-xs text-text-muted font-semibold uppercase tracking-wide">{cliente}</p>
+      )}
+    </div>
+
+    <p class="text-sm text-text-muted leading-relaxed line-clamp-3 flex-1">{alcance}</p>
+
+    {(diametro || longitud || ubicacion) && (
+      <div class="flex flex-wrap gap-3 text-xs font-mono text-text-muted border-t border-border pt-3">
+        {diametro && <span>{diametro}</span>}
+        {longitud && <span>{longitud}</span>}
+        {ubicacion && ubicacion !== 'Chile' && <span class="text-primary">{ubicacion}</span>}
+      </div>
+    )}
+
+    {isDestacado && (
+      <Button href={`/proyectos/${proyecto.slug}`} variant="link" class="self-start">
+        Ver detalle
+        <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 8h10M9 4l4 4-4 4" />
+        </svg>
+      </Button>
+    )}
+  </div>
+</article>

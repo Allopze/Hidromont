@@ -1,0 +1,55 @@
+---
+import Button from '../ui/Button.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle: string;
+  ctaPrimary: { label: string; href: string };
+  ctaSecondary?: { label: string; href: string };
+  imageSrc?: string;
+}
+
+const {
+  eyebrow = 'Especialistas en equipos hidromecánicos',
+  title,
+  subtitle,
+  ctaPrimary,
+  ctaSecondary,
+  imageSrc,
+} = Astro.props;
+---
+
+<section
+  class="relative bg-background-strong text-white overflow-hidden"
+  style={imageSrc
+    ? `background-image: linear-gradient(rgba(15, 36, 51, 0.70), rgba(15, 36, 51, 0.75)), url('${imageSrc}'); background-size: cover; background-position: center;`
+    : undefined}
+>
+  <div class="w-full mx-auto px-6 max-w-container py-24 md:py-32 lg:py-40">
+    <div class="max-w-3xl">
+      <Eyebrow light>{eyebrow}</Eyebrow>
+
+      <h1 class="font-heading text-white leading-tight mb-6" style="font-size: var(--font-size-display); font-weight: 700;">
+        {title}
+      </h1>
+
+      <p class="text-white/80 mb-10 max-w-2xl" style="font-size: var(--font-size-body-lg); line-height: 1.6;">
+        {subtitle}
+      </p>
+
+      <div class="flex flex-wrap gap-4">
+        <Button href={ctaPrimary.href} size="lg">{ctaPrimary.label}</Button>
+        {ctaSecondary && (
+          <Button href={ctaSecondary.href} variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
+            {ctaSecondary.label}
+          </Button>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative bottom gradient -->
+  <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background-strong/60 to-transparent pointer-events-none"></div>
+</section>

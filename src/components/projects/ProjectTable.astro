@@ -1,0 +1,43 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  proyectos: CollectionEntry<'proyectos'>[];
+  titulo: string;
+}
+
+const { proyectos, titulo } = Astro.props;
+---
+
+{proyectos.length > 0 && (
+  <div class="mb-12">
+    <h3 class="font-heading font-semibold text-primary-dark mb-4" style="font-size: var(--font-size-h3);">
+      {titulo}
+    </h3>
+    <div class="overflow-x-auto rounded-lg border border-border">
+      <table class="w-full text-sm" style="border-collapse: collapse;">
+        <thead>
+          <tr class="bg-primary-light">
+            <th class="text-left px-4 py-3 font-bold text-primary-dark whitespace-nowrap">Proyecto</th>
+            <th class="text-left px-4 py-3 font-bold text-primary-dark">Alcance</th>
+            <th class="text-left px-4 py-3 font-bold text-primary-dark whitespace-nowrap">Cliente</th>
+          </tr>
+        </thead>
+        <tbody>
+          {proyectos.map((p, i) => (
+            <tr class={i % 2 === 0 ? 'bg-white' : 'bg-background-alt'} style="border-bottom: 1px solid var(--color-border);">
+              <td class="px-4 py-3 font-semibold text-text whitespace-nowrap">
+                {p.data.nombre}
+                {p.data.diametro && (
+                  <span class="block font-mono text-xs text-text-muted font-normal mt-0.5">{p.data.diametro}</span>
+                )}
+              </td>
+              <td class="px-4 py-3 text-text-muted leading-snug">{p.data.alcance}</td>
+              <td class="px-4 py-3 text-text-muted whitespace-nowrap">{p.data.cliente ?? '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}

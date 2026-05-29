@@ -1,0 +1,137 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Container from '../../components/ui/Container.astro';
+import Button from '../../components/ui/Button.astro';
+import Badge from '../../components/ui/Badge.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
+  return proyectos.map((p) => ({
+    params: { slug: p.slug },
+    props: { proyecto: p },
+  }));
+}
+
+const { proyecto } = Astro.props;
+const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas } = proyecto.data;
+const { Content } = await proyecto.render();
+
+const categoriaLabels: Record<string, string> = {
+  tuberias: 'Tuberías y Blindajes',
+  compuertas: 'Compuertas y Válvulas',
+  electromecanicos: 'Montajes Electromecánicos',
+  limpiarrejas: 'Limpiarrejas',
+  estructuras: 'Estructuras y Estanques',
+};
+
+const servicioHref: Record<string, string> = {
+  tuberias: '/servicios/tuberias-forzadas',
+  compuertas: '/servicios/compuertas',
+  electromecanicos: '/servicios/otros-montajes',
+  limpiarrejas: '/servicios/limpiarrejas',
+  estructuras: '/servicios/otros-montajes',
+};
+---
+
+<PageLayout
+  title={nombre}
+  description={alcance}
+>
+  <!-- Breadcrumb + header -->
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <div class="mb-4 text-sm">
+        <a href="/proyectos" class="text-white/50 hover:text-white no-underline transition-colors duration-fast">Proyectos</a>
+        <span class="text-white/30 mx-2">›</span>
+        <span class="text-white/80">{nombre}</span>
+      </div>
+      <Badge variant="accent" class="mb-4">{categoriaLabels[categoria] ?? categoria}</Badge>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        {nombre}
+      </h1>
+      {cliente && (
+        <p class="text-accent font-semibold text-sm uppercase tracking-wide">{cliente}</p>
+      )}
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Contenido principal -->
+        <div class="lg:col-span-2">
+          <div class="prose prose-lg max-w-none text-text-muted [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-primary-dark [&_h3]:font-heading [&_h3]:text-primary-dark [&_table]:text-sm [&_th]:bg-primary-light [&_th]:text-primary-dark [&_th]:font-bold [&_th]:px-4 [&_th]:py-3 [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-border">
+            <Content />
+          </div>
+        </div>
+
+        <!-- Sidebar con datos técnicos -->
+        <aside class="space-y-5">
+          {(diametro || longitud || ubicacion) && (
+            <div class="p-5 border border-border rounded-lg bg-background-alt">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4">Datos técnicos</h3>
+              <dl class="space-y-3">
+                {diametro && (
+                  <div>
+                    <dt class="text-xs text-text-muted uppercase tracking-wide">Diámetro</dt>
+                    <dd class="font-mono font-semibold text-text">{diametro}</dd>
+                  </div>
+                )}
+                {longitud && (
+                  <div>
+                    <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
+                    <dd class="font-mono font-semibold text-text">{longitud}</dd>
+                  </div>
+                )}
+                {ubicacion && (
+                  <div>
+                    <dt class="text-xs text-text-muted uppercase tracking-wide">Ubicación</dt>
+                    <dd class="font-semibold text-text">{ubicacion}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
+
+          {cliente && (
+            <div class="p-5 border border-border rounded-lg bg-surface">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2">Cliente</h3>
+              <p class="text-sm text-text font-semibold">{cliente}</p>
+            </div>
+          )}
+
+          {normas && normas.length > 0 && (
+            <div class="p-5 border border-border rounded-lg bg-surface">
+              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Normas aplicadas</h3>
+              <div class="flex flex-wrap gap-2">
+                {normas.map((n: string) => (
+                  <Badge variant="muted">{n}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="p-5 bg-primary rounded-lg text-white">
+            <p class="font-semibold text-sm mb-2">¿Proyecto similar?</p>
+            <p class="text-white/80 text-xs mb-4 leading-relaxed">Cuéntenos su requerimiento. Evaluamos cada proyecto con precisión técnica.</p>
+            <Button href="/contacto" variant="secondary" class="w-full justify-center !text-white !border-white/60 hover:!bg-white/10">
+              Contactar
+            </Button>
+          </div>
+
+          <div>
+            <a href={servicioHref[categoria] ?? '/servicios'} class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast">
+              ← Ver servicio relacionado: {categoriaLabels[categoria]}
+            </a>
+          </div>
+        </aside>
+      </div>
+
+      <div class="mt-12 pt-8 border-t border-border">
+        <Button href="/proyectos" variant="secondary">← Volver a proyectos</Button>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

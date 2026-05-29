@@ -1,0 +1,99 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Section from '../components/ui/Section.astro';
+import Container from '../components/ui/Container.astro';
+import Eyebrow from '../components/ui/Eyebrow.astro';
+import Button from '../components/ui/Button.astro';
+import { getEntry } from 'astro:content';
+
+const clientesEntry = await getEntry('clientes', 'clientes');
+const lista = clientesEntry.data.items;
+
+const sectorLabels: Record<string, string> = {
+  electrica: 'Eléctrica / Hidroeléctrica',
+  construccion: 'Construcción e Ingeniería',
+  minera: 'Minería',
+  sanitaria: 'Sanitaria',
+  publica: 'Sector Público',
+  industrial: 'Industrial',
+};
+
+const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as string[];
+---
+
+<PageLayout
+  title="Clientes"
+  description="Referencias de Hidromont Chile S.A. — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
+>
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <Eyebrow light>Referencias</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        Clientes
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en
+        Hidromont para sus proyectos hidráulicos e hidroeléctricos.
+      </p>
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container>
+      <div class="text-center mb-12">
+        <Eyebrow>Sectores</Eyebrow>
+        <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          Referencias por sector
+        </h2>
+      </div>
+
+      {sectores.map((sector) => {
+        const clientesSector = lista.filter((c) => c.sector === sector);
+        return (
+          <div class="mb-10">
+            <h3 class="font-heading font-semibold text-primary-dark mb-4 pb-2 border-b border-border" style="font-size: var(--font-size-h3);">
+              {sectorLabels[sector] ?? sector}
+            </h3>
+            <div class="flex flex-wrap gap-3">
+              {clientesSector.map((c) => (
+                <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
+                  {c.nombre}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      <!-- Sin sector -->
+      {lista.filter(c => !c.sector).length > 0 && (
+        <div class="mb-10">
+          <h3 class="font-heading font-semibold text-primary-dark mb-4 pb-2 border-b border-border" style="font-size: var(--font-size-h3);">
+            Otros clientes
+          </h3>
+          <div class="flex flex-wrap gap-3">
+            {lista.filter(c => !c.sector).map((c) => (
+              <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text">
+                {c.nombre}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </Container>
+  </Section>
+
+  <Section variant="strong">
+    <Container size="md">
+      <div class="text-center">
+        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          ¿Su empresa puede ser nuestro próximo cliente?
+        </h2>
+        <p class="text-white/70 mb-8">
+          Cuéntenos sobre su proyecto. Evaluamos cada requerimiento con precisión técnica.
+        </p>
+        <Button href="/contacto" size="lg">Solicitar asesoría técnica</Button>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>

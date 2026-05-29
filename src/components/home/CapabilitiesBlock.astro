@@ -1,0 +1,65 @@
+---
+import Eyebrow from '../ui/Eyebrow.astro';
+import Container from '../ui/Container.astro';
+
+interface Capability {
+  icon?: string;
+  title: string;
+  description?: string;
+  value?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  items: Capability[];
+  columns?: 3 | 4;
+  light?: boolean;
+}
+
+const {
+  eyebrow,
+  title,
+  subtitle,
+  items,
+  columns = 4,
+  light = false,
+} = Astro.props;
+
+const gridCols = columns === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4';
+---
+
+<Container>
+  <div class="text-center mb-12">
+    {eyebrow && <Eyebrow light={light}>{eyebrow}</Eyebrow>}
+    <h2 class={`font-heading font-bold mb-4 ${light ? 'text-white' : ''}`} style="font-size: var(--font-size-h2);">
+      {title}
+    </h2>
+    {subtitle && (
+      <p class={`max-w-2xl mx-auto ${light ? 'text-white/70' : 'text-text-muted'}`} style="font-size: var(--font-size-body-lg);">
+        {subtitle}
+      </p>
+    )}
+  </div>
+
+  <div class={`grid ${gridCols} gap-6`}>
+    {items.map((item) => (
+      <div class={`p-6 rounded-lg border ${light ? 'border-white/10 bg-white/5' : 'border-border bg-surface'}`}>
+        {item.value && (
+          <p class="font-mono font-bold text-accent mb-2" style="font-size: var(--font-size-h3);">
+            {item.value}
+          </p>
+        )}
+        <h3 class={`font-heading font-semibold mb-2 ${light ? 'text-white' : 'text-primary-dark'}`} style="font-size: 1.1rem;">
+          {item.title}
+        </h3>
+        {item.description && (
+          <p class={`text-sm leading-relaxed ${light ? 'text-white/60' : 'text-text-muted'}`}>
+            {item.description}
+          </p>
+        )}
+      </div>
+    ))}
+  </div>
+</Container>

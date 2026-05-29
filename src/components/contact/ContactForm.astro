@@ -1,0 +1,135 @@
+---
+const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
+const redirectTo = '/contacto/gracias';
+
+const servicios = [
+  'Tuberías Forzadas y Blindajes',
+  'Compuertas',
+  'Válvulas Hidráulicas',
+  'Turbinas Hidráulicas',
+  'Limpiarrejas',
+  'Montajes y Fabricaciones Especiales',
+  'Otro',
+];
+---
+
+<form
+  action="https://api.web3forms.com/submit"
+  method="POST"
+  class="space-y-6"
+  novalidate
+>
+  <!-- Web3Forms config -->
+  <input type="hidden" name="access_key" value={accessKey} />
+  <input type="hidden" name="subject" value="Nuevo contacto desde hidromont.cl" />
+  <input type="hidden" name="from_name" value="Sitio web Hidromont Chile" />
+  <input type="hidden" name="redirect" value={new URL(redirectTo, 'https://hidromont.cl').toString()} />
+  <!-- Honeypot anti-spam -->
+  <input type="checkbox" name="botcheck" class="sr-only" tabindex="-1" autocomplete="off" />
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <!-- Nombre -->
+    <div>
+      <label for="nombre" class="block text-sm font-semibold text-text mb-1.5">
+        Nombre <span class="text-error" aria-hidden="true">*</span>
+      </label>
+      <input
+        id="nombre"
+        name="nombre"
+        type="text"
+        required
+        minlength="2"
+        autocomplete="name"
+        placeholder="Su nombre completo"
+        class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      />
+    </div>
+
+    <!-- Empresa -->
+    <div>
+      <label for="empresa" class="block text-sm font-semibold text-text mb-1.5">Empresa</label>
+      <input
+        id="empresa"
+        name="empresa"
+        type="text"
+        autocomplete="organization"
+        placeholder="Nombre de su empresa"
+        class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      />
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label for="email" class="block text-sm font-semibold text-text mb-1.5">
+        Correo electrónico <span class="text-error" aria-hidden="true">*</span>
+      </label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="correo@empresa.com"
+        class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      />
+    </div>
+
+    <!-- Teléfono -->
+    <div>
+      <label for="telefono" class="block text-sm font-semibold text-text mb-1.5">Teléfono</label>
+      <input
+        id="telefono"
+        name="telefono"
+        type="tel"
+        autocomplete="tel"
+        placeholder="+56 9 1234 5678"
+        class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      />
+    </div>
+  </div>
+
+  <!-- Servicio -->
+  <div>
+    <label for="servicio" class="block text-sm font-semibold text-text mb-1.5">Servicio requerido</label>
+    <select
+      id="servicio"
+      name="servicio"
+      class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+    >
+      <option value="">Seleccione un servicio (opcional)</option>
+      {servicios.map((s) => <option value={s}>{s}</option>)}
+    </select>
+  </div>
+
+  <!-- Mensaje -->
+  <div>
+    <label for="mensaje" class="block text-sm font-semibold text-text mb-1.5">
+      Mensaje <span class="text-error" aria-hidden="true">*</span>
+    </label>
+    <textarea
+      id="mensaje"
+      name="mensaje"
+      required
+      rows={5}
+      maxlength={2000}
+      placeholder="Describa su proyecto, requerimiento o consulta técnica."
+      class="w-full border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+    ></textarea>
+  </div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <button
+      type="submit"
+      class="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-md border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30"
+    >
+      Enviar consulta
+      <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 8h12M10 4l4 4-4 4" />
+      </svg>
+    </button>
+    <p class="text-xs text-text-muted">
+      Los campos marcados con <span class="text-error" aria-hidden="true">*</span> son obligatorios.
+      Te contactaremos a la brevedad.
+    </p>
+  </div>
+</form>

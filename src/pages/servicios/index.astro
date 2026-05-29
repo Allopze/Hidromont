@@ -1,0 +1,90 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Container from '../../components/ui/Container.astro';
+import Eyebrow from '../../components/ui/Eyebrow.astro';
+import Button from '../../components/ui/Button.astro';
+import ServiceCard from '../../components/services/ServiceCard.astro';
+import { getCollection } from 'astro:content';
+
+const servicios = await getCollection('servicios');
+servicios.sort((a, b) => a.data.orden - b.data.orden);
+---
+
+<PageLayout
+  title="Servicios"
+  description="Servicios hidromecánicos de Hidromont Chile S.A.: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC llave en mano."
+>
+  <section class="bg-background-strong text-white py-16 md:py-24">
+    <Container>
+      <Eyebrow light>Servicios</Eyebrow>
+      <h1 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h1);">
+        Soluciones hidromecánicas llave en mano
+      </h1>
+      <p class="text-white/70 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor de los proyectos
+        hidromecánicos: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.
+      </p>
+    </Container>
+  </section>
+
+  <Section variant="default">
+    <Container>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {servicios.map((s) => (
+          <ServiceCard
+            title={s.data.titulo}
+            description={s.data.resumen}
+            href={`/servicios/${s.slug}`}
+            icon={s.data.icono}
+            bullets={s.data.tipos?.slice(0, 4)}
+          />
+        ))}
+      </div>
+    </Container>
+  </Section>
+
+  <Section variant="alt">
+    <Container size="md">
+      <div class="text-center">
+        <Eyebrow>Metodología</Eyebrow>
+        <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          Actividades transversales
+        </h2>
+        <p class="text-text-muted mb-8" style="font-size: var(--font-size-body-lg);">
+          Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza
+          calidad, trazabilidad y seguridad en cada etapa del proyecto.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
+          {[
+            { title: 'Desmontajes', desc: 'Desmontaje controlado de equipos para reparación o sustitución.' },
+            { title: 'Fabricación', desc: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.' },
+            { title: 'Reparaciones', desc: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.' },
+            { title: 'Rehabilitación de turbinas', desc: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.' },
+            { title: 'Montajes', desc: 'Procedimientos específicos con análisis de medios y tiempos.' },
+            { title: 'Obturaciones', desc: 'Diseño, fabricación y montaje de obturaciones especiales.' },
+          ].map((item) => (
+            <div class="p-4 bg-surface border border-border rounded-md">
+              <h3 class="font-semibold text-primary-dark text-sm mb-1">{item.title}</h3>
+              <p class="text-xs text-text-muted leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Container>
+  </Section>
+
+  <Section variant="strong">
+    <Container size="md">
+      <div class="text-center">
+        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          ¿Necesita un servicio específico?
+        </h2>
+        <p class="text-white/70 mb-8">
+          Cuéntenos su requerimiento. Evaluamos cada proyecto con precisión técnica.
+        </p>
+        <Button href="/contacto" size="lg">Solicitar cotización</Button>
+      </div>
+    </Container>
+  </Section>
+</PageLayout>
