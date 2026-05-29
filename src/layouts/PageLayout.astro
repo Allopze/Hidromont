@@ -11,13 +11,14 @@ interface Props {
   jsonLd?: object | object[];
   noindex?: boolean;
   currentPath?: string;
+  headerOverlay?: boolean;
 }
 
-const { currentPath, ...baseProps } = Astro.props;
+const { currentPath, headerOverlay = false, ...baseProps } = Astro.props;
 ---
 
 <BaseLayout {...baseProps}>
-  <Header currentPath={currentPath ?? Astro.url.pathname} />
+  <Header currentPath={currentPath ?? Astro.url.pathname} overlay={headerOverlay} />
   <main id="main">
     <slot />
   </main>
