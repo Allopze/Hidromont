@@ -29,11 +29,37 @@ const { servicio } = Astro.props;
 const { titulo, resumen, tipos, aplicaciones, normas, procesos } = servicio.data;
 const { Content } = await servicio.render();
 const heroImg = serviceImages[servicio.slug];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: titulo,
+    description: resumen,
+    provider: {
+      '@type': 'Organization',
+      name: 'Hidromont Chile S.A.',
+      url: 'https://hidromont.cl',
+    },
+    areaServed: 'CL',
+    serviceType: titulo,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://hidromont.cl/' },
+      { '@type': 'ListItem', position: 2, name: 'Servicios', item: 'https://hidromont.cl/servicios/' },
+      { '@type': 'ListItem', position: 3, name: titulo },
+    ],
+  },
+];
 ---
 
 <PageLayout
   title={titulo}
   description={resumen}
+  jsonLd={jsonLd}
 >
   <PageHero
     eyebrow="Servicio"

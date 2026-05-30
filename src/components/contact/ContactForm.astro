@@ -14,6 +14,7 @@ const servicios = [
 ---
 
 <form
+  id="contacto-form"
   action="https://api.web3forms.com/submit"
   method="POST"
   class="space-y-6"
@@ -23,7 +24,7 @@ const servicios = [
   <input type="hidden" name="access_key" value={accessKey} />
   <input type="hidden" name="subject" value="Nuevo contacto desde hidromont.cl" />
   <input type="hidden" name="from_name" value="Sitio web Hidromont Chile" />
-  <input type="hidden" name="redirect" value={new URL(redirectTo, 'https://hidromont.cl').toString()} />
+  <input type="hidden" name="redirect" value={new URL(redirectTo, Astro.site ?? 'https://hidromont.cl').toString()} />
   <!-- Honeypot anti-spam -->
   <input type="checkbox" name="botcheck" class="sr-only" tabindex="-1" autocomplete="off" />
 
@@ -41,8 +42,10 @@ const servicios = [
         minlength="2"
         autocomplete="name"
         placeholder="Su nombre completo"
+        aria-describedby="nombre-error"
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
+      <p id="nombre-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
     </div>
 
     <!-- Empresa -->
@@ -70,8 +73,10 @@ const servicios = [
         required
         autocomplete="email"
         placeholder="correo@empresa.com"
+        aria-describedby="email-error"
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
+      <p id="email-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
     </div>
 
     <!-- Teléfono -->
@@ -113,8 +118,10 @@ const servicios = [
       rows={5}
       maxlength={2000}
       placeholder="Describa su proyecto o consulta técnica."
+      aria-describedby="mensaje-error"
       class="w-full border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     ></textarea>
+    <p id="mensaje-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
   </div>
 
   <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -133,3 +140,65 @@ const servicios = [
     </p>
   </div>
 </form>
+
+<script>
+const form = document.getElementById('contacto-form') as HTMLFormElement | null;
+
+const MENSAJES: Record<string, { valueMissing: string; typeMismatch?: string; tooShort?: string }> = {
+  nombre:  { valueMissing: 'Por favor ingrese su nombre.', tooShort: 'El nombre debe tener al menos 2 caracteres.' },
+  email:   { valueMissing: 'Por favor ingrese su correo electrónico.', typeMismatch: 'Ingrese un correo válido (ej. correo@empresa.com).' },
+  mensaje: { valueMissing: 'Por favor escriba su consulta o mensaje.' },
+};
+
+function validateField(field: HTMLInputElement | HTMLTextAreaElement): boolean {
+  const errorEl = document.getElementById(`${field.id}-error`);
+  if (!errorEl) return field.validity.valid;
+
+  let msg = '';
+  if (field.validity.valueMissing)  msg = MENSAJES[field.id]?.valueMissing ?? 'Campo requerido.';
+  else if (field.validity.typeMismatch) msg = MENSAJES[field.id]?.typeMismatch ?? 'Valor inválido.';
+  else if (field.validity.tooShort) msg = MENSAJES[field.id]?.tooShort ?? 'Valor demasiado corto.';
+
+  const invalid = !!msg;
+  field.setAttribute('aria-invalid', String(invalid));
+  errorEl.textContent = msg;
+  errorEl.classList.toggle('hidden', !invalid);
+  if (invalid) {
+    field.classList.add('border-error', 'focus:border-error');
+    field.classList.remove('border-border');
+  } else {
+    field.classList.remove('border-error', 'focus:border-error');
+    field.classList.add('border-border');
+  }
+  return !invalid;
+}
+
+if (form) {
+  const requiredFields = Array.from(
+    form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')
+  );
+
+  requiredFields.forEach((field) => {
+    field.addEventListener('blur', () => validateField(field));
+    field.addEventListener('input', () => {
+      if (field.getAttribute('aria-invalid') === 'true') validateField(field);
+    });
+  });
+
+  form.addEventListener('submit', (e) => {
+    let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
+    let allValid = true;
+    requiredFields.forEach((field) => {
+      const valid = validateField(field);
+      if (!valid) {
+        allValid = false;
+        if (!firstInvalid) firstInvalid = field;
+      }
+    });
+    if (!allValid) {
+      e.preventDefault();
+      (firstInvalid as HTMLElement | null)?.focus();
+    }
+  });
+}
+</script>
