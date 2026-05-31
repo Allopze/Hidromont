@@ -1,6 +1,6 @@
 ---
 interface Props {
-  variant?: 'primary' | 'secondary' | 'link';
+  variant?: 'primary' | 'secondary' | 'secondary-light' | 'link';
   href?: string;
   type?: 'button' | 'submit' | 'reset';
   size?: 'md' | 'lg';
@@ -32,6 +32,8 @@ const variants = {
     'bg-primary text-white border border-primary hover:bg-primary-dark hover:border-primary-dark hover:text-white focus-visible:outline-primary/30 disabled:bg-border disabled:border-border disabled:text-text-muted disabled:cursor-not-allowed',
   secondary:
     'bg-transparent text-primary border border-primary hover:bg-primary-light hover:text-primary-dark focus-visible:outline-primary/30 disabled:text-text-muted disabled:border-border disabled:cursor-not-allowed',
+  'secondary-light':
+    'bg-transparent text-white border border-white/60 hover:bg-white/10 focus-visible:outline-white/30 disabled:text-white/40 disabled:border-white/20 disabled:cursor-not-allowed',
   link: 'bg-transparent text-primary underline underline-offset-4 decoration-1 hover:text-primary-dark p-0 min-h-0 rounded-none',
 };
 

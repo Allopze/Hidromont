@@ -119,6 +119,14 @@ const PNG_TO_CONVERT = [
   'fotos/curadas/empresa-taller.png',
   'fotos/curadas/proyecto-tuberia-montana.png',
   'fotos/curadas/taller-aereo.png',
+  // Nuevas fotografías profesionales (mayo 2026)
+  'fotos/curadas/taller-nave.png',
+  'fotos/curadas/fabricacion-tuberias-taller.png',
+  'fotos/curadas/tuberia-forzada-tunel.png',
+  'fotos/curadas/valvula-tuberia-tunel.png',
+  'fotos/curadas/bifurcacion-t-taller.png',
+  'fotos/curadas/bifurcacion-primer-taller.png',
+  'fotos/curadas/montaje-vertical-caverna.png',
 ];
 
 async function convertPngsToWebp() {

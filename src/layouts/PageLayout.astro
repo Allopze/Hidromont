@@ -18,6 +18,13 @@ const { currentPath, headerOverlay = false, ...baseProps } = Astro.props;
 ---
 
 <BaseLayout {...baseProps}>
+  {/* Skip-to-content: visible on focus for keyboard / screen reader users */}
+  <a
+    href="#main"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:font-semibold focus:shadow-md focus:outline focus:outline-[3px] focus:outline-primary/30"
+  >
+    Ir al contenido principal
+  </a>
   <Header currentPath={currentPath ?? Astro.url.pathname} overlay={headerOverlay} />
   <main id="main">
     <slot />

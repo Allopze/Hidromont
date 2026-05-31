@@ -9,9 +9,9 @@ import { getCollection } from 'astro:content';
 
 // Per-service hero images (curated from project photo library)
 const serviceImages: Record<string, { src: string; alt: string; width: number; height: number }> = {
-  'tuberias-forzadas': { src: '/fotos/curadas/tuberias-forzadas.jpg', alt: 'Tubería forzada instalada en ladera de montaña', width: 600, height: 455 },
+  'tuberias-forzadas': { src: '/fotos/curadas/tuberia-forzada-tunel.webp', alt: 'Tubería forzada de gran diámetro instalada en túnel subterráneo', width: 1849, height: 851 },
   'compuertas':        { src: '/fotos/curadas/compuertas.jpg',        alt: 'Compuerta hidráulica instalada en presa', width: 446, height: 621 },
-  'valvulas':          { src: '/fotos/curadas/valvulas.jpg',           alt: 'Válvula mariposa de gran diámetro en taller', width: 473, height: 473 },
+  'valvulas':          { src: '/fotos/curadas/valvula-tuberia-tunel.webp', alt: 'Válvula instalada sobre tubería forzada en túnel', width: 1448, height: 1086 },
   'turbinas':          { src: '/fotos/curadas/turbinas.jpg',           alt: 'Sala de máquinas con turbinas hidráulicas', width: 474, height: 271 },
   'limpiarrejas':      { src: '/fotos/curadas/limpiarrejas.jpg',       alt: 'Limpiarreja instalada en obra hidroeléctrica', width: 471, height: 314 },
   'otros-montajes':    { src: '/fotos/curadas/otros-montajes.jpg',     alt: 'Montaje de gran componente hidromecánico', width: 471, height: 629 },
@@ -129,7 +129,7 @@ const jsonLd = [
             <p class="text-white/80 text-xs mb-4 leading-relaxed">
               Converse con nuestro equipo técnico sobre las capacidades y experiencia de Hidromont.
             </p>
-            <Button href="/contacto" variant="secondary" class="w-full justify-center !text-white !border-white/60 hover:!bg-white/10">
+            <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
               Contactar
             </Button>
           </div>
@@ -167,7 +167,7 @@ const jsonLd = [
         </h2>
         <div class="flex flex-wrap justify-center gap-4">
           <Button href="/proyectos" size="lg">Ver proyectos</Button>
-          <Button href="/contacto" variant="secondary" size="lg" class="!text-white !border-white/60 hover:!bg-white/10">
+          <Button href="/contacto" variant="secondary-light" size="lg">
             Ponerse en contacto
           </Button>
         </div>

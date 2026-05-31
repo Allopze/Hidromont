@@ -39,6 +39,7 @@ const servicios = [
         name="nombre"
         type="text"
         required
+        aria-required="true"
         minlength="2"
         autocomplete="name"
         placeholder="Su nombre completo"
@@ -71,6 +72,7 @@ const servicios = [
         name="email"
         type="email"
         required
+        aria-required="true"
         autocomplete="email"
         placeholder="correo@empresa.com"
         aria-describedby="email-error"
@@ -115,6 +117,7 @@ const servicios = [
       id="mensaje"
       name="mensaje"
       required
+      aria-required="true"
       rows={5}
       maxlength={2000}
       placeholder="Describa su proyecto o consulta técnica."
