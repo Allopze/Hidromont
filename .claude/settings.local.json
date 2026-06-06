@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sort -k5 -n)",
+      "Bash(npm install *)",
+      "Bash(npx astro *)",
+      "Bash(sed -i '' \"/import { navItems } from '..\\\\/..\\\\/data\\\\/nav';/d\" src/components/layout/Footer.astro)",
+      "Bash(sed -i '' \"/import Badge from '..\\\\/components\\\\/ui\\\\/Badge.astro';/d\" src/pages/clientes.astro)",
+      "Bash(sed -i '' \"s/import { getCollection, getEntry } from 'astro:content';/import { getCollection } from 'astro:content';/\" src/pages/proyectos/\\\\[slug\\\\].astro)",
+      "Bash(sed -i '' \"/import Eyebrow from '..\\\\/..\\\\/components\\\\/ui\\\\/Eyebrow.astro';/d\" src/pages/proyectos/\\\\[slug\\\\].astro)",
+      "Bash(node -e \"const p=require\\('./node_modules/@astrojs/sitemap/package.json'\\); console.log\\(JSON.stringify\\(p.peerDependencies,null,2\\)\\)\")",
+      "Bash(npm list *)",
+      "Bash(curl -s http://localhost:4321/)",
+      "Bash(curl -s http://localhost:4321/servicios/)",
+      "Bash(curl -s http://localhost:4321/contacto/)",
+      "Bash(curl -s http://localhost:4321/proyectos/)",
+      "Bash(curl -s http://localhost:4321/proyectos/ch-los-condores/)"
+    ]
+  }
+}
