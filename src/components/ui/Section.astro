@@ -1,5 +1,4 @@
 ---
-// @ts-ignore - Props interface is used implicitly by Astro for Astro.props typing
 interface Props {
   variant?: 'default' | 'alt' | 'strong';
   padding?: 'normal' | 'tight' | 'hero';
@@ -14,7 +13,7 @@ const {
   id,
   class: className = '',
   as: Tag = 'section',
-} = Astro.props;
+} = Astro.props as Props;
 
 function getVariantClass(v: string | undefined) {
   if (v === 'alt') return 'bg-background-alt';

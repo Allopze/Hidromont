@@ -19,6 +19,7 @@ export async function getStaticPaths() {
 const { proyecto } = Astro.props;
 const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas } = proyecto.data;
 const { Content } = await proyecto.render();
+const projectImageEntry = `project-image.${proyecto.slug}`;
 const heroImg = projectImages[proyecto.slug];
 
 const categoriaLabels: Record<string, string> = {
@@ -51,6 +52,11 @@ const servicioHref: Record<string, string> = {
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
     breadcrumbs={[{ label: 'Proyectos', href: '/proyectos' }, { label: nombre }]}
+    cmsEntry={`proyectos.${proyecto.slug}`}
+    cmsEyebrowField={false}
+    cmsTitleField="nombre"
+    cmsSubtitleField={false}
+    cmsImageEntry={projectImageEntry}
   />
 
   <Section variant="default">

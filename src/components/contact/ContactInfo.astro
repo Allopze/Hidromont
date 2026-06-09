@@ -1,12 +1,14 @@
 ---
 import { company } from '../../data/company';
+import EditableText from '../cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 ---
 
 <div class="space-y-6">
   <div>
-    <h3 class="font-heading font-semibold text-primary-dark mb-4" style="font-size: var(--font-size-h4);">
-      Información de contacto
-    </h3>
+    <EditableText as="h3" entry="contact.info" field="title" class="font-heading font-semibold text-primary-dark mb-4" style="font-size: var(--font-size-h4);">
+      {getCmsText('contact.info', 'title', 'Información de contacto')}
+    </EditableText>
     <div class="space-y-4">
       <div class="flex gap-3">
         <div class="shrink-0 mt-0.5 text-primary">
@@ -15,10 +17,12 @@ import { company } from '../../data/company';
           </svg>
         </div>
         <div>
-          <p class="text-sm font-semibold text-text">Dirección</p>
-          <p class="text-sm text-text-muted">{company.domicilio}</p>
-          <p class="text-sm text-text-muted">{company.ciudad}</p>
-          <p class="text-xs text-text-muted mt-0.5">{company.casillaPostal}</p>
+          <EditableText as="p" entry="contact.info" field="addressLabel" class="text-sm font-semibold text-text">
+            {getCmsText('contact.info', 'addressLabel', 'Dirección')}
+          </EditableText>
+          <EditableText as="p" entry="site.company" field="domicilio" class="text-sm text-text-muted">{company.domicilio}</EditableText>
+          <EditableText as="p" entry="site.company" field="ciudad" class="text-sm text-text-muted">{company.ciudad}</EditableText>
+          <EditableText as="p" entry="site.company" field="casillaPostal" class="text-xs text-text-muted mt-0.5">{company.casillaPostal}</EditableText>
         </div>
       </div>
 
@@ -29,9 +33,11 @@ import { company } from '../../data/company';
           </svg>
         </div>
         <div>
-          <p class="text-sm font-semibold text-text">Teléfono</p>
+          <EditableText as="p" entry="contact.info" field="phoneLabel" class="text-sm font-semibold text-text">
+            {getCmsText('contact.info', 'phoneLabel', 'Teléfono')}
+          </EditableText>
           <a href={`tel:${company.telefono.replace(/\s/g, '')}`} class="text-sm text-primary hover:text-primary-dark">
-            {company.telefono}
+            <EditableText entry="site.company" field="telefono">{company.telefono}</EditableText>
           </a>
         </div>
       </div>
@@ -43,9 +49,11 @@ import { company } from '../../data/company';
           </svg>
         </div>
         <div>
-          <p class="text-sm font-semibold text-text">Correo electrónico</p>
+          <EditableText as="p" entry="contact.info" field="emailLabel" class="text-sm font-semibold text-text">
+            {getCmsText('contact.info', 'emailLabel', 'Correo electrónico')}
+          </EditableText>
           <a href={`mailto:${company.email}`} class="text-sm text-primary hover:text-primary-dark">
-            {company.email}
+            <EditableText entry="site.company" field="email">{company.email}</EditableText>
           </a>
         </div>
       </div>
@@ -53,9 +61,8 @@ import { company } from '../../data/company';
   </div>
 
   <div class="p-5 bg-primary-light rounded-lg border border-border">
-    <p class="text-sm text-text-muted leading-relaxed">
-      Envíenos sus antecedentes y nuestro equipo técnico responderá a la brevedad.
-      Puede adjuntar planos, fichas técnicas o cualquier documento de referencia.
-    </p>
+    <EditableText as="p" entry="contact.info" field="note" type="textarea" class="text-sm text-text-muted leading-relaxed">
+      {getCmsText('contact.info', 'note', 'Envíenos sus antecedentes y nuestro equipo técnico responderá a la brevedad. Puede adjuntar planos, fichas técnicas o cualquier documento de referencia.')}
+    </EditableText>
   </div>
 </div>

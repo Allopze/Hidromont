@@ -1,3 +1,5 @@
+import { getCmsImage } from './cms';
+
 export interface ProjectImageData {
   src: string;
   alt: string;
@@ -5,7 +7,7 @@ export interface ProjectImageData {
   height: number;
 }
 
-export const projectImages: Record<string, ProjectImageData> = {
+const projectImageFallbacks: Record<string, ProjectImageData> = {
   'ch-los-condores': {
     src: '/fotos/curadas/montaje-vertical-caverna.webp',
     alt: 'Montaje vertical de tubería forzada en caverna subterránea',
@@ -49,3 +51,10 @@ export const projectImages: Record<string, ProjectImageData> = {
     height: 1104,
   },
 };
+
+export const projectImages: Record<string, ProjectImageData> = Object.fromEntries(
+  Object.entries(projectImageFallbacks).map(([slug, fallback]) => [
+    slug,
+    getCmsImage(`project-image.${slug}`, fallback),
+  ])
+);

@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import ServiceCard from '../../components/services/ServiceCard.astro';
 import { getCollection } from 'astro:content';
+import { getCmsText } from '../../data/cms';
 
 const servicios = await getCollection('servicios');
 servicios.sort((a, b) => a.data.orden - b.data.orden);
@@ -17,14 +18,15 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   description="Servicios hidromecánicos de Hidromont Chile S.A.: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC llave en mano."
 >
   <PageHero
-    eyebrow="Servicios"
-    title="Soluciones hidromecánicas llave en mano"
-    subtitle="Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales."
-    imageSrc="/fotos/curadas/otros-montajes.jpg"
-    imageAlt="Fabricación de grandes equipos hidromecánicos en taller"
+    eyebrow={getCmsText('servicios.index.hero', 'eyebrow', 'Servicios')}
+    title={getCmsText('servicios.index.hero', 'title', 'Soluciones hidromecánicas llave en mano')}
+    subtitle={getCmsText('servicios.index.hero', 'subtitle', 'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.')}
+    imageSrc={getCmsText('servicios.index.hero', 'image', '/fotos/curadas/otros-montajes.jpg')}
+    imageAlt={getCmsText('servicios.index.hero', 'imageAlt', 'Fabricación de grandes equipos hidromecánicos en taller')}
     imageWidth={471}
     imageHeight={629}
     breadcrumbs={[{ label: 'Servicios' }]}
+    cmsEntry="servicios.index.hero"
   />
 
   <Section variant="default">

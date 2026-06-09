@@ -9,7 +9,10 @@ import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
+import EditableImage from '../components/cms/EditableImage.astro';
+import EditableText from '../components/cms/EditableText.astro';
 import { getCollection, getEntry } from 'astro:content';
+import { getCmsText } from '../data/cms';
 
 const servicios = await getCollection('servicios');
 servicios.sort((a, b) => a.data.orden - b.data.orden);
@@ -56,23 +59,25 @@ const propuestaValor = [
 >
   <!-- Hero -->
   <Hero
-    title="Ingeniería, fabricación y montaje de equipos hidromecánicos"
-    subtitle="Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983."
-    ctaPrimary={{ label: 'Conocer nuestros servicios', href: '/servicios' }}
-    ctaSecondary={{ label: 'Ver proyectos', href: '/proyectos' }}
+    eyebrow={getCmsText('home.hero', 'eyebrow', 'Especialistas en equipos hidromecánicos')}
+    title={getCmsText('home.hero', 'title', 'Ingeniería, fabricación y montaje de equipos hidromecánicos')}
+    subtitle={getCmsText('home.hero', 'subtitle', 'Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983.')}
+    ctaPrimary={{ label: getCmsText('home.hero', 'primaryLabel', 'Conocer nuestros servicios'), href: '/servicios' }}
+    ctaSecondary={{ label: getCmsText('home.hero', 'secondaryLabel', 'Ver proyectos'), href: '/proyectos' }}
+    cmsEntry="home.hero"
   />
 
   <!-- Servicios principales -->
   <Section variant="default" id="servicios">
     <Container>
       <div class="text-center mb-12">
-        <Eyebrow>Servicios</Eyebrow>
-        <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-          Soluciones hidromecánicas llave en mano
-        </h2>
-        <p class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-body-lg);">
-          Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.
-        </p>
+        <Eyebrow><EditableText entry="home.services" field="eyebrow">Servicios</EditableText></Eyebrow>
+        <EditableText as="h2" entry="home.services" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('home.services', 'title', 'Soluciones hidromecánicas llave en mano')}
+        </EditableText>
+        <EditableText as="p" entry="home.services" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-body-lg);">
+          {getCmsText('home.services', 'subtitle', 'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.')}
+        </EditableText>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
         {servicios.map((s) => (
@@ -91,11 +96,12 @@ const propuestaValor = [
   <!-- Propuesta de valor / capacidades -->
   <Section variant="alt">
     <CapabilitiesBlock
-      eyebrow="Por qué elegirnos"
-      title="Capacidad técnica y experiencia comprobada"
-      subtitle="Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales."
+      eyebrow={getCmsText('home.capabilities', 'eyebrow', 'Por qué elegirnos')}
+      title={getCmsText('home.capabilities', 'title', 'Capacidad técnica y experiencia comprobada')}
+      subtitle={getCmsText('home.capabilities', 'subtitle', 'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.')}
       items={propuestaValor}
       columns={4}
+      cmsEntry="home.capabilities"
     />
   </Section>
 
@@ -109,9 +115,12 @@ const propuestaValor = [
             style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2);"
             aria-hidden="true"
           ></div>
-          <img
-            src="/fotos/curadas/fabricacion-tuberias-taller.webp"
-            alt="Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont"
+          <EditableImage
+            entry="home.installations"
+            field="image"
+            altField="imageAlt"
+            src={getCmsText('home.installations', 'image', '/fotos/curadas/fabricacion-tuberias-taller.webp')}
+            alt={getCmsText('home.installations', 'imageAlt', 'Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont')}
             width="1834"
             height="858"
             loading="lazy"
@@ -123,12 +132,13 @@ const propuestaValor = [
       </div>
     </Container>
     <CapabilitiesBlock
-      eyebrow="Instalaciones y medios productivos"
-      title="Taller propio en Los Ángeles, Biobío"
-      subtitle="Infraestructura especializada para responder a proyectos complejos con rapidez y precisión."
+      eyebrow={getCmsText('home.installations', 'eyebrow', 'Instalaciones y medios productivos')}
+      title={getCmsText('home.installations', 'title', 'Taller propio en Los Ángeles, Biobío')}
+      subtitle={getCmsText('home.installations', 'subtitle', 'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.')}
       items={instalaciones}
       columns={4}
       light
+      cmsEntry="home.installations"
     />
   </Section>
 
@@ -138,12 +148,12 @@ const propuestaValor = [
       <Container>
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
-            <Eyebrow>Experiencia</Eyebrow>
-            <h2 class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
-              Proyectos destacados
-            </h2>
+            <Eyebrow><EditableText entry="home.projects" field="eyebrow">Experiencia</EditableText></Eyebrow>
+            <EditableText as="h2" entry="home.projects" field="title" class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
+              {getCmsText('home.projects', 'title', 'Proyectos destacados')}
+            </EditableText>
           </div>
-          <Button href="/proyectos" variant="secondary">Ver todos los proyectos</Button>
+          <Button href="/proyectos" variant="secondary">{getCmsText('home.projects', 'buttonLabel', 'Ver todos los proyectos')}</Button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
           {proyectosDestacados.slice(0, 6).map((p) => (
@@ -163,18 +173,17 @@ const propuestaValor = [
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <Eyebrow light>Contáctenos</Eyebrow>
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Quiere saber más sobre nuestra empresa?
-        </h2>
-        <p class="text-white/70 mb-8" style="font-size: var(--font-size-body-lg);">
-          Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia
-          en proyectos hidromecánicos nacionales e internacionales.
-        </p>
+        <Eyebrow light><EditableText entry="home.cta" field="eyebrow">Contáctenos</EditableText></Eyebrow>
+        <EditableText as="h2" entry="home.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('home.cta', 'title', '¿Quiere saber más sobre nuestra empresa?')}
+        </EditableText>
+        <EditableText as="p" entry="home.cta" field="subtitle" type="textarea" class="text-white/70 mb-8" style="font-size: var(--font-size-body-lg);">
+          {getCmsText('home.cta', 'subtitle', 'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.')}
+        </EditableText>
         <div class="flex flex-wrap justify-center gap-4">
-          <Button href="/contacto" size="lg">Ponerse en contacto</Button>
+          <Button href="/contacto" size="lg">{getCmsText('home.cta', 'primaryLabel', 'Ponerse en contacto')}</Button>
           <Button href="/empresa" variant="secondary-light" size="lg">
-            Conocer la empresa
+            {getCmsText('home.cta', 'secondaryLabel', 'Conocer la empresa')}
           </Button>
         </div>
       </div>

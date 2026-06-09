@@ -1,0 +1,52 @@
+---
+interface Props {
+  entry?: string;
+  field: string;
+  altField?: string;
+  src: string;
+  alt: string;
+  width?: string | number;
+  height?: string | number;
+  loading?: 'eager' | 'lazy';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  decoding?: 'async' | 'auto' | 'sync';
+  class?: string;
+  style?: string;
+}
+
+const {
+  entry,
+  field,
+  altField,
+  src,
+  alt,
+  width,
+  height,
+  loading = 'lazy',
+  fetchpriority,
+  decoding = 'async',
+  class: className,
+  style,
+} = Astro.props;
+const editableAttrs = import.meta.env.DEV && entry
+  ? {
+      'data-cms-entry': entry,
+      'data-cms-field': field,
+      'data-cms-alt-field': altField,
+      'data-cms-type': 'image',
+    }
+  : {};
+---
+
+<img
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={loading}
+  fetchpriority={fetchpriority}
+  decoding={decoding}
+  class={className}
+  style={style}
+  {...editableAttrs}
+/>

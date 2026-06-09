@@ -1,8 +1,11 @@
 ---
+import EditableText from '../cms/EditableText.astro';
+import { getCmsText, getCmsValue } from '../../data/cms';
+
 const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
 const redirectTo = '/contacto/gracias';
 
-const servicios = [
+const servicios = getCmsValue<string[]>('contact.form', 'services', [
   'Tuberías Forzadas y Blindajes',
   'Compuertas',
   'Válvulas Hidráulicas',
@@ -10,7 +13,26 @@ const servicios = [
   'Limpiarrejas',
   'Montajes y Fabricaciones Especiales',
   'Otro',
-];
+]);
+
+const validationMessages = {
+  nombre: {
+    valueMissing: getCmsText('contact.form', 'nameRequiredError', 'Por favor ingrese su nombre.'),
+    tooShort: getCmsText('contact.form', 'nameTooShortError', 'El nombre debe tener al menos 2 caracteres.'),
+  },
+  email: {
+    valueMissing: getCmsText('contact.form', 'emailRequiredError', 'Por favor ingrese su correo electrónico.'),
+    typeMismatch: getCmsText('contact.form', 'emailInvalidError', 'Ingrese un correo válido (ej. correo@empresa.com).'),
+  },
+  mensaje: {
+    valueMissing: getCmsText('contact.form', 'messageRequiredError', 'Por favor escriba su consulta o mensaje.'),
+  },
+  generic: {
+    valueMissing: getCmsText('contact.form', 'genericRequiredError', 'Campo requerido.'),
+    typeMismatch: getCmsText('contact.form', 'genericInvalidError', 'Valor inválido.'),
+    tooShort: getCmsText('contact.form', 'genericTooShortError', 'Valor demasiado corto.'),
+  },
+};
 ---
 
 <form
@@ -22,8 +44,8 @@ const servicios = [
 >
   <!-- Web3Forms config -->
   <input type="hidden" name="access_key" value={accessKey} />
-  <input type="hidden" name="subject" value="Nuevo contacto desde hidromont.cl" />
-  <input type="hidden" name="from_name" value="Sitio web Hidromont Chile" />
+  <input type="hidden" name="subject" value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')} />
+  <input type="hidden" name="from_name" value={getCmsText('contact.form', 'fromName', 'Sitio web Hidromont Chile')} />
   <input type="hidden" name="redirect" value={new URL(redirectTo, Astro.site ?? 'https://hidromont.cl').toString()} />
   <!-- Honeypot anti-spam -->
   <input type="checkbox" name="botcheck" class="sr-only" tabindex="-1" autocomplete="off" />
@@ -32,7 +54,8 @@ const servicios = [
     <!-- Nombre -->
     <div>
       <label for="nombre" class="block text-sm font-semibold text-text mb-1.5">
-        Nombre <span class="text-error" aria-hidden="true">*</span>
+        <EditableText entry="contact.form" field="nameLabel">{getCmsText('contact.form', 'nameLabel', 'Nombre')}</EditableText>
+        <span class="text-error" aria-hidden="true">*</span>
       </label>
       <input
         id="nombre"
@@ -42,7 +65,7 @@ const servicios = [
         aria-required="true"
         minlength="2"
         autocomplete="name"
-        placeholder="Su nombre completo"
+        placeholder={getCmsText('contact.form', 'namePlaceholder', 'Su nombre completo')}
         aria-describedby="nombre-error"
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
@@ -51,13 +74,15 @@ const servicios = [
 
     <!-- Empresa -->
     <div>
-      <label for="empresa" class="block text-sm font-semibold text-text mb-1.5">Empresa</label>
+      <label for="empresa" class="block text-sm font-semibold text-text mb-1.5">
+        <EditableText entry="contact.form" field="companyLabel">{getCmsText('contact.form', 'companyLabel', 'Empresa')}</EditableText>
+      </label>
       <input
         id="empresa"
         name="empresa"
         type="text"
         autocomplete="organization"
-        placeholder="Nombre de su empresa"
+        placeholder={getCmsText('contact.form', 'companyPlaceholder', 'Nombre de su empresa')}
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
     </div>
@@ -65,7 +90,8 @@ const servicios = [
     <!-- Email -->
     <div>
       <label for="email" class="block text-sm font-semibold text-text mb-1.5">
-        Correo electrónico <span class="text-error" aria-hidden="true">*</span>
+        <EditableText entry="contact.form" field="emailLabel">{getCmsText('contact.form', 'emailLabel', 'Correo electrónico')}</EditableText>
+        <span class="text-error" aria-hidden="true">*</span>
       </label>
       <input
         id="email"
@@ -74,7 +100,7 @@ const servicios = [
         required
         aria-required="true"
         autocomplete="email"
-        placeholder="correo@empresa.com"
+        placeholder={getCmsText('contact.form', 'emailPlaceholder', 'correo@empresa.com')}
         aria-describedby="email-error"
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
@@ -83,13 +109,15 @@ const servicios = [
 
     <!-- Teléfono -->
     <div>
-      <label for="telefono" class="block text-sm font-semibold text-text mb-1.5">Teléfono</label>
+      <label for="telefono" class="block text-sm font-semibold text-text mb-1.5">
+        <EditableText entry="contact.form" field="phoneLabel">{getCmsText('contact.form', 'phoneLabel', 'Teléfono')}</EditableText>
+      </label>
       <input
         id="telefono"
         name="telefono"
         type="tel"
         autocomplete="tel"
-        placeholder="+56 9 1234 5678"
+        placeholder={getCmsText('contact.form', 'phonePlaceholder', '+56 9 1234 5678')}
         class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
       />
     </div>
@@ -97,13 +125,15 @@ const servicios = [
 
   <!-- Servicio -->
   <div>
-    <label for="servicio" class="block text-sm font-semibold text-text mb-1.5">Servicio requerido</label>
+    <label for="servicio" class="block text-sm font-semibold text-text mb-1.5">
+      <EditableText entry="contact.form" field="serviceLabel">{getCmsText('contact.form', 'serviceLabel', 'Servicio requerido')}</EditableText>
+    </label>
     <select
       id="servicio"
       name="servicio"
       class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     >
-      <option value="">Seleccione un servicio (opcional)</option>
+      <option value="">{getCmsText('contact.form', 'servicePlaceholder', 'Seleccione un servicio (opcional)')}</option>
       {servicios.map((s) => <option value={s}>{s}</option>)}
     </select>
   </div>
@@ -111,7 +141,8 @@ const servicios = [
   <!-- Mensaje -->
   <div>
     <label for="mensaje" class="block text-sm font-semibold text-text mb-1.5">
-      Mensaje <span class="text-error" aria-hidden="true">*</span>
+      <EditableText entry="contact.form" field="messageLabel">{getCmsText('contact.form', 'messageLabel', 'Mensaje')}</EditableText>
+      <span class="text-error" aria-hidden="true">*</span>
     </label>
     <textarea
       id="mensaje"
@@ -120,7 +151,7 @@ const servicios = [
       aria-required="true"
       rows={5}
       maxlength={2000}
-      placeholder="Describa su proyecto o consulta técnica."
+      placeholder={getCmsText('contact.form', 'messagePlaceholder', 'Describa su proyecto o consulta técnica.')}
       aria-describedby="mensaje-error"
       class="w-full border border-border rounded-md px-3.5 py-3 text-text bg-white text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     ></textarea>
@@ -132,35 +163,36 @@ const servicios = [
       type="submit"
       class="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-md border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30"
     >
-      Enviar consulta
+      <EditableText entry="contact.form" field="submitLabel">
+        {getCmsText('contact.form', 'submitLabel', 'Enviar consulta')}
+      </EditableText>
       <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M2 8h12M10 4l4 4-4 4" />
       </svg>
     </button>
-    <p class="text-xs text-text-muted">
-      Los campos marcados con <span class="text-error" aria-hidden="true">*</span> son obligatorios.
-      Te contactaremos a la brevedad.
-    </p>
+    <EditableText as="p" entry="contact.form" field="requiredNote" type="textarea" class="text-xs text-text-muted">
+      {getCmsText('contact.form', 'requiredNote', 'Los campos marcados con * son obligatorios. Te contactaremos a la brevedad.')}
+    </EditableText>
   </div>
 </form>
+
+<script is:inline type="application/json" id="contact-form-messages" set:html={JSON.stringify(validationMessages)} />
 
 <script>
 const form = document.getElementById('contacto-form') as HTMLFormElement | null;
 
-const MENSAJES: Record<string, { valueMissing: string; typeMismatch?: string; tooShort?: string }> = {
-  nombre:  { valueMissing: 'Por favor ingrese su nombre.', tooShort: 'El nombre debe tener al menos 2 caracteres.' },
-  email:   { valueMissing: 'Por favor ingrese su correo electrónico.', typeMismatch: 'Ingrese un correo válido (ej. correo@empresa.com).' },
-  mensaje: { valueMissing: 'Por favor escriba su consulta o mensaje.' },
-};
+const messagesEl = document.getElementById('contact-form-messages');
+const MENSAJES = JSON.parse(messagesEl?.textContent ?? '{}') as Record<string, { valueMissing: string; typeMismatch?: string; tooShort?: string }>;
+const GENERIC = MENSAJES.generic ?? { valueMissing: 'Campo requerido.', typeMismatch: 'Valor inválido.', tooShort: 'Valor demasiado corto.' };
 
 function validateField(field: HTMLInputElement | HTMLTextAreaElement): boolean {
   const errorEl = document.getElementById(`${field.id}-error`);
   if (!errorEl) return field.validity.valid;
 
   let msg = '';
-  if (field.validity.valueMissing)  msg = MENSAJES[field.id]?.valueMissing ?? 'Campo requerido.';
-  else if (field.validity.typeMismatch) msg = MENSAJES[field.id]?.typeMismatch ?? 'Valor inválido.';
-  else if (field.validity.tooShort) msg = MENSAJES[field.id]?.tooShort ?? 'Valor demasiado corto.';
+  if (field.validity.valueMissing)  msg = MENSAJES[field.id]?.valueMissing ?? GENERIC.valueMissing;
+  else if (field.validity.typeMismatch) msg = MENSAJES[field.id]?.typeMismatch ?? GENERIC.typeMismatch ?? GENERIC.valueMissing;
+  else if (field.validity.tooShort) msg = MENSAJES[field.id]?.tooShort ?? GENERIC.tooShort ?? GENERIC.valueMissing;
 
   const invalid = !!msg;
   field.setAttribute('aria-invalid', String(invalid));

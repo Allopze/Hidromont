@@ -1,0 +1,35 @@
+---
+interface Props {
+  as?: keyof HTMLElementTagNameMap;
+  entry?: string;
+  field: string;
+  type?: 'text' | 'textarea' | 'richtext';
+  class?: string;
+  style?: string;
+  light?: boolean;
+  reveal?: boolean;
+}
+
+const {
+  as = 'span',
+  entry,
+  field,
+  type = 'text',
+  class: className,
+  style,
+  reveal = false,
+} = Astro.props as Props;
+const Tag = as;
+const editableAttrs = import.meta.env.DEV && entry
+  ? {
+      'data-cms-entry': entry,
+      'data-cms-field': field,
+      'data-cms-type': type,
+    }
+  : {};
+const revealAttrs = reveal ? { 'data-reveal': true } : {};
+---
+
+<Tag class={className} style={style} {...revealAttrs} {...editableAttrs}>
+  <slot />
+</Tag>

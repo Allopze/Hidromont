@@ -6,16 +6,7 @@ import Button from '../../components/ui/Button.astro';
 import Badge from '../../components/ui/Badge.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import { getCollection } from 'astro:content';
-
-// Per-service hero images (curated from project photo library)
-const serviceImages: Record<string, { src: string; alt: string; width: number; height: number }> = {
-  'tuberias-forzadas': { src: '/fotos/curadas/tuberia-forzada-tunel.webp', alt: 'Tubería forzada de gran diámetro instalada en túnel subterráneo', width: 1849, height: 851 },
-  'compuertas':        { src: '/fotos/curadas/compuertas.jpg',        alt: 'Compuerta hidráulica instalada en presa', width: 446, height: 621 },
-  'valvulas':          { src: '/fotos/curadas/valvula-tuberia-tunel.webp', alt: 'Válvula instalada sobre tubería forzada en túnel', width: 1448, height: 1086 },
-  'turbinas':          { src: '/fotos/curadas/turbinas.jpg',           alt: 'Sala de máquinas con turbinas hidráulicas', width: 474, height: 271 },
-  'limpiarrejas':      { src: '/fotos/curadas/limpiarrejas.jpg',       alt: 'Limpiarreja instalada en obra hidroeléctrica', width: 471, height: 314 },
-  'otros-montajes':    { src: '/fotos/curadas/otros-montajes.jpg',     alt: 'Montaje de gran componente hidromecánico', width: 471, height: 629 },
-};
+import { serviceImages } from '../../data/service-images';
 
 export async function getStaticPaths() {
   const servicios = await getCollection('servicios');
@@ -28,6 +19,7 @@ export async function getStaticPaths() {
 const { servicio } = Astro.props;
 const { titulo, resumen, tipos, aplicaciones, normas, procesos } = servicio.data;
 const { Content } = await servicio.render();
+const serviceImageEntry = `service-image.${servicio.slug}`;
 const heroImg = serviceImages[servicio.slug];
 
 const jsonLd = [
@@ -70,6 +62,11 @@ const jsonLd = [
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
     breadcrumbs={[{ label: 'Servicios', href: '/servicios' }, { label: titulo }]}
+    cmsEntry={`servicios.${servicio.slug}`}
+    cmsEyebrowField={false}
+    cmsTitleField="titulo"
+    cmsSubtitleField="resumen"
+    cmsImageEntry={serviceImageEntry}
   />
 
   <Section variant="default">

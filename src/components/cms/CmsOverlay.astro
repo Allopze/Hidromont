@@ -1,0 +1,16 @@
+---
+import overlayScript from '../../scripts/cms-overlay.js?raw';
+
+const enabled = import.meta.env.DEV;
+---
+
+{enabled && (
+  <>
+    <script is:inline>
+      window.__HIDROMONT_CMS__ = {
+        apiBase: `${location.protocol}//${location.hostname}:8787`,
+      };
+    </script>
+    <script is:inline set:html={overlayScript}></script>
+  </>
+)}

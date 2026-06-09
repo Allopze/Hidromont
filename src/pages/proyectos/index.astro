@@ -9,6 +9,7 @@ import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
 import { getCollection } from 'astro:content';
+import { getCmsText } from '../../data/cms';
 
 const allProyectos = await getCollection('proyectos');
 
@@ -50,14 +51,15 @@ const bancoPorCategoria = categorias.map((c) => ({
   description="Banco de proyectos de Hidromont Chile S.A. — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas."
 >
   <PageHero
-    eyebrow="Experiencia"
-    title="Proyectos"
-    subtitle="Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos."
-    imageSrc="/fotos/curadas/bifurcacion-t-taller.webp"
-    imageAlt="Bifurcación en T de gran diámetro fabricada en taller"
+    eyebrow={getCmsText('proyectos.index.hero', 'eyebrow', 'Experiencia')}
+    title={getCmsText('proyectos.index.hero', 'title', 'Proyectos')}
+    subtitle={getCmsText('proyectos.index.hero', 'subtitle', 'Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos.')}
+    imageSrc={getCmsText('proyectos.index.hero', 'image', '/fotos/curadas/bifurcacion-t-taller.webp')}
+    imageAlt={getCmsText('proyectos.index.hero', 'imageAlt', 'Bifurcación en T de gran diámetro fabricada en taller')}
     imageWidth={1536}
     imageHeight={1024}
     breadcrumbs={[{ label: 'Proyectos' }]}
+    cmsEntry="proyectos.index.hero"
   />
 
   <!-- Proyectos destacados -->

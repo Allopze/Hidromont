@@ -1,5 +1,7 @@
 ---
 import { company } from '../../data/company';
+import EditableText from '../cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 
 const year = new Date().getFullYear();
 ---
@@ -10,15 +12,17 @@ const year = new Date().getFullYear();
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
       <!-- Brand -->
       <div class="lg:col-span-2">
-        <p class="font-heading text-xl font-bold text-white mb-3">Hidromont Chile S.A.</p>
-        <p class="text-sm text-white/70 leading-relaxed mb-6 max-w-sm">
-          Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales
-          hidroeléctricas. Desde 1983 ejecutando proyectos complejos con precisión industrial.
-        </p>
+        <EditableText as="p" entry="layout.footer" field="brand" class="font-heading text-xl font-bold text-white mb-3">
+          {getCmsText('layout.footer', 'brand', 'Hidromont Chile S.A.')}
+        </EditableText>
+        <EditableText as="p" entry="layout.footer" field="description" type="textarea" class="text-sm text-white/70 leading-relaxed mb-6 max-w-sm">
+          {getCmsText('layout.footer', 'description', 'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Desde 1983 ejecutando proyectos complejos con precisión industrial.')}
+        </EditableText>
         <div class="space-y-2 text-sm text-white/70">
           <p>
             <span class="text-white/40 text-xs uppercase tracking-wide block mb-0.5">Dirección</span>
-            {company.domicilio}<br />{company.ciudad}
+            <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText><br />
+            <EditableText entry="site.company" field="ciudad">{company.ciudad}</EditableText>
           </p>
         </div>
       </div>
@@ -55,12 +59,12 @@ const year = new Date().getFullYear();
         <div class="space-y-1 text-sm text-white/70">
           <p>
             <a href={`tel:${company.telefono.replace(/\s/g, '')}`} class="hover:text-white no-underline transition-colors duration-fast">
-              {company.telefono}
+              <EditableText entry="site.company" field="telefono">{company.telefono}</EditableText>
             </a>
           </p>
           <p>
             <a href={`mailto:${company.email}`} class="hover:text-white no-underline transition-colors duration-fast">
-              {company.email}
+              <EditableText entry="site.company" field="email">{company.email}</EditableText>
             </a>
           </p>
         </div>
@@ -75,7 +79,9 @@ const year = new Date().getFullYear();
         &copy; {year} {company.razonSocial}. Todos los derechos reservados.
       </p>
       <p class="text-xs text-white/30">
-        Los Ángeles, Región del Biobío, Chile
+        <EditableText entry="layout.footer" field="location">
+          {getCmsText('layout.footer', 'location', 'Los Ángeles, Región del Biobío, Chile')}
+        </EditableText>
       </p>
     </div>
   </div>

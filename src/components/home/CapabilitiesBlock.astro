@@ -1,6 +1,7 @@
 ---
 import Eyebrow from '../ui/Eyebrow.astro';
 import Container from '../ui/Container.astro';
+import EditableText from '../cms/EditableText.astro';
 
 interface Capability {
   icon?: string;
@@ -16,6 +17,7 @@ interface Props {
   items: Capability[];
   columns?: 3 | 4;
   light?: boolean;
+  cmsEntry?: string;
 }
 
 const {
@@ -25,6 +27,7 @@ const {
   items,
   columns = 4,
   light = false,
+  cmsEntry,
 } = Astro.props;
 
 // Whether any item has a metric value (determines layout style)
@@ -34,22 +37,33 @@ const hasValues = items.some((i) => i.value);
 <Container>
   <!-- Section heading — left aligned, not centred -->
   <div class="mb-10 max-w-2xl">
-    {eyebrow && <Eyebrow light={light}>{eyebrow}</Eyebrow>}
-    <h2
+    {eyebrow && (
+      <Eyebrow light={light}>
+        <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>
+      </Eyebrow>
+    )}
+    <EditableText
+      as="h2"
+      entry={cmsEntry}
+      field="title"
       class={`font-heading font-bold mb-3 ${light ? 'text-white' : 'text-primary-dark'}`}
       style="font-size: var(--font-size-h2);"
-      data-reveal
+      reveal
     >
       {title}
-    </h2>
+    </EditableText>
     {subtitle && (
-      <p
+      <EditableText
+        as="p"
+        entry={cmsEntry}
+        field="subtitle"
+        type="textarea"
         class={`${light ? 'text-white/70' : 'text-text-muted'}`}
         style="font-size: var(--font-size-body-lg); --reveal-delay: 0.08s;"
-        data-reveal
+        reveal
       >
         {subtitle}
-      </p>
+      </EditableText>
     )}
   </div>
 

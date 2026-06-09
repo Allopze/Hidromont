@@ -1,0 +1,913 @@
+{
+  "updatedAt": "2026-06-09T01:58:22.372Z",
+  "entries": {
+    "calidad.hero": {
+      "title": "Hero calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Gestión de Calidad"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "Calidad y Medioambiente"
+        }
+      }
+    },
+    "clients.strip": {
+      "title": "Clientes strip",
+      "slug": "clients-strip",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Clientes y referencias"
+        },
+        "fallbackLabel": {
+          "type": "text",
+          "value": "También trabajamos con"
+        },
+        "linkLabel": {
+          "type": "text",
+          "value": "Ver todos los clientes"
+        },
+        "title": {
+          "type": "text",
+          "value": "Empresas que confían en Hidromont"
+        }
+      }
+    },
+    "contact.form": {
+      "title": "Formulario de contacto",
+      "slug": "contact-form",
+      "fields": {
+        "companyLabel": {
+          "type": "text",
+          "value": "Empresa"
+        },
+        "companyPlaceholder": {
+          "type": "text",
+          "value": "Nombre de su empresa"
+        },
+        "emailInvalidError": {
+          "type": "text",
+          "value": "Ingrese un correo válido (ej. correo@empresa.com)."
+        },
+        "emailLabel": {
+          "type": "text",
+          "value": "Correo electrónico"
+        },
+        "emailPlaceholder": {
+          "type": "text",
+          "value": "correo@empresa.com"
+        },
+        "emailRequiredError": {
+          "type": "text",
+          "value": "Por favor ingrese su correo electrónico."
+        },
+        "fromName": {
+          "type": "text",
+          "value": "Sitio web Hidromont Chile"
+        },
+        "genericInvalidError": {
+          "type": "text",
+          "value": "Valor inválido."
+        },
+        "genericRequiredError": {
+          "type": "text",
+          "value": "Campo requerido."
+        },
+        "genericTooShortError": {
+          "type": "text",
+          "value": "Valor demasiado corto."
+        },
+        "messageLabel": {
+          "type": "text",
+          "value": "Mensaje"
+        },
+        "messagePlaceholder": {
+          "type": "text",
+          "value": "Describa su proyecto o consulta técnica."
+        },
+        "messageRequiredError": {
+          "type": "text",
+          "value": "Por favor escriba su consulta o mensaje."
+        },
+        "nameLabel": {
+          "type": "text",
+          "value": "Nombre"
+        },
+        "namePlaceholder": {
+          "type": "text",
+          "value": "Su nombre completo"
+        },
+        "nameRequiredError": {
+          "type": "text",
+          "value": "Por favor ingrese su nombre."
+        },
+        "nameTooShortError": {
+          "type": "text",
+          "value": "El nombre debe tener al menos 2 caracteres."
+        },
+        "phoneLabel": {
+          "type": "text",
+          "value": "Teléfono"
+        },
+        "phonePlaceholder": {
+          "type": "text",
+          "value": "+56 9 1234 5678"
+        },
+        "requiredNote": {
+          "type": "textarea",
+          "value": "Los campos marcados con * son obligatorios. Te contactaremos a la brevedad."
+        },
+        "serviceLabel": {
+          "type": "text",
+          "value": "Servicio requerido"
+        },
+        "servicePlaceholder": {
+          "type": "text",
+          "value": "Seleccione un servicio (opcional)"
+        },
+        "services": {
+          "type": "list",
+          "value": [
+            "Tuberías Forzadas y Blindajes",
+            "Compuertas",
+            "Válvulas Hidráulicas",
+            "Turbinas Hidráulicas",
+            "Limpiarrejas",
+            "Montajes y Fabricaciones Especiales",
+            "Otro"
+          ]
+        },
+        "subject": {
+          "type": "text",
+          "value": "Nuevo contacto desde hidromont.cl"
+        },
+        "submitLabel": {
+          "type": "text",
+          "value": "Enviar consulta"
+        }
+      }
+    },
+    "contact.info": {
+      "title": "Información de contacto",
+      "slug": "contact-info",
+      "fields": {
+        "addressLabel": {
+          "type": "text",
+          "value": "Dirección"
+        },
+        "emailLabel": {
+          "type": "text",
+          "value": "Correo electrónico"
+        },
+        "note": {
+          "type": "textarea",
+          "value": "Envíenos sus antecedentes y nuestro equipo técnico responderá a la brevedad. Puede adjuntar planos, fichas técnicas o cualquier documento de referencia."
+        },
+        "phoneLabel": {
+          "type": "text",
+          "value": "Teléfono"
+        },
+        "title": {
+          "type": "text",
+          "value": "Información de contacto"
+        }
+      }
+    },
+    "contacto.gracias": {
+      "title": "Página gracias contacto",
+      "slug": "/contacto/gracias",
+      "fields": {
+        "description": {
+          "type": "textarea",
+          "value": "Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad."
+        },
+        "pageTitle": {
+          "type": "text",
+          "value": "Mensaje enviado"
+        },
+        "primaryLabel": {
+          "type": "text",
+          "value": "Volver al inicio"
+        },
+        "secondaryLabel": {
+          "type": "text",
+          "value": "Ver nuestros proyectos"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad."
+        },
+        "title": {
+          "type": "text",
+          "value": "Mensaje enviado correctamente"
+        }
+      }
+    },
+    "contacto.hero": {
+      "title": "Hero contacto",
+      "slug": "/contacto",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Contacto"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
+        },
+        "title": {
+          "type": "text",
+          "value": "Conversemos"
+        }
+      }
+    },
+    "contacto.sections": {
+      "title": "Secciones contacto",
+      "slug": "/contacto",
+      "fields": {
+        "formEyebrow": {
+          "type": "text",
+          "value": "Formulario de contacto"
+        },
+        "formTitle": {
+          "type": "text",
+          "value": "Envíe su consulta"
+        },
+        "infoEyebrow": {
+          "type": "text",
+          "value": "Datos de contacto"
+        },
+        "infoTitle": {
+          "type": "text",
+          "value": "Información directa"
+        }
+      }
+    },
+    "empresa.hero": {
+      "title": "Hero empresa",
+      "slug": "/empresa",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Quiénes somos"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/taller-nave.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica."
+        },
+        "title": {
+          "type": "text",
+          "value": "Empresa"
+        }
+      }
+    },
+    "home.capabilities": {
+      "title": "Capacidades home",
+      "slug": "/",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Por qué elegirnos"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales."
+        },
+        "title": {
+          "type": "text",
+          "value": "Capacidad técnica y experiencia comprobada"
+        }
+      }
+    },
+    "home.cta": {
+      "title": "CTA home",
+      "slug": "/",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Contáctenos"
+        },
+        "primaryLabel": {
+          "type": "text",
+          "value": "Ponerse en contacto"
+        },
+        "secondaryLabel": {
+          "type": "text",
+          "value": "Conocer la empresa"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales."
+        },
+        "title": {
+          "type": "text",
+          "value": "¿Quiere saber más sobre nuestra empresa?"
+        }
+      }
+    },
+    "home.hero": {
+      "title": "Hero home",
+      "slug": "/",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Especialistas en equipos hidromecánicos"
+        },
+        "primaryLabel": {
+          "type": "text",
+          "value": "Conocer nuestros servicios"
+        },
+        "secondaryLabel": {
+          "type": "text",
+          "value": "Ver proyectos"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983."
+        },
+        "title": {
+          "type": "text",
+          "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos"
+        }
+      }
+    },
+    "home.installations": {
+      "title": "Instalaciones home",
+      "slug": "/",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Instalaciones y medios productivos"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Infraestructura especializada para responder a proyectos complejos con rapidez y precisión."
+        },
+        "title": {
+          "type": "text",
+          "value": "Taller propio en Los Ángeles, Biobío"
+        }
+      }
+    },
+    "home.projects": {
+      "title": "Proyectos home",
+      "slug": "/",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Ver todos los proyectos"
+        },
+        "eyebrow": {
+          "type": "text",
+          "value": "Experiencia"
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos destacados"
+        }
+      }
+    },
+    "home.services": {
+      "title": "Servicios home",
+      "slug": "/",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Servicios"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno."
+        },
+        "title": {
+          "type": "text",
+          "value": "Soluciones hidromecánicas llave en mano"
+        }
+      }
+    },
+    "layout.footer": {
+      "title": "Footer",
+      "slug": "footer",
+      "fields": {
+        "brand": {
+          "type": "text",
+          "value": "Hidromont Chile S.A."
+        },
+        "description": {
+          "type": "textarea",
+          "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Desde 1983 ejecutando proyectos complejos con precisión industrial."
+        },
+        "location": {
+          "type": "text",
+          "value": "Los Ángeles, Región del Biobío, Chile"
+        }
+      }
+    },
+    "layout.header": {
+      "title": "Header",
+      "slug": "header",
+      "fields": {
+        "ctaLabel": {
+          "type": "text",
+          "value": "Contáctenos"
+        },
+        "logoAlt": {
+          "type": "text",
+          "value": "Hidromont Chile S.A."
+        },
+        "logoAriaLabel": {
+          "type": "text",
+          "value": "Hidromont Chile — Inicio"
+        },
+        "mobileMenuOpenLabel": {
+          "type": "text",
+          "value": "Abrir menú de navegación"
+        },
+        "navCalidad": {
+          "type": "text",
+          "value": "Calidad"
+        },
+        "navClientes": {
+          "type": "text",
+          "value": "Clientes"
+        },
+        "navContacto": {
+          "type": "text",
+          "value": "Contacto"
+        },
+        "navEmpresa": {
+          "type": "text",
+          "value": "Empresa"
+        },
+        "navInicio": {
+          "type": "text",
+          "value": "Inicio"
+        },
+        "navProyectos": {
+          "type": "text",
+          "value": "Proyectos"
+        },
+        "navServicios": {
+          "type": "text",
+          "value": "Servicios"
+        },
+        "navServiciosCompuertas": {
+          "type": "text",
+          "value": "Compuertas"
+        },
+        "navServiciosLimpiarrejas": {
+          "type": "text",
+          "value": "Limpiarrejas"
+        },
+        "navServiciosMontajes": {
+          "type": "text",
+          "value": "Montajes Especiales"
+        },
+        "navServiciosTuberias": {
+          "type": "text",
+          "value": "Tuberías Forzadas"
+        },
+        "navServiciosTurbinas": {
+          "type": "text",
+          "value": "Turbinas"
+        },
+        "navServiciosValvulas": {
+          "type": "text",
+          "value": "Válvulas"
+        },
+        "wordmarkPrimary": {
+          "type": "text",
+          "value": "HIDROMONT"
+        },
+        "wordmarkSub": {
+          "type": "text",
+          "value": "Chile S.A."
+        }
+      }
+    },
+    "project-image.ch-besaya": {
+      "title": "Imagen proyecto C.H. Besaya",
+      "slug": "project-image/ch-besaya",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/proyecto-montaje-tuberia.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Montaje de tubería forzada de gran diámetro"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 640
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 481
+        }
+      }
+    },
+    "project-image.ch-dorias": {
+      "title": "Imagen proyecto C.H. Dorias",
+      "slug": "project-image/ch-dorias",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/proyecto-bifurcacion-obra.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Bifurcación instalada en obra"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 354
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 473
+        }
+      }
+    },
+    "project-image.ch-los-condores": {
+      "title": "Imagen proyecto C.H. Los Cóndores",
+      "slug": "project-image/ch-los-condores",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/montaje-vertical-caverna.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Montaje vertical de tubería forzada en caverna subterránea"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 1448
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1086
+        }
+      }
+    },
+    "project-image.ch-queltehues": {
+      "title": "Imagen proyecto C.H. Queltehues",
+      "slug": "project-image/ch-queltehues",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/proyecto-tuberia-terreno.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Instalación de tubería en terreno"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 480
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 639
+        }
+      }
+    },
+    "project-image.ch-rio-frio": {
+      "title": "Imagen proyecto C.H. Río Frío",
+      "slug": "project-image/ch-rio-frio",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/proyecto-tuberia-montana.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Tubería forzada en ladera de montaña"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 697
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 467
+        }
+      }
+    },
+    "project-image.embalse-chacrillas": {
+      "title": "Imagen proyecto Embalse Chacrillas",
+      "slug": "project-image/embalse-chacrillas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/bifurcacion-primer-taller.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Bifurcación de gran diámetro en fabricación en taller"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 1104
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1425
+        }
+      }
+    },
+    "project-image.embalse-chironta": {
+      "title": "Imagen proyecto Embalse Chironta",
+      "slug": "project-image/embalse-chironta",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/proyecto-valvula-tunel.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Válvula instalada en túnel de central"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 768
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1024
+        }
+      }
+    },
+    "proyectos.index.hero": {
+      "title": "Hero proyectos",
+      "slug": "/proyectos",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Experiencia"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/bifurcacion-t-taller.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Bifurcación en T de gran diámetro fabricada en taller"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos."
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos"
+        }
+      }
+    },
+    "service-image.compuertas": {
+      "title": "Imagen servicio Compuertas",
+      "slug": "service-image/compuertas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/compuertas.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Compuerta hidráulica instalada en presa"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 621
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 446
+        }
+      }
+    },
+    "service-image.limpiarrejas": {
+      "title": "Imagen servicio Limpiarrejas",
+      "slug": "service-image/limpiarrejas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/limpiarrejas.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Limpiarreja instalada en obra hidroeléctrica"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 314
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 471
+        }
+      }
+    },
+    "service-image.otros-montajes": {
+      "title": "Imagen servicio Montajes especiales",
+      "slug": "service-image/otros-montajes",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/otros-montajes.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Montaje de gran componente hidromecánico"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 629
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 471
+        }
+      }
+    },
+    "service-image.tuberias-forzadas": {
+      "title": "Imagen servicio Tuberías forzadas",
+      "slug": "service-image/tuberias-forzadas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/tuberia-forzada-tunel.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Tubería forzada de gran diámetro instalada en túnel subterráneo"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 851
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1849
+        }
+      }
+    },
+    "service-image.turbinas": {
+      "title": "Imagen servicio Turbinas",
+      "slug": "service-image/turbinas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/turbinas.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Sala de máquinas con turbinas hidráulicas"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 271
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 474
+        }
+      }
+    },
+    "service-image.valvulas": {
+      "title": "Imagen servicio Válvulas",
+      "slug": "service-image/valvulas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/valvula-tuberia-tunel.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Válvula instalada sobre tubería forzada en túnel"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 1086
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1448
+        }
+      }
+    },
+    "servicios.index.hero": {
+      "title": "Hero servicios",
+      "slug": "/servicios",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Servicios"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/otros-montajes.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Fabricación de grandes equipos hidromecánicos en taller"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales."
+        },
+        "title": {
+          "type": "text",
+          "value": "Soluciones hidromecánicas llave en mano"
+        }
+      }
+    },
+    "site.company": {
+      "title": "Datos corporativos",
+      "slug": "company",
+      "fields": {
+        "casillaPostal": {
+          "type": "text",
+          "value": "Casilla 48 — Los Ángeles, Región del Biobío"
+        },
+        "chileDesde": {
+          "type": "number",
+          "value": 1997
+        },
+        "ciudad": {
+          "type": "text",
+          "value": "Los Ángeles, Región del Biobío, Chile"
+        },
+        "descripcionCorta": {
+          "type": "textarea",
+          "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas."
+        },
+        "descripcionLarga": {
+          "type": "textarea",
+          "value": "Especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico."
+        },
+        "domicilio": {
+          "type": "text",
+          "value": "Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513"
+        },
+        "email": {
+          "type": "text",
+          "value": "hidromont@hidromont.cl"
+        },
+        "especialidad": {
+          "type": "textarea",
+          "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas."
+        },
+        "fundacion": {
+          "type": "number",
+          "value": 1983
+        },
+        "modalidad": {
+          "type": "text",
+          "value": "Proyectos llave en mano / EPC"
+        },
+        "nombre": {
+          "type": "text",
+          "value": "Hidromont Chile S.A."
+        },
+        "razonSocial": {
+          "type": "text",
+          "value": "Hidromont Chile S.A."
+        },
+        "sitioWeb": {
+          "type": "link",
+          "value": "https://hidromont.cl"
+        },
+        "telefono": {
+          "type": "text",
+          "value": "+56 43 32 84 14"
+        }
+      }
+    }
+  }
+}

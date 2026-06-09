@@ -5,6 +5,7 @@ import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import { getCmsText } from '../data/cms';
 
 const principios = [
   {
@@ -31,10 +32,11 @@ const principios = [
   description="Hidromont Chile S.A. mantiene un sistema de gestión de calidad basado en ISO 9001, con foco en mejora continua y satisfacción del cliente."
 >
   <PageHero
-    eyebrow="Gestión de Calidad"
-    title="Calidad y Medioambiente"
-    subtitle="La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
+    eyebrow={getCmsText('calidad.hero', 'eyebrow', 'Gestión de Calidad')}
+    title={getCmsText('calidad.hero', 'title', 'Calidad y Medioambiente')}
+    subtitle={getCmsText('calidad.hero', 'subtitle', 'La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables.')}
     breadcrumbs={[{ label: 'Calidad' }]}
+    cmsEntry="calidad.hero"
   />
 
   <Section variant="default">

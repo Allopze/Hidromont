@@ -6,6 +6,8 @@ import Eyebrow from '../components/ui/Eyebrow.astro';
 import PageHero from '../components/ui/PageHero.astro';
 import ContactForm from '../components/contact/ContactForm.astro';
 import ContactInfo from '../components/contact/ContactInfo.astro';
+import { getCmsText } from '../data/cms';
+import EditableText from '../components/cms/EditableText.astro';
 ---
 
 <PageLayout
@@ -13,10 +15,11 @@ import ContactInfo from '../components/contact/ContactInfo.astro';
   description="Contáctese con el equipo técnico de Hidromont Chile S.A. para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
 >
   <PageHero
-    eyebrow="Contacto"
-    title="Conversemos"
-    subtitle="Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
+    eyebrow={getCmsText('contacto.hero', 'eyebrow', 'Contacto')}
+    title={getCmsText('contacto.hero', 'title', 'Conversemos')}
+    subtitle={getCmsText('contacto.hero', 'subtitle', 'Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas.')}
     breadcrumbs={[{ label: 'Contacto' }]}
+    cmsEntry="contacto.hero"
   />
 
   <Section variant="default">
@@ -24,19 +27,27 @@ import ContactInfo from '../components/contact/ContactInfo.astro';
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <!-- Formulario -->
         <div class="lg:col-span-2">
-          <Eyebrow>Formulario de contacto</Eyebrow>
-          <h2 class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
-            Envíe su consulta
-          </h2>
+          <Eyebrow>
+            <EditableText entry="contacto.sections" field="formEyebrow">
+              {getCmsText('contacto.sections', 'formEyebrow', 'Formulario de contacto')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="contacto.sections" field="formTitle" class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
+            {getCmsText('contacto.sections', 'formTitle', 'Envíe su consulta')}
+          </EditableText>
           <ContactForm />
         </div>
 
         <!-- Info lateral -->
         <div class="lg:col-span-1">
-          <Eyebrow>Datos de contacto</Eyebrow>
-          <h2 class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
-            Información directa
-          </h2>
+          <Eyebrow>
+            <EditableText entry="contacto.sections" field="infoEyebrow">
+              {getCmsText('contacto.sections', 'infoEyebrow', 'Datos de contacto')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="contacto.sections" field="infoTitle" class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
+            {getCmsText('contacto.sections', 'infoTitle', 'Información directa')}
+          </EditableText>
           <ContactInfo />
         </div>
       </div>

@@ -1,0 +1,206 @@
+import { nanoid } from 'nanoid';
+import type Database from 'better-sqlite3';
+import type { CmsEntry, CmsField, FieldType } from '../types/cms';
+
+interface EntryRow {
+  id: string;
+  kind: string;
+  slug: string;
+  locale: string;
+  title: string;
+  status: 'draft' | 'published';
+  version: number;
+}
+
+interface FieldRow {
+  entry_id: string;
+  key: string;
+  type: FieldType;
+  value_json: string;
+  source_ref_json: string | null;
+  updated_at: string;
+}
+
+export class ContentRepository {
+  constructor(private readonly db: Database.Database) {}
+
+  upsertEntry(input: {
+    id: string;
+    kind: string;
+    slug: string;
+    locale?: string;
+    title: string;
+    status?: 'draft' | 'published';
+    fields: CmsField[];
+    now: string;
+  }): void {
+    const transaction = this.db.transaction(() => {
+      const existing = this.findEntryRow(input.id);
+      this.db
+        .prepare(
+          `INSERT INTO content_entries (id, kind, slug, locale, title, status, version, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             kind = excluded.kind,
+             slug = excluded.slug,
+             locale = excluded.locale,
+             title = excluded.title,
+             status = excluded.status,
+             updated_at = excluded.updated_at`
+        )
+        .run(
+          input.id,
+          input.kind,
+          input.slug,
+          input.locale ?? 'es-CL',
+          input.title,
+          input.status ?? 'published',
+          input.now,
+          input.now
+        );
+
+      for (const field of input.fields) {
+        this.upsertField(input.id, field, input.now, false);
+      }
+
+      if (!existing) this.createRevision(input.id, 1, input.now);
+    });
+
+    transaction();
+  }
+
+  listEntries(kind?: string): CmsEntry[] {
+    const rows = kind
+      ? (this.db
+          .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id')
+          .all(kind) as EntryRow[])
+      : (this.db
+          .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id')
+          .all() as EntryRow[]);
+
+    return rows.map((row) => this.hydrateEntry(row));
+  }
+
+  findEntry(id: string): CmsEntry | undefined {
+    const row = this.findEntryRow(id);
+    return row ? this.hydrateEntry(row) : undefined;
+  }
+
+  updateField(entryId: string, key: string, value: unknown, now: string): CmsEntry {
+    const field = this.findField(entryId, key);
+    if (!field) throw new Error(`Field ${entryId}.${key} does not exist`);
+
+    const nextVersion =
+      ((this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as { version: number })
+        ?.version ?? 1) + 1;
+
+    const transaction = this.db.transaction(() => {
+      this.db
+        .prepare('UPDATE content_fields SET value_json = ?, updated_at = ? WHERE entry_id = ? AND key = ?')
+        .run(JSON.stringify(value), now, entryId, key);
+      this.db
+        .prepare('UPDATE content_entries SET version = ?, updated_at = ? WHERE id = ?')
+        .run(nextVersion, now, entryId);
+      this.createRevision(entryId, nextVersion, now);
+    });
+
+    transaction();
+
+    const entry = this.findEntry(entryId);
+    if (!entry) throw new Error(`Entry ${entryId} disappeared after update`);
+    return entry;
+  }
+
+  replaceEntryFields(entryId: string, fields: CmsField[], now: string): void {
+    const transaction = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM content_fields WHERE entry_id = ?').run(entryId);
+      for (const field of fields) {
+        this.upsertField(entryId, field, now, false);
+      }
+      this.db
+        .prepare('UPDATE content_entries SET version = version + 1, updated_at = ? WHERE id = ?')
+        .run(now, entryId);
+      const version = (
+        this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as { version: number }
+      ).version;
+      this.createRevision(entryId, version, now);
+    });
+
+    transaction();
+  }
+
+  private upsertField(entryId: string, field: CmsField, now: string, bumpVersion: boolean): void {
+    this.db
+      .prepare(
+        `INSERT INTO content_fields (entry_id, key, type, value_json, source_ref_json, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(entry_id, key) DO UPDATE SET
+           type = excluded.type,
+           value_json = excluded.value_json,
+           source_ref_json = excluded.source_ref_json,
+           updated_at = excluded.updated_at`
+      )
+      .run(
+        entryId,
+        field.key,
+        field.type,
+        JSON.stringify(field.value),
+        field.sourceRef ? JSON.stringify(field.sourceRef) : null,
+        now
+      );
+
+    if (bumpVersion) {
+      this.db
+        .prepare('UPDATE content_entries SET version = version + 1, updated_at = ? WHERE id = ?')
+        .run(now, entryId);
+    }
+  }
+
+  private findEntryRow(id: string): EntryRow | undefined {
+    return this.db
+      .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE id = ?')
+      .get(id) as EntryRow | undefined;
+  }
+
+  private findField(entryId: string, key: string): FieldRow | undefined {
+    return this.db
+      .prepare('SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? AND key = ?')
+      .get(entryId, key) as FieldRow | undefined;
+  }
+
+  private hydrateEntry(row: EntryRow): CmsEntry {
+    const fields = this.db
+      .prepare('SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? ORDER BY key')
+      .all(row.id) as FieldRow[];
+
+    return {
+      id: row.id,
+      kind: row.kind,
+      slug: row.slug,
+      locale: row.locale,
+      title: row.title,
+      status: row.status,
+      version: row.version,
+      fields: Object.fromEntries(
+        fields.map((field) => [
+          field.key,
+          {
+            key: field.key,
+            type: field.type,
+            value: JSON.parse(field.value_json),
+            sourceRef: field.source_ref_json ? JSON.parse(field.source_ref_json) : undefined,
+            updatedAt: field.updated_at,
+          },
+        ])
+      ),
+    };
+  }
+
+  private createRevision(entryId: string, version: number, now: string): void {
+    const snapshot = this.findEntry(entryId);
+    if (!snapshot) return;
+    this.db
+      .prepare('INSERT INTO revisions (id, entry_id, version, snapshot_json, created_at) VALUES (?, ?, ?, ?, ?)')
+      .run(nanoid(), entryId, version, JSON.stringify(snapshot), now);
+  }
+}

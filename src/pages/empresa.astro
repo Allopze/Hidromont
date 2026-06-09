@@ -6,6 +6,7 @@ import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import CapabilitiesBlock from '../components/home/CapabilitiesBlock.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import { getCmsText } from '../data/cms';
 
 const instalaciones = [
   { title: 'Taller industrial', value: '3.000 m²', description: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
@@ -35,14 +36,15 @@ const maquinaria = [
   description="Hidromont Chile S.A. — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con taller propio y equipo técnico especializado."
 >
   <PageHero
-    eyebrow="Quiénes somos"
-    title="Empresa"
-    subtitle="Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica."
-    imageSrc="/fotos/curadas/taller-nave.webp"
-    imageAlt="Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas"
+    eyebrow={getCmsText('empresa.hero', 'eyebrow', 'Quiénes somos')}
+    title={getCmsText('empresa.hero', 'title', 'Empresa')}
+    subtitle={getCmsText('empresa.hero', 'subtitle', 'Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica.')}
+    imageSrc={getCmsText('empresa.hero', 'image', '/fotos/curadas/taller-nave.webp')}
+    imageAlt={getCmsText('empresa.hero', 'imageAlt', 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas')}
     imageWidth={1536}
     imageHeight={1024}
     breadcrumbs={[{ label: 'Empresa' }]}
+    cmsEntry="empresa.hero"
   />
 
   <!-- Historia y descripción -->

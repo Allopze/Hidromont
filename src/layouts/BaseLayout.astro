@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { company } from '../data/company';
+import CmsOverlay from '../components/cms/CmsOverlay.astro';
 
 interface Props {
   title?: string;
@@ -87,11 +88,12 @@ const allJsonLd = [
     <!-- JSON-LD -->
     {
       allJsonLd.map((ld) => (
-        <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+        <script is:inline type="application/ld+json" set:html={JSON.stringify(ld)} />
       ))
     }
   </head>
   <body>
     <slot />
+    <CmsOverlay />
   </body>
 </html>

@@ -17,6 +17,10 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Local CMS
+cms/data/
+public/uploads/cms/
+
 # Editor
 .vscode/settings.json
 .idea/
