@@ -390,6 +390,7 @@
   shell.innerHTML = `
     <div class="hm-cms-bar">
       <strong>Hidromont CMS</strong>
+      <span class="hm-cms-badge" data-state-badge style="display:none"></span>
       <button type="button" class="secondary" data-action="collections">Colecciones</button>
       <button type="button" class="secondary" data-action="jobs">Historial</button>
       <button type="button" data-action="publish">Publicar</button>
@@ -407,6 +408,21 @@
 
   const panel = shell.querySelector('.hm-cms-panel');
   const panelBody = shell.querySelector('[data-panel-body]');
+  const stateBadge = shell.querySelector('[data-state-badge]');
+
+  function setGlobalState(stateKey) {
+    if (!stateBadge) return;
+    if (!stateKey) { stateBadge.style.display = 'none'; return; }
+    const map = {
+      unsaved: { label: '● Sin publicar', cls: 'failed' },
+      published: { label: '✓ Publicado', cls: 'succeeded' },
+      error: { label: '✗ Error', cls: 'failed' },
+    };
+    const s = map[stateKey] || { label: stateKey, cls: '' };
+    stateBadge.textContent = s.label;
+    stateBadge.className = `hm-cms-badge ${s.cls}`;
+    stateBadge.style.display = '';
+  }
 
   async function api(path, options = {}) {
     const headers = options.headers || {};
@@ -845,6 +861,7 @@
     }
 
     status.textContent = 'Guardado en SQLite. Usa Publicar para exportar archivos.';
+    setGlobalState('unsaved');
   }
 
   // ─── CRUD de colecciones ─────────────────────────────────────────────────
@@ -1013,6 +1030,7 @@
       const result = await api('/api/cms/export', { method: 'POST' });
       const status = panelBody.querySelector('[data-status]');
       if (status) status.textContent = `Exportado a archivos del sitio. Job ${result.job?.id || ''}`.trim();
+      setGlobalState('published');
     }
     if (action === 'jobs') {
       loadPublishJobs();
@@ -1136,8 +1154,11 @@
       try {
         const result = await api('/api/cms/publish', { method: 'POST' });
         renderPublishJobs(result.job ? [result.job] : []);
+        const jobStatus = result.job?.status;
+        setGlobalState(jobStatus === 'succeeded' ? 'published' : 'error');
       } catch (error) {
         openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        setGlobalState('error');
       }
     }
     if (action === 'select-media' && target instanceof Element) {

@@ -59,7 +59,18 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const mediaController = new MediaController(mediaService);
   const publishController = new PublishController(publishService, backupService);
 
-  app.get('/api/cms/health', async () => ({ ok: true }));
+  app.get('/api/cms/health', async () => {
+    const dbOk = !!db.prepare('SELECT 1').get();
+    const entriesCount = (db.prepare('SELECT COUNT(*) as n FROM content_entries').get() as { n: number })?.n ?? 0;
+    const mediaCount = (db.prepare('SELECT COUNT(*) as n FROM media_assets').get() as { n: number })?.n ?? 0;
+    return {
+      ok: dbOk,
+      db: dbOk ? 'connected' : 'error',
+      entries: entriesCount,
+      media: mediaCount,
+      timestamp: new Date().toISOString(),
+    };
+  });
   app.post('/api/cms/login', async (request, reply) => {
     const ip = request.ip ?? 'unknown';
     const { allowed, retryAfterMs } = rateLimitRepository.check(ip);
