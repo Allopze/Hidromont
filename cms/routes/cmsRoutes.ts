@@ -142,6 +142,9 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/cms/media', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     mediaController.list(request, reply)
   );
+  app.get('/api/cms/media/:id', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    mediaController.getById(request, reply)
+  );
   app.post('/api/cms/media', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
     await mediaController.upload(request, reply);
     if (reply.statusCode === 201) {

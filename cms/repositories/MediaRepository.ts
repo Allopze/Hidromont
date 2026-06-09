@@ -66,15 +66,29 @@ export class MediaRepository {
     return this.create(input);
   }
 
-  list(): MediaAsset[] {
-    return (this.db.prepare('SELECT * FROM media_assets ORDER BY created_at DESC').all() as MediaRow[]).map(
-      (row) => this.fromRow(row)
-    );
+  list(): (MediaAsset & { usageCount: number })[] {
+    const rows = this.db
+      .prepare(
+        `SELECT m.*, COUNT(u.media_id) AS usage_count
+         FROM media_assets m
+         LEFT JOIN media_usages u ON m.id = u.media_id
+         GROUP BY m.id
+         ORDER BY m.created_at DESC`
+      )
+      .all() as (MediaRow & { usage_count: number })[];
+    return rows.map((row) => ({ ...this.fromRow(row), usageCount: row.usage_count }));
   }
 
   find(id: string): MediaAsset | undefined {
     const row = this.db.prepare('SELECT * FROM media_assets WHERE id = ?').get(id) as MediaRow | undefined;
     return row ? this.fromRow(row) : undefined;
+  }
+
+  getUsages(mediaId: string): Array<{ entryId: string; fieldKey: string; updatedAt: string }> {
+    return (this.db
+      .prepare('SELECT entry_id, field_key, updated_at FROM media_usages WHERE media_id = ? ORDER BY updated_at DESC')
+      .all(mediaId) as Array<{ entry_id: string; field_key: string; updated_at: string }>)
+      .map((r) => ({ entryId: r.entry_id, fieldKey: r.field_key, updatedAt: r.updated_at }));
   }
 
   findByPath(assetPath: string): MediaAsset | undefined {

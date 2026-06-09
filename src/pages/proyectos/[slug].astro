@@ -7,6 +7,8 @@ import Badge from '../../components/ui/Badge.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import { getCollection } from 'astro:content';
 import { projectImages } from '../../data/project-images';
+import { projectGalleries } from '../../data/project-galleries';
+import EditableImage from '../../components/cms/EditableImage.astro';
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
@@ -21,6 +23,8 @@ const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, norm
 const { Content } = await proyecto.render();
 const projectImageEntry = `project-image.${proyecto.slug}`;
 const heroImg = projectImages[proyecto.slug];
+const gallery = projectGalleries[proyecto.slug];
+const galleryEntryId = `project-gallery.${proyecto.slug}`;
 
 const categoriaLabels: Record<string, string> = {
   tuberias: 'Tuberías y Blindajes',
@@ -130,6 +134,44 @@ const servicioHref: Record<string, string> = {
           </div>
         </aside>
       </div>
+
+      {(gallery?.images.length > 0 || import.meta.env.DEV) && (
+        <div class="mt-16">
+          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            Galería de imágenes
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map((n) => {
+              const img = gallery?.images[n - 1];
+              return (
+                <div class="aspect-video overflow-hidden rounded-lg bg-background-alt border border-border">
+                  {img ? (
+                    <EditableImage
+                      entry={galleryEntryId}
+                      field={`gallery${n}`}
+                      altField={`gallery${n}Alt`}
+                      src={img.src}
+                      alt={img.alt}
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : import.meta.env.DEV ? (
+                    <div
+                      class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
+                      data-cms-entry={galleryEntryId}
+                      data-cms-field={`gallery${n}`}
+                      data-cms-alt-field={`gallery${n}Alt`}
+                      data-cms-type="image"
+                    >
+                      + Agregar imagen {n}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div class="mt-12 pt-8 border-t border-border">
         <Button href="/proyectos" variant="secondary">← Volver a proyectos</Button>

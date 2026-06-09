@@ -128,6 +128,35 @@ const projectImageSeeds: Array<{
   },
 ];
 
+const serviceGallerySlugs = [
+  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes',
+];
+
+const projectGallerySlugs = [
+  'ch-los-condores', 'embalse-chironta', 'ch-besaya', 'ch-dorias', 'ch-queltehues', 'ch-rio-frio', 'embalse-chacrillas',
+];
+
+const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
+  { key: 'acciona',            nombre: 'Acciona',             logo: '/logos-clientes/acciona.png' },
+  { key: 'besalco',            nombre: 'Besalco',             logo: '/logos-clientes/besalco.png' },
+  { key: 'colbun',             nombre: 'Colbún',              logo: '/logos-clientes/colbun.png' },
+  { key: 'conpax',             nombre: 'Conpax',              logo: '/logos-clientes/conpax.png' },
+  { key: 'edp',                nombre: 'EDP',                 logo: '/logos-clientes/edp-hc-energia.png' },
+  { key: 'elecnor',            nombre: 'Elecnor',             logo: '/logos-clientes/elecnor.png' },
+  { key: 'electrica-puntilla', nombre: 'Eléctrica Puntilla',  logo: '/logos-clientes/electrica-puntilla.png' },
+  { key: 'fcc',                nombre: 'FCC',                 logo: '/logos-clientes/fcc.png' },
+  { key: 'ferrovial',          nombre: 'Ferrovial',           logo: '/logos-clientes/ferrovial.png' },
+  { key: 'gas-natural-fenosa', nombre: 'Gas Natural Fenosa',  logo: '/logos-clientes/gas-natural-fenosa.png' },
+  { key: 'gpe',                nombre: 'GPE',                 logo: '/logos-clientes/gpe.png' },
+  { key: 'iberdrola',          nombre: 'Iberdrola',           logo: '/logos-clientes/iberdrola.png' },
+  { key: 'naturener',          nombre: 'NaturEner',           logo: '/logos-clientes/naturener.png' },
+  { key: 'navarro-sic',        nombre: 'Navarro SiC',         logo: '/logos-clientes/navarro-sic.png' },
+  { key: 'norvento',           nombre: 'Norvento',            logo: '/logos-clientes/norvento.png' },
+  { key: 'pacific-hydro',      nombre: 'Pacific Hydro',       logo: '/logos-clientes/pacific-hydro.png' },
+  { key: 'plenium-partners',   nombre: 'Plenium Partners',    logo: '/logos-clientes/plenium-partners.png' },
+  { key: 'viesgo',             nombre: 'Viesgo',              logo: '/logos-clientes/viesgo.png' },
+];
+
 const imageEntries: EntrySeed[] = [
   ...serviceImageSeeds.map((image) => ({
     id: `service-image.${image.slug}`,
@@ -155,6 +184,40 @@ const imageEntries: EntrySeed[] = [
       imageAlt: { type: 'text' as const, value: image.alt },
       imageWidth: { type: 'number' as const, value: image.width },
       imageHeight: { type: 'number' as const, value: image.height },
+    },
+  })),
+  // Galerías de servicios (3 slots por servicio, vacíos por defecto)
+  ...serviceGallerySlugs.map((slug) => ({
+    id: `service-gallery.${slug}`,
+    kind: 'settings',
+    slug: `service-gallery/${slug}`,
+    locale: 'es-CL',
+    title: `Galería servicio ${slug}`,
+    status: 'published' as const,
+    fields: {
+      gallery1: { type: 'image' as const, value: '' },
+      gallery1Alt: { type: 'text' as const, value: '' },
+      gallery2: { type: 'image' as const, value: '' },
+      gallery2Alt: { type: 'text' as const, value: '' },
+      gallery3: { type: 'image' as const, value: '' },
+      gallery3Alt: { type: 'text' as const, value: '' },
+    },
+  })),
+  // Galerías de proyectos (3 slots por proyecto, vacíos por defecto)
+  ...projectGallerySlugs.map((slug) => ({
+    id: `project-gallery.${slug}`,
+    kind: 'settings',
+    slug: `project-gallery/${slug}`,
+    locale: 'es-CL',
+    title: `Galería proyecto ${slug}`,
+    status: 'published' as const,
+    fields: {
+      gallery1: { type: 'image' as const, value: '' },
+      gallery1Alt: { type: 'text' as const, value: '' },
+      gallery2: { type: 'image' as const, value: '' },
+      gallery2Alt: { type: 'text' as const, value: '' },
+      gallery3: { type: 'image' as const, value: '' },
+      gallery3Alt: { type: 'text' as const, value: '' },
     },
   })),
 ];
@@ -205,24 +268,39 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Header',
     status: 'published',
     fields: {
+      logoSrc: { type: 'image', value: '' },
       logoAlt: { type: 'text', value: 'Hidromont Chile S.A.' },
       logoAriaLabel: { type: 'text', value: 'Hidromont Chile — Inicio' },
       wordmarkPrimary: { type: 'text', value: 'HIDROMONT' },
       wordmarkSub: { type: 'text', value: 'Chile S.A.' },
       navInicio: { type: 'text', value: 'Inicio' },
+      hrefInicio: { type: 'text', value: '/' },
       navServicios: { type: 'text', value: 'Servicios' },
+      hrefServicios: { type: 'text', value: '/servicios' },
       navServiciosTuberias: { type: 'text', value: 'Tuberías Forzadas' },
+      hrefServiciosTuberias: { type: 'text', value: '/servicios/tuberias-forzadas' },
       navServiciosCompuertas: { type: 'text', value: 'Compuertas' },
+      hrefServiciosCompuertas: { type: 'text', value: '/servicios/compuertas' },
       navServiciosValvulas: { type: 'text', value: 'Válvulas' },
+      hrefServiciosValvulas: { type: 'text', value: '/servicios/valvulas' },
       navServiciosTurbinas: { type: 'text', value: 'Turbinas' },
+      hrefServiciosTurbinas: { type: 'text', value: '/servicios/turbinas' },
       navServiciosLimpiarrejas: { type: 'text', value: 'Limpiarrejas' },
+      hrefServiciosLimpiarrejas: { type: 'text', value: '/servicios/limpiarrejas' },
       navServiciosMontajes: { type: 'text', value: 'Montajes Especiales' },
+      hrefServiciosMontajes: { type: 'text', value: '/servicios/otros-montajes' },
       navProyectos: { type: 'text', value: 'Proyectos' },
+      hrefProyectos: { type: 'text', value: '/proyectos' },
       navEmpresa: { type: 'text', value: 'Empresa' },
+      hrefEmpresa: { type: 'text', value: '/empresa' },
       navCalidad: { type: 'text', value: 'Calidad' },
+      hrefCalidad: { type: 'text', value: '/calidad' },
       navClientes: { type: 'text', value: 'Clientes' },
+      hrefClientes: { type: 'text', value: '/clientes' },
       navContacto: { type: 'text', value: 'Contacto' },
+      hrefContacto: { type: 'text', value: '/contacto' },
       ctaLabel: { type: 'text', value: 'Contáctenos' },
+      ctaHref: { type: 'text', value: '/contacto' },
       mobileMenuOpenLabel: { type: 'text', value: 'Abrir menú de navegación' },
     },
   },
@@ -903,5 +981,19 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: { type: 'textarea', value: 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.' },
       buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
     },
+  },
+  {
+    id: 'clientes.logos',
+    kind: 'settings',
+    slug: 'clientes/logos',
+    locale: 'es-CL',
+    title: 'Logos de clientes',
+    status: 'published',
+    fields: Object.fromEntries(
+      clienteLogos.map(({ key, logo }) => [
+        `logo-${key}`,
+        { type: 'image' as const, value: logo },
+      ])
+    ),
   },
 ];

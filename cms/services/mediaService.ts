@@ -40,6 +40,13 @@ export class MediaService {
     return this.mediaRepository.list();
   }
 
+  getMediaWithUsages(id: string) {
+    const asset = this.mediaRepository.find(id);
+    if (!asset) throw new Error(`Media asset ${id} no encontrado`);
+    const usages = this.mediaRepository.getUsages(id);
+    return { ...asset, usages };
+  }
+
   async syncPublicMedia(): Promise<{ imported: number }> {
     let imported = 0;
     for (const root of publicMediaRoots) {

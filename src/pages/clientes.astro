@@ -6,8 +6,10 @@ import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
 import EditableText from '../components/cms/EditableText.astro';
+import EditableImage from '../components/cms/EditableImage.astro';
 import { getEntry } from 'astro:content';
 import { getCmsText } from '../data/cms';
+import { getClienteLogoByNombre } from '../data/cliente-logos';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
 const lista = clientesEntry.data.items;
@@ -56,12 +58,28 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
             <h3 class="font-heading font-semibold text-primary-dark mb-4 pb-2 border-b border-border" style="font-size: var(--font-size-h3);">
               {sectorLabels[sector] ?? sector}
             </h3>
-            <div class="flex flex-wrap gap-3">
-              {clientesSector.map((c) => (
-                <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
-                  {c.nombre}
-                </span>
-              ))}
+            <div class="flex flex-wrap items-center gap-4">
+              {clientesSector.map((c) => {
+                const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
+                const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                return logoSrc ? (
+                  <div class="flex items-center justify-center h-12 px-4 py-2 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
+                    <EditableImage
+                      entry="clientes.logos"
+                      field={`logo-${logoKey}`}
+                      src={logoSrc}
+                      alt={c.nombre}
+                      height={40}
+                      class="h-8 w-auto object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
+                    {c.nombre}
+                  </span>
+                );
+              })}
             </div>
           </div>
         );

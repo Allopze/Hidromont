@@ -4,7 +4,11 @@ import logo from '../../assets/logo/logo_hidromont.png';
 import { navItems, ctaLabel, ctaHref } from '../../data/nav';
 import Button from '../ui/Button.astro';
 import EditableText from '../cms/EditableText.astro';
+import EditableImage from '../cms/EditableImage.astro';
 import { getCmsText } from '../../data/cms';
+
+const cmsLogoSrc = getCmsText('layout.header', 'logoSrc', '');
+const cmsLogoAlt = getCmsText('layout.header', 'logoAlt', 'Hidromont Chile S.A.');
 
 interface Props {
   currentPath?: string;
@@ -37,17 +41,40 @@ function isActive(href: string) {
 
       <!-- Logo -->
       <a href="/" class="flex items-center gap-4 shrink-0 no-underline" aria-label={getCmsText('layout.header', 'logoAriaLabel', 'Hidromont Chile — Inicio')}>
-        <Image
-          src={logo}
-          alt={getCmsText('layout.header', 'logoAlt', 'Hidromont Chile S.A.')}
-          width={300}
-          height={100}
-          class={[
-            'h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
-            overlay ? 'logo-img' : '',
-          ].join(' ')}
-          loading="eager"
-        />
+        {cmsLogoSrc ? (
+          <EditableImage
+            entry="layout.header"
+            field="logoSrc"
+            altField="logoAlt"
+            src={cmsLogoSrc}
+            alt={cmsLogoAlt}
+            width={300}
+            height={100}
+            class={[
+              'h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+              overlay ? 'logo-img' : '',
+            ].join(' ')}
+            loading="eager"
+          />
+        ) : (
+          <Image
+            src={logo}
+            alt={cmsLogoAlt}
+            width={300}
+            height={100}
+            class={[
+              'h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+              overlay ? 'logo-img' : '',
+            ].join(' ')}
+            loading="eager"
+            {...(import.meta.env.DEV ? {
+              'data-cms-entry': 'layout.header',
+              'data-cms-field': 'logoSrc',
+              'data-cms-alt-field': 'logoAlt',
+              'data-cms-type': 'image',
+            } : {})}
+          />
+        )}
         <div class="flex flex-col leading-tight">
           <span
             class={[

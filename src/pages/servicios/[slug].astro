@@ -7,6 +7,8 @@ import Badge from '../../components/ui/Badge.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import { getCollection } from 'astro:content';
 import { serviceImages } from '../../data/service-images';
+import { serviceGalleries } from '../../data/service-galleries';
+import EditableImage from '../../components/cms/EditableImage.astro';
 
 export async function getStaticPaths() {
   const servicios = await getCollection('servicios');
@@ -21,6 +23,8 @@ const { titulo, resumen, tipos, aplicaciones, normas, procesos } = servicio.data
 const { Content } = await servicio.render();
 const serviceImageEntry = `service-image.${servicio.slug}`;
 const heroImg = serviceImages[servicio.slug];
+const gallery = serviceGalleries[servicio.slug];
+const galleryEntryId = `service-gallery.${servicio.slug}`;
 
 const jsonLd = [
   {
@@ -155,6 +159,46 @@ const jsonLd = [
       )}
     </Container>
   </Section>
+
+  {(gallery?.images.length > 0 || import.meta.env.DEV) && (
+    <Section variant="default">
+      <Container>
+        <h2 class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
+          Galería de imágenes
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((n) => {
+            const img = gallery?.images[n - 1];
+            return (
+              <div class="aspect-video overflow-hidden rounded-lg bg-background-alt border border-border">
+                {img ? (
+                  <EditableImage
+                    entry={galleryEntryId}
+                    field={`gallery${n}`}
+                    altField={`gallery${n}Alt`}
+                    src={img.src}
+                    alt={img.alt}
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : import.meta.env.DEV ? (
+                  <div
+                    class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
+                    data-cms-entry={galleryEntryId}
+                    data-cms-field={`gallery${n}`}
+                    data-cms-alt-field={`gallery${n}Alt`}
+                    data-cms-type="image"
+                  >
+                    + Agregar imagen {n}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </Container>
+    </Section>
+  )}
 
   <Section variant="strong">
     <Container size="md">

@@ -22,6 +22,15 @@ export class MediaController extends BaseController {
     }
   }
 
+  async getById(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const params = request.params as { id: string };
+      this.handleSuccess(reply, this.mediaService.getMediaWithUsages(params.id));
+    } catch (error) {
+      this.handleError(error, reply, 'getMedia');
+    }
+  }
+
   async upload(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const file = await request.file();

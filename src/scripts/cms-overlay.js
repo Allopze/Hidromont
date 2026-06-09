@@ -642,6 +642,7 @@
       >
         <img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />
         <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
+        ${item.usageCount > 0 ? `<span class="hm-cms-badge" style="font-size:10px;align-self:start">Usado: ${item.usageCount}</span>` : ''}
       </button>
     `).join('');
   }
