@@ -69,6 +69,80 @@ export class ContentRepository {
     transaction();
   }
 
+  /** Create a brand-new entry (throws if id already exists). */
+  createEntry(input: {
+    id: string;
+    kind: string;
+    slug: string;
+    locale?: string;
+    title: string;
+    status?: 'draft' | 'published';
+    fields: CmsField[];
+    now: string;
+  }): CmsEntry {
+    const existing = this.findEntryRow(input.id);
+    if (existing) throw new Error(`Ya existe una entrada con id "${input.id}"`);
+
+    const transaction = this.db.transaction(() => {
+      this.db
+        .prepare(
+          `INSERT INTO content_entries (id, kind, slug, locale, title, status, version, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`
+        )
+        .run(
+          input.id,
+          input.kind,
+          input.slug,
+          input.locale ?? 'es-CL',
+          input.title,
+          input.status ?? 'draft',
+          input.now,
+          input.now
+        );
+
+      for (const field of input.fields) {
+        this.upsertField(input.id, field, input.now, false);
+      }
+
+      this.createRevision(input.id, 1, input.now);
+    });
+
+    transaction();
+
+    const entry = this.findEntry(input.id);
+    if (!entry) throw new Error(`Entrada ${input.id} no encontrada tras crear`);
+    return entry;
+  }
+
+  /** Update entry metadata (title, slug, status). Does not touch fields. */
+  updateEntryMeta(
+    id: string,
+    meta: { title?: string; slug?: string; status?: 'draft' | 'published' },
+    now: string
+  ): CmsEntry {
+    const existing = this.findEntryRow(id);
+    if (!existing) throw new Error(`Entrada ${id} no encontrada`);
+
+    const newTitle = meta.title ?? existing.title;
+    const newSlug = meta.slug ?? existing.slug;
+    const newStatus = meta.status ?? existing.status;
+
+    this.db
+      .prepare('UPDATE content_entries SET title = ?, slug = ?, status = ?, updated_at = ? WHERE id = ?')
+      .run(newTitle, newSlug, newStatus, now, id);
+
+    const entry = this.findEntry(id);
+    if (!entry) throw new Error(`Entrada ${id} no encontrada tras actualizar`);
+    return entry;
+  }
+
+  /** Delete an entry and all its fields and revisions (cascade). */
+  deleteEntry(id: string): void {
+    const existing = this.findEntryRow(id);
+    if (!existing) throw new Error(`Entrada ${id} no encontrada`);
+    this.db.prepare('DELETE FROM content_entries WHERE id = ?').run(id);
+  }
+
   /** Insert an entry only if its id does not already exist. Does NOT overwrite fields. */
   insertEntryIfMissing(input: {
     id: string;

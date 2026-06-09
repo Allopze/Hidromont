@@ -47,6 +47,35 @@ export class ContentService {
     return { inserted };
   }
 
+  createEntry(input: {
+    id: string;
+    kind: string;
+    slug: string;
+    locale?: string;
+    title: string;
+    status?: 'draft' | 'published';
+    fields?: Record<string, { type: string; value: unknown }>;
+  }) {
+    const now = new Date().toISOString();
+    const fields = Object.entries(input.fields ?? {}).map(([key, f]) => ({
+      key,
+      type: f.type as 'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object',
+      value: f.value,
+    }));
+    return this.contentRepository.createEntry({ ...input, fields, now });
+  }
+
+  updateEntryMeta(
+    id: string,
+    meta: { title?: string; slug?: string; status?: 'draft' | 'published' }
+  ) {
+    return this.contentRepository.updateEntryMeta(id, meta, new Date().toISOString());
+  }
+
+  deleteEntry(id: string): void {
+    this.contentRepository.deleteEntry(id);
+  }
+
   listRevisions(entryId: string) {
     return this.contentRepository.listRevisions(entryId);
   }

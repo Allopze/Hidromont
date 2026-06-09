@@ -243,6 +243,37 @@
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
+    .hm-cms-revisions {
+      display: grid;
+      gap: 8px;
+    }
+    .hm-cms-revision-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+    }
+    .hm-cms-revision-item.current {
+      border-color: #2d9cdb;
+      background: #eff8ff;
+    }
+    .hm-cms-revision-info {
+      display: grid;
+      gap: 2px;
+    }
+    .hm-cms-revision-version {
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .hm-cms-revision-date {
+      font-size: 11px;
+      color: #64748b;
+    }
     @media (max-width: 640px) {
       .hm-cms-bar {
         left: 8px;
@@ -415,6 +446,7 @@
         <div class="hm-cms-actions">
           <button type="submit">Guardar</button>
           <button type="button" class="secondary" data-action="export">Exportar</button>
+          <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
         </div>
         <p class="hm-cms-muted" data-status>Sin cambios guardados.</p>
       </form>
@@ -531,6 +563,58 @@
     `);
   }
 
+  async function loadRevisions(entryId) {
+    if (!(await ensureSession())) return;
+    openPanel(`<p class="hm-cms-muted">Cargando revisiones de ${escapeHtml(entryId)}...</p>`);
+    try {
+      const data = await api(`/api/cms/revisions/${encodeURIComponent(entryId)}`);
+      const revisions = data.revisions || [];
+
+      if (!revisions.length) {
+        openPanel(`
+          <p class="hm-cms-muted">Sin revisiones registradas para <strong>${escapeHtml(entryId)}</strong>.</p>
+          <button type="button" class="secondary" data-action="back-to-editor">← Volver</button>
+        `);
+        return;
+      }
+
+      const currentVersion = revisions[0]?.version ?? 0;
+
+      openPanel(`
+        <div style="display:grid;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <strong style="font-size:14px">Revisiones de ${escapeHtml(entryId)}</strong>
+            <button type="button" class="secondary" data-action="back-to-editor">← Volver</button>
+          </div>
+          <p class="hm-cms-muted">Haga clic en «Restaurar» para volver a esa versión.</p>
+          <div class="hm-cms-revisions">
+            ${revisions.map((rev) => `
+              <div class="hm-cms-revision-item${rev.version === currentVersion ? ' current' : ''}">
+                <div class="hm-cms-revision-info">
+                  <span class="hm-cms-revision-version">v${rev.version}${rev.version === currentVersion ? ' · actual' : ''}</span>
+                  <span class="hm-cms-revision-date">${escapeHtml(formatDate(rev.createdAt))}</span>
+                </div>
+                ${rev.version !== currentVersion ? `
+                  <button
+                    type="button"
+                    class="secondary"
+                    style="font-size:12px;padding:6px 10px"
+                    data-action="restore-revision"
+                    data-entry-id="${escapeHtml(entryId)}"
+                    data-revision-id="${escapeHtml(rev.id)}"
+                    data-revision-version="${rev.version}"
+                  >Restaurar</button>
+                ` : '<span class="hm-cms-badge" style="font-size:10px">Versión actual</span>'}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
   async function loadPublishJobs() {
     if (!(await ensureSession())) return;
     openPanel('<p class="hm-cms-muted">Cargando historial...</p>');
@@ -630,6 +714,45 @@
     }
     if (action === 'jobs') {
       loadPublishJobs();
+    }
+    if (action === 'revisions' && target instanceof Element) {
+      const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
+      if (entryId) loadRevisions(entryId);
+    }
+    if (action === 'back-to-editor') {
+      if (state.selected && state.entry) {
+        selectElement(state.selected).catch((error) => loginView(error.message));
+      } else {
+        closePanel();
+      }
+    }
+    if (action === 'restore-revision' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const btn = target.closest('[data-action="restore-revision"]');
+      if (!btn) return;
+      const entryId = btn.dataset.entryId;
+      const revisionId = btn.dataset.revisionId;
+      const version = btn.dataset.revisionVersion;
+      if (!entryId || !revisionId) return;
+
+      const confirmed = window.confirm(
+        `¿Restaurar la entrada "${entryId}" a la versión ${version}?\nEsta acción sobreescribirá los campos actuales en la base de datos.`
+      );
+      if (!confirmed) return;
+
+      btn.textContent = 'Restaurando...';
+      btn.setAttribute('disabled', '');
+      try {
+        await api(`/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}`, {
+          method: 'POST',
+        });
+        // Reload revisions view to reflect the new current version
+        await loadRevisions(entryId);
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+      }
+      return;
     }
     if (action === 'publish') {
       if (!(await ensureSession())) return;

@@ -93,13 +93,25 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/cms/manifest', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     contentController.manifest(request, reply)
   );
+  app.get('/api/cms/entries', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    contentController.listEntries(request, reply)
+  );
+  app.post('/api/cms/entries', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
+    contentController.createEntry(request, reply)
+  );
   app.get('/api/cms/entries/:id', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     contentController.getEntry(request, reply)
+  );
+  app.patch('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
+    contentController.updateEntryMeta(request, reply)
   );
   app.patch(
     '/api/cms/entries/:id/fields/:key',
     { preHandler: [requireAuth(authService), requireCsrf()] },
     (request, reply) => contentController.updateField(request, reply)
+  );
+  app.delete('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
+    contentController.deleteEntry(request, reply)
   );
 
   app.get('/api/cms/media', { preHandler: [requireAuth(authService)] }, (request, reply) =>
@@ -110,6 +122,9 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   );
   app.patch('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
     mediaController.update(request, reply)
+  );
+  app.delete('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
+    mediaController.delete(request, reply)
   );
 
   app.post('/api/cms/export', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>

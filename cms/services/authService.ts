@@ -7,14 +7,18 @@ export class AuthService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async ensureAdminUser(): Promise<void> {
-    const existing = this.userRepository.findByEmail(config.admin.email);
+    return this.ensureAdminUserWith(config.admin.email, config.admin.password);
+  }
+
+  async ensureAdminUserWith(email: string, password: string, costFactor = 12): Promise<void> {
+    const existing = this.userRepository.findByEmail(email);
     if (existing) return;
 
     const now = new Date().toISOString();
-    const passwordHash = await bcrypt.hash(config.admin.password, 12);
+    const passwordHash = await bcrypt.hash(password, costFactor);
     this.userRepository.createUser({
       id: nanoid(),
-      email: config.admin.email,
+      email,
       passwordHash,
       now,
     });

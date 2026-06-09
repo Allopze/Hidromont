@@ -50,4 +50,14 @@ export class MediaController extends BaseController {
       this.handleError(error, reply, 'updateMedia');
     }
   }
+
+  async delete(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const params = request.params as { id: string };
+      this.mediaService.deleteMedia(params.id);
+      this.handleSuccess(reply, { ok: true });
+    } catch (error) {
+      this.handleError(error, reply, 'deleteMedia');
+    }
+  }
 }

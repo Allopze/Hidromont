@@ -101,6 +101,10 @@ export class MediaRepository {
     return updated;
   }
 
+  delete(id: string): void {
+    this.db.prepare('DELETE FROM media_assets WHERE id = ?').run(id);
+  }
+
   private fromRow(row: MediaRow): MediaAsset {
     return {
       id: row.id,

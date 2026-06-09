@@ -27,3 +27,23 @@ export const updateMediaSchema = z.object({
   focalX: z.number().min(0).max(1).optional(),
   focalY: z.number().min(0).max(1).optional(),
 });
+
+export const createEntrySchema = z.object({
+  id: z.string().min(1).max(160).regex(/^[a-z0-9._-]+$/, 'ID debe contener solo letras minúsculas, números, puntos, guiones y guiones bajos'),
+  kind: z.enum(['page', 'layout', 'component', 'settings', 'servicio', 'proyecto']),
+  slug: z.string().min(1).max(240),
+  locale: z.string().optional(),
+  title: z.string().min(1).max(240),
+  status: z.enum(['draft', 'published']).optional(),
+  fields: z.record(z.string(), z.object({ type: z.string(), value: z.unknown() })).optional(),
+});
+
+export const updateEntryMetaSchema = z.object({
+  title: z.string().min(1).max(240).optional(),
+  slug: z.string().min(1).max(240).optional(),
+  status: z.enum(['draft', 'published']).optional(),
+});
+
+export const listEntriesQuerySchema = z.object({
+  kind: z.string().optional(),
+});

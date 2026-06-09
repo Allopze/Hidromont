@@ -118,6 +118,27 @@ export class MediaService {
     });
   }
 
+  deleteMedia(id: string): void {
+    const asset = this.mediaRepository.find(id);
+    if (!asset) throw new Error(`Media asset ${id} no encontrado`);
+
+    // Sólo eliminar del disco si fue subido a través del CMS (uploads/cms)
+    if (asset.path.startsWith(config.cms.publicUploadBase)) {
+      const fullPath = path.join(config.rootDir, 'public', asset.path);
+      const canonPath = path.resolve(fullPath);
+      const uploadDir = path.resolve(config.cms.uploadDir);
+      if (canonPath.startsWith(uploadDir) && fs.existsSync(canonPath)) {
+        fs.unlinkSync(canonPath);
+      }
+    }
+
+    this.mediaRepository.delete(id);
+  }
+
+  findMedia(id: string) {
+    return this.mediaRepository.find(id);
+  }
+
   private walkFiles(directory: string): string[] {
     return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
       const fullPath = path.join(directory, entry.name);
