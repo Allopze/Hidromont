@@ -512,11 +512,64 @@
       `;
     }
 
+    if (cmsType === 'list') {
+      const items = Array.isArray(current) ? current : (typeof current === 'string' && current ? [current] : []);
+      return `
+        <div data-list-editor>
+          <p class="hm-cms-muted" style="margin:0 0 8px">Items de la lista:</p>
+          <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
+            ${items.map((item, i) => `
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;font:inherit" />
+                <button type="button" data-action="remove-list-item" data-index="${i}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:6px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
+          <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(items))}" />
+        </div>
+      `;
+    }
+
+    if (cmsType === 'number') {
+      return `
+        <label>Valor numérico
+          <input name="value" type="number" value="${escapeHtml(String(current))}" step="any" />
+        </label>
+      `;
+    }
+
+    if (cmsType === 'link') {
+      const link = typeof current === 'object' && current !== null ? current : { label: String(current), href: '' };
+      return `
+        <label>Texto del enlace
+          <input name="link-label" value="${escapeHtml(String(link.label ?? ''))}" />
+        </label>
+        <label>URL
+          <input name="link-href" value="${escapeHtml(String(link.href ?? ''))}" />
+        </label>
+        <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(link))}" />
+      `;
+    }
+
     return `
       <label>Contenido
         <input name="value" value="${escapeHtml(String(current))}" />
       </label>
     `;
+  }
+
+  function syncListValue(form) {
+    const items = Array.from(form.querySelectorAll('[data-list-item]')).map((input) => input.value);
+    const hidden = form.querySelector('[name="value"]');
+    if (hidden) hidden.value = JSON.stringify(items);
+  }
+
+  function syncLinkValue(form) {
+    const label = form.querySelector('[name="link-label"]')?.value || '';
+    const href = form.querySelector('[name="link-href"]')?.value || '';
+    const hidden = form.querySelector('[name="value"]');
+    if (hidden) hidden.value = JSON.stringify({ label, href });
   }
 
   function escapeHtml(value) {
@@ -1000,6 +1053,44 @@
     if (action === 'back-to-collections') {
       loadCollections(activeCollectionKind);
     }
+    if (action === 'add-list-item' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const form = target.closest('form');
+      const container = target.closest('[data-list-editor]')?.querySelector('[data-list-items]');
+      if (!container || !form) return;
+      const idx = container.querySelectorAll('[data-list-item]').length;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:6px;align-items:center';
+      row.innerHTML = `
+        <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;font:inherit" />
+        <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+      `;
+      container.appendChild(row);
+      row.querySelector('input')?.focus();
+      syncListValue(form);
+      return;
+    }
+    if (action === 'remove-list-item' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const form = target.closest('form');
+      const row = target.closest('div');
+      if (row && form) {
+        row.remove();
+        // Re-index remaining items
+        const container = form.querySelector('[data-list-items]');
+        if (container) {
+          container.querySelectorAll('[data-list-item]').forEach((input, i) => {
+            input.setAttribute('data-list-item', String(i));
+            const btn = input.nextElementSibling;
+            if (btn) btn.setAttribute('data-index', String(i));
+          });
+        }
+        syncListValue(form);
+      }
+      return;
+    }
     if (action === 'revisions' && target instanceof Element) {
       const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
       if (entryId) loadRevisions(entryId);
@@ -1106,9 +1197,9 @@
 
   document.addEventListener('input', (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLInputElement)) return;
+    if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
 
-    if (target.matches('[data-media-search]')) {
+    if (target instanceof HTMLInputElement && target.matches('[data-media-search]')) {
       filterMediaPicker(target.value);
       return;
     }
@@ -1120,6 +1211,16 @@
     if (target.name === 'alt' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');
       if (preview) preview.setAttribute('alt', target.value);
+    }
+
+    // Sync list items to hidden input on every keystroke
+    if (target instanceof HTMLInputElement && target.hasAttribute('data-list-item') && target.form) {
+      syncListValue(target.form);
+    }
+
+    // Sync link fields to hidden input
+    if ((target.name === 'link-label' || target.name === 'link-href') && target.form) {
+      syncLinkValue(target.form);
     }
   });
 

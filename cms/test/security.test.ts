@@ -3,12 +3,11 @@ import { createTestApp, type TestApp } from './setup';
 
 describe('Security', () => {
   let ctx: TestApp;
-  let csrfToken: string;
   let cookieHeader: string;
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    ({ csrfToken, cookieHeader } = await ctx.login());
+    ({ cookieHeader } = await ctx.login());
   });
 
   afterAll(async () => {
