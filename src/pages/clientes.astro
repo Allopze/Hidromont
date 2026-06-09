@@ -5,7 +5,9 @@ import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import EditableText from '../components/cms/EditableText.astro';
 import { getEntry } from 'astro:content';
+import { getCmsText } from '../data/cms';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
 const lista = clientesEntry.data.items;
@@ -27,19 +29,24 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
   description="Referencias de Hidromont Chile S.A. — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
 >
   <PageHero
-    eyebrow="Referencias"
-    title="Clientes"
-    subtitle="Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos."
+    eyebrow={getCmsText('clientes.hero', 'eyebrow', 'Referencias')}
+    title={getCmsText('clientes.hero', 'title', 'Clientes')}
+    subtitle={getCmsText('clientes.hero', 'subtitle', 'Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos.')}
     breadcrumbs={[{ label: 'Clientes' }]}
+    cmsEntry="clientes.hero"
   />
 
   <Section variant="default">
     <Container>
       <div class="text-center mb-12">
-        <Eyebrow>Sectores</Eyebrow>
-        <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-          Referencias por sector
-        </h2>
+        <Eyebrow>
+          <EditableText entry="clientes.sectores" field="eyebrow">
+            {getCmsText('clientes.sectores', 'eyebrow', 'Sectores')}
+          </EditableText>
+        </Eyebrow>
+        <EditableText as="h2" entry="clientes.sectores" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('clientes.sectores', 'title', 'Referencias por sector')}
+        </EditableText>
       </div>
 
       {sectores.map((sector) => {
@@ -81,13 +88,15 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          Empresas que trabajan con infraestructura hidráulica e hidroeléctrica
-        </h2>
-        <p class="text-white/70 mb-8">
-          Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.
-        </p>
-        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
+        <EditableText as="h2" entry="clientes.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('clientes.cta', 'title', 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica')}
+        </EditableText>
+        <EditableText as="p" entry="clientes.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
+          {getCmsText('clientes.cta', 'subtitle', 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.')}
+        </EditableText>
+        <Button href="/contacto" size="lg">
+          {getCmsText('clientes.cta', 'buttonLabel', 'Ponerse en contacto')}
+        </Button>
       </div>
     </Container>
   </Section>

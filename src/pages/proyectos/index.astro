@@ -8,6 +8,7 @@ import PageHero from '../../components/ui/PageHero.astro';
 import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
+import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
 
@@ -66,10 +67,14 @@ const bancoPorCategoria = categorias.map((c) => ({
   {destacados.length > 0 && (
     <Section variant="default">
       <Container>
-        <Eyebrow>Casos destacados</Eyebrow>
-        <h2 class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
-          Proyectos de referencia
-        </h2>
+        <Eyebrow>
+          <EditableText entry="proyectos.index.destacados" field="eyebrow">
+            {getCmsText('proyectos.index.destacados', 'eyebrow', 'Casos destacados')}
+          </EditableText>
+        </Eyebrow>
+        <EditableText as="h2" entry="proyectos.index.destacados" field="title" class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
+          {getCmsText('proyectos.index.destacados', 'title', 'Proyectos de referencia')}
+        </EditableText>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {destacados.map((p) => (
             <ProjectCard proyecto={p} />
@@ -82,13 +87,17 @@ const bancoPorCategoria = categorias.map((c) => ({
   <!-- Banco de proyectos -->
   <Section variant="alt" id="banco-proyectos">
     <Container>
-      <Eyebrow>Banco de proyectos</Eyebrow>
-      <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-        Experiencia comprobada en embalses, presas y centrales
-      </h2>
-      <p class="text-text-muted mb-8 max-w-2xl" style="font-size: var(--font-size-body-lg);">
-        Registro de proyectos ejecutados clasificados por línea de servicio.
-      </p>
+      <Eyebrow>
+        <EditableText entry="proyectos.index.banco" field="eyebrow">
+          {getCmsText('proyectos.index.banco', 'eyebrow', 'Banco de proyectos')}
+        </EditableText>
+      </Eyebrow>
+      <EditableText as="h2" entry="proyectos.index.banco" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+        {getCmsText('proyectos.index.banco', 'title', 'Experiencia comprobada en embalses, presas y centrales')}
+      </EditableText>
+      <EditableText as="p" entry="proyectos.index.banco" field="subtitle" type="textarea" class="text-text-muted mb-8 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+        {getCmsText('proyectos.index.banco', 'subtitle', 'Registro de proyectos ejecutados clasificados por línea de servicio.')}
+      </EditableText>
 
       <ProjectFilters items={filterItems} />
 
@@ -105,13 +114,15 @@ const bancoPorCategoria = categorias.map((c) => ({
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          Más de 40 años de proyectos en Chile y el exterior
-        </h2>
-        <p class="text-white/70 mb-8">
-          Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.
-        </p>
-        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
+        <EditableText as="h2" entry="proyectos.index.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('proyectos.index.cta', 'title', 'Más de 40 años de proyectos en Chile y el exterior')}
+        </EditableText>
+        <EditableText as="p" entry="proyectos.index.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
+          {getCmsText('proyectos.index.cta', 'subtitle', 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.')}
+        </EditableText>
+        <Button href="/contacto" size="lg">
+          {getCmsText('proyectos.index.cta', 'buttonLabel', 'Ponerse en contacto')}
+        </Button>
       </div>
     </Container>
   </Section>

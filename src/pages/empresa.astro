@@ -4,31 +4,10 @@ import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
-import CapabilitiesBlock from '../components/home/CapabilitiesBlock.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import EditableText from '../components/cms/EditableText.astro';
 import { getCmsText } from '../data/cms';
-
-const instalaciones = [
-  { title: 'Taller industrial', value: '3.000 m²', description: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
-  { title: 'Oficinas e ingeniería', value: '320 m²', description: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
-  { title: 'Cilindradora hidráulica', value: '65 mm', description: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
-  { title: 'Puentes grúa', value: '5 unidades', description: 'Capacidades de 10, 15, 16 y 20 toneladas para maniobras de fabricación y montaje.' },
-];
-
-const maquinaria = [
-  'Soldadura arco sumergido ESAB A2 Automatic LAF1000 (4 unidades)',
-  'Equipos semiautomáticos ESAB Origo Mig 502c',
-  'Fresadora DYE600 de carrera 7 m',
-  'Fresadora ZAYER de carrera 1,5 m',
-  'Tornos paralelos de 2 m y 6 m',
-  'Torno al aire con volteo 4,5 m',
-  'Cizalla LOIRE 3 m/16 mm',
-  'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
-  'Plegadora MEBUSA 200 Tn × 3 m',
-  'Oxicorte hasta 100 mm',
-  'Grúa autopropulsada 50 Tn',
-  'Grupos electrógenos de 100 a 200 KVA',
-];
+import { company } from '../data/company';
 ---
 
 <PageLayout
@@ -52,53 +31,51 @@ const maquinaria = [
     <Container size="lg">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <div>
-          <Eyebrow>Historia</Eyebrow>
-          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            Más de 40 años en infraestructura hidráulica
-          </h2>
+          <Eyebrow>
+            <EditableText entry="empresa.historia" field="eyebrow">
+              {getCmsText('empresa.historia', 'eyebrow', 'Historia')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="empresa.historia" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            {getCmsText('empresa.historia', 'title', 'Más de 40 años en infraestructura hidráulica')}
+          </EditableText>
           <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-body-lg); line-height: 1.7;">
-            <p>
-              Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde
-              1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa
-              en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e
-              internacional.
-            </p>
-            <p>
-              La compañía se especializa en la ingeniería, fabricación y montaje de equipos
-              hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite
-              abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones
-              adaptadas a las necesidades de cada obra.
-            </p>
-            <p>
-              Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías
-              forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos
-              ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas
-              a cada proyecto hidroeléctrico o hidráulico.
-            </p>
+            <EditableText as="p" entry="empresa.historia" field="p1" type="textarea">
+              {getCmsText('empresa.historia', 'p1', 'Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.')}
+            </EditableText>
+            <EditableText as="p" entry="empresa.historia" field="p2" type="textarea">
+              {getCmsText('empresa.historia', 'p2', 'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra.')}
+            </EditableText>
+            <EditableText as="p" entry="empresa.historia" field="p3" type="textarea">
+              {getCmsText('empresa.historia', 'p3', 'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.')}
+            </EditableText>
           </div>
         </div>
 
         <div class="space-y-6">
           <div class="grid grid-cols-2 gap-4">
-            {[
-              { label: 'Fundación', value: '1983', desc: 'Origen español' },
-              { label: 'Chile desde', value: '1997', desc: 'Los Ángeles, Biobío' },
-              { label: 'Modalidad', value: 'EPC', desc: 'Llave en mano' },
-              { label: 'Calidad', value: 'ISO 9001', desc: 'Sistema de gestión' },
-            ].map((item) => (
+            {([1, 2, 3, 4] as const).map((i) => (
               <div class="p-5 border border-border rounded-lg bg-surface">
-                <p class="font-mono font-bold text-accent text-2xl">{item.value}</p>
-                <p class="font-semibold text-text text-sm mt-1">{item.label}</p>
-                <p class="text-text-muted text-xs mt-0.5">{item.desc}</p>
+                <EditableText as="p" entry="empresa.metricas" field={`card${i}Value`} class="font-mono font-bold text-accent text-2xl">
+                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'EPC', 'ISO 9001'][i - 1])}
+                </EditableText>
+                <EditableText as="p" entry="empresa.metricas" field={`card${i}Label`} class="font-semibold text-text text-sm mt-1">
+                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Chile desde', 'Modalidad', 'Calidad'][i - 1])}
+                </EditableText>
+                <EditableText as="p" entry="empresa.metricas" field={`card${i}Desc`} class="text-text-muted text-xs mt-0.5">
+                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Llave en mano', 'Sistema de gestión'][i - 1])}
+                </EditableText>
               </div>
             ))}
           </div>
 
           <div class="p-6 bg-primary-light border border-border rounded-lg">
-            <h3 class="font-heading font-semibold text-primary-dark mb-3">Ubicación</h3>
+            <EditableText as="h3" entry="empresa.metricas" field="ubicacionTitle" class="font-heading font-semibold text-primary-dark mb-3">
+              {getCmsText('empresa.metricas', 'ubicacionTitle', 'Ubicación')}
+            </EditableText>
             <p class="text-sm text-text-muted">
-              Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513<br />
-              Los Ángeles, Región del Biobío, Chile
+              <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText><br />
+              <EditableText entry="site.company" field="ciudad">{company.ciudad}</EditableText>
             </p>
           </div>
         </div>
@@ -108,60 +85,111 @@ const maquinaria = [
 
   <!-- Instalaciones -->
   <Section variant="alt">
-    <CapabilitiesBlock
-      eyebrow="Infraestructura"
-      title="Instalaciones y medios productivos"
-      subtitle="Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión."
-      items={instalaciones}
-      columns={4}
-    />
+    <Container>
+      <div class="text-center mb-12">
+        <Eyebrow>
+          <EditableText entry="empresa.instalaciones" field="eyebrow">
+            {getCmsText('empresa.instalaciones', 'eyebrow', 'Infraestructura')}
+          </EditableText>
+        </Eyebrow>
+        <EditableText as="h2" entry="empresa.instalaciones" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('empresa.instalaciones', 'title', 'Instalaciones y medios productivos')}
+        </EditableText>
+        <EditableText as="p" entry="empresa.instalaciones" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-body-lg);">
+          {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
+        </EditableText>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {([1, 2, 3, 4] as const).map((i) => (
+          <div class="p-6 bg-surface border border-border rounded-lg">
+            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-accent text-2xl mb-1">
+              {getCmsText('empresa.instalaciones', `item${i}Value`, ['3.000 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
+            </EditableText>
+            <EditableText as="h3" entry="empresa.instalaciones" field={`item${i}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
+              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Taller industrial', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
+            </EditableText>
+            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
+              {getCmsText('empresa.instalaciones', `item${i}Desc`, [
+                'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
+                'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
+                'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.',
+                'Capacidades de 10, 15, 16 y 20 toneladas para maniobras de fabricación y montaje.',
+              ][i - 1])}
+            </EditableText>
+          </div>
+        ))}
+      </div>
+    </Container>
   </Section>
 
-  <!-- Maquinaria -->
+  <!-- Maquinaria + Medios de obra -->
   <Section variant="default">
     <Container>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
-          <Eyebrow>Equipamiento</Eyebrow>
-          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            Maquinaria especializada
-          </h2>
-          <p class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
-            Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado,
-            soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.
-          </p>
+          <Eyebrow>
+            <EditableText entry="empresa.maquinaria" field="eyebrow">
+              {getCmsText('empresa.maquinaria', 'eyebrow', 'Equipamiento')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="empresa.maquinaria" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            {getCmsText('empresa.maquinaria', 'title', 'Maquinaria especializada')}
+          </EditableText>
+          <EditableText as="p" entry="empresa.maquinaria" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+            {getCmsText('empresa.maquinaria', 'subtitle', 'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.')}
+          </EditableText>
           <ul class="space-y-2.5">
-            {maquinaria.map((item) => (
+            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const).map((i) => (
               <li class="flex items-start gap-2.5 text-sm text-text-muted">
                 <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-                {item}
+                <EditableText entry="empresa.maquinaria" field={`item${i}`}>
+                  {getCmsText('empresa.maquinaria', `item${i}`, [
+                    'Soldadura arco sumergido ESAB A2 Automatic LAF1000 (4 unidades)',
+                    'Equipos semiautomáticos ESAB Origo Mig 502c',
+                    'Fresadora DYE600 de carrera 7 m',
+                    'Fresadora ZAYER de carrera 1,5 m',
+                    'Tornos paralelos de 2 m y 6 m',
+                    'Torno al aire con volteo 4,5 m',
+                    'Cizalla LOIRE 3 m/16 mm',
+                    'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
+                    'Plegadora MEBUSA 200 Tn × 3 m',
+                    'Oxicorte hasta 100 mm',
+                    'Grúa autopropulsada 50 Tn',
+                    'Grupos electrógenos de 100 a 200 KVA',
+                  ][i - 1])}
+                </EditableText>
               </li>
             ))}
           </ul>
         </div>
 
         <div>
-          <Eyebrow>Capacidad de montaje</Eyebrow>
-          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            Medios de obra
-          </h2>
-          <p class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
-            Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de
-            acceso difícil que requieren medios especiales de transporte.
-          </p>
+          <Eyebrow>
+            <EditableText entry="empresa.mediosdeobra" field="eyebrow">
+              {getCmsText('empresa.mediosdeobra', 'eyebrow', 'Capacidad de montaje')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="empresa.mediosdeobra" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            {getCmsText('empresa.mediosdeobra', 'title', 'Medios de obra')}
+          </EditableText>
+          <EditableText as="p" entry="empresa.mediosdeobra" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+            {getCmsText('empresa.mediosdeobra', 'subtitle', 'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.')}
+          </EditableText>
           <ul class="space-y-2.5">
-            {[
-              'Grúa autopropulsada 50 Tn',
-              'Camiones pluma para maniobras en altura',
-              'Vehículos Pick-Up 4×4 para acceso a terreno',
-              'Grupos electrógenos de 100 a 200 KVA',
-              'Equipos de arenado y pintura industrial',
-              'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
-              'Plataformas y teleférico para montajes en pendiente',
-            ].map((item) => (
+            {([1, 2, 3, 4, 5, 6, 7] as const).map((i) => (
               <li class="flex items-start gap-2.5 text-sm text-text-muted">
                 <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-                {item}
+                <EditableText entry="empresa.mediosdeobra" field={`item${i}`}>
+                  {getCmsText('empresa.mediosdeobra', `item${i}`, [
+                    'Grúa autopropulsada 50 Tn',
+                    'Camiones pluma para maniobras en altura',
+                    'Vehículos Pick-Up 4×4 para acceso a terreno',
+                    'Grupos electrógenos de 100 a 200 KVA',
+                    'Equipos de arenado y pintura industrial',
+                    'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
+                    'Plataformas y teleférico para montajes en pendiente',
+                  ][i - 1])}
+                </EditableText>
               </li>
             ))}
           </ul>
@@ -174,13 +202,15 @@ const maquinaria = [
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Quiere conocer nuestras capacidades?
-        </h2>
-        <p class="text-white/70 mb-8">
-          Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.
-        </p>
-        <Button href="/contacto" size="lg">Contactar equipo técnico</Button>
+        <EditableText as="h2" entry="empresa.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('empresa.cta', 'title', '¿Quiere conocer nuestras capacidades?')}
+        </EditableText>
+        <EditableText as="p" entry="empresa.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
+          {getCmsText('empresa.cta', 'subtitle', 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.')}
+        </EditableText>
+        <Button href="/contacto" size="lg">
+          {getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico')}
+        </Button>
       </div>
     </Container>
   </Section>

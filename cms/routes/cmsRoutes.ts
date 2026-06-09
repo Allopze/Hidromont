@@ -19,6 +19,29 @@ import { ExportService } from '../services/exportService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
 
+// Rate limiter simple en memoria para el endpoint de login
+// Máximo 10 intentos por IP en 60 segundos; se reinicia después de ese periodo.
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfterMs: number } {
+  const now = Date.now();
+  const windowMs = 60_000; // 1 minuto
+  const maxAttempts = 10;
+
+  const entry = loginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(ip, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, retryAfterMs: 0 };
+  }
+
+  entry.count += 1;
+  if (entry.count > maxAttempts) {
+    return { allowed: false, retryAfterMs: entry.resetAt - now };
+  }
+
+  return { allowed: true, retryAfterMs: 0 };
+}
+
 export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   migrate();
 
@@ -53,7 +76,15 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const publishController = new PublishController(publishService);
 
   app.get('/api/cms/health', async () => ({ ok: true }));
-  app.post('/api/cms/login', (request, reply) => authController.login(request, reply));
+  app.post('/api/cms/login', async (request, reply) => {
+    const ip = request.ip ?? 'unknown';
+    const { allowed, retryAfterMs } = checkLoginRateLimit(ip);
+    if (!allowed) {
+      reply.header('Retry-After', String(Math.ceil(retryAfterMs / 1000)));
+      return reply.status(429).send({ error: 'Demasiados intentos. Espere antes de intentar de nuevo.' });
+    }
+    return authController.login(request, reply);
+  });
   app.post('/api/cms/logout', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
     authController.logout(request, reply)
   );
@@ -94,8 +125,26 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     publishController.getJob(request, reply)
   );
 
-  if (contentRepository.listEntries().length === 0) {
-    contentService.importInitialContent();
+  // Endpoints de revisiones
+  app.get('/api/cms/revisions/:entryId', { preHandler: [requireAuth(authService)] }, async (request, reply) => {
+    const { entryId } = request.params as { entryId: string };
+    const revisions = contentService.listRevisions(entryId);
+    return reply.send({ revisions });
+  });
+
+  app.post(
+    '/api/cms/revisions/:entryId/restore/:revisionId',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      const { entryId, revisionId } = request.params as { entryId: string; revisionId: string };
+      const entry = contentService.restoreRevision(entryId, revisionId);
+      return reply.send({ ok: true, entry });
+    }
+  );
+
+  // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
+  const { inserted } = contentService.importMissingEntries();
+  if (inserted > 0) {
     exportService.exportContent();
   }
 }

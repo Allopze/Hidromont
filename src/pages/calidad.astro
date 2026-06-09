@@ -5,26 +5,8 @@ import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
 import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import EditableText from '../components/cms/EditableText.astro';
 import { getCmsText } from '../data/cms';
-
-const principios = [
-  {
-    title: 'Satisfacción del cliente',
-    description: 'Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto.',
-  },
-  {
-    title: 'Mejora continua',
-    description: 'Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega.',
-  },
-  {
-    title: 'Cumplimiento normativo',
-    description: 'Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto.',
-  },
-  {
-    title: 'Planificación y organización',
-    description: 'El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios.',
-  },
-];
 ---
 
 <PageLayout
@@ -43,30 +25,35 @@ const principios = [
     <Container size="lg">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
-          <Eyebrow>Sistema de gestión</Eyebrow>
-          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            ISO 9001
-          </h2>
+          <Eyebrow>
+            <EditableText entry="calidad.contenido" field="eyebrow">
+              {getCmsText('calidad.contenido', 'eyebrow', 'Sistema de gestión')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="calidad.contenido" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+            {getCmsText('calidad.contenido', 'title', 'ISO 9001')}
+          </EditableText>
           <div class="space-y-4 text-text-muted" style="line-height: 1.7;">
-            <p>
-              Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la
-              planificación, organización y prestación de sus servicios. Este enfoque refuerza su
-              posicionamiento como proveedor técnico para proyectos de alta exigencia en
-              infraestructura hidráulica e hidroeléctrica.
-            </p>
-            <p>
-              El propósito declarado de la empresa es enfocar la calidad como un compromiso para
-              cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y
-              cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables.
-            </p>
+            <EditableText as="p" entry="calidad.contenido" field="p1" type="textarea">
+              {getCmsText('calidad.contenido', 'p1', 'Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica.')}
+            </EditableText>
+            <EditableText as="p" entry="calidad.contenido" field="p2" type="textarea">
+              {getCmsText('calidad.contenido', 'p2', 'El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables.')}
+            </EditableText>
           </div>
         </div>
 
         <div class="flex items-center justify-center">
           <div class="p-10 border-2 border-primary rounded-xl bg-primary-light text-center">
-            <p class="font-mono font-bold text-primary text-5xl mb-2">ISO</p>
-            <p class="font-mono font-bold text-primary text-4xl mb-4">9001</p>
-            <p class="text-sm text-text-muted">Sistema de gestión de calidad</p>
+            <EditableText as="p" entry="calidad.badge" field="line1" class="font-mono font-bold text-primary text-5xl mb-2">
+              {getCmsText('calidad.badge', 'line1', 'ISO')}
+            </EditableText>
+            <EditableText as="p" entry="calidad.badge" field="line2" class="font-mono font-bold text-primary text-4xl mb-4">
+              {getCmsText('calidad.badge', 'line2', '9001')}
+            </EditableText>
+            <EditableText as="p" entry="calidad.badge" field="caption" class="text-sm text-text-muted">
+              {getCmsText('calidad.badge', 'caption', 'Sistema de gestión de calidad')}
+            </EditableText>
           </div>
         </div>
       </div>
@@ -76,18 +63,34 @@ const principios = [
   <Section variant="alt">
     <Container>
       <div class="text-center mb-12">
-        <Eyebrow>Principios</Eyebrow>
-        <h2 class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
-          Nuestros compromisos de calidad
-        </h2>
+        <Eyebrow>
+          <EditableText entry="calidad.principios" field="eyebrow">
+            {getCmsText('calidad.principios', 'eyebrow', 'Principios')}
+          </EditableText>
+        </Eyebrow>
+        <EditableText as="h2" entry="calidad.principios" field="title" class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
+          {getCmsText('calidad.principios', 'title', 'Nuestros compromisos de calidad')}
+        </EditableText>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {principios.map((p) => (
+        {([1, 2, 3, 4] as const).map((i) => (
           <div class="p-6 bg-surface border border-border rounded-lg">
-            <h3 class="font-heading font-semibold text-primary-dark mb-2" style="font-size: var(--font-size-h4);">
-              {p.title}
-            </h3>
-            <p class="text-sm text-text-muted leading-relaxed">{p.description}</p>
+            <EditableText as="h3" entry="calidad.principios" field={`p${i}Title`} class="font-heading font-semibold text-primary-dark mb-2" style="font-size: var(--font-size-h4);">
+              {getCmsText('calidad.principios', `p${i}Title`, [
+                'Satisfacción del cliente',
+                'Mejora continua',
+                'Cumplimiento normativo',
+                'Planificación y organización',
+              ][i - 1])}
+            </EditableText>
+            <EditableText as="p" entry="calidad.principios" field={`p${i}Desc`} type="textarea" class="text-sm text-text-muted leading-relaxed">
+              {getCmsText('calidad.principios', `p${i}Desc`, [
+                'Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto.',
+                'Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega.',
+                'Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto.',
+                'El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios.',
+              ][i - 1])}
+            </EditableText>
           </div>
         ))}
       </div>
@@ -97,13 +100,15 @@ const principios = [
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          Proyectos que exigen calidad certificada
-        </h2>
-        <p class="text-white/70 mb-8">
-          Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.
-        </p>
-        <Button href="/contacto" size="lg">Contactar equipo técnico</Button>
+        <EditableText as="h2" entry="calidad.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('calidad.cta', 'title', 'Proyectos que exigen calidad certificada')}
+        </EditableText>
+        <EditableText as="p" entry="calidad.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
+          {getCmsText('calidad.cta', 'subtitle', 'Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.')}
+        </EditableText>
+        <Button href="/contacto" size="lg">
+          {getCmsText('calidad.cta', 'buttonLabel', 'Contactar equipo técnico')}
+        </Button>
       </div>
     </Container>
   </Section>

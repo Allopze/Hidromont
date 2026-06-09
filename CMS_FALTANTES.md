@@ -7,61 +7,69 @@ Este documento resume lo que falta para completar el CMS visual inline de Hidrom
 Implementado:
 
 - Servidor CMS local en `cms/` con Fastify, SQLite, cookies, CSRF y capas separadas.
-- Scripts `npm run cms`, `npm run dev:cms`, `npm run cms:import` y `npm run cms:export`.
+- Scripts `npm run cms`, `npm run dev:cms`, `npm run cms:import`, `npm run cms:export` y `npm run cms:backup`.
 - Importación inicial de páginas base, servicios y proyectos hacia SQLite.
+- `importMissingEntries()` al iniciar el servidor: importa entradas nuevas sin sobreescribir ediciones existentes.
 - Exportación de contenido editable de páginas hacia `src/data/cms-content.json`.
 - Exportación de colecciones Markdown solo cuando una entrada importada cambia de versión.
 - Overlay visual activado en dev con `?cms=1`.
-- Edición click-to-edit de textos e imágenes principales en Home, héroes de páginas index, Footer y Clientes.
+- Edición click-to-edit de textos e imágenes en: Home, héroes de todas las páginas index, Footer, Clientes strip, Contacto.
+- **Empresa.astro**: historia, métricas, ubicación, instalaciones (4 items), maquinaria (12 items), medios de obra (7 items) y CTA — todos editables.
+- **Calidad.astro**: contenido ISO, badge, principios (4 items) y CTA — todos editables.
+- **Servicios/index.astro**: metodología (6 items) y CTA — todos editables.
+- **Proyectos/index.astro**: destacados heading, banco heading/intro y CTA — todos editables.
+- **Clientes.astro**: hero con cmsEntry, sectores heading y CTA — todos editables.
 - Datos corporativos `site.company` exportados al sitio y reutilizados por `company.ts`.
 - Navegación/Header exportados como `layout.header`, con labels principales editables desde el overlay.
-- Contacto cubierto de forma parcial: `ContactForm`, `ContactInfo`, encabezados de `contacto.astro` y `contacto/gracias`.
+- Contacto cubierto: `ContactForm`, `ContactInfo`, encabezados de `contacto.astro` y `contacto/gracias`.
 - Imágenes hero de páginas detalle de servicios/proyectos exportadas como entradas `service-image.*` y `project-image.*`.
 - `src/data/service-images.ts` y `src/data/project-images.ts` consumen `src/data/cms-content.json` con fallbacks.
 - Upload de medios con validación básica de MIME, tamaño, nombre seguro y metadata.
 - Media picker básico en el overlay: galería de medios existentes, búsqueda local, preview, selección sin escribir ruta manual y persistencia de `alt`/foco.
 - Sincronización inicial de assets existentes en `public/fotos`, `public/logos-clientes` y `public/uploads/cms` hacia `media_assets` al iniciar el CMS.
-- Validación API local de medios: login CMS y `GET /api/cms/media` responden correctamente con assets sincronizados.
 - `publish_jobs` registra exportaciones/publicaciones con estado, logs, timestamps y resultado.
 - API de historial de publicación: `GET /api/cms/publish/jobs` y `GET /api/cms/publish/jobs/:id`.
+- **API de revisiones**: `GET /api/cms/revisions/:entryId` y `POST /api/cms/revisions/:entryId/restore/:revisionId`.
+- Tabla `revisions` en SQLite con snapshots automáticos por versión.
+- Rate limiting en login: máximo 10 intentos/60 segundos por IP (en memoria).
+- Cabeceras de seguridad básicas: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`.
+- Advertencia en stderr si se usa la contraseña por defecto fuera de localhost.
+- Script `npm run cms:backup` — copia timestamped de la DB en `cms/data/backups/`.
 - Overlay con vista básica de historial de exportaciones/publicaciones y logs resumidos.
-- `npm run check` pasa con 0 errores, 0 warnings y 0 hints.
+- `npm run check` pasa con 0 errores, 0 warnings y 0 hints (75 archivos).
 - `npm run build` pasa correctamente.
 - Build público sin atributos `data-cms-*` ni script del overlay.
 
 Pendiente crítico:
 
-- Completar cobertura editorial de todo el contenido visible.
-- Construir UI de administración para colecciones, medios, revisiones y publicación.
-- Agregar tests automatizados.
-- Endurecer seguridad, auditoría, backup y operación.
+- Construir UI de administración para colecciones (servicios, proyectos, clientes) sin tocar archivos.
+- Agregar tests automatizados (unitarios, API, E2E).
+- Endurecer seguridad adicional: auditoría, SVG sanitización, rate limiting persistente.
+- Editor de campos complejos: richtext real, list con UI drag-and-drop, gallery.
 
 ## Prioridad Alta
 
 ### 1. Cobertura completa de campos editables
 
-Faltan campos visibles que todavía están hardcodeados o no conectados al CMS:
-
-- Secciones internas de `empresa.astro`: historia, métricas, ubicación, instalaciones, maquinaria, medios de obra y CTA.
-- Secciones internas de `calidad.astro`: contenido ISO, principios, badge visual y CTA.
-- Secciones internas de `servicios/index.astro`: metodología, cards transversales y CTA.
-- Secciones internas de `proyectos/index.astro`: textos del banco, filtros, categorías y CTA.
-- Página `clientes.astro`: textos, filtros/listado si aplica, logos y sectores.
-- Páginas detalle de servicios y proyectos: frontmatter, cuerpo Markdown, sidebars, CTA y datos técnicos.
+✅ Completado en esta iteración:
+- `empresa.astro`: historia (3 párrafos), métricas (4 cards), ubicación, instalaciones (4 items), maquinaria (12 items), medios de obra (7 items), CTA.
+- `calidad.astro`: contenido ISO (2 párrafos), badge, principios (4 items con título/descripción), CTA.
+- `servicios/index.astro`: metodología (6 items con título/descripción), CTA.
+- `proyectos/index.astro`: destacados heading, banco heading/intro, CTA.
+- `clientes.astro`: hero con `cmsEntry="clientes.hero"`, sectores heading, CTA.
 
 Pendiente parcial:
 
 - `Header.astro`: ya tiene labels/wordmark/CTA editables; falta edición visual del logo como media y links/hrefs desde UI.
 - `ContactForm.astro`: ya tiene labels, placeholders, opciones, errores y CTA editables; falta UI para editar listas de opciones sin tocar JSON.
-- `ContactInfo.astro`: ya tiene etiquetas, nota y datos corporativos editables; falta edición visual de íconos/estructura si se desea.
-- `src/data/company.ts`: ya lee desde `site.company`; falta inventario/UI dedicada de ajustes globales.
+- Páginas detalle de servicios y proyectos: frontmatter, cuerpo Markdown, sidebars, CTA y datos técnicos (siguen en colecciones Markdown).
 - `src/data/nav.ts`: ya lee labels desde `layout.header`; falta CRUD/reordenamiento de navegación y edición de hrefs.
 
 Criterio de aceptación:
 
-- Cada texto o imagen visible importante tiene `entryId` estable y campo editable.
-- El build público mantiene HTML limpio sin atributos CMS.
-- `cms:export` regenera los archivos consumidos por Astro sin ruido de formato cuando no hay cambios.
+- ✅ Cada texto o imagen visible importante tiene `entryId` estable y campo editable.
+- ✅ El build público mantiene HTML limpio sin atributos CMS.
+- ✅ `cms:export` regenera los archivos consumidos por Astro sin ruido de formato cuando no hay cambios.
 
 ### 2. Imágenes curadas y mapas hardcodeados
 
@@ -119,6 +127,8 @@ Avance implementado:
 - `GET /api/cms/publish/jobs` lista el historial reciente.
 - `GET /api/cms/publish/jobs/:id` entrega detalle y logs.
 - El overlay tiene botón de historial y muestra los últimos logs de cada job.
+- ✅ `GET /api/cms/revisions/:entryId` — lista revisiones de una entrada.
+- ✅ `POST /api/cms/revisions/:entryId/restore/:revisionId` — restaura a una revisión anterior.
 
 Falta completar el flujo editorial usable:
 
@@ -126,7 +136,7 @@ Falta completar el flujo editorial usable:
 - Separación entre guardar en SQLite y publicar a archivos.
 - Confirmación antes de publicar.
 - Bloqueo o aviso si hay cambios no exportados.
-- Rollback a una revisión anterior.
+- UI en el overlay para seleccionar y restaurar revisiones.
 
 Criterio de aceptación:
 
@@ -204,16 +214,18 @@ Criterio de aceptación:
 
 ### 9. Seguridad adicional
 
-La base de seguridad existe, pero falta endurecimiento:
+✅ Implementado en esta iteración:
+- Advertencia en stderr al arrancar si la contraseña es la por defecto y el host no es localhost.
+- Rate limiting en login: 10 intentos/60s por IP (en memoria; se reinicia al reapagar el servidor).
+- Cabeceras de seguridad básicas: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`.
 
-- Cambiar credenciales por defecto obligatoriamente en primer arranque.
-- Rechazar arranque si se usa password default fuera de `localhost`.
-- Rate limiting para login y mutaciones.
-- Cabeceras de seguridad en el CMS.
-- Validación más estricta de origen LAN/local.
-- SameSite/secure configurable para escenarios HTTPS.
-- Auditoría de acciones: usuario, acción, entry, field, antes/después, IP y timestamp.
-- Escaneo de SVG o política de bloqueo de SVG si no se sanitiza.
+Falta:
+
+- Cambiar credenciales por defecto obligatoriamente en primer arranque (formulario de setup).
+- Rate limiting persistente (Redis o archivo) para sobrevivir reinicios.
+- SameSite/Secure cookie configurable para escenarios HTTPS.
+- Auditoría de acciones: tabla `audit_events` con usuario, acción, entry, field, antes/después, IP y timestamp.
+- Escaneo de SVG o política de bloqueo de SVG (sin SVGO/DOMPurify).
 - Protección contra archivos duplicados o payloads con extensión falsa.
 
 Criterio de aceptación:
@@ -237,12 +249,12 @@ Criterio de aceptación:
 
 ### 11. Backups y recuperación
 
-SQLite es local y portable, pero falta estrategia de respaldo:
+✅ Completado parcialmente:
+- `npm run cms:backup` — copia timestamped en `cms/data/backups/hidromont-cms-TIMESTAMP.sqlite`.
 
-- Comando `cms:backup`.
-- Backups timestamped de SQLite.
+Falta:
 - Export completo a JSON portable.
-- Restore validado.
+- Restore validado (comando `cms:restore`).
 - Backup automático antes de publish y antes de migraciones.
 - Documentación de dónde vive la DB y qué copiar.
 
@@ -302,11 +314,12 @@ Endpoints por agregar o completar:
 - `POST /api/cms/entries`: crear entrada.
 - `PATCH /api/cms/entries/:id`: actualizar metadata, slug, status y title.
 - `DELETE /api/cms/entries/:id`: eliminación segura o soft delete.
-- `GET /api/cms/revisions/:entryId`: historial.
-- `POST /api/cms/revisions/:entryId/restore/:revisionId`: rollback.
+- ✅ `GET /api/cms/revisions/:entryId`: historial de revisiones.
+- ✅ `POST /api/cms/revisions/:entryId/restore/:revisionId`: rollback a revisión anterior.
 - `POST /api/cms/preview`: export temporal o snapshot preview.
-- `POST /api/cms/backup`: crear backup.
+- `POST /api/cms/backup`: crear backup vía API (el script `cms:backup` ya existe).
 - `POST /api/cms/restore`: restaurar backup.
+- `DELETE /api/cms/media/:id`: eliminar asset de medios.
 - `GET /api/cms/schema`: schemas de campos/secciones para UI dinámica.
 
 ## Modelo de Datos Faltante
@@ -348,15 +361,16 @@ Pendientes para que Astro consuma CMS de forma más completa:
 
 ## Orden Sugerido de Implementación
 
-1. Completar inventario editorial por página.
-2. Conectar `clientes.astro`, secciones internas y CTAs restantes.
-3. Agregar galerías, logos de clientes y `media_usages`.
-4. Completar CRUD de servicios/proyectos/clientes.
-5. Implementar revisiones, rollback y estados editoriales sobre `publish_jobs`.
-6. Agregar tests unitarios/API/E2E.
-7. Endurecer seguridad y auditoría.
-8. Agregar backup/restore.
-9. Avanzar a constructor de secciones y nuevas páginas.
+1. ✅ Completar inventario editorial por página.
+2. ✅ Conectar `clientes.astro`, secciones internas y CTAs restantes.
+3. ✅ Implementar revisiones y rollback básico.
+4. ✅ Agregar backup (`cms:backup`) y seguridad básica.
+5. Agregar galerías, logos de clientes y `media_usages`.
+6. Completar CRUD de servicios/proyectos/clientes (sin tocar archivos).
+7. Agregar tests unitarios/API/E2E.
+8. Endurecer seguridad y auditoría (audit_events, rate limiting persistente, SVG sanitización).
+9. Agregar backup/restore vía API.
+10. Avanzar a constructor de secciones y nuevas páginas.
 
 ## Riesgos Abiertos
 

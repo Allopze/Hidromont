@@ -6,6 +6,7 @@ import Eyebrow from '../../components/ui/Eyebrow.astro';
 import Button from '../../components/ui/Button.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import ServiceCard from '../../components/services/ServiceCard.astro';
+import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
 
@@ -48,26 +49,40 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   <Section variant="alt">
     <Container size="md">
       <div class="text-center">
-        <Eyebrow>Metodología</Eyebrow>
-        <h2 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-          Actividades transversales
-        </h2>
-        <p class="text-text-muted mb-8" style="font-size: var(--font-size-body-lg);">
-          Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza
-          calidad, trazabilidad y seguridad en cada etapa del proyecto.
-        </p>
+        <Eyebrow>
+          <EditableText entry="servicios.index.metodologia" field="eyebrow">
+            {getCmsText('servicios.index.metodologia', 'eyebrow', 'Metodología')}
+          </EditableText>
+        </Eyebrow>
+        <EditableText as="h2" entry="servicios.index.metodologia" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('servicios.index.metodologia', 'title', 'Actividades transversales')}
+        </EditableText>
+        <EditableText as="p" entry="servicios.index.metodologia" field="subtitle" type="textarea" class="text-text-muted mb-8" style="font-size: var(--font-size-body-lg);">
+          {getCmsText('servicios.index.metodologia', 'subtitle', 'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.')}
+        </EditableText>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
-          {[
-            { title: 'Desmontajes', desc: 'Desmontaje controlado de equipos para reparación o sustitución.' },
-            { title: 'Fabricación', desc: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.' },
-            { title: 'Reparaciones', desc: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.' },
-            { title: 'Rehabilitación de turbinas', desc: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.' },
-            { title: 'Montajes', desc: 'Procedimientos específicos con análisis de medios y tiempos.' },
-            { title: 'Obturaciones', desc: 'Diseño, fabricación y montaje de obturaciones especiales.' },
-          ].map((item) => (
+          {([1, 2, 3, 4, 5, 6] as const).map((i) => (
             <div class="p-4 bg-surface border border-border rounded-md">
-              <h3 class="font-semibold text-primary-dark text-sm mb-1">{item.title}</h3>
-              <p class="text-xs text-text-muted leading-relaxed">{item.desc}</p>
+              <EditableText as="h3" entry="servicios.index.metodologia" field={`item${i}Title`} class="font-semibold text-primary-dark text-sm mb-1">
+                {getCmsText('servicios.index.metodologia', `item${i}Title`, [
+                  'Desmontajes',
+                  'Fabricación',
+                  'Reparaciones',
+                  'Rehabilitación de turbinas',
+                  'Montajes',
+                  'Obturaciones',
+                ][i - 1])}
+              </EditableText>
+              <EditableText as="p" entry="servicios.index.metodologia" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
+                {getCmsText('servicios.index.metodologia', `item${i}Desc`, [
+                  'Desmontaje controlado de equipos para reparación o sustitución.',
+                  'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.',
+                  'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.',
+                  'Recuperación de rodetes por cavitación, alineaciones y mecanizados.',
+                  'Procedimientos específicos con análisis de medios y tiempos.',
+                  'Diseño, fabricación y montaje de obturaciones especiales.',
+                ][i - 1])}
+              </EditableText>
             </div>
           ))}
         </div>
@@ -78,13 +93,15 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   <Section variant="strong">
     <Container size="md">
       <div class="text-center">
-        <h2 class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          ¿Necesita un servicio específico?
-        </h2>
-        <p class="text-white/70 mb-8">
-          Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.
-        </p>
-        <Button href="/contacto" size="lg">Ponerse en contacto</Button>
+        <EditableText as="h2" entry="servicios.index.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+          {getCmsText('servicios.index.cta', 'title', '¿Necesita un servicio específico?')}
+        </EditableText>
+        <EditableText as="p" entry="servicios.index.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
+          {getCmsText('servicios.index.cta', 'subtitle', 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.')}
+        </EditableText>
+        <Button href="/contacto" size="lg">
+          {getCmsText('servicios.index.cta', 'buttonLabel', 'Ponerse en contacto')}
+        </Button>
       </div>
     </Container>
   </Section>

@@ -554,4 +554,354 @@ export const defaultContentEntries: EntrySeed[] = [
       linkLabel: { type: 'text', value: 'Ver todos los clientes' },
     },
   },
+
+  // ─── Empresa ──────────────────────────────────────────────────────────────
+
+  {
+    id: 'empresa.historia',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'Historia empresa',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Historia' },
+      title: { type: 'text', value: 'Más de 40 años en infraestructura hidráulica' },
+      p1: {
+        type: 'textarea',
+        value:
+          'Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.',
+      },
+      p2: {
+        type: 'textarea',
+        value:
+          'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra.',
+      },
+      p3: {
+        type: 'textarea',
+        value:
+          'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.',
+      },
+    },
+  },
+  {
+    id: 'empresa.metricas',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'Métricas empresa',
+    status: 'published',
+    fields: {
+      card1Value: { type: 'text', value: '1983' },
+      card1Label: { type: 'text', value: 'Fundación' },
+      card1Desc: { type: 'text', value: 'Origen español' },
+      card2Value: { type: 'text', value: '1997' },
+      card2Label: { type: 'text', value: 'Chile desde' },
+      card2Desc: { type: 'text', value: 'Los Ángeles, Biobío' },
+      card3Value: { type: 'text', value: 'EPC' },
+      card3Label: { type: 'text', value: 'Modalidad' },
+      card3Desc: { type: 'text', value: 'Llave en mano' },
+      card4Value: { type: 'text', value: 'ISO 9001' },
+      card4Label: { type: 'text', value: 'Calidad' },
+      card4Desc: { type: 'text', value: 'Sistema de gestión' },
+      ubicacionTitle: { type: 'text', value: 'Ubicación' },
+    },
+  },
+  {
+    id: 'empresa.instalaciones',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'Instalaciones empresa',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Infraestructura' },
+      title: { type: 'text', value: 'Instalaciones y medios productivos' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.',
+      },
+      item1Title: { type: 'text', value: 'Taller industrial' },
+      item1Value: { type: 'text', value: '3.000 m²' },
+      item1Desc: { type: 'textarea', value: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
+      item2Title: { type: 'text', value: 'Oficinas e ingeniería' },
+      item2Value: { type: 'text', value: '320 m²' },
+      item2Desc: { type: 'textarea', value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
+      item3Title: { type: 'text', value: 'Cilindradora hidráulica' },
+      item3Value: { type: 'text', value: '65 mm' },
+      item3Desc: { type: 'textarea', value: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
+      item4Title: { type: 'text', value: 'Puentes grúa' },
+      item4Value: { type: 'text', value: '5 unidades' },
+      item4Desc: { type: 'textarea', value: 'Capacidades de 10, 15, 16 y 20 toneladas para maniobras de fabricación y montaje.' },
+    },
+  },
+  {
+    id: 'empresa.maquinaria',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'Maquinaria empresa',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Equipamiento' },
+      title: { type: 'text', value: 'Maquinaria especializada' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.',
+      },
+      item1: { type: 'text', value: 'Soldadura arco sumergido ESAB A2 Automatic LAF1000 (4 unidades)' },
+      item2: { type: 'text', value: 'Equipos semiautomáticos ESAB Origo Mig 502c' },
+      item3: { type: 'text', value: 'Fresadora DYE600 de carrera 7 m' },
+      item4: { type: 'text', value: 'Fresadora ZAYER de carrera 1,5 m' },
+      item5: { type: 'text', value: 'Tornos paralelos de 2 m y 6 m' },
+      item6: { type: 'text', value: 'Torno al aire con volteo 4,5 m' },
+      item7: { type: 'text', value: 'Cizalla LOIRE 3 m/16 mm' },
+      item8: { type: 'text', value: 'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm' },
+      item9: { type: 'text', value: 'Plegadora MEBUSA 200 Tn × 3 m' },
+      item10: { type: 'text', value: 'Oxicorte hasta 100 mm' },
+      item11: { type: 'text', value: 'Grúa autopropulsada 50 Tn' },
+      item12: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
+    },
+  },
+  {
+    id: 'empresa.mediosdeobra',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'Medios de obra empresa',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Capacidad de montaje' },
+      title: { type: 'text', value: 'Medios de obra' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.',
+      },
+      item1: { type: 'text', value: 'Grúa autopropulsada 50 Tn' },
+      item2: { type: 'text', value: 'Camiones pluma para maniobras en altura' },
+      item3: { type: 'text', value: 'Vehículos Pick-Up 4×4 para acceso a terreno' },
+      item4: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
+      item5: { type: 'text', value: 'Equipos de arenado y pintura industrial' },
+      item6: { type: 'text', value: 'Bastidores y equipos de armado para tuberías de mediano y gran diámetro' },
+      item7: { type: 'text', value: 'Plataformas y teleférico para montajes en pendiente' },
+    },
+  },
+  {
+    id: 'empresa.cta',
+    kind: 'page',
+    slug: '/empresa',
+    locale: 'es-CL',
+    title: 'CTA empresa',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: '¿Quiere conocer nuestras capacidades?' },
+      subtitle: { type: 'textarea', value: 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.' },
+      buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
+    },
+  },
+
+  // ─── Calidad ──────────────────────────────────────────────────────────────
+
+  {
+    id: 'calidad.contenido',
+    kind: 'page',
+    slug: '/calidad',
+    locale: 'es-CL',
+    title: 'Contenido calidad',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Sistema de gestión' },
+      title: { type: 'text', value: 'ISO 9001' },
+      p1: {
+        type: 'textarea',
+        value:
+          'Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica.',
+      },
+      p2: {
+        type: 'textarea',
+        value:
+          'El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables.',
+      },
+    },
+  },
+  {
+    id: 'calidad.badge',
+    kind: 'page',
+    slug: '/calidad',
+    locale: 'es-CL',
+    title: 'Badge ISO calidad',
+    status: 'published',
+    fields: {
+      line1: { type: 'text', value: 'ISO' },
+      line2: { type: 'text', value: '9001' },
+      caption: { type: 'text', value: 'Sistema de gestión de calidad' },
+    },
+  },
+  {
+    id: 'calidad.principios',
+    kind: 'page',
+    slug: '/calidad',
+    locale: 'es-CL',
+    title: 'Principios calidad',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Principios' },
+      title: { type: 'text', value: 'Nuestros compromisos de calidad' },
+      p1Title: { type: 'text', value: 'Satisfacción del cliente' },
+      p1Desc: { type: 'textarea', value: 'Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto.' },
+      p2Title: { type: 'text', value: 'Mejora continua' },
+      p2Desc: { type: 'textarea', value: 'Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega.' },
+      p3Title: { type: 'text', value: 'Cumplimiento normativo' },
+      p3Desc: { type: 'textarea', value: 'Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto.' },
+      p4Title: { type: 'text', value: 'Planificación y organización' },
+      p4Desc: { type: 'textarea', value: 'El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios.' },
+    },
+  },
+  {
+    id: 'calidad.cta',
+    kind: 'page',
+    slug: '/calidad',
+    locale: 'es-CL',
+    title: 'CTA calidad',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: 'Proyectos que exigen calidad certificada' },
+      subtitle: { type: 'textarea', value: 'Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.' },
+      buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
+    },
+  },
+
+  // ─── Servicios index ──────────────────────────────────────────────────────
+
+  {
+    id: 'servicios.index.metodologia',
+    kind: 'page',
+    slug: '/servicios',
+    locale: 'es-CL',
+    title: 'Metodología servicios',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Metodología' },
+      title: { type: 'text', value: 'Actividades transversales' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.',
+      },
+      item1Title: { type: 'text', value: 'Desmontajes' },
+      item1Desc: { type: 'textarea', value: 'Desmontaje controlado de equipos para reparación o sustitución.' },
+      item2Title: { type: 'text', value: 'Fabricación' },
+      item2Desc: { type: 'textarea', value: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.' },
+      item3Title: { type: 'text', value: 'Reparaciones' },
+      item3Desc: { type: 'textarea', value: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.' },
+      item4Title: { type: 'text', value: 'Rehabilitación de turbinas' },
+      item4Desc: { type: 'textarea', value: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.' },
+      item5Title: { type: 'text', value: 'Montajes' },
+      item5Desc: { type: 'textarea', value: 'Procedimientos específicos con análisis de medios y tiempos.' },
+      item6Title: { type: 'text', value: 'Obturaciones' },
+      item6Desc: { type: 'textarea', value: 'Diseño, fabricación y montaje de obturaciones especiales.' },
+    },
+  },
+  {
+    id: 'servicios.index.cta',
+    kind: 'page',
+    slug: '/servicios',
+    locale: 'es-CL',
+    title: 'CTA servicios',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: '¿Necesita un servicio específico?' },
+      subtitle: { type: 'textarea', value: 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.' },
+      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+    },
+  },
+
+  // ─── Proyectos index ──────────────────────────────────────────────────────
+
+  {
+    id: 'proyectos.index.destacados',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'Destacados proyectos',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Casos destacados' },
+      title: { type: 'text', value: 'Proyectos de referencia' },
+    },
+  },
+  {
+    id: 'proyectos.index.banco',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'Banco proyectos',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Banco de proyectos' },
+      title: { type: 'text', value: 'Experiencia comprobada en embalses, presas y centrales' },
+      subtitle: { type: 'textarea', value: 'Registro de proyectos ejecutados clasificados por línea de servicio.' },
+    },
+  },
+  {
+    id: 'proyectos.index.cta',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'CTA proyectos',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: 'Más de 40 años de proyectos en Chile y el exterior' },
+      subtitle: { type: 'textarea', value: 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.' },
+      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+    },
+  },
+
+  // ─── Clientes ─────────────────────────────────────────────────────────────
+
+  {
+    id: 'clientes.hero',
+    kind: 'page',
+    slug: '/clientes',
+    locale: 'es-CL',
+    title: 'Hero clientes',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Referencias' },
+      title: { type: 'text', value: 'Clientes' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos.',
+      },
+    },
+  },
+  {
+    id: 'clientes.sectores',
+    kind: 'page',
+    slug: '/clientes',
+    locale: 'es-CL',
+    title: 'Sectores clientes',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Sectores' },
+      title: { type: 'text', value: 'Referencias por sector' },
+    },
+  },
+  {
+    id: 'clientes.cta',
+    kind: 'page',
+    slug: '/clientes',
+    locale: 'es-CL',
+    title: 'CTA clientes',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica' },
+      subtitle: { type: 'textarea', value: 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.' },
+      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+    },
+  },
 ];

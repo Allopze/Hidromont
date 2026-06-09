@@ -69,6 +69,60 @@ export class ContentRepository {
     transaction();
   }
 
+  /** Insert an entry only if its id does not already exist. Does NOT overwrite fields. */
+  insertEntryIfMissing(input: {
+    id: string;
+    kind: string;
+    slug: string;
+    locale?: string;
+    title: string;
+    status?: 'draft' | 'published';
+    fields: CmsField[];
+    now: string;
+  }): boolean {
+    const existing = this.findEntryRow(input.id);
+    if (existing) return false;
+
+    const transaction = this.db.transaction(() => {
+      this.db
+        .prepare(
+          `INSERT OR IGNORE INTO content_entries (id, kind, slug, locale, title, status, version, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`
+        )
+        .run(
+          input.id,
+          input.kind,
+          input.slug,
+          input.locale ?? 'es-CL',
+          input.title,
+          input.status ?? 'published',
+          input.now,
+          input.now
+        );
+
+      for (const field of input.fields) {
+        this.db
+          .prepare(
+            `INSERT OR IGNORE INTO content_fields (entry_id, key, type, value_json, source_ref_json, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)`
+          )
+          .run(
+            input.id,
+            field.key,
+            field.type,
+            JSON.stringify(field.value),
+            field.sourceRef ? JSON.stringify(field.sourceRef) : null,
+            input.now
+          );
+      }
+
+      this.createRevision(input.id, 1, input.now);
+    });
+
+    transaction();
+    return true;
+  }
+
   listEntries(kind?: string): CmsEntry[] {
     const rows = kind
       ? (this.db
@@ -127,6 +181,36 @@ export class ContentRepository {
     });
 
     transaction();
+  }
+
+  listRevisions(entryId: string): Array<{ id: string; version: number; createdAt: string }> {
+    const rows = this.db
+      .prepare(
+        'SELECT id, version, created_at FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT 50'
+      )
+      .all(entryId) as Array<{ id: string; version: number; created_at: string }>;
+    return rows.map((r) => ({ id: r.id, version: r.version, createdAt: r.created_at }));
+  }
+
+  getRevision(revisionId: string): CmsEntry | undefined {
+    const row = this.db
+      .prepare('SELECT snapshot_json FROM revisions WHERE id = ?')
+      .get(revisionId) as { snapshot_json: string } | undefined;
+    if (!row) return undefined;
+    return JSON.parse(row.snapshot_json) as CmsEntry;
+  }
+
+  restoreRevision(entryId: string, revisionId: string, now: string): CmsEntry {
+    const snapshot = this.getRevision(revisionId);
+    if (!snapshot) throw new Error(`Revisión ${revisionId} no encontrada`);
+    if (snapshot.id !== entryId) throw new Error(`La revisión no pertenece a la entrada ${entryId}`);
+
+    const fields: CmsField[] = Object.values(snapshot.fields);
+    this.replaceEntryFields(entryId, fields, now);
+
+    const entry = this.findEntry(entryId);
+    if (!entry) throw new Error(`Entrada ${entryId} no encontrada tras restaurar`);
+    return entry;
   }
 
   private upsertField(entryId: string, field: CmsField, now: string, bumpVersion: boolean): void {

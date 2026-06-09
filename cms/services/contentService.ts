@@ -24,6 +24,43 @@ export class ContentService {
     return { imported: entries.length };
   }
 
+  /** Import only entries whose IDs do not yet exist in the DB (safe for live DBs). */
+  importMissingEntries(): { inserted: number } {
+    const now = new Date().toISOString();
+    const entries = getInitialEntries();
+    let inserted = 0;
+
+    for (const entry of entries) {
+      const created = this.contentRepository.insertEntryIfMissing({
+        id: entry.id,
+        kind: entry.kind,
+        slug: entry.slug,
+        locale: entry.locale,
+        title: entry.title,
+        status: entry.status,
+        fields: Object.values(entry.fields),
+        now,
+      });
+      if (created) inserted++;
+    }
+
+    return { inserted };
+  }
+
+  listRevisions(entryId: string) {
+    return this.contentRepository.listRevisions(entryId);
+  }
+
+  getRevision(revisionId: string) {
+    const entry = this.contentRepository.getRevision(revisionId);
+    if (!entry) throw new Error(`Revisión ${revisionId} no encontrada`);
+    return entry;
+  }
+
+  restoreRevision(entryId: string, revisionId: string) {
+    return this.contentRepository.restoreRevision(entryId, revisionId, new Date().toISOString());
+  }
+
   listEntries(kind?: string) {
     return this.contentRepository.listEntries(kind);
   }
