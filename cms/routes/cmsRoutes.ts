@@ -16,6 +16,7 @@ import { PublishJobRepository } from '../repositories/PublishJobRepository';
 import { RateLimitRepository } from '../repositories/RateLimitRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { AuthService } from '../services/authService';
+import { BackupService } from '../services/backupService';
 import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
 import { MediaService } from '../services/mediaService';
@@ -50,12 +51,13 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const exportService = new ExportService(contentRepository);
   const mediaService = new MediaService(mediaRepository);
   const publishService = new PublishService(exportService, publishJobRepository);
+  const backupService = new BackupService(db);
   await mediaService.syncPublicMedia();
 
   const authController = new AuthController(authService);
   const contentController = new ContentController(contentService);
   const mediaController = new MediaController(mediaService);
-  const publishController = new PublishController(publishService);
+  const publishController = new PublishController(publishService, backupService);
 
   app.get('/api/cms/health', async () => ({ ok: true }));
   app.post('/api/cms/login', async (request, reply) => {
@@ -182,6 +184,25 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       return reply.send({ ok: true, entry });
     }
   );
+
+  app.post('/api/cms/backup', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    await publishController.backup(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'backup.create', userId: request.cmsSession?.user.id, ip: request.ip });
+    }
+  });
+
+  app.get('/api/cms/backup/list', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    publishController.listBackups(request, reply)
+  );
+
+  app.get('/api/cms/schema', { preHandler: [requireAuth(authService)] }, async (_request, reply) => {
+    return reply.send({
+      fieldTypes: ['text', 'textarea', 'richtext', 'image', 'link', 'number', 'list', 'object'],
+      entryKinds: ['page', 'layout', 'component', 'settings', 'servicio', 'proyecto'],
+      entryStatuses: ['draft', 'published'],
+    });
+  });
 
   // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
   const { inserted } = contentService.importMissingEntries();

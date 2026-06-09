@@ -15,15 +15,6 @@ describe('Security', () => {
     await ctx.app.close();
   });
 
-  const authedMutNoBody = (opts: Record<string, unknown>) => ({
-    ...opts,
-    headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
-      cookie: cookieHeader,
-      'x-csrf-token': csrfToken,
-    },
-  });
-
   describe('Rate limiting (persistent)', () => {
     it('allows attempts within limit', () => {
       const result = ctx.rateLimitRepository.check('10.0.0.1');

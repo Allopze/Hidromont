@@ -42,10 +42,10 @@ Implementado:
 
 Pendiente crítico:
 
-- Construir UI de administración para colecciones (servicios, proyectos, clientes) sin tocar archivos.
-- Agregar tests automatizados (unitarios, API, E2E).
-- Endurecer seguridad adicional: auditoría, SVG sanitización, rate limiting persistente.
-- Editor de campos complejos: richtext real, list con UI drag-and-drop, gallery.
+- ✅ UI de administración para colecciones (servicios, proyectos, páginas) — botón «Colecciones» en overlay con CRUD completo.
+- ✅ Tests automatizados: 46 tests (auth, content, media, security). E2E con Playwright sigue pendiente.
+- ✅ Seguridad: audit_events, rate limiting persistente (SQLite), SVG bloqueado en uploads, detección MIME/extensión.
+- Editor de campos complejos: richtext real, list con UI drag-and-drop, gallery (pendiente).
 
 ## Prioridad Alta
 
@@ -214,19 +214,21 @@ Criterio de aceptación:
 
 ### 9. Seguridad adicional
 
-✅ Implementado en esta iteración:
+✅ Implementado:
 - Advertencia en stderr al arrancar si la contraseña es la por defecto y el host no es localhost.
-- Rate limiting en login: 10 intentos/60s por IP (en memoria; se reinicia al reapagar el servidor).
+- Rate limiting en login: 10 intentos/60s por IP — **ahora persistente en SQLite** (tabla `login_attempts`), sobrevive reinicios.
 - Cabeceras de seguridad básicas: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`.
+- **Auditoría de acciones**: tabla `audit_events` con userId, action, entityType, entityId, data, IP y timestamp. Logging automático en login, logout, entry CRUD, media CRUD, export y publish.
+- **SVG bloqueado en uploads**: solo JPEG, PNG y WebP aceptados vía `createMedia`.
+- **Detección MIME/extensión**: rechaza uploads donde el MIME declarado no coincide con la extensión del archivo.
+- Endpoint `GET /api/cms/audit` expone historial de eventos (auth requerida).
 
 Falta:
 
 - Cambiar credenciales por defecto obligatoriamente en primer arranque (formulario de setup).
-- Rate limiting persistente (Redis o archivo) para sobrevivir reinicios.
 - SameSite/Secure cookie configurable para escenarios HTTPS.
-- Auditoría de acciones: tabla `audit_events` con usuario, acción, entry, field, antes/después, IP y timestamp.
-- Escaneo de SVG o política de bloqueo de SVG (sin SVGO/DOMPurify).
-- Protección contra archivos duplicados o payloads con extensión falsa.
+- Protección contra archivos duplicados (checksum de buffer duplicado).
+- `GET /api/cms/audit` con filtros por fecha, usuario y entidad.
 
 Criterio de aceptación:
 
