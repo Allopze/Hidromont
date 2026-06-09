@@ -7,6 +7,9 @@ import { config } from '../config/unifiedConfig';
 import type { MediaRepository } from '../repositories/MediaRepository';
 
 const allowedMime = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']);
+// SVG is allowed for catalog sync of existing assets but blocked for user uploads
+// to avoid stored-XSS via embedded <script> or event handlers without a sanitizer.
+const allowedUploadMime = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const publicMediaRoots = ['fotos', 'logos-clientes', path.join('uploads', 'cms')];
 
 function mimeFromExt(filePath: string): string | undefined {
@@ -77,8 +80,12 @@ export class MediaService {
   }
 
   async createMedia(input: { filename: string; mime: string; buffer: Buffer; alt?: string }) {
-    if (!allowedMime.has(input.mime)) throw new Error('Tipo de archivo no permitido');
+    if (!allowedUploadMime.has(input.mime)) throw new Error('Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WebP.');
     if (input.buffer.byteLength > config.cms.uploadMaxBytes) throw new Error('Archivo demasiado grande');
+
+    // Verify MIME matches actual file extension to catch spoofed uploads
+    const declaredMime = mimeFromExt(input.filename);
+    if (declaredMime && declaredMime !== input.mime) throw new Error('El tipo MIME no coincide con la extensión del archivo');
 
     fs.mkdirSync(config.cms.uploadDir, { recursive: true });
 

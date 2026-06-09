@@ -100,7 +100,7 @@ export class ContentService {
     return entry;
   }
 
-  updateField(entryId: string, key: string, value: unknown) {
-    return this.contentRepository.updateField(entryId, key, value, new Date().toISOString());
+  updateField(entryId: string, key: string, value: unknown, mediaId?: string) {
+    return this.contentRepository.updateField(entryId, key, value, new Date().toISOString(), mediaId);
   }
 }

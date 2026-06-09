@@ -27,7 +27,7 @@ export function registerCors(app: FastifyInstance): void {
     }
 
     reply.header('Access-Control-Allow-Headers', 'Content-Type, X-CSRF-Token');
-    reply.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    reply.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
 
     if (request.method === 'OPTIONS') {
       reply.status(204).send();

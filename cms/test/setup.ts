@@ -8,9 +8,11 @@ import fastify, { type FastifyInstance } from 'fastify';
 import { nanoid } from 'nanoid';
 import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
+import { AuditRepository } from '../repositories/AuditRepository';
 import { ContentRepository } from '../repositories/ContentRepository';
 import { MediaRepository } from '../repositories/MediaRepository';
 import { PublishJobRepository } from '../repositories/PublishJobRepository';
+import { RateLimitRepository } from '../repositories/RateLimitRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { AuthService } from '../services/authService';
 import { ContentService } from '../services/contentService';
@@ -90,6 +92,30 @@ const SCHEMA_SQL = `
     created_at TEXT NOT NULL,
     completed_at TEXT
   );
+  CREATE TABLE IF NOT EXISTS audit_events (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    action TEXT NOT NULL,
+    entity_type TEXT,
+    entity_id TEXT,
+    data_json TEXT,
+    ip TEXT,
+    created_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS login_attempts (
+    ip TEXT PRIMARY KEY,
+    count INTEGER NOT NULL DEFAULT 0,
+    reset_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS media_usages (
+    media_id TEXT NOT NULL,
+    entry_id TEXT NOT NULL,
+    field_key TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (media_id, entry_id, field_key),
+    FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
+    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
+  );
 `;
 
 export interface TestApp {
@@ -98,6 +124,8 @@ export interface TestApp {
   authService: AuthService;
   contentService: ContentService;
   mediaService: MediaService;
+  auditRepository: AuditRepository;
+  rateLimitRepository: RateLimitRepository;
   adminEmail: string;
   adminPassword: string;
   /** Login and return { csrfToken, cookieHeader } for subsequent requests */
@@ -117,6 +145,8 @@ export async function createTestApp(): Promise<TestApp> {
   const contentRepository = new ContentRepository(db);
   const mediaRepository = new MediaRepository(db);
   const publishJobRepository = new PublishJobRepository(db);
+  const auditRepository = new AuditRepository(db);
+  const rateLimitRepository = new RateLimitRepository(db);
 
   const authService = new AuthService(userRepository);
   // Use cost factor 4 for fast test hashing
@@ -185,6 +215,10 @@ export async function createTestApp(): Promise<TestApp> {
     publishController.listJobs(req, reply)
   );
 
+  app.get('/api/cms/audit', { preHandler: [requireAuth(authService)] }, async (_req, reply) => {
+    return reply.send({ events: auditRepository.list(200) });
+  });
+
   await app.ready();
 
   const login = async () => {
@@ -199,5 +233,5 @@ export async function createTestApp(): Promise<TestApp> {
     return { csrfToken: data.csrfToken, cookieHeader };
   };
 
-  return { app, db, authService, contentService, mediaService, adminEmail, adminPassword, login };
+  return { app, db, authService, contentService, mediaService, auditRepository, rateLimitRepository, adminEmail, adminPassword, login };
 }

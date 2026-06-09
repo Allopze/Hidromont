@@ -76,5 +76,32 @@ export function migrate(): void {
       created_at TEXT NOT NULL,
       completed_at TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS audit_events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      action TEXT NOT NULL,
+      entity_type TEXT,
+      entity_id TEXT,
+      data_json TEXT,
+      ip TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      ip TEXT PRIMARY KEY,
+      count INTEGER NOT NULL DEFAULT 0,
+      reset_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS media_usages (
+      media_id TEXT NOT NULL,
+      entry_id TEXT NOT NULL,
+      field_key TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (media_id, entry_id, field_key),
+      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
+    );
   `);
 }

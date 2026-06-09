@@ -16,6 +16,7 @@ export const fieldParamsSchema = z.object({
 
 export const updateFieldSchema = z.object({
   value: z.unknown(),
+  mediaId: z.string().optional(),
 });
 
 export const manifestQuerySchema = z.object({

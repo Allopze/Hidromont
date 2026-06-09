@@ -274,6 +274,103 @@
       font-size: 11px;
       color: #64748b;
     }
+    .hm-cms-collection-list {
+      display: grid;
+      gap: 6px;
+    }
+    .hm-cms-collection-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+    }
+    .hm-cms-collection-item:hover {
+      border-color: #2d9cdb;
+    }
+    .hm-cms-collection-info {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+    .hm-cms-collection-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #172331;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hm-cms-collection-meta {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .hm-cms-collection-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .hm-cms-collection-actions button {
+      font-size: 12px;
+      padding: 5px 9px;
+    }
+    .hm-cms-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .hm-cms-tab {
+      flex: 1;
+      padding: 7px 8px;
+      border: 0;
+      border-radius: 6px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: #475569;
+    }
+    .hm-cms-tab.active {
+      background: white;
+      color: #172331;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .hm-cms-entry-form {
+      display: grid;
+      gap: 12px;
+    }
+    .hm-cms-entry-form label {
+      display: grid;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .hm-cms-entry-form input,
+    .hm-cms-entry-form select,
+    .hm-cms-entry-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 9px 10px;
+      font: inherit;
+      color: #172331;
+      background: white;
+    }
+    .hm-cms-entry-form textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    .hm-cms-badge.draft { background: #fef3c7; color: #92400e; }
+    .hm-cms-badge.published { background: #dcfce7; color: #166534; }
     @media (max-width: 640px) {
       .hm-cms-bar {
         left: 8px;
@@ -293,13 +390,14 @@
   shell.innerHTML = `
     <div class="hm-cms-bar">
       <strong>Hidromont CMS</strong>
+      <button type="button" class="secondary" data-action="collections">Colecciones</button>
       <button type="button" class="secondary" data-action="jobs">Historial</button>
       <button type="button" data-action="publish">Publicar</button>
       <button type="button" class="secondary" data-action="logout">Salir</button>
     </div>
     <aside class="hm-cms-panel" aria-label="Editor CMS">
       <header>
-        <h2>Editor</h2>
+        <h2 data-panel-title>Editor</h2>
         <button type="button" class="secondary" data-action="close">Cerrar</button>
       </header>
       <main data-panel-body></main>
@@ -696,6 +794,157 @@
     status.textContent = 'Guardado en SQLite. Usa Publicar para exportar archivos.';
   }
 
+  // ─── CRUD de colecciones ─────────────────────────────────────────────────
+
+  const COLLECTION_KINDS = [
+    { id: 'servicio', label: 'Servicios' },
+    { id: 'proyecto', label: 'Proyectos' },
+    { id: 'page', label: 'Páginas' },
+  ];
+
+  let activeCollectionKind = 'servicio';
+
+  function setPanelTitle(title) {
+    const titleEl = shell.querySelector('[data-panel-title]');
+    if (titleEl) titleEl.textContent = title;
+  }
+
+  async function loadCollections(kind = activeCollectionKind) {
+    if (!(await ensureSession())) return;
+    activeCollectionKind = kind;
+    setPanelTitle('Colecciones');
+    openPanel('<p class="hm-cms-muted">Cargando...</p>');
+    try {
+      const data = await api(`/api/cms/entries?kind=${encodeURIComponent(kind)}`);
+      const entries = data.entries || [];
+      const tabs = COLLECTION_KINDS.map((k) =>
+        `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}">${escapeHtml(k.label)}</button>`
+      ).join('');
+
+      openPanel(`
+        <div class="hm-cms-tabs">${tabs}</div>
+        <div class="hm-cms-actions" style="margin-bottom:12px">
+          <button type="button" data-action="new-entry" data-kind="${escapeHtml(kind)}">+ Nueva entrada</button>
+        </div>
+        ${entries.length === 0
+          ? `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
+          : `<div class="hm-cms-collection-list">
+              ${entries.map((e) => `
+                <div class="hm-cms-collection-item">
+                  <div class="hm-cms-collection-info">
+                    <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
+                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(e.status)}</span></span>
+                  </div>
+                  <div class="hm-cms-collection-actions">
+                    <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
+                    <button type="button" class="secondary" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}">Borrar</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>`
+        }
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
+  async function showEntryForm(entryId = null, kind = activeCollectionKind) {
+    if (!(await ensureSession())) return;
+    let entry = null;
+    if (entryId) {
+      try {
+        entry = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        return;
+      }
+    }
+
+    setPanelTitle(entry ? 'Editar entrada' : 'Nueva entrada');
+    openPanel(`
+      <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-kind="${escapeHtml(kind)}">
+        ${!entryId ? `<label>ID (ej: servicio.bombeo)
+          <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
+        </label>` : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`}
+        <label>Título
+          <input name="title" value="${escapeHtml(entry?.title || '')}" required />
+        </label>
+        <label>Slug (URL)
+          <input name="slug" value="${escapeHtml(entry?.slug || '')}" required />
+        </label>
+        <label>Estado
+          <select name="status">
+            <option value="published" ${(!entry || entry.status === 'published') ? 'selected' : ''}>Publicado</option>
+            <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>Borrador</option>
+          </select>
+        </label>
+        ${(entry ? Object.entries(entry.fields || {}).filter(([, f]) => f.type === 'text' || f.type === 'textarea').map(([key, f]) => `
+          <label>${escapeHtml(key)}
+            ${f.type === 'textarea'
+              ? `<textarea name="field:${escapeHtml(key)}">${escapeHtml(String(f.value ?? ''))}</textarea>`
+              : `<input name="field:${escapeHtml(key)}" value="${escapeHtml(String(f.value ?? ''))}" />`}
+          </label>
+        `).join('') : '')}
+        <div class="hm-cms-actions">
+          <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
+          <button type="button" class="secondary" data-action="back-to-collections">← Volver</button>
+          ${entry ? `<button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>` : ''}
+        </div>
+        <p class="hm-cms-muted" data-status></p>
+      </form>
+    `);
+  }
+
+  async function saveEntryForm(form) {
+    const entryId = form.dataset.entryId;
+    const kind = form.dataset.kind;
+    const status = form.querySelector('[data-status]');
+    if (status) status.textContent = 'Guardando...';
+
+    const title = form.elements.title.value.trim();
+    const slug = form.elements.slug.value.trim();
+    const entryStatus = form.elements.status.value;
+
+    try {
+      if (!entryId) {
+        const id = form.elements.id?.value.trim();
+        await api('/api/cms/entries', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, kind, slug, title, status: entryStatus }),
+        });
+      } else {
+        await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, slug, status: entryStatus }),
+        });
+
+        // Update text/textarea fields individually
+        const fieldUpdates = [];
+        for (const [name, input] of Object.entries(form.elements)) {
+          if (typeof name === 'string' && name.startsWith('field:')) {
+            const key = name.slice(6);
+            fieldUpdates.push(api(`/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ value: input.value }),
+            }));
+          }
+        }
+        await Promise.all(fieldUpdates);
+      }
+
+      if (status) status.textContent = 'Guardado correctamente.';
+      setTimeout(() => loadCollections(kind), 800);
+    } catch (error) {
+      if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+    }
+  }
+
+  // ─── Fin CRUD colecciones ────────────────────────────────────────────────
+
   document.addEventListener('click', async (event) => {
     const target = event.target;
     const editable = target instanceof Element ? target.closest('[data-cms-entry]') : null;
@@ -714,6 +963,42 @@
     }
     if (action === 'jobs') {
       loadPublishJobs();
+    }
+    if (action === 'collections') {
+      loadCollections();
+    }
+    if (action === 'tab-kind' && target instanceof Element) {
+      const kind = target.closest('[data-kind]')?.dataset.kind;
+      if (kind) loadCollections(kind);
+    }
+    if (action === 'new-entry' && target instanceof Element) {
+      const kind = target.closest('[data-kind]')?.dataset.kind || activeCollectionKind;
+      showEntryForm(null, kind);
+    }
+    if (action === 'edit-entry' && target instanceof Element) {
+      const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
+      if (entryId) showEntryForm(entryId);
+    }
+    if (action === 'delete-entry' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const btn = target.closest('[data-entry-id]');
+      if (!btn) return;
+      const entryId = btn.dataset.entryId;
+      const title = btn.dataset.entryTitle || entryId;
+      if (!entryId) return;
+      const confirmed = window.confirm(`¿Eliminar la entrada "${title}"?\nEsta acción no se puede deshacer.`);
+      if (!confirmed) return;
+      try {
+        await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, { method: 'DELETE' });
+        loadCollections(activeCollectionKind);
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+      }
+      return;
+    }
+    if (action === 'back-to-collections') {
+      loadCollections(activeCollectionKind);
     }
     if (action === 'revisions' && target instanceof Element) {
       const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
@@ -805,6 +1090,14 @@
     if (form.matches('[data-edit]')) {
       event.preventDefault();
       saveEdit(form).catch((error) => {
+        const status = form.querySelector('[data-status]');
+        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      });
+    }
+
+    if (form.matches('[data-entry-form]')) {
+      event.preventDefault();
+      saveEntryForm(form).catch((error) => {
         const status = form.querySelector('[data-status]');
         if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       });

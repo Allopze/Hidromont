@@ -50,7 +50,7 @@ export class ContentController extends BaseController {
     try {
       const params = fieldParamsSchema.parse(request.params);
       const body = updateFieldSchema.parse(request.body);
-      this.handleSuccess(reply, this.contentService.updateField(params.id, params.key, body.value));
+      this.handleSuccess(reply, this.contentService.updateField(params.id, params.key, body.value, body.mediaId));
     } catch (error) {
       this.handleError(error, reply, 'updateField');
     }

@@ -214,7 +214,7 @@ export class ContentRepository {
     return row ? this.hydrateEntry(row) : undefined;
   }
 
-  updateField(entryId: string, key: string, value: unknown, now: string): CmsEntry {
+  updateField(entryId: string, key: string, value: unknown, now: string, mediaId?: string): CmsEntry {
     const field = this.findField(entryId, key);
     if (!field) throw new Error(`Field ${entryId}.${key} does not exist`);
 
@@ -230,6 +230,16 @@ export class ContentRepository {
         .prepare('UPDATE content_entries SET version = ?, updated_at = ? WHERE id = ?')
         .run(nextVersion, now, entryId);
       this.createRevision(entryId, nextVersion, now);
+
+      if (mediaId) {
+        this.db
+          .prepare(
+            `INSERT INTO media_usages (media_id, entry_id, field_key, updated_at)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(media_id, entry_id, field_key) DO UPDATE SET updated_at = excluded.updated_at`
+          )
+          .run(mediaId, entryId, key, now);
+      }
     });
 
     transaction();

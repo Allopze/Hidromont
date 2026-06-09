@@ -9,38 +9,17 @@ import { PublishController } from '../controllers/PublishController';
 import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
 import { registerCors, requireAuth, requireCsrf } from '../middleware/security';
+import { AuditRepository } from '../repositories/AuditRepository';
 import { ContentRepository } from '../repositories/ContentRepository';
 import { MediaRepository } from '../repositories/MediaRepository';
 import { PublishJobRepository } from '../repositories/PublishJobRepository';
+import { RateLimitRepository } from '../repositories/RateLimitRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { AuthService } from '../services/authService';
 import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
-
-// Rate limiter simple en memoria para el endpoint de login
-// Máximo 10 intentos por IP en 60 segundos; se reinicia después de ese periodo.
-const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-
-function checkLoginRateLimit(ip: string): { allowed: boolean; retryAfterMs: number } {
-  const now = Date.now();
-  const windowMs = 60_000; // 1 minuto
-  const maxAttempts = 10;
-
-  const entry = loginAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, retryAfterMs: 0 };
-  }
-
-  entry.count += 1;
-  if (entry.count > maxAttempts) {
-    return { allowed: false, retryAfterMs: entry.resetAt - now };
-  }
-
-  return { allowed: true, retryAfterMs: 0 };
-}
 
 export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   migrate();
@@ -60,6 +39,9 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const contentRepository = new ContentRepository(db);
   const mediaRepository = new MediaRepository(db);
   const publishJobRepository = new PublishJobRepository(db);
+  const auditRepository = new AuditRepository(db);
+  const rateLimitRepository = new RateLimitRepository(db);
+  rateLimitRepository.cleanup();
 
   const authService = new AuthService(userRepository);
   await authService.ensureAdminUser();
@@ -78,16 +60,24 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/cms/health', async () => ({ ok: true }));
   app.post('/api/cms/login', async (request, reply) => {
     const ip = request.ip ?? 'unknown';
-    const { allowed, retryAfterMs } = checkLoginRateLimit(ip);
+    const { allowed, retryAfterMs } = rateLimitRepository.check(ip);
     if (!allowed) {
       reply.header('Retry-After', String(Math.ceil(retryAfterMs / 1000)));
+      auditRepository.log({ action: 'login.rate_limited', ip });
       return reply.status(429).send({ error: 'Demasiados intentos. Espere antes de intentar de nuevo.' });
     }
-    return authController.login(request, reply);
+    const result = await authController.login(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'login.success', ip, data: { email: (request.body as { email?: string })?.email } });
+    } else {
+      auditRepository.log({ action: 'login.failed', ip });
+    }
+    return result;
   });
-  app.post('/api/cms/logout', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    authController.logout(request, reply)
-  );
+  app.post('/api/cms/logout', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    auditRepository.log({ action: 'logout', userId: request.cmsSession?.user.id, ip: request.ip });
+    return authController.logout(request, reply);
+  });
   app.get('/api/cms/session', (request, reply) => authController.session(request, reply));
 
   app.get('/api/cms/manifest', { preHandler: [requireAuth(authService)] }, (request, reply) =>
@@ -96,43 +86,78 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/cms/entries', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     contentController.listEntries(request, reply)
   );
-  app.post('/api/cms/entries', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    contentController.createEntry(request, reply)
-  );
+  app.post('/api/cms/entries', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    await contentController.createEntry(request, reply);
+    if (reply.statusCode === 201) {
+      const id = (request.body as { id?: string })?.id;
+      auditRepository.log({ action: 'entry.create', userId: request.cmsSession?.user.id, entityType: 'entry', entityId: id, ip: request.ip });
+    }
+  });
   app.get('/api/cms/entries/:id', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     contentController.getEntry(request, reply)
   );
-  app.patch('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    contentController.updateEntryMeta(request, reply)
-  );
+  app.patch('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await contentController.updateEntryMeta(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'entry.update_meta', userId: request.cmsSession?.user.id, entityType: 'entry', entityId: id, ip: request.ip });
+    }
+  });
   app.patch(
     '/api/cms/entries/:id/fields/:key',
     { preHandler: [requireAuth(authService), requireCsrf()] },
-    (request, reply) => contentController.updateField(request, reply)
+    async (request, reply) => {
+      const { id, key } = request.params as { id: string; key: string };
+      await contentController.updateField(request, reply);
+      if (reply.statusCode === 200) {
+        auditRepository.log({ action: 'field.update', userId: request.cmsSession?.user.id, entityType: 'entry', entityId: id, data: { key }, ip: request.ip });
+      }
+    }
   );
-  app.delete('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    contentController.deleteEntry(request, reply)
-  );
+  app.delete('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await contentController.deleteEntry(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'entry.delete', userId: request.cmsSession?.user.id, entityType: 'entry', entityId: id, ip: request.ip });
+    }
+  });
+
+  app.get('/api/cms/audit', { preHandler: [requireAuth(authService)] }, async (_request, reply) => {
+    return reply.send({ events: auditRepository.list(200) });
+  });
 
   app.get('/api/cms/media', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     mediaController.list(request, reply)
   );
-  app.post('/api/cms/media', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    mediaController.upload(request, reply)
-  );
-  app.patch('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    mediaController.update(request, reply)
-  );
-  app.delete('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    mediaController.delete(request, reply)
-  );
+  app.post('/api/cms/media', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    await mediaController.upload(request, reply);
+    if (reply.statusCode === 201) {
+      auditRepository.log({ action: 'media.upload', userId: request.cmsSession?.user.id, entityType: 'media', ip: request.ip });
+    }
+  });
+  app.patch('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await mediaController.update(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'media.update', userId: request.cmsSession?.user.id, entityType: 'media', entityId: id, ip: request.ip });
+    }
+  });
+  app.delete('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    await mediaController.delete(request, reply);
+    if (reply.statusCode === 200) {
+      auditRepository.log({ action: 'media.delete', userId: request.cmsSession?.user.id, entityType: 'media', entityId: id, ip: request.ip });
+    }
+  });
 
-  app.post('/api/cms/export', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    publishController.export(request, reply)
-  );
-  app.post('/api/cms/publish', { preHandler: [requireAuth(authService), requireCsrf()] }, (request, reply) =>
-    publishController.publish(request, reply)
-  );
+  app.post('/api/cms/export', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    await publishController.export(request, reply);
+    auditRepository.log({ action: 'content.export', userId: request.cmsSession?.user.id, ip: request.ip });
+  });
+  app.post('/api/cms/publish', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    await publishController.publish(request, reply);
+    auditRepository.log({ action: 'content.publish', userId: request.cmsSession?.user.id, ip: request.ip });
+  });
   app.get('/api/cms/publish/jobs', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     publishController.listJobs(request, reply)
   );
@@ -153,6 +178,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     async (request, reply) => {
       const { entryId, revisionId } = request.params as { entryId: string; revisionId: string };
       const entry = contentService.restoreRevision(entryId, revisionId);
+      auditRepository.log({ action: 'revision.restore', userId: request.cmsSession?.user.id, entityType: 'entry', entityId: entryId, data: { revisionId }, ip: request.ip });
       return reply.send({ ok: true, entry });
     }
   );
