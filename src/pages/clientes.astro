@@ -3,8 +3,8 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
-import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import CTASection from '../components/ui/CTASection.astro';
 import EditableText from '../components/cms/EditableText.astro';
 import EditableImage from '../components/cms/EditableImage.astro';
 import { getEntry } from 'astro:content';
@@ -103,19 +103,10 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
     </Container>
   </Section>
 
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <EditableText as="h2" entry="clientes.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('clientes.cta', 'title', 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica')}
-        </EditableText>
-        <EditableText as="p" entry="clientes.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
-          {getCmsText('clientes.cta', 'subtitle', 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.')}
-        </EditableText>
-        <Button href="/contacto" size="lg">
-          {getCmsText('clientes.cta', 'buttonLabel', 'Ponerse en contacto')}
-        </Button>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="clientes.cta"
+    title={getCmsText('clientes.cta', 'title', 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica')}
+    subtitle={getCmsText('clientes.cta', 'subtitle', 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.')}
+    primary={{ label: getCmsText('clientes.cta', 'buttonLabel', 'Ponerse en contacto'), href: '/contacto' }}
+  />
 </PageLayout>

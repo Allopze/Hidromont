@@ -59,7 +59,7 @@ const hasValues = items.some((i) => i.value);
         field="subtitle"
         type="textarea"
         class={`${light ? 'text-white/70' : 'text-text-muted'}`}
-        style="font-size: var(--font-size-body-lg); --reveal-delay: 0.08s;"
+        style="font-size: var(--font-size-lead); --reveal-delay: 0.08s;"
         reveal
       >
         {subtitle}
@@ -78,7 +78,7 @@ const hasValues = items.some((i) => i.value);
         >
           {item.value && (
             <p
-              class="font-mono font-bold text-accent mb-2"
+              class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
               style="font-size: var(--font-size-h3);"
             >
               {item.value}

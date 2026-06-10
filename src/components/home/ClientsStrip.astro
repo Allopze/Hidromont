@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 import Eyebrow from '../ui/Eyebrow.astro';
 import Container from '../ui/Container.astro';
 import EditableText from '../cms/EditableText.astro';
+import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText } from '../../data/cms';
 
 interface Props {
@@ -69,9 +70,7 @@ const sinLogo = lista.filter((c) => !c.logo);
       <EditableText entry="clients.strip" field="linkLabel">
         {getCmsText('clients.strip', 'linkLabel', 'Ver todos los clientes')}
       </EditableText>
-      <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M3 8h10M9 4l4 4-4 4" />
-      </svg>
+      <ArrowIcon />
     </a>
   </div>
 </Container>

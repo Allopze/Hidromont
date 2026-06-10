@@ -1,6 +1,41 @@
 import type { ContentRepository } from '../repositories/ContentRepository';
 import { getInitialEntries } from './contentSeed';
 
+type SeedField = { type: string; value: unknown };
+
+/**
+ * Campos mínimos que exige el schema Zod de cada colección de Astro
+ * (`src/content/config.ts`). Sin ellos, al exportar un `.md` `astro check`
+ * falla con un error críptico para el editor (CMS-003). Se inyectan al crear
+ * la entrada para que el archivo exportado sea siempre válido; el editor luego
+ * reemplaza estos marcadores por contenido real desde el overlay.
+ */
+function requiredFieldTemplate(kind: string, title: string): Record<string, SeedField> {
+  if (kind === 'servicio') {
+    return {
+      titulo: { type: 'text', value: title },
+      resumen: { type: 'textarea', value: 'Descripción pendiente de completar.' },
+      // Debe ser una clave válida de iconos en ServiceCard.astro
+      // (pipe | gate | valve | turbine | rack | crane).
+      icono: { type: 'text', value: 'pipe' },
+      orden: { type: 'number', value: 100 },
+      body: { type: 'textarea', value: 'Contenido pendiente de completar.' },
+    };
+  }
+  if (kind === 'proyecto') {
+    return {
+      nombre: { type: 'text', value: title },
+      alcance: { type: 'textarea', value: 'Alcance pendiente de completar.' },
+      // Debe ser uno del enum categoriaProyecto en src/content/config.ts.
+      categoria: { type: 'text', value: 'tuberias' },
+      tipo: { type: 'text', value: 'banco' },
+      orden: { type: 'number', value: 100 },
+      body: { type: 'textarea', value: 'Contenido pendiente de completar.' },
+    };
+  }
+  return {};
+}
+
 export class ContentService {
   constructor(private readonly contentRepository: ContentRepository) {}
 
@@ -57,7 +92,14 @@ export class ContentService {
     fields?: Record<string, { type: string; value: unknown }>;
   }) {
     const now = new Date().toISOString();
-    const fields = Object.entries(input.fields ?? {}).map(([key, f]) => ({
+    // Plantilla requerida por el schema primero, sobreescrita por cualquier
+    // campo que el cliente sí envíe — así una entrada de colección nunca queda
+    // sin los campos obligatorios y el .md exportado siempre valida (CMS-003).
+    const merged: Record<string, SeedField> = {
+      ...requiredFieldTemplate(input.kind, input.title),
+      ...(input.fields ?? {}),
+    };
+    const fields = Object.entries(merged).map(([key, f]) => ({
       key,
       type: f.type as 'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object',
       value: f.value,

@@ -20,7 +20,7 @@ const year = new Date().getFullYear();
         </EditableText>
         <div class="space-y-2 text-sm text-white/70">
           <p>
-            <span class="text-white/40 text-xs uppercase tracking-wide block mb-0.5">Dirección</span>
+            <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">Dirección</span>
             <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText><br />
             <EditableText entry="site.company" field="ciudad">{company.ciudad}</EditableText>
           </p>
@@ -75,10 +75,10 @@ const year = new Date().getFullYear();
   <!-- Bottom bar -->
   <div class="border-t border-white/10">
     <div class="w-full mx-auto px-6 max-w-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p class="text-xs text-white/40">
+      <p class="text-xs text-white/70">
         &copy; {year} {company.razonSocial}. Todos los derechos reservados.
       </p>
-      <p class="text-xs text-white/30">
+      <p class="text-xs text-white/60">
         <EditableText entry="layout.footer" field="location">
           {getCmsText('layout.footer', 'location', 'Los Ángeles, Región del Biobío, Chile')}
         </EditableText>

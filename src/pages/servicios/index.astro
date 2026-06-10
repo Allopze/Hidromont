@@ -3,9 +3,9 @@ import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import Eyebrow from '../../components/ui/Eyebrow.astro';
-import Button from '../../components/ui/Button.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import ServiceCard from '../../components/services/ServiceCard.astro';
+import CTASection from '../../components/ui/CTASection.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
@@ -57,7 +57,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
         <EditableText as="h2" entry="servicios.index.metodologia" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
           {getCmsText('servicios.index.metodologia', 'title', 'Actividades transversales')}
         </EditableText>
-        <EditableText as="p" entry="servicios.index.metodologia" field="subtitle" type="textarea" class="text-text-muted mb-8" style="font-size: var(--font-size-body-lg);">
+        <EditableText as="p" entry="servicios.index.metodologia" field="subtitle" type="textarea" class="text-text-muted mb-8" style="font-size: var(--font-size-lead);">
           {getCmsText('servicios.index.metodologia', 'subtitle', 'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.')}
         </EditableText>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
@@ -90,19 +90,10 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
     </Container>
   </Section>
 
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <EditableText as="h2" entry="servicios.index.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('servicios.index.cta', 'title', '¿Necesita un servicio específico?')}
-        </EditableText>
-        <EditableText as="p" entry="servicios.index.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
-          {getCmsText('servicios.index.cta', 'subtitle', 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.')}
-        </EditableText>
-        <Button href="/contacto" size="lg">
-          {getCmsText('servicios.index.cta', 'buttonLabel', 'Ponerse en contacto')}
-        </Button>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="servicios.index.cta"
+    title={getCmsText('servicios.index.cta', 'title', '¿Necesita un servicio específico?')}
+    subtitle={getCmsText('servicios.index.cta', 'subtitle', 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.')}
+    primary={{ label: getCmsText('servicios.index.cta', 'buttonLabel', 'Ponerse en contacto'), href: '/contacto' }}
+  />
 </PageLayout>

@@ -17,6 +17,8 @@ interface Props {
 
 const { currentPath = '/', overlay = false } = Astro.props;
 
+const mobileMenuOpenLabel = getCmsText('layout.header', 'mobileMenuOpenLabel', 'Abrir menú de navegación');
+
 function isActive(href: string) {
   if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
@@ -120,7 +122,7 @@ function isActive(href: string) {
                   <path d="M2 4l4 4 4-4" />
                 </svg>
               </a>
-              <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-lg shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-[opacity,visibility] duration-base ease-standard z-10">
+              <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-lg shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-10">
                 {item.children.map((child) => (
                   <a
                     href={child.href}
@@ -164,7 +166,7 @@ function isActive(href: string) {
         ].join(' ')}
         aria-expanded="false"
         aria-controls="mobile-menu"
-        aria-label={getCmsText('layout.header', 'mobileMenuOpenLabel', 'Abrir menú de navegación')}
+        aria-label={mobileMenuOpenLabel}
       >
         <svg id="icon-menu" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M4 6h16M4 12h16M4 18h16" />
@@ -227,9 +229,11 @@ function isActive(href: string) {
   toggle?.addEventListener('click', () => {
     const isOpen = !menu?.classList.contains('hidden');
     menu?.classList.toggle('hidden', isOpen);
-    toggle.setAttribute('aria-expanded', String(!isOpen));
-    iconMenu?.classList.toggle('hidden', !isOpen);
-    iconClose?.classList.toggle('hidden', isOpen);
+    const opening = !isOpen;
+    toggle.setAttribute('aria-expanded', String(opening));
+    toggle.setAttribute('aria-label', opening ? 'Cerrar menú de navegación' : 'Abrir menú de navegación');
+    iconMenu?.classList.toggle('hidden', opening);
+    iconClose?.classList.toggle('hidden', !opening);
   });
 
   /* ── Overlay scroll behaviour (home only) ────────────────── */

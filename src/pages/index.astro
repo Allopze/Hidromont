@@ -5,6 +5,7 @@ import ServiceCard from '../components/services/ServiceCard.astro';
 import CapabilitiesBlock from '../components/home/CapabilitiesBlock.astro';
 import ProjectCard from '../components/projects/ProjectCard.astro';
 import ClientsStrip from '../components/home/ClientsStrip.astro';
+import CTASection from '../components/ui/CTASection.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
@@ -75,7 +76,7 @@ const propuestaValor = [
         <EditableText as="h2" entry="home.services" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
           {getCmsText('home.services', 'title', 'Soluciones hidromecánicas llave en mano')}
         </EditableText>
-        <EditableText as="p" entry="home.services" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-body-lg);">
+        <EditableText as="p" entry="home.services" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-lead);">
           {getCmsText('home.services', 'subtitle', 'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.')}
         </EditableText>
       </div>
@@ -143,7 +144,7 @@ const propuestaValor = [
   </Section>
 
   <!-- Proyectos destacados -->
-  {proyectosDestacados.length > 0 && (
+  {proyectosDestacados.length > 0 ? (
     <Section variant="default" id="proyectos">
       <Container>
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
@@ -162,6 +163,19 @@ const propuestaValor = [
         </div>
       </Container>
     </Section>
+  ) : (
+    <Section variant="default" id="proyectos">
+      <Container size="md">
+        <div class="text-center py-10">
+          <Eyebrow><EditableText entry="home.projects" field="eyebrow">Experiencia</EditableText></Eyebrow>
+          <EditableText as="h2" entry="home.projects" field="title" class="font-heading font-bold text-primary-dark mb-3" style="font-size: var(--font-size-h2);">
+            {getCmsText('home.projects', 'title', 'Proyectos destacados')}
+          </EditableText>
+          <p class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">Estamos actualizando nuestro catálogo de proyectos. Pronto podrá consultar nuestra experiencia completa en esta sección.</p>
+          <Button href="/contacto" variant="secondary">Consultar experiencia técnica</Button>
+        </div>
+      </Container>
+    </Section>
   )}
 
   <!-- Clientes -->
@@ -170,23 +184,11 @@ const propuestaValor = [
   </Section>
 
   <!-- CTA final -->
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <Eyebrow light><EditableText entry="home.cta" field="eyebrow">Contáctenos</EditableText></Eyebrow>
-        <EditableText as="h2" entry="home.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('home.cta', 'title', '¿Quiere saber más sobre nuestra empresa?')}
-        </EditableText>
-        <EditableText as="p" entry="home.cta" field="subtitle" type="textarea" class="text-white/70 mb-8" style="font-size: var(--font-size-body-lg);">
-          {getCmsText('home.cta', 'subtitle', 'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.')}
-        </EditableText>
-        <div class="flex flex-wrap justify-center gap-4">
-          <Button href="/contacto" size="lg">{getCmsText('home.cta', 'primaryLabel', 'Ponerse en contacto')}</Button>
-          <Button href="/empresa" variant="secondary-light" size="lg">
-            {getCmsText('home.cta', 'secondaryLabel', 'Conocer la empresa')}
-          </Button>
-        </div>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="home.cta"
+    title={getCmsText('home.cta', 'title', '¿Quiere saber más sobre nuestra empresa?')}
+    subtitle={getCmsText('home.cta', 'subtitle', 'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.')}
+    primary={{ label: getCmsText('home.cta', 'primaryLabel', 'Ponerse en contacto'), href: '/contacto' }}
+    secondary={{ label: getCmsText('home.cta', 'secondaryLabel', 'Conocer la empresa'), href: '/empresa' }}
+  />
 </PageLayout>

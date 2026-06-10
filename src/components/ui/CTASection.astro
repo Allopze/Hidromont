@@ -1,0 +1,57 @@
+---
+import Section from './Section.astro';
+import Container from './Container.astro';
+import Button from './Button.astro';
+import EditableText from '../cms/EditableText.astro';
+
+interface CTAButton {
+  label: string;
+  href: string;
+  variant?: 'primary' | 'secondary-light';
+}
+
+interface Props {
+  cmsEntry: string;
+  title: string;
+  subtitle: string;
+  primary: CTAButton;
+  secondary?: CTAButton;
+}
+
+const { cmsEntry, title, subtitle, primary, secondary } = Astro.props;
+---
+
+<Section variant="strong">
+  <Container size="md">
+    <div class="text-center">
+      <EditableText
+        as="h2"
+        entry={cmsEntry}
+        field="title"
+        class="font-heading font-bold text-white mb-4"
+        style="font-size: var(--font-size-h2);"
+      >
+        {title}
+      </EditableText>
+      <EditableText
+        as="p"
+        entry={cmsEntry}
+        field="subtitle"
+        type="textarea"
+        class="text-white/70 mb-8"
+      >
+        {subtitle}
+      </EditableText>
+      <div class="flex flex-wrap justify-center gap-4">
+        <Button href={primary.href} size="lg" variant={primary.variant ?? 'primary'}>
+          {primary.label}
+        </Button>
+        {secondary && (
+          <Button href={secondary.href} size="lg" variant={secondary.variant ?? 'secondary-light'}>
+            {secondary.label}
+          </Button>
+        )}
+      </div>
+    </div>
+  </Container>
+</Section>

@@ -2,8 +2,10 @@
 import type { CollectionEntry } from 'astro:content';
 import Badge from '../ui/Badge.astro';
 import Button from '../ui/Button.astro';
+import ArrowIcon from '../ui/ArrowIcon.astro';
 
 import { projectImages } from '../../data/project-images';
+import { categoriaLabels } from '../../data/categories';
 
 interface Props {
   proyecto: CollectionEntry<'proyectos'>;
@@ -12,20 +14,12 @@ interface Props {
 const { proyecto } = Astro.props;
 const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion } = proyecto.data;
 
-const categoriaLabels: Record<string, string> = {
-  tuberias: 'Tuberías y Blindajes',
-  compuertas: 'Compuertas y Válvulas',
-  electromecanicos: 'Montajes Electromecánicos',
-  limpiarrejas: 'Limpiarrejas',
-  estructuras: 'Estructuras y Estanques',
-};
-
 const isDestacado = proyecto.data.tipo === 'destacado';
 
 const photo = projectImages[proyecto.slug];
 ---
 
-<article class="bg-surface border border-border rounded-lg overflow-hidden flex flex-col transition-[box-shadow,transform] duration-slow ease-standard hover:shadow-md hover:-translate-y-0.5" data-reveal>
+<article class="group relative bg-surface border border-border rounded-lg overflow-hidden flex flex-col transition-[border-color,box-shadow,background-color] duration-slow ease-standard hover:border-primary hover:shadow-md" data-reveal>
   <!-- Project photo (only for destacado projects that have a curated image) -->
   {isDestacado && photo && (
     <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
@@ -70,11 +64,13 @@ const photo = projectImages[proyecto.slug];
     )}
 
     {isDestacado && (
-      <Button href={`/proyectos/${proyecto.slug}`} variant="link" class="self-start">
-        Ver detalle
-        <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M3 8h10M9 4l4 4-4 4" />
-        </svg>
+      <Button
+        href={`/proyectos/${proyecto.slug}`}
+        variant="link"
+        class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-lg"
+      >
+        <span class="relative">Ver detalle</span>
+        <ArrowIcon class="relative transition-transform group-hover:translate-x-0.5" />
       </Button>
     )}
   </div>

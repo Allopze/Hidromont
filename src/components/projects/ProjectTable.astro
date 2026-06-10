@@ -47,7 +47,7 @@ const { proyectos, titulo } = Astro.props;
       {proyectos.map((p) => (
         <div class="bg-surface border border-border rounded-lg p-4 flex flex-col gap-3 shadow-sm">
           <div>
-            <h4 class="font-heading font-semibold text-primary-dark" style="font-size: var(--font-size-body-lg);">
+            <h4 class="font-heading font-semibold text-primary-dark" style="font-size: var(--font-size-h4);">
               {p.data.nombre}
             </h4>
             {p.data.diametro && (

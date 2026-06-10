@@ -3,8 +3,8 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
-import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import CTASection from '../components/ui/CTASection.astro';
 import EditableText from '../components/cms/EditableText.astro';
 import { getCmsText } from '../data/cms';
 import { company } from '../data/company';
@@ -39,7 +39,7 @@ import { company } from '../data/company';
           <EditableText as="h2" entry="empresa.historia" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
             {getCmsText('empresa.historia', 'title', 'Más de 40 años en infraestructura hidráulica')}
           </EditableText>
-          <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-body-lg); line-height: 1.7;">
+          <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-lead); line-height: 1.7;">
             <EditableText as="p" entry="empresa.historia" field="p1" type="textarea">
               {getCmsText('empresa.historia', 'p1', 'Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.')}
             </EditableText>
@@ -56,7 +56,7 @@ import { company } from '../data/company';
           <div class="grid grid-cols-2 gap-4">
             {([1, 2, 3, 4] as const).map((i) => (
               <div class="p-5 border border-border rounded-lg bg-surface">
-                <EditableText as="p" entry="empresa.metricas" field={`card${i}Value`} class="font-mono font-bold text-accent text-2xl">
+                <EditableText as="p" entry="empresa.metricas" field={`card${i}Value`} class="font-mono font-bold text-primary text-2xl">
                   {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'EPC', 'ISO 9001'][i - 1])}
                 </EditableText>
                 <EditableText as="p" entry="empresa.metricas" field={`card${i}Label`} class="font-semibold text-text text-sm mt-1">
@@ -95,14 +95,14 @@ import { company } from '../data/company';
         <EditableText as="h2" entry="empresa.instalaciones" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
           {getCmsText('empresa.instalaciones', 'title', 'Instalaciones y medios productivos')}
         </EditableText>
-        <EditableText as="p" entry="empresa.instalaciones" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-body-lg);">
+        <EditableText as="p" entry="empresa.instalaciones" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-lead);">
           {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
         </EditableText>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {([1, 2, 3, 4] as const).map((i) => (
           <div class="p-6 bg-surface border border-border rounded-lg">
-            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-accent text-2xl mb-1">
+            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
               {getCmsText('empresa.instalaciones', `item${i}Value`, ['3.000 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
             </EditableText>
             <EditableText as="h3" entry="empresa.instalaciones" field={`item${i}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
@@ -135,7 +135,7 @@ import { company } from '../data/company';
           <EditableText as="h2" entry="empresa.maquinaria" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
             {getCmsText('empresa.maquinaria', 'title', 'Maquinaria especializada')}
           </EditableText>
-          <EditableText as="p" entry="empresa.maquinaria" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+          <EditableText as="p" entry="empresa.maquinaria" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">
             {getCmsText('empresa.maquinaria', 'subtitle', 'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.')}
           </EditableText>
           <ul class="space-y-2.5">
@@ -172,7 +172,7 @@ import { company } from '../data/company';
           <EditableText as="h2" entry="empresa.mediosdeobra" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
             {getCmsText('empresa.mediosdeobra', 'title', 'Medios de obra')}
           </EditableText>
-          <EditableText as="p" entry="empresa.mediosdeobra" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-body-lg);">
+          <EditableText as="p" entry="empresa.mediosdeobra" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">
             {getCmsText('empresa.mediosdeobra', 'subtitle', 'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.')}
           </EditableText>
           <ul class="space-y-2.5">
@@ -199,19 +199,10 @@ import { company } from '../data/company';
   </Section>
 
   <!-- CTA -->
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <EditableText as="h2" entry="empresa.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('empresa.cta', 'title', '¿Quiere conocer nuestras capacidades?')}
-        </EditableText>
-        <EditableText as="p" entry="empresa.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
-          {getCmsText('empresa.cta', 'subtitle', 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.')}
-        </EditableText>
-        <Button href="/contacto" size="lg">
-          {getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico')}
-        </Button>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="empresa.cta"
+    title={getCmsText('empresa.cta', 'title', '¿Quiere conocer nuestras capacidades?')}
+    subtitle={getCmsText('empresa.cta', 'subtitle', 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.')}
+    primary={{ label: getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico'), href: '/contacto' }}
+  />
 </PageLayout>

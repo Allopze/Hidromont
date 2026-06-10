@@ -104,11 +104,25 @@ h6 {
   font-family: var(--font-heading);
   color: var(--color-primary-dark);
   line-height: 1.15;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 p {
   margin: 0 0 var(--space-4);
+  line-height: 1.6;
+}
+
+p.text-lead {
+  line-height: 1.5;
+}
+
+p.text-sm,
+p.text-xs {
+  line-height: 1.45;
+}
+
+.prose-measure {
+  max-width: 68ch;
 }
 
 ul,
@@ -151,6 +165,13 @@ ol {
 .section--strong h3,
 .section--strong h4 {
   color: #ffffff;
+  letter-spacing: 0;
+}
+
+.section--strong p,
+.section--strong li,
+.section--strong span {
+  line-height: 1.65;
 }
 
 .eyebrow {
@@ -165,6 +186,32 @@ ol {
 
 .section--strong .eyebrow {
   color: var(--color-accent);
+}
+
+/* ── Form controls ── */
+.form-input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  /* 16px en móvil evita el zoom automático de iOS al enfocar (MOB-001);
+     se reduce a 14px desde tablet, donde no hay ese comportamiento. */
+  font-size: 16px;
+  transition: border-color var(--motion-fast), outline var(--motion-fast);
+}
+
+@media (min-width: 768px) {
+  .form-input {
+    font-size: var(--font-size-small);
+  }
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(0, 101, 169, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {

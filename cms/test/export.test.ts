@@ -1,0 +1,96 @@
+/**
+ * Regresión CMS-002: el export sólo debe escribir contenido publicado.
+ * Un borrador (status 'draft') nunca debe aparecer en cms-content.json.
+ */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import Database from 'better-sqlite3';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { ContentRepository } from '../repositories/ContentRepository';
+import { ExportService } from '../services/exportService';
+
+const SCHEMA_SQL = `
+  CREATE TABLE IF NOT EXISTS content_entries (
+    id TEXT PRIMARY KEY,
+    kind TEXT NOT NULL,
+    slug TEXT NOT NULL,
+    locale TEXT NOT NULL DEFAULT 'es-CL',
+    title TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'published',
+    version INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS content_fields (
+    entry_id TEXT NOT NULL,
+    key TEXT NOT NULL,
+    type TEXT NOT NULL,
+    value_json TEXT NOT NULL,
+    source_ref_json TEXT,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (entry_id, key),
+    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
+  );
+  CREATE TABLE IF NOT EXISTS revisions (
+    id TEXT PRIMARY KEY,
+    entry_id TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    snapshot_json TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
+  );
+  CREATE TABLE IF NOT EXISTS media_usages (
+    media_id TEXT NOT NULL,
+    entry_id TEXT NOT NULL,
+    field_key TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (media_id, entry_id, field_key)
+  );
+`;
+
+describe('ExportService — filtro de status (CMS-002)', () => {
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'servicios'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+    repo.upsertEntry({
+      id: 'home.hero', kind: 'page', slug: '/', locale: 'es-CL',
+      title: 'Hero publicado', status: 'published', now,
+      fields: [{ key: 'title', type: 'text', value: 'Título publicado' }],
+    });
+    repo.upsertEntry({
+      id: 'home.draft', kind: 'page', slug: '/', locale: 'es-CL',
+      title: 'Hero borrador', status: 'draft', now,
+      fields: [{ key: 'title', type: 'text', value: 'Título borrador' }],
+    });
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('incluye entradas publicadas y excluye borradores del cms-content.json', () => {
+    exportService.exportContent();
+    const json = JSON.parse(
+      fs.readFileSync(path.join(tmpRoot, 'src', 'data', 'cms-content.json'), 'utf-8')
+    ) as { entries: Record<string, unknown> };
+
+    expect(json.entries['home.hero']).toBeDefined();
+    expect(json.entries['home.draft']).toBeUndefined();
+  });
+});

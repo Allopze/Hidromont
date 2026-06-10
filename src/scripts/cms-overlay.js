@@ -393,7 +393,7 @@
       <span class="hm-cms-badge" data-state-badge style="display:none"></span>
       <button type="button" class="secondary" data-action="collections">Colecciones</button>
       <button type="button" class="secondary" data-action="jobs">Historial</button>
-      <button type="button" data-action="publish">Publicar</button>
+      <button type="button" data-action="publish" title="Exporta el contenido a los archivos del sitio y ejecuta la validación (astro check). El despliegue a hidromont.cl es un paso aparte.">Exportar y validar</button>
       <button type="button" class="secondary" data-action="logout">Salir</button>
     </div>
     <aside class="hm-cms-panel" aria-label="Editor CMS">
@@ -413,9 +413,11 @@
   function setGlobalState(stateKey) {
     if (!stateBadge) return;
     if (!stateKey) { stateBadge.style.display = 'none'; return; }
+    // Etiquetas honestas: el CMS exporta y valida, pero NO despliega a producción.
+    // «Exportado» no significa «visible en hidromont.cl» — eso requiere build+deploy.
     const map = {
-      unsaved: { label: '● Sin publicar', cls: 'failed' },
-      published: { label: '✓ Publicado', cls: 'succeeded' },
+      unsaved: { label: '● Sin exportar', cls: 'failed' },
+      exported: { label: '✓ Exportado · falta desplegar', cls: 'succeeded' },
       error: { label: '✗ Error', cls: 'failed' },
     };
     const s = map[stateKey] || { label: stateKey, cls: '' };
@@ -509,7 +511,7 @@
           </label>
         </div>
         <label>Subir imagen
-          <input name="file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+          <input name="file" type="file" accept="image/png,image/jpeg,image/webp" />
         </label>
         <label>Biblioteca de medios
           <input name="mediaSearch" type="search" placeholder="Buscar por nombre o alt" data-media-search />
@@ -715,7 +717,10 @@
 
     openPanel(`
       <section class="hm-cms-job-list">
-        <p class="hm-cms-muted">Historial de exportaciones y publicaciones.</p>
+        <p class="hm-cms-muted">Historial de exportaciones y validaciones.</p>
+        <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 10px">
+          ℹ️ Exportar y validar escribe los archivos del sitio y corre <code>astro check</code>. Para que los cambios aparezcan en <strong>hidromont.cl</strong> falta compilar y desplegar (<code>npm run build</code> + deploy del hosting).
+        </p>
         ${items.map((job) => `
           <article class="hm-cms-job">
             <div class="hm-cms-job-title">
@@ -861,7 +866,7 @@
       element.textContent = updated.fields[field]?.value ?? value;
     }
 
-    status.textContent = 'Guardado en SQLite. Usa Publicar para exportar archivos.';
+    status.textContent = 'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';
     setGlobalState('unsaved');
   }
 
@@ -950,6 +955,10 @@
             <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>Borrador</option>
           </select>
         </label>
+        ${!entryId && (kind === 'servicio' || kind === 'proyecto') ? `
+          <p class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 10px">
+            Se crearán campos obligatorios con valores de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Edítalos luego haciendo clic en los elementos de la página antes de exportar.
+          </p>` : ''}
         ${(entry ? Object.entries(entry.fields || {}).filter(([, f]) => f.type === 'text' || f.type === 'textarea').map(([key, f]) => `
           <label>${escapeHtml(key)}
             ${f.type === 'textarea'
@@ -1030,8 +1039,8 @@
     if (action === 'export') {
       const result = await api('/api/cms/export', { method: 'POST' });
       const status = panelBody.querySelector('[data-status]');
-      if (status) status.textContent = `Exportado a archivos del sitio. Job ${result.job?.id || ''}`.trim();
-      setGlobalState('published');
+      if (status) status.textContent = `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
+      setGlobalState('exported');
     }
     if (action === 'jobs') {
       loadPublishJobs();
@@ -1151,12 +1160,12 @@
     }
     if (action === 'publish') {
       if (!(await ensureSession())) return;
-      openPanel('<p class="hm-cms-muted">Publicando y ejecutando validación...</p>');
+      openPanel('<p class="hm-cms-muted">Exportando archivos y ejecutando validación (astro check)...</p>');
       try {
         const result = await api('/api/cms/publish', { method: 'POST' });
         renderPublishJobs(result.job ? [result.job] : []);
         const jobStatus = result.job?.status;
-        setGlobalState(jobStatus === 'succeeded' ? 'published' : 'error');
+        setGlobalState(jobStatus === 'succeeded' ? 'exported' : 'error');
       } catch (error) {
         openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         setGlobalState('error');

@@ -3,8 +3,8 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
-import Button from '../components/ui/Button.astro';
 import PageHero from '../components/ui/PageHero.astro';
+import CTASection from '../components/ui/CTASection.astro';
 import EditableText from '../components/cms/EditableText.astro';
 import { getCmsText } from '../data/cms';
 ---
@@ -97,19 +97,10 @@ import { getCmsText } from '../data/cms';
     </Container>
   </Section>
 
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <EditableText as="h2" entry="calidad.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('calidad.cta', 'title', 'Proyectos que exigen calidad certificada')}
-        </EditableText>
-        <EditableText as="p" entry="calidad.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
-          {getCmsText('calidad.cta', 'subtitle', 'Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.')}
-        </EditableText>
-        <Button href="/contacto" size="lg">
-          {getCmsText('calidad.cta', 'buttonLabel', 'Contactar equipo técnico')}
-        </Button>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="calidad.cta"
+    title={getCmsText('calidad.cta', 'title', 'Proyectos que exigen calidad certificada')}
+    subtitle={getCmsText('calidad.cta', 'subtitle', 'Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.')}
+    primary={{ label: getCmsText('calidad.cta', 'buttonLabel', 'Contactar equipo técnico'), href: '/contacto' }}
+  />
 </PageLayout>

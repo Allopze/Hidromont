@@ -3,14 +3,15 @@ import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import Eyebrow from '../../components/ui/Eyebrow.astro';
-import Button from '../../components/ui/Button.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
+import CTASection from '../../components/ui/CTASection.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
+import { categoriaLabels } from '../../data/categories';
 
 const allProyectos = await getCollection('proyectos');
 
@@ -24,13 +25,10 @@ const banco = allProyectos
 
 type Categoria = 'tuberias' | 'compuertas' | 'electromecanicos' | 'limpiarrejas' | 'estructuras';
 
-const categorias: { id: Categoria; label: string }[] = [
-  { id: 'tuberias', label: 'Tuberías y Blindajes' },
-  { id: 'compuertas', label: 'Compuertas y Válvulas' },
-  { id: 'electromecanicos', label: 'Montajes Electromecánicos' },
-  { id: 'limpiarrejas', label: 'Limpiarrejas' },
-  { id: 'estructuras', label: 'Estructuras y Estanques' },
-];
+const categorias: { id: Categoria; label: string }[] = Object.entries(categoriaLabels).map(([id, label]) => ({
+  id: id as Categoria,
+  label,
+}));
 
 const filterItems = [
   { label: 'Todos', href: '#banco-proyectos', id: 'todos' },
@@ -95,7 +93,7 @@ const bancoPorCategoria = categorias.map((c) => ({
       <EditableText as="h2" entry="proyectos.index.banco" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
         {getCmsText('proyectos.index.banco', 'title', 'Experiencia comprobada en embalses, presas y centrales')}
       </EditableText>
-      <EditableText as="p" entry="proyectos.index.banco" field="subtitle" type="textarea" class="text-text-muted mb-8 max-w-2xl" style="font-size: var(--font-size-body-lg);">
+      <EditableText as="p" entry="proyectos.index.banco" field="subtitle" type="textarea" class="text-text-muted mb-8 max-w-2xl" style="font-size: var(--font-size-lead);">
         {getCmsText('proyectos.index.banco', 'subtitle', 'Registro de proyectos ejecutados clasificados por línea de servicio.')}
       </EditableText>
 
@@ -111,19 +109,10 @@ const bancoPorCategoria = categorias.map((c) => ({
     </Container>
   </Section>
 
-  <Section variant="strong">
-    <Container size="md">
-      <div class="text-center">
-        <EditableText as="h2" entry="proyectos.index.cta" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('proyectos.index.cta', 'title', 'Más de 40 años de proyectos en Chile y el exterior')}
-        </EditableText>
-        <EditableText as="p" entry="proyectos.index.cta" field="subtitle" type="textarea" class="text-white/70 mb-8">
-          {getCmsText('proyectos.index.cta', 'subtitle', 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.')}
-        </EditableText>
-        <Button href="/contacto" size="lg">
-          {getCmsText('proyectos.index.cta', 'buttonLabel', 'Ponerse en contacto')}
-        </Button>
-      </div>
-    </Container>
-  </Section>
+  <CTASection
+    cmsEntry="proyectos.index.cta"
+    title={getCmsText('proyectos.index.cta', 'title', 'Más de 40 años de proyectos en Chile y el exterior')}
+    subtitle={getCmsText('proyectos.index.cta', 'subtitle', 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.')}
+    primary={{ label: getCmsText('proyectos.index.cta', 'buttonLabel', 'Ponerse en contacto'), href: '/contacto' }}
+  />
 </PageLayout>

@@ -103,6 +103,46 @@ describe('Content API', () => {
       }));
       expect(res.statusCode).toBe(400);
     });
+
+    it('inyecta campos requeridos del schema al crear un servicio (CMS-003)', async () => {
+      const res = await ctx.app.inject(authedMut({
+        method: 'POST',
+        url: '/api/cms/entries',
+        body: JSON.stringify({
+          id: 'servicio.nuevo-test',
+          kind: 'servicio',
+          slug: 'nuevo-test',
+          title: 'Servicio de prueba',
+          // No se envían fields: el servidor debe completar la plantilla.
+        }),
+      }));
+      expect(res.statusCode).toBe(201);
+      const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
+      // El schema Zod de servicios exige titulo, resumen, icono y orden.
+      expect(entry.fields.titulo.value).toBe('Servicio de prueba');
+      expect(entry.fields.resumen.value).toBeTruthy();
+      expect(entry.fields.icono.value).toBe('pipe');
+      expect(entry.fields.orden.value).toBe(100);
+    });
+
+    it('inyecta campos requeridos del schema al crear un proyecto (CMS-003)', async () => {
+      const res = await ctx.app.inject(authedMut({
+        method: 'POST',
+        url: '/api/cms/entries',
+        body: JSON.stringify({
+          id: 'proyecto.nuevo-test',
+          kind: 'proyecto',
+          slug: 'nuevo-test-proyecto',
+          title: 'Proyecto de prueba',
+        }),
+      }));
+      expect(res.statusCode).toBe(201);
+      const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
+      expect(entry.fields.nombre.value).toBe('Proyecto de prueba');
+      expect(entry.fields.alcance.value).toBeTruthy();
+      expect(entry.fields.categoria.value).toBe('tuberias');
+      expect(entry.fields.tipo.value).toBe('banco');
+    });
   });
 
   describe('GET /api/cms/entries/:id', () => {

@@ -36,8 +36,10 @@ test.describe('Public site', () => {
 
   test('servicios index loads all cards', async ({ page }) => {
     await page.goto('/servicios');
-    // At least one service card should be visible
-    const cards = page.locator('[href^="/servicios/"]');
+    // At least one service card should be visible. Scope to <main>: the header
+    // nav dropdown also contains /servicios/* links but they start hidden
+    // (visibility:hidden until hover/focus), so .first() must not match those.
+    const cards = page.locator('main [href^="/servicios/"]');
     await expect(cards.first()).toBeVisible();
   });
 

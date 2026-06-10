@@ -62,7 +62,7 @@ const {
       <!-- Text column -->
       <div class={imageSrc ? 'flex-1 lg:max-w-[55%]' : 'max-w-3xl'}>
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav class="flex items-center gap-1.5 mb-5 text-xs text-white/40 font-body" aria-label="Breadcrumb">
+          <nav class="flex items-center gap-1.5 mb-5 text-xs text-white/70 font-body" aria-label="Breadcrumb">
             {breadcrumbs.map((crumb, i) => (
               <>
                 {i > 0 && <span aria-hidden="true">›</span>}
@@ -100,7 +100,7 @@ const {
             entry={cmsSubtitleField ? cmsEntry : undefined}
             field={cmsSubtitleField || 'subtitle'}
             class="text-white/70 max-w-xl"
-            style="font-size: var(--font-size-body-lg); line-height: 1.65; --reveal-delay: 0.1s;"
+            style="font-size: var(--font-size-lead); line-height: 1.65; --reveal-delay: 0.1s;"
             type="textarea"
             reveal
           >

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Hidromont Chile - Review Report</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+		body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+		.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+		.report-section { border: 1px solid #222226; background: #0a0a0b; position: relative; }
+		.corner-box { position: absolute; width: 20px; height: 20px; border: 1px solid #222226; background: #000; }
+	</style>
+</head>
+<body class="bg-black text-[#fafafa]">
+	<main class="mx-auto w-full max-w-6xl px-5 py-8 md:px-10 md:py-12">
+		<header class="report-section mb-8 p-6 md:p-8">
+			<div class="corner-box left-0 top-0 -translate-x-1/2 -translate-y-1/2"></div>
+			<div class="corner-box right-0 top-0 translate-x-1/2 -translate-y-1/2"></div>
+			<div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+				<div>
+					<div class="mono mb-2 text-xs tracking-widest text-[#666]">// REVIEW</div>
+					<h1 class="text-4xl font-bold tracking-tight md:text-6xl">Hidromont Chile</h1>
+				</div>
+				<div class="mono text-left text-xs text-[#666] md:text-right">
+					<div>COMMANDCODE REPORT</div>
+					<div class="text-[#444]">2026-06-09</div>
+				</div>
+			</div>
+		</header>
+
+		<section class="report-section mb-8 p-6 md:p-8">
+			<div class="corner-box left-0 top-0 -translate-x-1/2 -translate-y-1/2"></div>
+			<div class="corner-box right-0 top-0 translate-x-1/2 -translate-y-1/2"></div>
+			<div class="grid gap-8 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+				<div>
+					<div class="mono mb-2 text-xs tracking-widest text-[#666]">// OVERALL</div>
+					<div class="text-6xl font-bold tracking-tight md:text-7xl">32</div>
+					<div class="mt-1 text-lg text-[#666]">/ 50</div>
+					<div class="mt-4 inline-flex border border-[#fbbf24]/30 bg-[#fbbf24]/10 px-3 py-1 text-sm text-[#fbbf24]">CAPABLE BUT INCOMPLETE</div>
+				</div>
+				<div>
+					<div class="mono mb-3 text-xs tracking-widest text-[#666]">// TL;DR</div>
+					<p class="text-sm leading-6 text-[#a0a0a0]">The visual direction is coherent — industrial blue palette, real photography, alternating section rhythm. First impression works. But the interface breaks where it matters most: dropdown nav fails on touch and keyboard, the contact form has no loading state, and empty states don't communicate. It reads as a well-composed static brochure, not a complete interactive surface.</p>
+					<p class="mt-4 text-sm leading-6 text-[#fbbf24]">Start with <span class="mono">/design interaction</span> to fix the dropdown nav and form submit-in-progress state. Then <span class="mono">/design surface</span> for empty states.</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="report-section mb-8 p-6 md:p-8">
+			<div class="mono mb-6 text-xs tracking-widest text-[#666]">// HEURISTIC SCORES</div>
+			<div class="overflow-x-auto">
+				<table class="w-full min-w-[720px] border-collapse text-sm">
+					<thead>
+						<tr class="border-b border-[#222226] text-left mono text-xs text-[#666]">
+							<th class="py-3 pr-4 font-normal">#</th>
+							<th class="py-3 pr-4 font-normal">HEURISTIC</th>
+							<th class="py-3 pr-4 font-normal">SCORE</th>
+							<th class="py-3 font-normal">KEY FINDING</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="border-b border-[#1a1a1e]">
+							<td class="py-4 pr-4 text-[#555]">1</td>
+							<td class="py-4 pr-4 text-[#fafafa]">First Impression</td>
+							<td class="py-4 pr-4 text-[#fbbf24]">7/10</td>
+							<td class="py-4 text-[#a0a0a0]">Strong hero with real photography and directional overlay. Industrial blue palette is differentiated. But the PageHero treatment is identical across all 7 internal pages, creating mechanical sameness.</td>
+						</tr>
+						<tr class="border-b border-[#1a1a1e]">
+							<td class="py-4 pr-4 text-[#555]">2</td>
+							<td class="py-4 pr-4 text-[#fafafa]">Hierarchy</td>
+							<td class="py-4 pr-4 text-[#fbbf24]">7/10</td>
+							<td class="py-4 text-[#a0a0a0]">Eyebrow → H2 → subtitle pattern is clear and consistent. Section-level rhythm is well-paced. Dense content pages lose typographic distinction between subsections.</td>
+						</tr>
+						<tr class="border-b border-[#1a1a1e]">
+							<td class="py-4 pr-4 text-[#555]">3</td>
+							<td class="py-4 pr-4 text-[#fafafa]">Color Voice</td>
+							<td class="py-4 pr-4 text-[#fbbf24]">7/10</td>
+							<td class="py-4 text-[#a0a0a0]">Industrial blue #0065A9 is purposeful. Accent is genuinely rare. State-based color variation is minimal — cards have no chromatic hover response.</td>
+						</tr>
+						<tr class="border-b border-[#1a1a1e]">
+							<td class="py-4 pr-4 text-[#555]">4</td>
+							<td class="py-4 pr-4 text-[#fafafa]">Type Voice</td>
+							<td class="py-4 pr-4 text-[#fbbf24]">6/10</td>
+							<td class="py-4 text-[#a0a0a0]">Font choices are domain-appropriate: Roboto Condensed (industrial), Inter (body), Roboto Mono (metrics). But line-height is uniform, condensed headings are over-tightened, wide text lacks measure guard.</td>
+						</tr>
+						<tr>
+							<td class="py-4 pr-4 text-[#555]">5</td>
+							<td class="py-4 pr-4 text-[#fafafa]">Interaction Feel</td>
+							<td class="py-4 pr-4 text-[#ef4444]">5/10</td>
+							<td class="py-4 text-[#a0a0a0]">Focus rings and hover states are covered. But no loading states anywhere, empty states vanish, dropdown nav fails on touch and keyboard, card hover lift conflicts with industrial voice.</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="report-section mb-8 p-6 md:p-8">
+			<div class="mono mb-6 text-xs tracking-widest text-[#666]">// COGNITIVE LOAD / RISK</div>
+			<div class="grid gap-6 md:grid-cols-2">
+				<div>
+					<div class="mb-3 text-xl font-semibold">Interaction gaps are the critical risk</div>
+					<ul class="space-y-3 text-sm text-[#a0a0a0]">
+						<li><span class="mono mr-2 text-[#34d399]">PASS</span>Color palette is differentiated — not SaaS blue-violet</li>
+						<li><span class="mono mr-2 text-[#34d399]">PASS</span>Real industrial photography carries proof, not stock</li>
+						<li><span class="mono mr-2 text-[#34d399]">PASS</span>Progressive enhancement on motion (content visible without JS)</li>
+						<li><span class="mono mr-2 text-[#34d399]">PASS</span>Design tokens are single-source-of-truth</li>
+						<li><span class="mono mr-2 text-[#fbbf24]">WATCH</span>Dropdown nav is CSS-only, not operable on touch or keyboard</li>
+						<li><span class="mono mr-2 text-[#fbbf24]">WATCH</span>Contact form has no submit-in-progress state</li>
+						<li><span class="mono mr-2 text-[#fbbf24]">WATCH</span>Seven pages end with mechanically identical CTA sections</li>
+						<li><span class="mono mr-2 text-[#fbbf24]">WATCH</span>Light-on-dark text uses no compensation</li>
+						<li><span class="mono mr-2 text-[#ef4444]">FAIL</span>No empty states teach the space when content is absent</li>
+						<li><span class="mono mr-2 text-[#ef4444]">FAIL</span>No loading states exist anywhere in the interface</li>
+					</ul>
+				</div>
+				<div>
+					<div class="mono mb-3 text-xs tracking-widest text-[#666]">// NEXT MODES</div>
+					<div class="flex flex-wrap gap-2">
+						<span class="border border-[#ef4444]/40 bg-[#ef4444]/10 px-3 py-1 text-sm text-[#ef4444]">/design interaction</span>
+						<span class="border border-[#fbbf24]/40 bg-[#fbbf24]/10 px-3 py-1 text-sm text-[#fbbf24]">/design surface</span>
+						<span class="border border-[#fbbf24]/40 bg-[#fbbf24]/10 px-3 py-1 text-sm text-[#fbbf24]">/design typeset</span>
+						<span class="border border-[#333] px-3 py-1 text-sm text-[#a0a0a0]">/design refine</span>
+						<span class="border border-[#333] px-3 py-1 text-sm text-[#a0a0a0]">/design relayout</span>
+						<span class="border border-[#333] px-3 py-1 text-sm text-[#a0a0a0]">/design responsive</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="report-section mb-8 p-6 md:p-8">
+			<div class="mono mb-6 text-xs tracking-widest text-[#666]">// WHAT'S WORKING</div>
+			<div class="grid gap-4 md:grid-cols-3">
+				<article class="border border-[#1f1f24] p-4">
+					<h2 class="mb-2 text-sm font-semibold">Photography as evidence</h2>
+					<p class="text-sm leading-6 text-[#a0a0a0]">Real workshop photos, fabrication shots, dam sites. No stock, no illustrations. Directly answers "Do they actually build this stuff?"</p>
+				</article>
+				<article class="border border-[#1f1f24] p-4">
+					<h2 class="mb-2 text-sm font-semibold">Alternating section rhythm</h2>
+					<p class="text-sm leading-6 text-[#a0a0a0]">Default/alt/strong sequence creates a visual drumbeat. Each dark section punctuates a new chapter. Consistent across all pages.</p>
+				</article>
+				<article class="border border-[#1f1f24] p-4">
+					<h2 class="mb-2 text-sm font-semibold">CMS integration is invisible</h2>
+					<p class="text-sm leading-6 text-[#a0a0a0]">EditableText/Image wrap every field. CmsOverlay only appears for authenticated users. Design works unchanged from markdown or CMS.</p>
+				</article>
+				<article class="border border-[#1f1f24] p-4">
+					<h2 class="mb-2 text-sm font-semibold">Button component is thorough</h2>
+					<p class="text-sm leading-6 text-[#a0a0a0]">Four variants, two sizes, disabled state, focus-visible outline, touch targets ≥ 44px. This is the standard every component should meet.</p>
+				</article>
+				<article class="border border-[#1f1f24] p-4">
+					<h2 class="mb-2 text-sm font-semibold">Fluid typography</h2>
+					<p class="text-sm leading-6 text-[#a0a0a0]">Clamp values mean headings scale naturally across viewports. The site reads well at 375px and 1440px with the same CSS.</p>
+				</article>
+			</div>
+		</section>
+
+		<section class="report-section mb-8 p-6 md:p-8">
+			<div class="mono mb-6 text-xs tracking-widest text-[#666]">// PRIORITY ISSUES</div>
+			<div class="space-y-5">
+				<article class="border border-[#2a1d22] bg-[#110b0d] p-5">
+					<div class="mono mb-2 text-xs text-[#f43f5e]">P0</div>
+					<h2 class="mb-2 text-lg font-semibold">Dropdown navigation inaccessible on touch and keyboard</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">Header.astro uses CSS group-hover for "Servicios" dropdown visibility. No aria-haspopup, no aria-expanded, no keyboard handlers, no touch toggle. Submenu links sit inside opacity-0 invisible — unreachable via Tab.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: Add button with aria-expanded + click/tap toggle. Keep hover as secondary. Add focus-within for tab navigation through submenu. Mode: /design interaction</div>
+				</article>
+
+				<article class="border border-[#2a1d22] bg-[#110b0d] p-5">
+					<div class="mono mb-2 text-xs text-[#f43f5e]">P0</div>
+					<h2 class="mb-2 text-lg font-semibold">No loading/submitting state on contact form</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">Submit button has no data-loading state, no spinner, no disable-on-submit. Form uses native POST to Web3Forms — the user sees nothing between click and redirect. Risk of duplicate submissions.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: On submit, disable button, swap text to "Enviando...", show inline spinner. Use fetch + FormData for client-side error handling. Mode: /design interaction</div>
+				</article>
+
+				<article class="border border-[#2a1d22] bg-[#110b0d] p-5">
+					<div class="mono mb-2 text-xs text-[#fbbf24]">P1</div>
+					<h2 class="mb-2 text-lg font-semibold">Empty states disappear instead of communicating</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">Home page and clients page use conditional rendering with no else branch. When collections are empty, entire sections vanish — no "what belongs here" message, no guidance.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: Add an EmptyState component explaining what belongs and how to fill it. Use in all conditional blocks. Mode: /design surface</div>
+				</article>
+
+				<article class="border border-[#2a1d22] bg-[#110b0d] p-5">
+					<div class="mono mb-2 text-xs text-[#fbbf24]">P1</div>
+					<h2 class="mb-2 text-lg font-semibold">Dense content pages have flat typographic hierarchy</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">empresa.astro has 4 major content sections within one Section. All use same H2 size, same body size, same line-height. Distinction relies on grid gaps, not typography.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: Introduce --font-size-lead token, increase H2-H3 scale gap, add visual treatment to subsection headings. Mode: /design typeset</div>
+				</article>
+
+				<article class="border border-[#1f1f24] p-5">
+					<div class="mono mb-2 text-xs text-[#666]">P2</div>
+					<h2 class="mb-2 text-lg font-semibold">Card hover lift conflicts with industrial voice</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">ServiceCard and ProjectCard use hover:-translate-y-0.5 — a consumer/SaaS pattern. Heavy industrial equipment doesn't float up.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: Remove translate-y. Use chromatic hover: border → primary, bg → primary-light, shadow deepens. Mode: /design refine</div>
+				</article>
+
+				<article class="border border-[#1f1f24] p-5">
+					<div class="mono mb-2 text-xs text-[#666]">P2</div>
+					<h2 class="mb-2 text-lg font-semibold">Light-on-dark text lacks compensation</h2>
+					<p class="mb-4 text-sm leading-6 text-[#a0a0a0]">Dark sections use same line-height and letter-spacing as light sections. White text on #0F2433 appears optically thinner — needs more line-height, neutral tracking, adjusted weight.</p>
+					<div class="border-l border-[#fbbf24] pl-4 text-sm leading-6 text-[#fbbf24]">FIX: Increase line-height by 0.05–0.1, set letter-spacing: 0, use weight 400 for body on dark. Mode: /design typeset</div>
+				</article>
+			</div>
+		</section>
+
+		<footer class="mono py-8 text-center text-xs tracking-widest text-[#444]">
+			Generated with CommandCode - 2026-06-09
+		</footer>
+	</main>
+</body>
+</html>

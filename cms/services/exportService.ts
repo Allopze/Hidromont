@@ -6,10 +6,23 @@ import type { ContentRepository } from '../repositories/ContentRepository';
 import type { CmsEntry } from '../types/cms';
 
 export class ExportService {
-  constructor(private readonly contentRepository: ContentRepository) {}
+  /**
+   * @param rootDir raíz del repo donde escribir los archivos exportados.
+   *   Configurable para que los tests puedan apuntar a un directorio temporal
+   *   y no sobreescriban el `cms-content.json` real del sitio.
+   */
+  constructor(
+    private readonly contentRepository: ContentRepository,
+    private readonly rootDir: string = config.rootDir
+  ) {}
 
   exportContent(): { files: string[] } {
-    const entries = this.contentRepository.listEntries();
+    // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
+    // llega a los archivos del sitio. Al excluirlo, el frontend recae en los
+    // valores por defecto (page content) o conserva el .md previo (colecciones).
+    const entries = this.contentRepository
+      .listEntries()
+      .filter((entry) => entry.status === 'published');
     const written = [
       this.exportPageContent(
         entries.filter((entry) => ['page', 'layout', 'component', 'settings'].includes(entry.kind))
@@ -23,7 +36,7 @@ export class ExportService {
   }
 
   private exportPageContent(entries: CmsEntry[]): string {
-    const target = path.join(config.rootDir, 'src', 'data', 'cms-content.json');
+    const target = path.join(this.rootDir, 'src', 'data', 'cms-content.json');
     const payload = {
       updatedAt: new Date().toISOString(),
       entries: Object.fromEntries(
@@ -44,13 +57,13 @@ export class ExportService {
     };
 
     fs.writeFileSync(target, JSON.stringify(payload, null, 2) + '\n');
-    return path.relative(config.rootDir, target);
+    return path.relative(this.rootDir, target);
   }
 
   private exportCollection(entries: CmsEntry[]): string[] {
     return entries.map((entry) => {
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
-      const target = path.join(config.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
+      const target = path.join(this.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
       const frontmatter: Record<string, unknown> = {};
       let body = '';
 
@@ -63,7 +76,7 @@ export class ExportService {
       }
 
       fs.writeFileSync(target, matter.stringify(body.trim() + '\n', frontmatter));
-      return path.relative(config.rootDir, target);
+      return path.relative(this.rootDir, target);
     });
   }
 }
