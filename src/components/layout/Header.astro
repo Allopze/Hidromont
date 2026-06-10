@@ -77,30 +77,7 @@ function isActive(href: string) {
             } : {})}
           />
         )}
-        <div class="flex flex-col leading-tight">
-          <span
-            class={[
-              'font-heading font-bold tracking-wide transition-colors duration-[240ms] ease-standard',
-              overlay ? 'text-white wordmark-primary' : 'text-primary-dark',
-            ].join(' ')}
-            style="font-size: 1.45rem; line-height: 1.15;"
-          >
-            <EditableText entry="layout.header" field="wordmarkPrimary">
-              {getCmsText('layout.header', 'wordmarkPrimary', 'HIDROMONT')}
-            </EditableText>
-          </span>
-          <span
-            class={[
-              'font-body tracking-widest uppercase transition-colors duration-[240ms] ease-standard',
-              overlay ? 'text-white/80 wordmark-sub' : 'text-text-muted',
-            ].join(' ')}
-            style="font-size: 0.75rem; letter-spacing: 0.18em;"
-          >
-            <EditableText entry="layout.header" field="wordmarkSub">
-              {getCmsText('layout.header', 'wordmarkSub', 'Chile S.A.')}
-            </EditableText>
-          </span>
-        </div>
+
       </a>
 
       <!-- Desktop nav -->
@@ -246,8 +223,6 @@ function isActive(href: string) {
 
     // Elements that change colour on scroll
     const navLinks = header.querySelectorAll<HTMLElement>('.nav-link');
-    const wordmarkPrimary = header.querySelector<HTMLElement>('.wordmark-primary');
-    const wordmarkSub = header.querySelector<HTMLElement>('.wordmark-sub');
     const logoImg = header.querySelector<HTMLImageElement>('.logo-img');
     const toggleBtn = header.querySelector<HTMLElement>('.toggle-btn');
 
@@ -263,14 +238,6 @@ function isActive(href: string) {
           el.classList.remove('text-white/90', 'text-white', 'hover:bg-white/10', 'hover:text-white');
           el.classList.add('text-text', 'hover:bg-primary-light', 'hover:text-primary-dark');
         });
-        if (wordmarkPrimary) {
-          wordmarkPrimary.classList.remove('text-white');
-          wordmarkPrimary.classList.add('text-primary-dark');
-        }
-        if (wordmarkSub) {
-          wordmarkSub.classList.remove('text-white/80');
-          wordmarkSub.classList.add('text-text-muted');
-        }
         if (logoImg) logoImg.style.filter = '';
         if (toggleBtn) {
           toggleBtn.classList.remove('text-white', 'hover:bg-white/10');
@@ -284,14 +251,6 @@ function isActive(href: string) {
           el.classList.add('text-white/90', 'hover:bg-white/10', 'hover:text-white');
           el.classList.remove('text-text', 'text-primary', 'hover:bg-primary-light', 'hover:text-primary-dark');
         });
-        if (wordmarkPrimary) {
-          wordmarkPrimary.classList.add('text-white');
-          wordmarkPrimary.classList.remove('text-primary-dark');
-        }
-        if (wordmarkSub) {
-          wordmarkSub.classList.add('text-white/80');
-          wordmarkSub.classList.remove('text-text-muted');
-        }
         if (logoImg) logoImg.style.filter = 'brightness(0) invert(1)';
         if (toggleBtn) {
           toggleBtn.classList.add('text-white', 'hover:bg-white/10');
