@@ -33,11 +33,11 @@ export default {
         mono: ['"Roboto Mono"', 'monospace'],
       },
       borderRadius: {
-        xs: '2px',
-        sm: '4px',
-        md: '8px',
-        lg: '12px',
-        xl: '16px',
+        xs: '0px',
+        sm: '0px',
+        md: '0px',
+        lg: '0px',
+        xl: '0px',
       },
       boxShadow: {
         sm: '0 1px 2px rgba(15, 36, 51, 0.08)',

@@ -214,6 +214,116 @@ ol {
   outline: 3px solid rgba(0, 101, 169, 0.2);
 }
 
+/* ── Section dividers ── */
+.section-divider {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-primary) 25%,
+    var(--color-accent) 75%,
+    transparent
+  );
+  opacity: 0.25;
+}
+
+/* ── Shimmer animation (hero accent line) ── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary) 20%,
+    var(--color-accent) 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    var(--color-accent) 60%,
+    var(--color-primary) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+/* ── Ken Burns (hero background image) ── */
+@keyframes ken-burns {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.hero-ken-burns {
+  animation: ken-burns 18s ease-out forwards;
+}
+
+/* ── Nav active indicator ── */
+.nav-active-indicator {
+  position: relative;
+}
+
+.nav-active-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 20px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  transition: width var(--motion-base) var(--ease-standard);
+}
+
+.nav-active-indicator:hover::after {
+  width: 100%;
+}
+
+/* ── Card hover lift ── */
+.card-lift {
+  transition:
+    border-color var(--motion-slow) var(--ease-standard),
+    box-shadow var(--motion-slow) var(--ease-standard),
+    background-color var(--motion-slow) var(--ease-standard),
+    transform var(--motion-slow) var(--ease-standard);
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* ── Scroll indicator (hero bottom) ── */
+@keyframes scroll-hint {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  animation: scroll-hint 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -222,5 +332,23 @@ ol {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .hero-ken-burns {
+    animation: none;
+    transform: none;
+  }
+
+  .shimmer-line {
+    animation: none;
+  }
+
+  .scroll-indicator {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .card-lift:hover {
+    transform: none;
   }
 }

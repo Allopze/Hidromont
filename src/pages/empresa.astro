@@ -57,13 +57,13 @@ import { company } from '../data/company';
             {([1, 2, 3, 4] as const).map((i) => (
               <div class="p-5 border border-border rounded-lg bg-surface">
                 <EditableText as="p" entry="empresa.metricas" field={`card${i}Value`} class="font-mono font-bold text-primary text-2xl">
-                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'EPC', 'ISO 9001'][i - 1])}
+                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'EPC', 'Soporte'][i - 1])}
                 </EditableText>
                 <EditableText as="p" entry="empresa.metricas" field={`card${i}Label`} class="font-semibold text-text text-sm mt-1">
-                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Chile desde', 'Modalidad', 'Calidad'][i - 1])}
+                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Chile desde', 'Modalidad', 'Post-venta'][i - 1])}
                 </EditableText>
                 <EditableText as="p" entry="empresa.metricas" field={`card${i}Desc`} class="text-text-muted text-xs mt-0.5">
-                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Llave en mano', 'Sistema de gestión'][i - 1])}
+                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Llave en mano', 'Atención técnica continua'][i - 1])}
                 </EditableText>
               </div>
             ))}

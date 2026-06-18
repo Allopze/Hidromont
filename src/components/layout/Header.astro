@@ -34,7 +34,7 @@ function isActive(href: string) {
     'top-0 z-50 transition-[background-color,border-color,box-shadow,color] duration-[240ms] ease-standard',
     overlay
       ? 'fixed inset-x-0 bg-transparent border-b border-transparent'
-      : 'sticky bg-white border-b border-border shadow-sm',
+      : 'sticky bg-white/90 backdrop-blur-md border-b border-border shadow-sm',
   ].join(' ')}
   data-overlay={overlay ? 'true' : undefined}
 >
@@ -88,10 +88,10 @@ function isActive(href: string) {
               <a
                 href={item.href}
                 class={[
-                  'px-4 py-2 text-sm font-semibold font-body rounded-md transition-colors duration-fast ease-standard no-underline',
+                  'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline',
                   overlay
                     ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
-                    : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary' : 'text-text'}`,
+                    : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
                 ].join(' ')}
               >
                 <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
@@ -99,11 +99,11 @@ function isActive(href: string) {
                   <path d="M2 4l4 4 4-4" />
                 </svg>
               </a>
-              <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-lg shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-10">
+              <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-10">
                 {item.children.map((child) => (
                   <a
                     href={child.href}
-                    class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-t-lg last:rounded-b-lg ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
+                    class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
                   >
                     <EditableText entry="layout.header" field={child.cmsField}>{child.label}</EditableText>
                   </a>
@@ -114,10 +114,10 @@ function isActive(href: string) {
             <a
               href={item.href}
               class={[
-                'px-4 py-2 text-sm font-semibold font-body rounded-md transition-colors duration-fast ease-standard no-underline',
+                'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline',
                 overlay
                   ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
-                  : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary' : 'text-text'}`,
+                  : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
               ].join(' ')}
             >
               <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
@@ -138,7 +138,7 @@ function isActive(href: string) {
         id="menu-toggle"
         type="button"
         class={[
-          'lg:hidden flex items-center justify-center w-11 h-11 rounded-md transition-colors duration-fast',
+          'lg:hidden flex items-center justify-center w-11 h-11 rounded-none transition-colors duration-fast',
           overlay ? 'text-white hover:bg-white/10 toggle-btn' : 'text-text hover:bg-primary-light',
         ].join(' ')}
         aria-expanded="false"
@@ -161,7 +161,7 @@ function isActive(href: string) {
       {navItems.map((item) => (
         item.children ? (
           <details class="group">
-            <summary class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-md cursor-pointer list-none transition-colors hover:bg-primary-light ${isActive(item.href) ? 'text-primary' : 'text-text'}`}>
+            <summary class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light ${isActive(item.href) ? 'text-primary' : 'text-text'}`}>
               <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
               <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M2 4l4 4 4-4" />
@@ -171,7 +171,7 @@ function isActive(href: string) {
               {item.children.map((child) => (
                 <a
                   href={child.href}
-                  class={`block px-3 py-2 text-sm font-body no-underline rounded-md transition-colors hover:bg-primary-light hover:text-primary-dark ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
+                  class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
                 >
                   <EditableText entry="layout.header" field={child.cmsField}>{child.label}</EditableText>
                 </a>
@@ -181,7 +181,7 @@ function isActive(href: string) {
         ) : (
           <a
             href={item.href}
-            class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-md no-underline transition-colors hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
+            class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
           >
             <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
           </a>
@@ -232,7 +232,7 @@ function isActive(href: string) {
 
       if (yes) {
         // Solid white state
-        header.classList.add('bg-white', 'border-border', 'shadow-sm');
+        header.classList.add('bg-white/90', 'backdrop-blur-md', 'border-border', 'shadow-sm');
         header.classList.remove('bg-transparent', 'border-transparent');
         navLinks.forEach((el) => {
           el.classList.remove('text-white/90', 'text-white', 'hover:bg-white/10', 'hover:text-white');
@@ -245,7 +245,7 @@ function isActive(href: string) {
         }
       } else {
         // Transparent state
-        header.classList.remove('bg-white', 'border-border', 'shadow-sm');
+        header.classList.remove('bg-white/90', 'backdrop-blur-md', 'border-border', 'shadow-sm');
         header.classList.add('bg-transparent', 'border-transparent');
         navLinks.forEach((el) => {
           el.classList.add('text-white/90', 'hover:bg-white/10', 'hover:text-white');

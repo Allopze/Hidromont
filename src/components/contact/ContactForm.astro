@@ -89,7 +89,7 @@ const validationMessages = {
         autocomplete="name"
         placeholder={getCmsText('contact.form', 'namePlaceholder', 'Su nombre completo')}
         aria-describedby="nombre-error"
-        class="form-input"
+        class="form-input rounded-none"
       />
       <p id="nombre-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
     </div>
@@ -105,7 +105,7 @@ const validationMessages = {
         type="text"
         autocomplete="organization"
         placeholder={getCmsText('contact.form', 'companyPlaceholder', 'Nombre de su empresa')}
-        class="form-input"
+        class="form-input rounded-none"
       />
     </div>
 
@@ -124,7 +124,7 @@ const validationMessages = {
         autocomplete="email"
         placeholder={getCmsText('contact.form', 'emailPlaceholder', 'correo@empresa.com')}
         aria-describedby="email-error"
-        class="form-input"
+        class="form-input rounded-none"
       />
       <p id="email-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
     </div>
@@ -140,7 +140,7 @@ const validationMessages = {
         type="tel"
         autocomplete="tel"
         placeholder={getCmsText('contact.form', 'phonePlaceholder', '+56 9 1234 5678')}
-        class="form-input"
+        class="form-input rounded-none"
       />
     </div>
   </div>
@@ -153,7 +153,7 @@ const validationMessages = {
     <select
       id="servicio"
       name="servicio"
-      class="w-full min-h-[44px] border border-border rounded-md px-3.5 py-3 text-text bg-white text-base md:text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      class="w-full min-h-[44px] border border-border rounded-none px-3.5 py-3 text-text bg-white text-base md:text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     >
       <option value="">{getCmsText('contact.form', 'servicePlaceholder', 'Seleccione un servicio (opcional)')}</option>
       {servicios.map((s) => <option value={s}>{s}</option>)}
@@ -175,7 +175,7 @@ const validationMessages = {
       maxlength={2000}
       placeholder={getCmsText('contact.form', 'messagePlaceholder', 'Describa su proyecto o consulta técnica.')}
       aria-describedby="mensaje-error"
-      class="w-full border border-border rounded-md px-3.5 py-3 text-text bg-white text-base md:text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
+      class="w-full border border-border rounded-none px-3.5 py-3 text-text bg-white text-base md:text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     ></textarea>
     <p id="mensaje-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
   </div>
@@ -184,7 +184,7 @@ const validationMessages = {
     <button
       type="submit"
       id="contacto-submit"
-      class="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-md border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30 disabled:opacity-60 disabled:cursor-wait"
+      class="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-none border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30 disabled:opacity-60 disabled:cursor-wait whitespace-nowrap"
     >
       <span id="contacto-submit-text">
         <EditableText entry="contact.form" field="submitLabel">

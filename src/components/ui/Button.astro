@@ -22,11 +22,11 @@ const {
 // transform en la transición + active:scale en las variantes "sólidas" dan
 // feedback táctil al pulsar (DES-001). La variante link es texto y no escala.
 const base =
-  'inline-flex items-center justify-center gap-2 font-body font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2';
+  'inline-flex items-center justify-center gap-2 font-body font-semibold whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2';
 
 const sizes = {
-  md: 'px-5 py-3 text-base min-h-[44px] rounded-md',
-  lg: 'px-7 py-4 text-lg min-h-[52px] rounded-md',
+  md: 'px-5 py-3 text-base min-h-[44px] rounded-none',
+  lg: 'px-7 py-4 text-lg min-h-[52px] rounded-none',
 };
 
 const variants = {

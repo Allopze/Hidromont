@@ -12,9 +12,10 @@ interface Props {
   noindex?: boolean;
   currentPath?: string;
   headerOverlay?: boolean;
+  hideFooterMap?: boolean;
 }
 
-const { currentPath, headerOverlay = false, ...baseProps } = Astro.props;
+const { currentPath, headerOverlay = false, hideFooterMap = false, ...baseProps } = Astro.props;
 ---
 
 <BaseLayout {...baseProps}>
@@ -29,7 +30,8 @@ const { currentPath, headerOverlay = false, ...baseProps } = Astro.props;
   <main id="main">
     <slot />
   </main>
-  <Footer />
+  <Footer hideMap={hideFooterMap} />
   <!-- Motion: scroll reveals, parallax, counters -->
   <script src="../scripts/motion.ts"></script>
 </BaseLayout>
+

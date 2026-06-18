@@ -43,10 +43,6 @@ const propuestaValor = [
     description: 'Diseño, ingeniería, fabricación, suministro, montaje, mantenimiento y rehabilitación.',
   },
   {
-    title: 'Calidad certificada',
-    description: 'Sistema de gestión basado en norma ISO 9001 y mejora continua.',
-  },
-  {
     title: 'Experiencia internacional',
     description: 'Proyectos ejecutados en Chile, España, Honduras, Costa Rica y otros países.',
   },
@@ -95,19 +91,19 @@ const propuestaValor = [
   </Section>
 
   <!-- Propuesta de valor / capacidades -->
-  <Section variant="alt">
+  <Section variant="alt" divider>
     <CapabilitiesBlock
       eyebrow={getCmsText('home.capabilities', 'eyebrow', 'Por qué elegirnos')}
       title={getCmsText('home.capabilities', 'title', 'Capacidad técnica y experiencia comprobada')}
       subtitle={getCmsText('home.capabilities', 'subtitle', 'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.')}
       items={propuestaValor}
-      columns={4}
+      columns={3}
       cmsEntry="home.capabilities"
     />
   </Section>
 
   <!-- Instalaciones -->
-  <Section variant="strong">
+  <Section variant="strong" divider>
     <Container size="2xl">
       <div class="mb-10">
         <div class="relative overflow-hidden rounded-lg" style="border: 1px solid rgba(255,255,255,0.08);">
@@ -145,7 +141,7 @@ const propuestaValor = [
 
   <!-- Proyectos destacados -->
   {proyectosDestacados.length > 0 ? (
-    <Section variant="default" id="proyectos">
+    <Section variant="default" id="proyectos" divider>
       <Container>
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
@@ -164,7 +160,7 @@ const propuestaValor = [
       </Container>
     </Section>
   ) : (
-    <Section variant="default" id="proyectos">
+    <Section variant="default" id="proyectos" divider>
       <Container size="md">
         <div class="text-center py-10">
           <Eyebrow><EditableText entry="home.projects" field="eyebrow">Experiencia</EditableText></Eyebrow>
@@ -179,7 +175,7 @@ const propuestaValor = [
   )}
 
   <!-- Clientes -->
-  <Section variant="alt">
+  <Section variant="alt" divider>
     <ClientsStrip clientes={clientesEntry} />
   </Section>
 

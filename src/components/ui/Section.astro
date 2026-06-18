@@ -5,6 +5,7 @@ interface Props {
   id?: string;
   class?: string;
   as?: 'section' | 'div' | 'article';
+  divider?: boolean;
 }
 
 const {
@@ -13,6 +14,7 @@ const {
   id,
   class: className = '',
   as: Tag = 'section',
+  divider = false,
 } = Astro.props as Props;
 
 function getVariantClass(v: string | undefined) {
@@ -28,9 +30,11 @@ function getPaddingClass(p: string | undefined) {
 }
 ---
 
+{divider && <hr class="section-divider" aria-hidden="true" />}
 <Tag
   id={id}
   class={`${getVariantClass(variant)} ${getPaddingClass(padding)} ${className}`}
 >
   <slot />
 </Tag>
+

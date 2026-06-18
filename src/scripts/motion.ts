@@ -104,7 +104,7 @@ function initCounters(): void {
     counters.forEach((el) => {
       const target = parseInt(el.dataset.count ?? '0', 10);
       const suffix = el.dataset.suffix ?? '';
-      el.textContent = `${target}${suffix}`;
+      el.textContent = `${target.toLocaleString('es-CL')}${suffix}`;
     });
     return;
   }
@@ -126,7 +126,7 @@ function initCounters(): void {
           // Ease-out cubic
           const progress = 1 - Math.pow(1 - elapsed / duration, 3);
           const current = Math.round(progress * target);
-          el.textContent = `${current}${suffix}`;
+          el.textContent = `${current.toLocaleString('es-CL')}${suffix}`;
           if (elapsed < duration) requestAnimationFrame(tick);
         }
 

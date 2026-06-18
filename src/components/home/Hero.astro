@@ -35,7 +35,7 @@ const {
     loading="eager"
     fetchpriority="high"
     decoding="async"
-    class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+    class="absolute inset-0 w-full h-full object-cover pointer-events-none hero-ken-burns"
     style="object-position: center 35%;"
   />
 
@@ -55,9 +55,8 @@ const {
 
   <!-- Línea de acento superior -->
   <div
-    class="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+    class="absolute top-0 left-0 right-0 h-[2px] pointer-events-none shimmer-line"
     aria-hidden="true"
-    style="background: linear-gradient(90deg, transparent, var(--color-primary) 30%, var(--color-accent) 70%, transparent);"
   ></div>
 
   <!-- Contenido: alineado a la izquierda -->
@@ -106,6 +105,14 @@ const {
       </div>
 
     </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-indicator" aria-hidden="true">
+    <svg width="24" height="36" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="22" height="34" rx="11" stroke="white" stroke-opacity="0.5" stroke-width="1.5"/>
+      <circle cx="12" cy="10" r="2.5" fill="white" fill-opacity="0.7"/>
+    </svg>
   </div>
 
 </section>
