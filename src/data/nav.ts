@@ -15,24 +15,14 @@ export const navItems: NavItem[] = [
     cmsField: 'navServicios',
     children: [
       {
-        label: getCmsText('layout.header', 'navServiciosTuberias', 'Tuberías Forzadas'),
-        href: getCmsText('layout.header', 'hrefServiciosTuberias', '/servicios/tuberias-forzadas'),
-        cmsField: 'navServiciosTuberias',
-      },
-      {
         label: getCmsText('layout.header', 'navServiciosCompuertas', 'Compuertas'),
         href: getCmsText('layout.header', 'hrefServiciosCompuertas', '/servicios/compuertas'),
         cmsField: 'navServiciosCompuertas',
       },
       {
-        label: getCmsText('layout.header', 'navServiciosValvulas', 'Válvulas'),
-        href: getCmsText('layout.header', 'hrefServiciosValvulas', '/servicios/valvulas'),
-        cmsField: 'navServiciosValvulas',
-      },
-      {
-        label: getCmsText('layout.header', 'navServiciosTurbinas', 'Turbinas'),
-        href: getCmsText('layout.header', 'hrefServiciosTurbinas', '/servicios/turbinas'),
-        cmsField: 'navServiciosTurbinas',
+        label: getCmsText('layout.header', 'navServiciosInfraestructuras', 'Infraestructuras'),
+        href: getCmsText('layout.header', 'hrefServiciosInfraestructuras', '/servicios/infraestructuras'),
+        cmsField: 'navServiciosInfraestructuras',
       },
       {
         label: getCmsText('layout.header', 'navServiciosLimpiarrejas', 'Limpiarrejas'),
@@ -43,6 +33,26 @@ export const navItems: NavItem[] = [
         label: getCmsText('layout.header', 'navServiciosMontajes', 'Montajes Especiales'),
         href: getCmsText('layout.header', 'hrefServiciosMontajes', '/servicios/otros-montajes'),
         cmsField: 'navServiciosMontajes',
+      },
+      {
+        label: getCmsText('layout.header', 'navServiciosTanques', 'Tanques Especiales'),
+        href: getCmsText('layout.header', 'hrefServiciosTanques', '/servicios/tanques-especiales'),
+        cmsField: 'navServiciosTanques',
+      },
+      {
+        label: getCmsText('layout.header', 'navServiciosTuberias', 'Tuberías Forzadas'),
+        href: getCmsText('layout.header', 'hrefServiciosTuberias', '/servicios/tuberias-forzadas'),
+        cmsField: 'navServiciosTuberias',
+      },
+      {
+        label: getCmsText('layout.header', 'navServiciosTurbinas', 'Turbinas'),
+        href: getCmsText('layout.header', 'hrefServiciosTurbinas', '/servicios/turbinas'),
+        cmsField: 'navServiciosTurbinas',
+      },
+      {
+        label: getCmsText('layout.header', 'navServiciosValvulas', 'Válvulas'),
+        href: getCmsText('layout.header', 'hrefServiciosValvulas', '/servicios/valvulas'),
+        cmsField: 'navServiciosValvulas',
       },
     ],
   },

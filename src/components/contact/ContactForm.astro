@@ -286,7 +286,7 @@ if (form) {
         body: new FormData(form as HTMLFormElement),
         headers: { Accept: 'application/json' },
       });
-      const json = await res.json() as { success: string };
+      const json = await res.json() as { success: string | boolean };
       if (json.success === 'true' || json.success === true) {
         (form as HTMLFormElement).classList.add('hidden');
         document.getElementById('contacto-success')?.classList.remove('hidden');

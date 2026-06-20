@@ -26,7 +26,7 @@ procesos:
     descripcion: "Instalación de tuberías forzadas y blindajes en condiciones especiales, incluyendo uso de teleférico o plataformas de montaje cuando la obra lo requiere."
   - titulo: "Mantenimiento y Rehabilitación"
     descripcion: "Inspección, estudio, reparación y mantenimiento de instalaciones existentes."
-orden: 1
+orden: 6
 ---
 
 Hidromont Chile S.A. Ejecuta proyectos completos llave en mano para tuberías forzadas y blindajes, integrando ingeniería, fabricación especializada y montaje en terreno. Nuestra experiencia abarca desde minicentrales hasta proyectos de gran envergadura con diámetros superiores a 5.500 mm y presiones de diseño de hasta 89 kg/cm².

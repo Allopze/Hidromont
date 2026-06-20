@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-20T03:48:26.005Z",
+  "updatedAt": "2026-06-20T20:10:54.413Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -765,7 +765,7 @@
         },
         "card3Desc": {
           "type": "text",
-          "value": "Ingeniería, fabricación y montaje"
+          "value": "Llave en mano"
         },
         "card3Label": {
           "type": "text",
@@ -773,7 +773,7 @@
         },
         "card3Value": {
           "type": "text",
-          "value": "Llave en mano"
+          "value": "EPC"
         },
         "card4Desc": {
           "type": "text",
@@ -947,9 +947,77 @@
       "title": "Header",
       "slug": "header",
       "fields": {
+        "ctaHref": {
+          "type": "text",
+          "value": "/contacto"
+        },
         "ctaLabel": {
           "type": "text",
           "value": "Contáctenos"
+        },
+        "hrefCalidad": {
+          "type": "text",
+          "value": "/calidad"
+        },
+        "hrefClientes": {
+          "type": "text",
+          "value": "/clientes"
+        },
+        "hrefContacto": {
+          "type": "text",
+          "value": "/contacto"
+        },
+        "hrefEmpresa": {
+          "type": "text",
+          "value": "/empresa"
+        },
+        "hrefGaleria": {
+          "type": "text",
+          "value": "/galeria"
+        },
+        "hrefInicio": {
+          "type": "text",
+          "value": "/"
+        },
+        "hrefProyectos": {
+          "type": "text",
+          "value": "/proyectos"
+        },
+        "hrefServicios": {
+          "type": "text",
+          "value": "/servicios"
+        },
+        "hrefServiciosCompuertas": {
+          "type": "text",
+          "value": "/servicios/compuertas"
+        },
+        "hrefServiciosInfraestructuras": {
+          "type": "text",
+          "value": "/servicios/infraestructuras"
+        },
+        "hrefServiciosLimpiarrejas": {
+          "type": "text",
+          "value": "/servicios/limpiarrejas"
+        },
+        "hrefServiciosMontajes": {
+          "type": "text",
+          "value": "/servicios/otros-montajes"
+        },
+        "hrefServiciosTanques": {
+          "type": "text",
+          "value": "/servicios/tanques-especiales"
+        },
+        "hrefServiciosTuberias": {
+          "type": "text",
+          "value": "/servicios/tuberias-forzadas"
+        },
+        "hrefServiciosTurbinas": {
+          "type": "text",
+          "value": "/servicios/turbinas"
+        },
+        "hrefServiciosValvulas": {
+          "type": "text",
+          "value": "/servicios/valvulas"
         },
         "logoAlt": {
           "type": "text",
@@ -958,6 +1026,10 @@
         "logoAriaLabel": {
           "type": "text",
           "value": "Hidromont Chile — Inicio"
+        },
+        "logoSrc": {
+          "type": "image",
+          "value": ""
         },
         "mobileMenuOpenLabel": {
           "type": "text",
@@ -979,6 +1051,10 @@
           "type": "text",
           "value": "Empresa"
         },
+        "navGaleria": {
+          "type": "text",
+          "value": "Galería"
+        },
         "navInicio": {
           "type": "text",
           "value": "Inicio"
@@ -995,6 +1071,10 @@
           "type": "text",
           "value": "Compuertas"
         },
+        "navServiciosInfraestructuras": {
+          "type": "text",
+          "value": "Infraestructuras"
+        },
         "navServiciosLimpiarrejas": {
           "type": "text",
           "value": "Limpiarrejas"
@@ -1002,6 +1082,10 @@
         "navServiciosMontajes": {
           "type": "text",
           "value": "Montajes Especiales"
+        },
+        "navServiciosTanques": {
+          "type": "text",
+          "value": "Tanques Especiales"
         },
         "navServiciosTuberias": {
           "type": "text",
@@ -1521,6 +1605,36 @@
         }
       }
     },
+    "service-gallery.infraestructuras": {
+      "title": "Galería servicio infraestructuras",
+      "slug": "service-gallery/infraestructuras",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
     "service-gallery.limpiarrejas": {
       "title": "Galería servicio limpiarrejas",
       "slug": "service-gallery/limpiarrejas",
@@ -1554,6 +1668,36 @@
     "service-gallery.otros-montajes": {
       "title": "Galería servicio otros-montajes",
       "slug": "service-gallery/otros-montajes",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.tanques-especiales": {
+      "title": "Galería servicio tanques-especiales",
+      "slug": "service-gallery/tanques-especiales",
       "fields": {
         "gallery1": {
           "type": "image",
@@ -1693,6 +1837,28 @@
         }
       }
     },
+    "service-image.infraestructuras": {
+      "title": "Imagen servicio Infraestructura",
+      "slug": "service-image/infraestructuras",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/otros-montajes.jpg"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Estructuras metálicas y obras civiles de infraestructura"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 629
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 471
+        }
+      }
+    },
     "service-image.limpiarrejas": {
       "title": "Imagen servicio Limpiarrejas",
       "slug": "service-image/limpiarrejas",
@@ -1734,6 +1900,28 @@
         "imageWidth": {
           "type": "number",
           "value": 471
+        }
+      }
+    },
+    "service-image.tanques-especiales": {
+      "title": "Imagen servicio Tanques especiales",
+      "slug": "service-image/tanques-especiales",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 800
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1200
         }
       }
     },
@@ -1955,7 +2143,7 @@
         },
         "modalidad": {
           "type": "text",
-          "value": "Proyectos llave en mano"
+          "value": "Proyectos llave en mano / EPC"
         },
         "nombre": {
           "type": "text",

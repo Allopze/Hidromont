@@ -27,7 +27,7 @@ procesos:
     descripcion: "Montaje completo de equipamiento en centrales y plantas industriales, incluyendo coordinación con otros gremios."
   - titulo: "Obturaciones"
     descripcion: "Diseño, fabricación y montaje de obturaciones especiales para desagüe de fondo. Dirección de operaciones subacuáticas."
-orden: 6
+orden: 4
 ---
 
 Hidromont complementa sus servicios principales con capacidades de montaje electromecánico general y fabricación de estructuras metálicas para cualquier requerimiento de infraestructura hidráulica e industrial.

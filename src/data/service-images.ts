@@ -37,6 +37,18 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     width: 471,
     height: 629,
   },
+  'infraestructuras': {
+    src: '/fotos/curadas/otros-montajes.jpg',
+    alt: 'Estructuras metálicas y obras civiles de infraestructura',
+    width: 471,
+    height: 629,
+  },
+  'tanques-especiales': {
+    src: '/fotos/curadas/fabricacion-tuberias-taller.webp',
+    alt: 'Fabricación y cilindrado de estanques y recipientes especiales en taller',
+    width: 1200,
+    height: 800,
+  },
 };
 
 export const serviceImages: Record<string, CmsImageData> = Object.fromEntries(

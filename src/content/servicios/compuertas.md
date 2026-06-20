@@ -35,7 +35,7 @@ procesos:
     descripcion: "Instalación en obra con procedimientos específicos, alineación y pruebas hidráulicas."
   - titulo: "Mantenimiento"
     descripcion: "Inspección, limpieza, sustitución de juntas de estanqueidad y sistemas de accionamiento, revisión de partes fijas e informes de estado."
-orden: 2
+orden: 1
 ---
 
 Diseñamos y fabricamos compuertas para cualquier requerimiento de control hidráulico en obras de presa y central hidroeléctrica. Nuestro equipo de ingeniería realiza análisis por elementos finitos para garantizar que cada pieza cumpla con las cargas de diseño y las normativas aplicables.

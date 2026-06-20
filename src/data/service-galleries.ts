@@ -10,7 +10,7 @@ export interface ServiceGallery {
 }
 
 const serviceSlugs = [
-  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes',
+  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes', 'infraestructuras', 'tanques-especiales',
 ];
 
 export const serviceGalleries: Record<string, ServiceGallery> = Object.fromEntries(

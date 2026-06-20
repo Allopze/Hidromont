@@ -37,7 +37,7 @@ procesos:
     descripcion: "Instalación, conexión hidráulica y pruebas de funcionamiento y estanqueidad en obra."
   - titulo: "Mantenimiento"
     descripcion: "Revisión periódica, sustitución de sellos y juntas, diagnóstico y reparación de actuadores."
-orden: 3
+orden: 8
 ---
 
 Las válvulas diseñadas y fabricadas por Hidromont cubren todo el espectro de aplicaciones en obras hidráulicas: desde válvulas de pequeño diámetro para control de caudal ecológico hasta válvulas Bureau y Howell-Bunger de gran tamaño para desagüe de fondo en embalses.

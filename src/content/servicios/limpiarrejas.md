@@ -26,7 +26,7 @@ procesos:
     descripcion: "Instalación en obra, integración con sistemas eléctricos y pruebas operacionales."
   - titulo: "Mantenimiento"
     descripcion: "Revisión periódica de mecanismos, lubricación, ajuste de sistemas hidráulicos y eléctricos."
-orden: 5
+orden: 3
 ---
 
 Los equipos limpiarrejas de Hidromont garantizan la libre admisión de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos arrastrados por la corriente. Cada equipo se diseña a medida según las condiciones del proyecto.

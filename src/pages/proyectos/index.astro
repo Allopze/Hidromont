@@ -26,10 +26,12 @@ const banco = allProyectos
 
 type Categoria = 'tuberias' | 'compuertas' | 'electromecanicos' | 'limpiarrejas' | 'estructuras';
 
-const categorias: { id: Categoria; label: string }[] = Object.entries(categoriaLabels).map(([id, label]) => ({
-  id: id as Categoria,
-  label,
-}));
+const categorias: { id: Categoria; label: string }[] = Object.entries(categoriaLabels)
+  .map(([id, label]) => ({
+    id: id as Categoria,
+    label,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'es'));
 
 const filterItems = [
   { label: 'Todos', href: '#banco-proyectos', id: 'todos' },

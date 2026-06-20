@@ -21,7 +21,7 @@ procesos:
     descripcion: "Desmontaje, diagnóstico, fabricación de componentes dañados, recuperación de rodetes por cavitación, alineaciones y equilibrado dinámico."
   - titulo: "Mecanizado de precisión"
     descripcion: "Mecanizado en nuestro taller de rodetes, ejes, cierres mecánicos y otras piezas de precisión requeridas en reparaciones."
-orden: 4
+orden: 7
 ---
 
 Hidromont ejecuta todos los trabajos mecánicos requeridos en turbinas hidráulicas: desde el montaje completo de nuevas instalaciones hasta la rehabilitación integral de máquinas con deterioro por cavitación o desgaste prolongado.

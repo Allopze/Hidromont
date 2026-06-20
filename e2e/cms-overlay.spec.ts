@@ -25,7 +25,7 @@ test.describe('Public site', () => {
   test('home page loads', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Hidromont/i);
-    await expect(page.locator('header')).toBeVisible();
+    await expect(page.locator('header').first()).toBeVisible();
   });
 
   test('navigation links work', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('Public site', () => {
 
   test('servicio detail page loads', async ({ page }) => {
     await page.goto('/servicios/tuberias-forzadas');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('h1').first()).toBeVisible();
   });
 
   test('proyectos index loads', async ({ page }) => {

@@ -60,6 +60,22 @@ const serviceImageSeeds: Array<{
     width: 471,
     height: 629,
   },
+  {
+    slug: 'infraestructuras',
+    title: 'Infraestructura',
+    src: '/fotos/curadas/otros-montajes.jpg',
+    alt: 'Estructuras metálicas y obras civiles de infraestructura',
+    width: 471,
+    height: 629,
+  },
+  {
+    slug: 'tanques-especiales',
+    title: 'Tanques especiales',
+    src: '/fotos/curadas/fabricacion-tuberias-taller.webp',
+    alt: 'Fabricación y cilindrado de estanques y recipientes especiales en taller',
+    width: 1200,
+    height: 800,
+  },
 ];
 
 const projectImageSeeds: Array<{
@@ -129,7 +145,7 @@ const projectImageSeeds: Array<{
 ];
 
 const serviceGallerySlugs = [
-  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes',
+  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes', 'infraestructuras', 'tanques-especiales',
 ];
 
 const projectGallerySlugs = [
@@ -289,6 +305,10 @@ export const defaultContentEntries: EntrySeed[] = [
       hrefServiciosLimpiarrejas: { type: 'text', value: '/servicios/limpiarrejas' },
       navServiciosMontajes: { type: 'text', value: 'Montajes Especiales' },
       hrefServiciosMontajes: { type: 'text', value: '/servicios/otros-montajes' },
+      navServiciosInfraestructuras: { type: 'text', value: 'Infraestructuras' },
+      hrefServiciosInfraestructuras: { type: 'text', value: '/servicios/infraestructuras' },
+      navServiciosTanques: { type: 'text', value: 'Tanques Especiales' },
+      hrefServiciosTanques: { type: 'text', value: '/servicios/tanques-especiales' },
       navProyectos: { type: 'text', value: 'Proyectos' },
       hrefProyectos: { type: 'text', value: '/proyectos' },
       navGaleria: { type: 'text', value: 'Galería' },
