@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Sitio web de Hidromont Chile S.A. temporalmente en construcción."
+    />
+    <title>Hidromont Chile S.A. | Sitio en construcción</title>
+    <link rel="icon" href="public/favicon.svg" type="image/svg+xml" />
+
+    <style>
+      @font-face {
+        font-family: "Roboto Condensed";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("public/fonts/rc-700.woff2") format("woff2");
+      }
+
+      @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: optional;
+        src: url("public/fonts/inter-vf.woff2") format("woff2");
+      }
+
+      :root {
+        --primary: #0065a9;
+        --accent: #00a6d6;
+        --strong: #0f2433;
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.72);
+        --line: rgba(255, 255, 255, 0.18);
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100dvh;
+        margin: 0;
+        color: var(--text);
+        font-family: "Inter", Arial, sans-serif;
+        background:
+          linear-gradient(90deg, rgba(15, 36, 51, 0.94), rgba(15, 36, 51, 0.78)),
+          url("public/fotos/curadas/taller-nave.webp") center / cover,
+          var(--strong);
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+        text-decoration-color: rgba(255, 255, 255, 0.32);
+        text-underline-offset: 5px;
+        transition:
+          color 160ms var(--ease-out),
+          text-decoration-color 160ms var(--ease-out);
+      }
+
+      .page {
+        display: grid;
+        min-height: 100dvh;
+        align-items: center;
+        padding: 40px 24px;
+      }
+
+      .card {
+        width: min(100%, 620px);
+        margin-inline: auto;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 44px;
+      }
+
+      .logo {
+        display: inline-flex;
+        width: 96px;
+        height: auto;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo img {
+        width: 92px;
+        height: auto;
+        filter: brightness(0) invert(1);
+        object-fit: contain;
+      }
+
+      .brand-name {
+        margin: 0;
+        font-family: "Roboto Condensed", Arial, sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .brand-place {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .rule {
+        width: 72px;
+        height: 2px;
+        margin-bottom: 24px;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+      }
+
+      h1 {
+        max-width: 10ch;
+        margin: 0;
+        font-family: "Roboto Condensed", Arial, sans-serif;
+        font-size: clamp(3rem, 9vw, 5.8rem);
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 0.92;
+        text-transform: uppercase;
+      }
+
+      .message {
+        max-width: 52ch;
+        margin: 26px 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .contact {
+        display: grid;
+        gap: 8px;
+        margin-top: 36px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.95rem;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        a:hover {
+          color: var(--accent);
+          text-decoration-color: rgba(0, 166, 214, 0.6);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .page {
+          align-items: start;
+          padding-block: 28px;
+        }
+
+        .brand {
+          margin-bottom: 64px;
+        }
+
+        h1 {
+          font-size: clamp(2.7rem, 13vw, 4rem);
+        }
+
+        .message {
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <section class="card" aria-labelledby="title">
+        <div class="brand">
+          <span class="logo" aria-hidden="true">
+            <img src="public/logo.svg" alt="" />
+          </span>
+          <div>
+            <p class="brand-name">Hidromont Chile S.A.</p>
+            <p class="brand-place">Los Ángeles, Región del Biobío</p>
+          </div>
+        </div>
+
+        <div class="rule" aria-hidden="true"></div>
+        <h1 id="title">Sitio en construcción</h1>
+
+        <p class="message">
+          Estamos actualizando nuestro sitio web. Para consultas técnicas,
+          comerciales o de proyectos, puede contactarnos directamente.
+        </p>
+
+        <div class="contact" aria-label="Datos de contacto">
+          <a href="mailto:hidromont@hidromont.cl">hidromont@hidromont.cl</a>
+          <a href="tel:+5643328414">+56 43 32 84 14</a>
+          <span>Av. Las Industrias N° 10.950, Los Ángeles, Chile</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
