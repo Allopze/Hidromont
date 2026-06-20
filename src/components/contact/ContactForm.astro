@@ -3,8 +3,6 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
 
-const redirectTo = new URL('/contacto/gracias', Astro.site ?? 'https://hidromont.cl').toString();
-
 const ccEmails = [
   import.meta.env.FORMSUBMIT_CC_1,
   import.meta.env.FORMSUBMIT_CC_2,
@@ -44,14 +42,13 @@ const validationMessages = {
 
 <form
   id="contacto-form"
-  action="https://formsubmit.co/allopze@gmail.com"
+  action="https://formsubmit.co/ajax/allopze@gmail.com"
   method="POST"
   class="space-y-6"
   novalidate
 >
   <!-- FormSubmit.co config -->
   <input type="hidden" name="_subject" value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')} />
-  <input type="hidden" name="_next" value={redirectTo} />
   <input type="hidden" name="_captcha" value="false" />
   {ccEmails && <input type="hidden" name="_cc" value={ccEmails} />}
   <!-- Honeypot anti-spam (FORM-002): campo oculto que los bots rellenan y hace descartar el envío. -->
@@ -169,24 +166,49 @@ const validationMessages = {
     <button
       type="submit"
       id="contacto-submit"
-      class="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-none border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30 disabled:opacity-60 disabled:cursor-wait whitespace-nowrap"
+      class="inline-flex items-center justify-center bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-none border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30 disabled:opacity-60 disabled:cursor-wait whitespace-nowrap"
     >
-      <span id="contacto-submit-text">
-        <EditableText entry="contact.form" field="submitLabel">
-          {getCmsText('contact.form', 'submitLabel', 'Enviar consulta')}
-        </EditableText>
+      <span class="grid">
+        <span id="contacto-submit-text" class="col-start-1 row-start-1 flex items-center gap-2">
+          <EditableText entry="contact.form" field="submitLabel">
+            {getCmsText('contact.form', 'submitLabel', 'Enviar consulta')}
+          </EditableText>
+          <ArrowIcon />
+        </span>
+        <span id="contacto-submit-loading" class="col-start-1 row-start-1 flex items-center gap-2 invisible" aria-hidden="true">
+          <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/><path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"/></svg>
+          Enviando...
+        </span>
       </span>
-      <span id="contacto-submit-loading" class="hidden" aria-hidden="true">
-        <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/><path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"/></svg>
-        Enviando...
-      </span>
-      <ArrowIcon />
     </button>
     <EditableText as="p" entry="contact.form" field="requiredNote" type="textarea" class="text-xs text-text-muted">
       {getCmsText('contact.form', 'requiredNote', 'Los campos marcados con * son obligatorios. Te contactaremos a la brevedad.')}
     </EditableText>
   </div>
 </form>
+
+<div
+  id="contacto-success"
+  class="hidden py-10 text-center space-y-3"
+  role="status"
+  aria-live="polite"
+>
+  <p class="text-lg font-semibold text-text">
+    {getCmsText('contact.form', 'successTitle', '¡Mensaje enviado!')}
+  </p>
+  <p class="text-sm text-text-muted">
+    {getCmsText('contact.form', 'successBody', 'Hemos recibido su consulta. Le contactaremos a la brevedad.')}
+  </p>
+</div>
+
+<div
+  id="contacto-error"
+  class="hidden py-4 px-4 border border-error text-error text-sm"
+  role="alert"
+  aria-live="assertive"
+>
+  {getCmsText('contact.form', 'errorBody', 'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.')}
+</div>
 
 <script is:inline type="application/json" id="contact-form-messages" set:html={JSON.stringify(validationMessages)} />
 
@@ -232,7 +254,9 @@ if (form) {
     });
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
     let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
     let allValid = true;
     requiredFields.forEach((field) => {
@@ -243,19 +267,38 @@ if (form) {
       }
     });
     if (!allValid) {
-      e.preventDefault();
       (firstInvalid as HTMLElement | null)?.focus();
       return;
     }
-    // Show loading state
+
     const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
     const submitText = document.getElementById('contacto-submit-text');
     const submitLoading = document.getElementById('contacto-submit-loading');
-    const submitArrow = document.getElementById('contacto-submit-arrow');
+    const errorBanner = document.getElementById('contacto-error');
     if (submitBtn) submitBtn.disabled = true;
-    if (submitText) submitText.classList.add('hidden');
-    if (submitLoading) submitLoading.classList.remove('hidden');
-    if (submitArrow) submitArrow.classList.add('hidden');
+    if (submitText) submitText.classList.add('invisible');
+    if (submitLoading) submitLoading.classList.remove('invisible');
+    if (errorBanner) errorBanner.classList.add('hidden');
+
+    try {
+      const res = await fetch((form as HTMLFormElement).action, {
+        method: 'POST',
+        body: new FormData(form as HTMLFormElement),
+        headers: { Accept: 'application/json' },
+      });
+      const json = await res.json() as { success: string };
+      if (json.success === 'true' || json.success === true) {
+        (form as HTMLFormElement).classList.add('hidden');
+        document.getElementById('contacto-success')?.classList.remove('hidden');
+      } else {
+        throw new Error('rejected');
+      }
+    } catch {
+      if (errorBanner) errorBanner.classList.remove('hidden');
+      if (submitBtn) submitBtn.disabled = false;
+      if (submitText) submitText.classList.remove('invisible');
+      if (submitLoading) submitLoading.classList.add('invisible');
+    }
   });
 }
 </script>
