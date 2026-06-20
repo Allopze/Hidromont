@@ -24,7 +24,7 @@ const isTouch =
 function initReveal(): void {
   if (prefersReduced) {
     // Skip animation — make everything visible immediately
-    document.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group]').forEach((el) => {
+    document.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group], [data-reveal-cinematic]').forEach((el) => {
       el.classList.add('is-visible');
     });
     return;
@@ -47,6 +47,15 @@ function initReveal(): void {
 
   document.querySelectorAll('[data-reveal], [data-reveal-group]').forEach((el) => {
     observer.observe(el);
+  });
+
+  // Cinematic reveals are always above-the-fold (page-load heroes).
+  // The IntersectionObserver's threshold doesn't fire reliably for elements
+  // that are already fully visible at load, so we fire them directly.
+  requestAnimationFrame(() => {
+    document.querySelectorAll<HTMLElement>('[data-reveal-cinematic]').forEach((el) => {
+      el.classList.add('is-visible');
+    });
   });
 }
 

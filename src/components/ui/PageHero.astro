@@ -1,11 +1,4 @@
 ---
-/**
- * PageHero — unified split/framed inner-page hero.
- * Left column: breadcrumb + eyebrow + H1 + subtitle.
- * Right column: contained image panel (crisp at ~660px source).
- * Falls back to a text-only navy band with a subtle technical grid motif.
- */
-import Eyebrow from './Eyebrow.astro';
 import Container from './Container.astro';
 import EditableImage from '../cms/EditableImage.astro';
 import EditableText from '../cms/EditableText.astro';
@@ -16,7 +9,8 @@ interface Breadcrumb {
 }
 
 interface Props {
-  eyebrow?: string;
+  eyebrow?: string;        // kept for backward compat — no longer rendered
+  badge?: string;          // category chip shown between breadcrumb and accent line (detail pages)
   title: string;
   subtitle?: string;
   breadcrumbs?: Breadcrumb[];
@@ -26,13 +20,13 @@ interface Props {
   imageHeight?: number;
   cmsEntry?: string;
   cmsImageEntry?: string;
-  cmsEyebrowField?: string | false;
+  cmsEyebrowField?: string | false; // kept for backward compat
   cmsTitleField?: string | false;
   cmsSubtitleField?: string | false;
 }
 
 const {
-  eyebrow,
+  badge,
   title,
   subtitle,
   breadcrumbs,
@@ -42,53 +36,63 @@ const {
   imageHeight = 495,
   cmsEntry,
   cmsImageEntry = cmsEntry,
-  cmsEyebrowField = 'eyebrow',
   cmsTitleField = 'title',
   cmsSubtitleField = 'subtitle',
 } = Astro.props;
 ---
 
 <section class="relative bg-background-strong text-white overflow-hidden">
-  <!-- Subtle technical grid motif (always visible, very low opacity) -->
-  <div
-    class="absolute inset-0 pointer-events-none"
-    aria-hidden="true"
-    style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 48px 48px;"
-  ></div>
 
-  <Container size="2xl">
-    <div class={`relative z-10 flex flex-col ${imageSrc ? 'lg:flex-row lg:items-center lg:gap-12' : ''} py-16 md:py-20 lg:py-24`}>
+  {/* ── Cinematic layout: text (45%) + full-bleed image (55%) ── */}
+  {imageSrc && (
+    <div
+      class="relative flex flex-col lg:flex-row lg:items-stretch"
+      style="min-height: clamp(380px, 50vw, 580px);"
+    >
+      {/* Text column */}
+      <div
+        class="relative z-10 w-full lg:w-[45%] py-16 md:py-20 lg:py-28 pr-6 lg:pr-16 flex flex-col justify-center"
+        style="padding-left: max(24px, calc((100vw - 1320px) / 2 + 24px));"
+      >
+        {/* Grid motif — text column only */}
+        <div
+          class="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+          style="background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 48px 48px;"
+        ></div>
 
-      <!-- Text column -->
-      <div class={imageSrc ? 'flex-1 lg:max-w-[55%]' : 'max-w-3xl'}>
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav class="flex items-center gap-1.5 mb-5 text-xs text-white/70 font-body" aria-label="Breadcrumb">
+          <nav
+            class="flex items-center gap-1.5 mb-4 text-xs text-white/60 font-body relative"
+            aria-label="Breadcrumb"
+          >
             {breadcrumbs.map((crumb, i) => (
               <>
-                {i > 0 && <span aria-hidden="true">›</span>}
+                {i > 0 && <span aria-hidden="true" class="text-white/30">›</span>}
                 {crumb.href
                   ? <a href={crumb.href} class="hover:text-white/80 transition-colors duration-fast no-underline">{crumb.label}</a>
-                  : <span class="text-white/70">{crumb.label}</span>
+                  : <span>{crumb.label}</span>
                 }
               </>
             ))}
           </nav>
         )}
 
-        {eyebrow && (
-          <Eyebrow light>
-            {cmsEntry && cmsEyebrowField ? (
-              <EditableText entry={cmsEntry} field={cmsEyebrowField}>{eyebrow}</EditableText>
-            ) : eyebrow}
-          </Eyebrow>
+        {badge && (
+          <span class="inline-block mb-4 px-2 py-0.5 text-xs font-mono text-accent border border-accent/30 tracking-[0.04em] relative self-start">
+            {badge}
+          </span>
         )}
+
+        {/* Accent line: graphic rhythm break */}
+        <div class="w-10 h-0.5 bg-accent mb-5 relative" aria-hidden="true"></div>
 
         <EditableText
           as="h1"
           entry={cmsTitleField ? cmsEntry : undefined}
           field={cmsTitleField || 'title'}
-          class="font-heading font-bold text-white leading-tight mb-4"
-          style="font-size: var(--font-size-h1);"
+          class="font-heading font-bold text-white leading-tight mb-5 relative"
+          style="font-size: var(--font-size-display); letter-spacing: -0.02em; text-wrap: balance;"
           reveal
         >
           {title}
@@ -99,8 +103,8 @@ const {
             as="p"
             entry={cmsSubtitleField ? cmsEntry : undefined}
             field={cmsSubtitleField || 'subtitle'}
-            class="text-white/70 max-w-xl"
-            style="font-size: var(--font-size-lead); line-height: 1.65; --reveal-delay: 0.1s;"
+            class="text-white/70 max-w-lg relative"
+            style="font-size: var(--font-size-lead); line-height: 1.7; --reveal-delay: 0.1s;"
             type="textarea"
             reveal
           >
@@ -111,43 +115,112 @@ const {
         <slot />
       </div>
 
-      <!-- Image panel (only if src provided) -->
-      {imageSrc && (
+      {/* Image column: fills remaining width, bleeds to viewport right edge */}
+      <div
+        class="flex-1 relative overflow-hidden min-h-[280px] lg:min-h-0"
+        data-reveal-cinematic
+        style="--reveal-delay: 0.06s;"
+      >
+        {/* Parallax wrapper: oversized to allow pan without edge bleed */}
         <div
-          class="mt-10 lg:mt-0 lg:flex-shrink-0 lg:w-[42%]"
-          data-reveal
-          style="--reveal-delay: 0.18s;"
+          class="absolute w-full"
+          style="top: -6%; height: 112%;"
+          data-parallax="0.04"
         >
-          <div class="relative overflow-hidden rounded-lg" style="border: 1px solid rgba(255,255,255,0.08);">
-            <!-- Edge refraction inner border -->
-            <div
-              class="absolute inset-0 z-10 rounded-lg pointer-events-none"
-              style="box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2);"
-              aria-hidden="true"
-            ></div>
-            <EditableImage
-              entry={cmsImageEntry}
-              field="image"
-              altField="imageAlt"
-              src={imageSrc}
-              alt={imageAlt}
-              width={imageWidth}
-              height={imageHeight}
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              class="block w-full h-auto object-cover"
-              style="max-height: 380px;"
-            />
-          </div>
+          <EditableImage
+            entry={cmsImageEntry}
+            field="image"
+            altField="imageAlt"
+            src={imageSrc}
+            alt={imageAlt}
+            width={imageWidth}
+            height={imageHeight}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            class="w-full h-full object-cover"
+          />
         </div>
-      )}
-    </div>
-  </Container>
 
-  <!-- Bottom gradient fade -->
+        {/* Left-edge atmospheric scrim */}
+        <div
+          class="absolute inset-y-0 left-0 w-40 pointer-events-none z-10"
+          style="background: linear-gradient(to right, rgb(15,36,51) 0%, transparent 100%);"
+          aria-hidden="true"
+        ></div>
+      </div>
+    </div>
+  )}
+
+  {/* ── Text-only layout (no image) ── */}
+  {!imageSrc && (
+    <Container size="2xl">
+      <div class="relative z-10 py-16 md:py-20 lg:py-24 max-w-3xl">
+        {/* Grid motif */}
+        <div
+          class="absolute inset-0 pointer-events-none"
+          aria-hidden="true"
+          style="background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 48px 48px;"
+        ></div>
+
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav
+            class="flex items-center gap-1.5 mb-4 text-xs text-white/60 font-body relative"
+            aria-label="Breadcrumb"
+          >
+            {breadcrumbs.map((crumb, i) => (
+              <>
+                {i > 0 && <span aria-hidden="true" class="text-white/30">›</span>}
+                {crumb.href
+                  ? <a href={crumb.href} class="hover:text-white/80 transition-colors duration-fast no-underline">{crumb.label}</a>
+                  : <span>{crumb.label}</span>
+                }
+              </>
+            ))}
+          </nav>
+        )}
+
+        {badge && (
+          <span class="inline-block mb-4 px-2 py-0.5 text-xs font-mono text-accent border border-accent/30 tracking-[0.04em] relative self-start">
+            {badge}
+          </span>
+        )}
+
+        <div class="w-10 h-0.5 bg-accent mb-5 relative" aria-hidden="true"></div>
+
+        <EditableText
+          as="h1"
+          entry={cmsTitleField ? cmsEntry : undefined}
+          field={cmsTitleField || 'title'}
+          class="font-heading font-bold text-white leading-tight mb-5 relative"
+          style="font-size: var(--font-size-display); letter-spacing: -0.02em; text-wrap: balance;"
+          reveal
+        >
+          {title}
+        </EditableText>
+
+        {subtitle && (
+          <EditableText
+            as="p"
+            entry={cmsSubtitleField ? cmsEntry : undefined}
+            field={cmsSubtitleField || 'subtitle'}
+            class="text-white/70 max-w-xl relative"
+            style="font-size: var(--font-size-lead); line-height: 1.7; --reveal-delay: 0.1s;"
+            type="textarea"
+            reveal
+          >
+            {subtitle}
+          </EditableText>
+        )}
+
+        <slot />
+      </div>
+    </Container>
+  )}
+
+  {/* ── Bottom gradient fade ── */}
   <div
-    class="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
+    class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none z-20"
     style="background: linear-gradient(to top, rgba(15,36,51,0.5), transparent);"
     aria-hidden="true"
   ></div>

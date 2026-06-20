@@ -987,6 +987,14 @@
           "type": "text",
           "value": "Proyectos"
         },
+        "navGaleria": {
+          "type": "text",
+          "value": "Galería"
+        },
+        "hrefGaleria": {
+          "type": "text",
+          "value": "/galeria"
+        },
         "navServicios": {
           "type": "text",
           "value": "Servicios"
@@ -1023,6 +1031,17 @@
           "type": "text",
           "value": "Chile S.A."
         }
+      }
+    },
+    "page.galeria": {
+      "title": "Galería",
+      "slug": "galeria",
+      "fields": {
+        "eyebrow": { "type": "text", "value": "Nuestro trabajo" },
+        "title": { "type": "text", "value": "Galería" },
+        "subtitle": { "type": "textarea", "value": "Imágenes de nuestros proyectos, instalaciones y equipo." },
+        "image": { "type": "image", "value": "" },
+        "imageAlt": { "type": "text", "value": "Galería de proyectos Hidromont Chile" }
       }
     },
     "project-gallery.ch-besaya": {

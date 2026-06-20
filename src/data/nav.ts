@@ -47,6 +47,7 @@ export const navItems: NavItem[] = [
     ],
   },
   { label: getCmsText('layout.header', 'navProyectos', 'Proyectos'), href: getCmsText('layout.header', 'hrefProyectos', '/proyectos'), cmsField: 'navProyectos' },
+  { label: getCmsText('layout.header', 'navGaleria', 'Galería'), href: getCmsText('layout.header', 'hrefGaleria', '/galeria'), cmsField: 'navGaleria' },
   { label: getCmsText('layout.header', 'navEmpresa', 'Empresa'), href: getCmsText('layout.header', 'hrefEmpresa', '/empresa'), cmsField: 'navEmpresa' },
   { label: getCmsText('layout.header', 'navClientes', 'Clientes'), href: getCmsText('layout.header', 'hrefClientes', '/clientes'), cmsField: 'navClientes' },
   { label: getCmsText('layout.header', 'navContacto', 'Contacto'), href: getCmsText('layout.header', 'hrefContacto', '/contacto'), cmsField: 'navContacto' },

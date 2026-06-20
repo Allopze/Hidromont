@@ -1,0 +1,58 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import PageLayout from '../../layouts/PageLayout.astro';
+import Section from '../../components/ui/Section.astro';
+import Container from '../../components/ui/Container.astro';
+import PageHero from '../../components/ui/PageHero.astro';
+import { getCmsText } from '../../data/cms';
+
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
+const images = fs.existsSync(uploadsDir)
+  ? fs.readdirSync(uploadsDir)
+      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+      .sort()
+      .map((f) => ({
+        src: `/uploads/cms/${f}`,
+        alt: f.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, ''),
+      }))
+  : [];
+---
+
+<PageLayout
+  title={getCmsText('page.galeria', 'title', 'Galería') + ' | Hidromont Chile'}
+  description={getCmsText('page.galeria', 'subtitle', 'Imágenes de nuestros proyectos, instalaciones y equipo.')}
+>
+  <PageHero
+    title={getCmsText('page.galeria', 'title', 'Galería')}
+    subtitle={getCmsText('page.galeria', 'subtitle', 'Imágenes de nuestros proyectos, instalaciones y equipo.')}
+    imageSrc={getCmsText('page.galeria', 'image', '') || undefined}
+    imageAlt={getCmsText('page.galeria', 'imageAlt', 'Galería de proyectos Hidromont Chile')}
+    breadcrumbs={[{ label: 'Galería' }]}
+    cmsEntry="page.galeria"
+  />
+
+  <Section>
+    <Container>
+      {images.length === 0 ? (
+        <p class="text-center text-neutral-500 py-16">
+          Próximamente se añadirán imágenes a esta galería.
+        </p>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {images.map((img) => (
+            <div class="overflow-hidden rounded-lg aspect-[4/3] bg-neutral-100">
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                decoding="async"
+                class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </Container>
+  </Section>
+</PageLayout>
