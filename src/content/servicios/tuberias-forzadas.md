@@ -17,11 +17,6 @@ aplicaciones:
   - "Conducción de agua a presión"
   - "Obras subterráneas y en pendiente"
   - "Rehabilitación y reemplazo de tuberías existentes"
-normas:
-  - "C.E.C.T."
-  - "AWWA M11"
-  - "ASME"
-  - "Guía técnica CEDEX para tuberías de transporte de agua a presión"
 procesos:
   - titulo: "Ingeniería"
     descripcion: "Cálculos mecánicos, análisis estructural, planos de diseño básico y detalle, procedimientos de montaje, manuales de mantenimiento y operación, inspecciones y toma de datos."

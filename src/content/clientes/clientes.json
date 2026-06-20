@@ -4,8 +4,6 @@
     { "nombre": "AES Andes",           "sector": "electrica" },
     { "nombre": "Arauco",              "sector": "industrial" },
     { "nombre": "Besalco",             "sector": "construccion", "logo": "/logos-clientes/besalco.png" },
-    { "nombre": "Besalco - Dragados",  "sector": "construccion" },
-    { "nombre": "Besalco - Ferrovial", "sector": "construccion" },
     { "nombre": "Colbún",              "sector": "electrica",    "logo": "/logos-clientes/colbun.png" },
     { "nombre": "Conpax",              "sector": "construccion", "logo": "/logos-clientes/conpax.png" },
     { "nombre": "EDP",                 "sector": "electrica",    "logo": "/logos-clientes/edp-hc-energia.png" },
