@@ -2,7 +2,10 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
-  readonly PUBLIC_WEB3FORMS_KEY: string;
+  readonly FORMSUBMIT_CC_1?: string;
+  readonly FORMSUBMIT_CC_2?: string;
+  readonly FORMSUBMIT_CC_3?: string;
+  readonly FORMSUBMIT_CC_4?: string;
 }
 
 interface ImportMeta {

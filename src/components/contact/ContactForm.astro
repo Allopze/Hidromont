@@ -3,20 +3,14 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
 
-const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
-const redirectTo = '/contacto/gracias';
+const redirectTo = new URL('/contacto/gracias', Astro.site ?? 'https://hidromont.cl').toString();
 
-// Guard de build (FORM-001): el formulario de contacto es el único canal de
-// conversión del sitio. Sin la clave de Web3Forms enviaría access_key="" y el
-// visitante caería en un error externo en inglés — leads perdidos en silencio.
-// Falla el build de producción de forma explícita; en dev se permite seguir.
-if (import.meta.env.PROD && !accessKey) {
-  throw new Error(
-    '[build] Falta PUBLIC_WEB3FORMS_KEY. El formulario de contacto no puede ' +
-      'enviarse sin la clave de Web3Forms. Defínala en el entorno de build ' +
-      '(ver .env.example) antes de desplegar.'
-  );
-}
+const ccEmails = [
+  import.meta.env.FORMSUBMIT_CC_1,
+  import.meta.env.FORMSUBMIT_CC_2,
+  import.meta.env.FORMSUBMIT_CC_3,
+  import.meta.env.FORMSUBMIT_CC_4,
+].filter(Boolean).join(',');
 
 const servicios = getCmsValue<string[]>('contact.form', 'services', [
   'Tuberías Forzadas y Blindajes',
@@ -50,27 +44,18 @@ const validationMessages = {
 
 <form
   id="contacto-form"
-  action="https://api.web3forms.com/submit"
+  action="https://formsubmit.co/allopze@gmail.com"
   method="POST"
   class="space-y-6"
   novalidate
 >
-  <!-- Web3Forms config -->
-  <input type="hidden" name="access_key" value={accessKey} />
-  <input type="hidden" name="subject" value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')} />
-  <input type="hidden" name="from_name" value={getCmsText('contact.form', 'fromName', 'Sitio web Hidromont Chile')} />
-  <input type="hidden" name="redirect" value={new URL(redirectTo, Astro.site ?? 'https://hidromont.cl').toString()} />
-  <!-- Honeypot anti-spam — oculto también a lectores de pantalla (FORM-002):
-       display:none + aria-hidden evitan que un usuario de AT lo marque por error
-       y su mensaje sea descartado como spam. -->
-  <input
-    type="checkbox"
-    name="botcheck"
-    style="display:none"
-    tabindex="-1"
-    autocomplete="off"
-    aria-hidden="true"
-  />
+  <!-- FormSubmit.co config -->
+  <input type="hidden" name="_subject" value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')} />
+  <input type="hidden" name="_next" value={redirectTo} />
+  <input type="hidden" name="_captcha" value="false" />
+  {ccEmails && <input type="hidden" name="_cc" value={ccEmails} />}
+  <!-- Honeypot anti-spam (FORM-002): campo oculto que los bots rellenan y hace descartar el envío. -->
+  <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <!-- Nombre -->
