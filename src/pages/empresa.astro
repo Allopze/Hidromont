@@ -52,23 +52,23 @@ import { company } from '../data/company';
         </div>
 
         <div class="space-y-6">
-          <div class="grid grid-cols-2 gap-4">
+          <dl class="grid grid-cols-2 gap-4">
             {([1, 2, 3, 4] as const).map((i) => (
-              <div class="p-5 border border-border rounded-lg bg-surface">
-                <EditableText as="p" entry="empresa.metricas" field={`card${i}Value`} class="font-mono font-bold text-primary text-2xl">
-                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'EPC', 'Soporte'][i - 1])}
+              <div class="flex flex-col p-5 border border-border rounded-lg bg-surface">
+                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Value`} class={`order-1 ${i <= 2 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}>
+                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'Llave en mano', 'Soporte'][i - 1])}
                 </EditableText>
-                <EditableText as="p" entry="empresa.metricas" field={`card${i}Label`} class="font-semibold text-text text-sm mt-1">
+                <EditableText as="dt" entry="empresa.metricas" field={`card${i}Label`} class="order-2 font-semibold text-text text-sm mt-1">
                   {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Chile desde', 'Modalidad', 'Post-venta'][i - 1])}
                 </EditableText>
-                <EditableText as="p" entry="empresa.metricas" field={`card${i}Desc`} class="text-text-muted text-xs mt-0.5">
-                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Llave en mano', 'Atención técnica continua'][i - 1])}
+                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Desc`} class="order-3 text-text-muted text-xs mt-0.5">
+                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Ingeniería, fabricación y montaje', 'Atención técnica continua'][i - 1])}
                 </EditableText>
               </div>
             ))}
-          </div>
+          </dl>
 
-          <div class="p-6 bg-primary-light border border-border rounded-lg">
+          <div class="p-6 bg-surface border border-border rounded-lg">
             <EditableText as="h3" entry="empresa.metricas" field="ubicacionTitle" class="font-heading font-semibold text-primary-dark mb-3">
               {getCmsText('empresa.metricas', 'ubicacionTitle', 'Ubicación')}
             </EditableText>

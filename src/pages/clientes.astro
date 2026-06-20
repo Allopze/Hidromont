@@ -3,7 +3,7 @@ import PageLayout from '../layouts/PageLayout.astro';
 import Section from '../components/ui/Section.astro';
 import Container from '../components/ui/Container.astro';
 import Eyebrow from '../components/ui/Eyebrow.astro';
-import PageHero from '../components/ui/PageHero.astro';
+import ClientesHero from '../components/clientes/ClientesHero.astro';
 import CTASection from '../components/ui/CTASection.astro';
 import EditableText from '../components/cms/EditableText.astro';
 import EditableImage from '../components/cms/EditableImage.astro';
@@ -24,17 +24,31 @@ const sectorLabels: Record<string, string> = {
 };
 
 const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as string[];
+
+// Logos únicos para el hero marquee (mismos que se usan en el cuerpo)
+const heroLogos = [...new Set(
+  lista.map((c) => getClienteLogoByNombre(c.nombre)).filter(Boolean)
+)];
+
+// Alt text de cada logo (nombre del cliente correspondiente)
+const logoAlts: Record<string, string> = {};
+for (const c of lista) {
+  const src = getClienteLogoByNombre(c.nombre);
+  if (src && !logoAlts[src]) logoAlts[src] = c.nombre;
+}
 ---
 
 <PageLayout
   title="Clientes"
   description="Referencias de Hidromont Chile S.A. — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
 >
-  <PageHero
+  <ClientesHero
     title={getCmsText('clientes.hero', 'title', 'Clientes')}
     subtitle={getCmsText('clientes.hero', 'subtitle', 'Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos.')}
     breadcrumbs={[{ label: 'Clientes' }]}
     cmsEntry="clientes.hero"
+    logos={heroLogos}
+    logoAlts={logoAlts}
   />
 
   <Section variant="default">

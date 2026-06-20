@@ -46,7 +46,7 @@ export class PublishService {
     }
   }
 
-  async publishContent(): Promise<{ job: PublishJob; exported: { files: string[] }; check: { stdout: string; stderr: string } }> {
+  async publishContent(): Promise<{ job: PublishJob; exported: { files: string[] }; publish: { stdout: string; stderr: string } }> {
     const startedAt = new Date().toISOString();
     const job = this.publishJobRepository.start({
       action: 'publish',
@@ -69,7 +69,7 @@ export class PublishService {
         logs: [
           ...job.logs,
           `${completedAt} exported ${exported.files.length} file(s)`,
-          `check: ${config.cms.publishCheckCommand}`,
+          `publish: ${config.cms.publishCheckCommand}`,
           ...this.nonEmptyLines(result.stdout, 'stdout'),
           ...this.nonEmptyLines(result.stderr, 'stderr'),
         ],
@@ -78,7 +78,7 @@ export class PublishService {
       return {
         job: completed,
         exported,
-        check: {
+        publish: {
           stdout: result.stdout,
           stderr: result.stderr,
         },

@@ -1,6 +1,6 @@
 ---
 titulo: "Tuberías Forzadas y Blindajes"
-resumen: "Proyectos EPC llave en mano para tuberías forzadas, blindajes en acero mecano-soldado, bifurcaciones, codos, embocaduras, juntas de dilatación, apoyos, puntos fijos, repartidores, transiciones y piezas especiales."
+resumen: "Proyectos llave en mano para tuberías forzadas, blindajes en acero mecano-soldado, bifurcaciones, codos, embocaduras, juntas de dilatación, apoyos, puntos fijos, repartidores, transiciones y piezas especiales."
 icono: "pipe"
 tipos:
   - "Tuberías forzadas"

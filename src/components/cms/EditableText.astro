@@ -20,7 +20,8 @@ const {
   reveal = false,
 } = Astro.props as Props;
 const Tag = as;
-const editableAttrs = import.meta.env.DEV && entry
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const editableAttrs = cmsEditingEnabled && entry
   ? {
       'data-cms-entry': entry,
       'data-cms-field': field,

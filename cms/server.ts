@@ -1,6 +1,7 @@
 import fastify from 'fastify';
 import { config } from './config/unifiedConfig';
 import { registerCmsRoutes } from './routes/cmsRoutes';
+import { registerStaticSite } from './staticSite';
 import { captureException, initErrorTracking } from './utils/errorTracking';
 
 initErrorTracking();
@@ -33,6 +34,7 @@ app.addHook('onSend', async (_request, reply) => {
 
 try {
   await registerCmsRoutes(app);
+  registerStaticSite(app);
   await app.listen({ host: config.cms.host, port: config.cms.port });
 } catch (error) {
   captureException(error, { action: 'startCmsServer' });

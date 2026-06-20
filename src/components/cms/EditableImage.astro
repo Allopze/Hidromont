@@ -28,7 +28,8 @@ const {
   class: className,
   style,
 } = Astro.props;
-const editableAttrs = import.meta.env.DEV && entry
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const editableAttrs = cmsEditingEnabled && entry
   ? {
       'data-cms-entry': entry,
       'data-cms-field': field,

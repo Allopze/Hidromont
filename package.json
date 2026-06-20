@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
     "cms": "tsx cms/server.ts",
+    "start": "node server.mjs",
     "dev:cms": "concurrently \"npm run dev\" \"npm run cms\"",
     "cms:import": "tsx cms/scripts/import.ts",
     "cms:export": "tsx cms/scripts/export.ts",
@@ -28,6 +29,7 @@
     "gray-matter": "^4.0.3",
     "nanoid": "^3.3.12",
     "sharp": "^0.33.5",
+    "tsx": "^4.22.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -44,7 +46,6 @@
     "astro": "^4.16.18",
     "concurrently": "^10.0.3",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.22.4",
     "typescript": "^5.7.3",
     "vitest": "^4.1.8"
   },

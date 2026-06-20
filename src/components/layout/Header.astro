@@ -9,6 +9,7 @@ import { getCmsText } from '../../data/cms';
 
 const cmsLogoSrc = getCmsText('layout.header', 'logoSrc', '');
 const cmsLogoAlt = getCmsText('layout.header', 'logoAlt', 'Hidromont Chile S.A.');
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 interface Props {
   currentPath?: string;
@@ -69,7 +70,7 @@ function isActive(href: string) {
               overlay ? 'logo-img' : '',
             ].join(' ')}
             loading="eager"
-            {...(import.meta.env.DEV ? {
+            {...(cmsEditingEnabled ? {
               'data-cms-entry': 'layout.header',
               'data-cms-field': 'logoSrc',
               'data-cms-alt-field': 'logoAlt',

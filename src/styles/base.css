@@ -229,6 +229,18 @@ ol {
   opacity: 0.25;
 }
 
+/* ── Marquee animation (clientes hero logo strip) ── */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+.logo-marquee-track      { animation: marquee-left  40s linear infinite; }
+.logo-marquee-track--rev { animation: marquee-right 44s linear infinite; }
+
 /* ── Shimmer animation (hero accent line) ── */
 @keyframes shimmer {
   0% {
@@ -349,6 +361,13 @@ ol {
   }
 
   .card-lift:hover {
+    transform: none;
+  }
+
+  /* Marquee: quedar estático en vez de congelarse a mitad de recorrido */
+  .logo-marquee-track,
+  .logo-marquee-track--rev {
+    animation: none;
     transform: none;
   }
 }

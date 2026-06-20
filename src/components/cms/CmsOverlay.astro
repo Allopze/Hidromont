@@ -1,14 +1,16 @@
 ---
 import overlayScript from '../../scripts/cms-overlay.js?raw';
 
-const enabled = import.meta.env.DEV;
+const enabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const apiBase = import.meta.env.PUBLIC_CMS_API_BASE;
+const isDev = import.meta.env.DEV;
 ---
 
 {enabled && (
   <>
-    <script is:inline>
+    <script is:inline define:vars={{ apiBase, isDev }}>
       window.__HIDROMONT_CMS__ = {
-        apiBase: `${location.protocol}//${location.hostname}:8787`,
+        apiBase: apiBase || (isDev ? `${location.protocol}//${location.hostname}:8787` : location.origin),
       };
     </script>
     <script is:inline set:html={overlayScript}></script>

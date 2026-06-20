@@ -26,5 +26,5 @@ export const company = {
     'especialidad',
     'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas.'
   ),
-  modalidad: getCmsText('site.company', 'modalidad', 'Proyectos llave en mano / EPC'),
+  modalidad: getCmsText('site.company', 'modalidad', 'Proyectos llave en mano'),
 } as const;

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-18T21:33:58.378Z",
+  "updatedAt": "2026-06-20T03:48:26.005Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -765,7 +765,7 @@
         },
         "card3Desc": {
           "type": "text",
-          "value": "Llave en mano"
+          "value": "Ingeniería, fabricación y montaje"
         },
         "card3Label": {
           "type": "text",
@@ -773,7 +773,7 @@
         },
         "card3Value": {
           "type": "text",
-          "value": "EPC"
+          "value": "Llave en mano"
         },
         "card4Desc": {
           "type": "text",
@@ -987,14 +987,6 @@
           "type": "text",
           "value": "Proyectos"
         },
-        "navGaleria": {
-          "type": "text",
-          "value": "Galería"
-        },
-        "hrefGaleria": {
-          "type": "text",
-          "value": "/galeria"
-        },
         "navServicios": {
           "type": "text",
           "value": "Servicios"
@@ -1035,13 +1027,28 @@
     },
     "page.galeria": {
       "title": "Galería",
-      "slug": "galeria",
+      "slug": "/galeria",
       "fields": {
-        "eyebrow": { "type": "text", "value": "Nuestro trabajo" },
-        "title": { "type": "text", "value": "Galería" },
-        "subtitle": { "type": "textarea", "value": "Imágenes de nuestros proyectos, instalaciones y equipo." },
-        "image": { "type": "image", "value": "" },
-        "imageAlt": { "type": "text", "value": "Galería de proyectos Hidromont Chile" }
+        "eyebrow": {
+          "type": "text",
+          "value": "Nuestro trabajo"
+        },
+        "image": {
+          "type": "image",
+          "value": ""
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Galería de proyectos Hidromont Chile"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Imágenes de nuestros proyectos, instalaciones y equipo."
+        },
+        "title": {
+          "type": "text",
+          "value": "Galería"
+        }
       }
     },
     "project-gallery.ch-besaya": {
@@ -1948,7 +1955,7 @@
         },
         "modalidad": {
           "type": "text",
-          "value": "Proyectos llave en mano / EPC"
+          "value": "Proyectos llave en mano"
         },
         "nombre": {
           "type": "text",

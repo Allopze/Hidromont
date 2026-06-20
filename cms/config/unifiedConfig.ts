@@ -31,7 +31,7 @@ export const config = {
   rootDir,
   cms: {
     host: process.env.CMS_HOST ?? '127.0.0.1',
-    port: intFromEnv('CMS_PORT', 8787),
+    port: intFromEnv('CMS_PORT', intFromEnv('PORT', 8787)),
     databasePath: process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
     allowedOrigins: csvFromEnv('CMS_ALLOWED_ORIGINS', [
       'http://localhost:4321',
@@ -42,7 +42,7 @@ export const config = {
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
     uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'public', 'uploads', 'cms'),
     publicUploadBase: '/uploads/cms',
-    publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run check',
+    publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build',
   },
   admin: {
     email: process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local',

@@ -26,6 +26,7 @@ const projectImageEntry = `project-image.${proyecto.slug}`;
 const heroImg = projectImages[proyecto.slug];
 const gallery = projectGalleries[proyecto.slug];
 const galleryEntryId = `project-gallery.${proyecto.slug}`;
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 const servicioHref: Record<string, string> = {
   tuberias: '/servicios/tuberias-forzadas',
@@ -141,7 +142,7 @@ const jsonLd = {
         </aside>
       </div>
 
-      {(gallery?.images.length > 0 || import.meta.env.DEV) && (
+      {(gallery?.images.length > 0 || cmsEditingEnabled) && (
         <div class="mt-16">
           <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
             Galería de imágenes
@@ -161,7 +162,7 @@ const jsonLd = {
                       class="w-full h-full object-cover"
                       loading="lazy"
                     />
-                  ) : import.meta.env.DEV ? (
+                  ) : cmsEditingEnabled ? (
                     <div
                       class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
                       data-cms-entry={galleryEntryId}

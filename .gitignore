@@ -8,6 +8,7 @@ dist/
 
 # Dependencies
 node_modules/
+.npm-cache
 
 # OS
 .DS_Store
