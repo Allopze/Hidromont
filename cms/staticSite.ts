@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { pipeline } from 'node:stream/promises';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from './config/unifiedConfig';
 
@@ -26,39 +25,39 @@ const contentTypes: Record<string, string> = {
 
 export function registerStaticSite(app: FastifyInstance): void {
   app.get('/*', serveStaticSite);
-  app.head('/*', serveStaticSite);
 }
 
-async function serveStaticSite(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+async function serveStaticSite(request: FastifyRequest, reply: FastifyReply) {
   const pathname = getPathname(request.url);
-  const filePath = await resolvePublicFile(pathname);
+  const resolved = await resolvePublicFile(pathname);
 
-  if (!filePath) {
-    reply.status(404).send({ error: 'Not found' });
-    return;
+  if (!resolved) {
+    return reply.status(404).send({ error: 'Not found' });
   }
 
+  const { filePath, statusCode } = resolved;
   const stat = await fs.promises.stat(filePath);
   const extension = path.extname(filePath).toLowerCase();
   const contentType = contentTypes[extension] ?? 'application/octet-stream';
 
   reply
+    .status(statusCode)
     .type(contentType)
     .header('Content-Length', stat.size)
     .header('Cache-Control', cacheControlFor(pathname, extension));
 
   if (request.method === 'HEAD') {
-    reply.send();
-    return;
+    return reply.send();
   }
 
-  await pipeline(fs.createReadStream(filePath), reply.raw);
+  return reply.send(fs.createReadStream(filePath));
 }
 
-async function resolvePublicFile(pathname: string): Promise<string | null> {
+async function resolvePublicFile(pathname: string): Promise<{ filePath: string; statusCode: number } | null> {
   if (pathname.startsWith(`${config.cms.publicUploadBase}/`)) {
     const uploadPath = pathname.slice(config.cms.publicUploadBase.length + 1);
-    return findContainedFile(config.cms.uploadDir, uploadPath);
+    const filePath = await findContainedFile(config.cms.uploadDir, uploadPath);
+    return filePath ? { filePath, statusCode: 200 } : null;
   }
 
   const relativePath = pathname === '/' ? 'index.html' : pathname.slice(1);
@@ -69,10 +68,11 @@ async function resolvePublicFile(pathname: string): Promise<string | null> {
 
   for (const candidate of candidates) {
     const filePath = await findContainedFile(distDir, candidate);
-    if (filePath) return filePath;
+    if (filePath) return { filePath, statusCode: 200 };
   }
 
-  return findContainedFile(distDir, '404.html');
+  const notFoundPath = await findContainedFile(distDir, '404.html');
+  return notFoundPath ? { filePath: notFoundPath, statusCode: 404 } : null;
 }
 
 async function findContainedFile(root: string, relativePath: string): Promise<string | null> {
