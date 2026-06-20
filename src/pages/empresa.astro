@@ -99,21 +99,22 @@ import { company } from '../data/company';
           {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
         </EditableText>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {([1, 2, 3, 4] as const).map((i) => (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {([1, 2, 3, 4, 5] as const).map((i) => (
           <div class="p-6 bg-surface border border-border rounded-lg">
             <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
-              {getCmsText('empresa.instalaciones', `item${i}Value`, ['3.000 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
+              {getCmsText('empresa.instalaciones', `item${i}Value`, ['11.000 m²', '2.000 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
             </EditableText>
             <EditableText as="h3" entry="empresa.instalaciones" field={`item${i}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
-              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Taller industrial', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
+              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Superficie de terreno', 'Taller industrial', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
             </EditableText>
             <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
               {getCmsText('empresa.instalaciones', `item${i}Desc`, [
+                'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
                 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
                 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
                 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.',
-                'Capacidades de 10, 15, 16 y 20 toneladas para maniobras de fabricación y montaje.',
+                '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
               ][i - 1])}
             </EditableText>
           </div>
@@ -139,15 +140,13 @@ import { company } from '../data/company';
             {getCmsText('empresa.maquinaria', 'subtitle', 'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.')}
           </EditableText>
           <ul class="space-y-2.5">
-            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const).map((i) => (
+            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((i) => (
               <li class="flex items-start gap-2.5 text-sm text-text-muted">
                 <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
                 <EditableText entry="empresa.maquinaria" field={`item${i}`}>
                   {getCmsText('empresa.maquinaria', `item${i}`, [
-                    'Soldadura arco sumergido ESAB A2 Automatic LAF1000 (4 unidades)',
-                    'Equipos semiautomáticos ESAB Origo Mig 502c',
+                    'Estaciones de soldadura automática de arco sumergido (4 unidades)',
                     'Fresadora DYE600 de carrera 7 m',
-                    'Fresadora ZAYER de carrera 1,5 m',
                     'Tornos paralelos de 2 m y 6 m',
                     'Torno al aire con volteo 4,5 m',
                     'Cizalla LOIRE 3 m/16 mm',
@@ -176,18 +175,19 @@ import { company } from '../data/company';
             {getCmsText('empresa.mediosdeobra', 'subtitle', 'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.')}
           </EditableText>
           <ul class="space-y-2.5">
-            {([1, 2, 3, 4, 5, 6, 7] as const).map((i) => (
+            {([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
               <li class="flex items-start gap-2.5 text-sm text-text-muted">
                 <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
                 <EditableText entry="empresa.mediosdeobra" field={`item${i}`}>
                   {getCmsText('empresa.mediosdeobra', `item${i}`, [
                     'Grúa autopropulsada 50 Tn',
-                    'Camiones pluma para maniobras en altura',
+                    'Camiones pluma de hasta 9.000 kg de capacidad de levante',
                     'Vehículos Pick-Up 4×4 para acceso a terreno',
                     'Grupos electrógenos de 100 a 200 KVA',
                     'Equipos de arenado y pintura industrial',
                     'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
                     'Plataformas y teleférico para montajes en pendiente',
+                    'Winches de alto tonelaje',
                   ][i - 1])}
                 </EditableText>
               </li>

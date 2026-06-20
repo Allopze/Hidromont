@@ -5,17 +5,16 @@ import { captureException, initErrorTracking } from './utils/errorTracking';
 
 initErrorTracking();
 
-// Advertencia si se usa la contraseña por defecto fuera de localhost
 const DEFAULT_PASSWORD = 'Hidromont-Admin-ChangeMe';
 const isLocalOnly =
   config.cms.host === '127.0.0.1' || config.cms.host === 'localhost' || config.cms.host === '::1';
 
 if (config.admin.password === DEFAULT_PASSWORD && !isLocalOnly) {
   process.stderr.write(
-    '[CMS] ⚠️  ADVERTENCIA: Está usando la contraseña de administrador por defecto (CMS_ADMIN_PASSWORD).\n' +
-      '[CMS]    Esto es inseguro si el servidor es accesible desde la red.\n' +
-      '[CMS]    Defina CMS_ADMIN_PASSWORD con una contraseña segura antes de exponer el CMS en la red.\n'
+    '[CMS] ERROR: No se puede iniciar el CMS expuesto a la red con la contraseña por defecto.\n' +
+      '[CMS] Defina CMS_ADMIN_PASSWORD con una contraseña segura o use CMS_HOST=127.0.0.1.\n'
   );
+  process.exit(1);
 }
 
 const app = fastify({

@@ -1,6 +1,64 @@
 {
-  "updatedAt": "2026-06-09T01:58:22.372Z",
+  "updatedAt": "2026-06-18T21:33:58.378Z",
   "entries": {
+    "calidad.badge": {
+      "title": "Badge ISO calidad",
+      "slug": "/calidad",
+      "fields": {
+        "caption": {
+          "type": "text",
+          "value": "Sistema de gestión de calidad"
+        },
+        "line1": {
+          "type": "text",
+          "value": "ISO"
+        },
+        "line2": {
+          "type": "text",
+          "value": "9001"
+        }
+      }
+    },
+    "calidad.contenido": {
+      "title": "Contenido calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Sistema de gestión"
+        },
+        "p1": {
+          "type": "textarea",
+          "value": "Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica."
+        },
+        "p2": {
+          "type": "textarea",
+          "value": "El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "ISO 9001"
+        }
+      }
+    },
+    "calidad.cta": {
+      "title": "CTA calidad",
+      "slug": "/calidad",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar equipo técnico"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico."
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos que exigen calidad certificada"
+        }
+      }
+    },
     "calidad.hero": {
       "title": "Hero calidad",
       "slug": "/calidad",
@@ -16,6 +74,176 @@
         "title": {
           "type": "text",
           "value": "Calidad y Medioambiente"
+        }
+      }
+    },
+    "calidad.principios": {
+      "title": "Principios calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Principios"
+        },
+        "p1Desc": {
+          "type": "textarea",
+          "value": "Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto."
+        },
+        "p1Title": {
+          "type": "text",
+          "value": "Satisfacción del cliente"
+        },
+        "p2Desc": {
+          "type": "textarea",
+          "value": "Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega."
+        },
+        "p2Title": {
+          "type": "text",
+          "value": "Mejora continua"
+        },
+        "p3Desc": {
+          "type": "textarea",
+          "value": "Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto."
+        },
+        "p3Title": {
+          "type": "text",
+          "value": "Cumplimiento normativo"
+        },
+        "p4Desc": {
+          "type": "textarea",
+          "value": "El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios."
+        },
+        "p4Title": {
+          "type": "text",
+          "value": "Planificación y organización"
+        },
+        "title": {
+          "type": "text",
+          "value": "Nuestros compromisos de calidad"
+        }
+      }
+    },
+    "clientes.cta": {
+      "title": "CTA clientes",
+      "slug": "/clientes",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Ponerse en contacto"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura."
+        },
+        "title": {
+          "type": "text",
+          "value": "Empresas que trabajan con infraestructura hidráulica e hidroeléctrica"
+        }
+      }
+    },
+    "clientes.hero": {
+      "title": "Hero clientes",
+      "slug": "/clientes",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Referencias"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos."
+        },
+        "title": {
+          "type": "text",
+          "value": "Clientes"
+        }
+      }
+    },
+    "clientes.logos": {
+      "title": "Logos de clientes",
+      "slug": "clientes/logos",
+      "fields": {
+        "logo-acciona": {
+          "type": "image",
+          "value": "/logos-clientes/acciona.png"
+        },
+        "logo-besalco": {
+          "type": "image",
+          "value": "/logos-clientes/besalco.png"
+        },
+        "logo-colbun": {
+          "type": "image",
+          "value": "/logos-clientes/colbun.png"
+        },
+        "logo-conpax": {
+          "type": "image",
+          "value": "/logos-clientes/conpax.png"
+        },
+        "logo-edp": {
+          "type": "image",
+          "value": "/logos-clientes/edp-hc-energia.png"
+        },
+        "logo-elecnor": {
+          "type": "image",
+          "value": "/logos-clientes/elecnor.png"
+        },
+        "logo-electrica-puntilla": {
+          "type": "image",
+          "value": "/logos-clientes/electrica-puntilla.png"
+        },
+        "logo-fcc": {
+          "type": "image",
+          "value": "/logos-clientes/fcc.png"
+        },
+        "logo-ferrovial": {
+          "type": "image",
+          "value": "/logos-clientes/ferrovial.png"
+        },
+        "logo-gas-natural-fenosa": {
+          "type": "image",
+          "value": "/logos-clientes/gas-natural-fenosa.png"
+        },
+        "logo-gpe": {
+          "type": "image",
+          "value": "/logos-clientes/gpe.png"
+        },
+        "logo-iberdrola": {
+          "type": "image",
+          "value": "/logos-clientes/iberdrola.png"
+        },
+        "logo-naturener": {
+          "type": "image",
+          "value": "/logos-clientes/naturener.png"
+        },
+        "logo-navarro-sic": {
+          "type": "image",
+          "value": "/logos-clientes/navarro-sic.png"
+        },
+        "logo-norvento": {
+          "type": "image",
+          "value": "/logos-clientes/norvento.png"
+        },
+        "logo-pacific-hydro": {
+          "type": "image",
+          "value": "/logos-clientes/pacific-hydro.png"
+        },
+        "logo-plenium-partners": {
+          "type": "image",
+          "value": "/logos-clientes/plenium-partners.png"
+        },
+        "logo-viesgo": {
+          "type": "image",
+          "value": "/logos-clientes/viesgo.png"
+        }
+      }
+    },
+    "clientes.sectores": {
+      "title": "Sectores clientes",
+      "slug": "/clientes",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Sectores"
         }
       }
     },
@@ -251,6 +479,24 @@
         }
       }
     },
+    "empresa.cta": {
+      "title": "CTA empresa",
+      "slug": "/empresa",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar equipo técnico"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío."
+        },
+        "title": {
+          "type": "text",
+          "value": "¿Quiere conocer nuestras capacidades?"
+        }
+      }
+    },
     "empresa.hero": {
       "title": "Hero empresa",
       "slug": "/empresa",
@@ -274,6 +520,276 @@
         "title": {
           "type": "text",
           "value": "Empresa"
+        }
+      }
+    },
+    "empresa.historia": {
+      "title": "Historia empresa",
+      "slug": "/empresa",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Historia"
+        },
+        "p1": {
+          "type": "textarea",
+          "value": "Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
+        },
+        "p2": {
+          "type": "textarea",
+          "value": "La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra."
+        },
+        "p3": {
+          "type": "textarea",
+          "value": "Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico."
+        },
+        "title": {
+          "type": "text",
+          "value": "Más de 40 años en infraestructura hidráulica"
+        }
+      }
+    },
+    "empresa.instalaciones": {
+      "title": "Instalaciones empresa",
+      "slug": "/empresa",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Infraestructura"
+        },
+        "item1Desc": {
+          "type": "textarea",
+          "value": "Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras."
+        },
+        "item1Title": {
+          "type": "text",
+          "value": "Superficie de terreno"
+        },
+        "item1Value": {
+          "type": "text",
+          "value": "11.000 m²"
+        },
+        "item2Desc": {
+          "type": "textarea",
+          "value": "Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes."
+        },
+        "item2Title": {
+          "type": "text",
+          "value": "Taller industrial"
+        },
+        "item2Value": {
+          "type": "text",
+          "value": "2.000 m²"
+        },
+        "item3Desc": {
+          "type": "textarea",
+          "value": "Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad."
+        },
+        "item3Title": {
+          "type": "text",
+          "value": "Oficinas e ingeniería"
+        },
+        "item3Value": {
+          "type": "text",
+          "value": "320 m²"
+        },
+        "item4Desc": {
+          "type": "textarea",
+          "value": "Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa."
+        },
+        "item4Title": {
+          "type": "text",
+          "value": "Cilindradora hidráulica"
+        },
+        "item4Value": {
+          "type": "text",
+          "value": "65 mm"
+        },
+        "item5Desc": {
+          "type": "textarea",
+          "value": "5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje."
+        },
+        "item5Title": {
+          "type": "text",
+          "value": "Puentes grúa"
+        },
+        "item5Value": {
+          "type": "text",
+          "value": "5 unidades"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión."
+        },
+        "title": {
+          "type": "text",
+          "value": "Instalaciones y medios productivos"
+        }
+      }
+    },
+    "empresa.maquinaria": {
+      "title": "Maquinaria empresa",
+      "slug": "/empresa",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Equipamiento"
+        },
+        "item1": {
+          "type": "text",
+          "value": "Estaciones de soldadura automática de arco sumergido (4 unidades)"
+        },
+        "item10": {
+          "type": "text",
+          "value": "Grupos electrógenos de 100 a 200 KVA"
+        },
+        "item2": {
+          "type": "text",
+          "value": "Fresadora DYE600 de carrera 7 m"
+        },
+        "item3": {
+          "type": "text",
+          "value": "Tornos paralelos de 2 m y 6 m"
+        },
+        "item4": {
+          "type": "text",
+          "value": "Torno al aire con volteo 4,5 m"
+        },
+        "item5": {
+          "type": "text",
+          "value": "Cizalla LOIRE 3 m/16 mm"
+        },
+        "item6": {
+          "type": "text",
+          "value": "Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm"
+        },
+        "item7": {
+          "type": "text",
+          "value": "Plegadora MEBUSA 200 Tn × 3 m"
+        },
+        "item8": {
+          "type": "text",
+          "value": "Oxicorte hasta 100 mm"
+        },
+        "item9": {
+          "type": "text",
+          "value": "Grúa autopropulsada 50 Tn"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión."
+        },
+        "title": {
+          "type": "text",
+          "value": "Maquinaria especializada"
+        }
+      }
+    },
+    "empresa.mediosdeobra": {
+      "title": "Medios de obra empresa",
+      "slug": "/empresa",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Capacidad de montaje"
+        },
+        "item1": {
+          "type": "text",
+          "value": "Grúa autopropulsada 50 Tn"
+        },
+        "item2": {
+          "type": "text",
+          "value": "Camiones pluma de hasta 9.000 kg de capacidad de levante"
+        },
+        "item3": {
+          "type": "text",
+          "value": "Vehículos Pick-Up 4×4 para acceso a terreno"
+        },
+        "item4": {
+          "type": "text",
+          "value": "Grupos electrógenos de 100 a 200 KVA"
+        },
+        "item5": {
+          "type": "text",
+          "value": "Equipos de arenado y pintura industrial"
+        },
+        "item6": {
+          "type": "text",
+          "value": "Bastidores y equipos de armado para tuberías de mediano y gran diámetro"
+        },
+        "item7": {
+          "type": "text",
+          "value": "Plataformas y teleférico para montajes en pendiente"
+        },
+        "item8": {
+          "type": "text",
+          "value": "Winches de alto tonelaje"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte."
+        },
+        "title": {
+          "type": "text",
+          "value": "Medios de obra"
+        }
+      }
+    },
+    "empresa.metricas": {
+      "title": "Métricas empresa",
+      "slug": "/empresa",
+      "fields": {
+        "card1Desc": {
+          "type": "text",
+          "value": "Origen español"
+        },
+        "card1Label": {
+          "type": "text",
+          "value": "Fundación"
+        },
+        "card1Value": {
+          "type": "text",
+          "value": "1983"
+        },
+        "card2Desc": {
+          "type": "text",
+          "value": "Los Ángeles, Biobío"
+        },
+        "card2Label": {
+          "type": "text",
+          "value": "Chile desde"
+        },
+        "card2Value": {
+          "type": "text",
+          "value": "1997"
+        },
+        "card3Desc": {
+          "type": "text",
+          "value": "Llave en mano"
+        },
+        "card3Label": {
+          "type": "text",
+          "value": "Modalidad"
+        },
+        "card3Value": {
+          "type": "text",
+          "value": "EPC"
+        },
+        "card4Desc": {
+          "type": "text",
+          "value": "Sistema de gestión"
+        },
+        "card4Label": {
+          "type": "text",
+          "value": "Calidad"
+        },
+        "card4Value": {
+          "type": "text",
+          "value": "ISO 9001"
+        },
+        "ubicacionTitle": {
+          "type": "text",
+          "value": "Ubicación"
         }
       }
     },
@@ -509,6 +1025,216 @@
         }
       }
     },
+    "project-gallery.ch-besaya": {
+      "title": "Galería proyecto ch-besaya",
+      "slug": "project-gallery/ch-besaya",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.ch-dorias": {
+      "title": "Galería proyecto ch-dorias",
+      "slug": "project-gallery/ch-dorias",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.ch-los-condores": {
+      "title": "Galería proyecto ch-los-condores",
+      "slug": "project-gallery/ch-los-condores",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.ch-queltehues": {
+      "title": "Galería proyecto ch-queltehues",
+      "slug": "project-gallery/ch-queltehues",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.ch-rio-frio": {
+      "title": "Galería proyecto ch-rio-frio",
+      "slug": "project-gallery/ch-rio-frio",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.embalse-chacrillas": {
+      "title": "Galería proyecto embalse-chacrillas",
+      "slug": "project-gallery/embalse-chacrillas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "project-gallery.embalse-chironta": {
+      "title": "Galería proyecto embalse-chironta",
+      "slug": "project-gallery/embalse-chironta",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
     "project-image.ch-besaya": {
       "title": "Imagen proyecto C.H. Besaya",
       "slug": "project-image/ch-besaya",
@@ -663,6 +1389,56 @@
         }
       }
     },
+    "proyectos.index.banco": {
+      "title": "Banco proyectos",
+      "slug": "/proyectos",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Banco de proyectos"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Registro de proyectos ejecutados clasificados por línea de servicio."
+        },
+        "title": {
+          "type": "text",
+          "value": "Experiencia comprobada en embalses, presas y centrales"
+        }
+      }
+    },
+    "proyectos.index.cta": {
+      "title": "CTA proyectos",
+      "slug": "/proyectos",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Ponerse en contacto"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra."
+        },
+        "title": {
+          "type": "text",
+          "value": "Más de 40 años de proyectos en Chile y el exterior"
+        }
+      }
+    },
+    "proyectos.index.destacados": {
+      "title": "Destacados proyectos",
+      "slug": "/proyectos",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": ""
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos de referencia"
+        }
+      }
+    },
     "proyectos.index.hero": {
       "title": "Hero proyectos",
       "slug": "/proyectos",
@@ -686,6 +1462,186 @@
         "title": {
           "type": "text",
           "value": "Proyectos"
+        }
+      }
+    },
+    "service-gallery.compuertas": {
+      "title": "Galería servicio compuertas",
+      "slug": "service-gallery/compuertas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.limpiarrejas": {
+      "title": "Galería servicio limpiarrejas",
+      "slug": "service-gallery/limpiarrejas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.otros-montajes": {
+      "title": "Galería servicio otros-montajes",
+      "slug": "service-gallery/otros-montajes",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.tuberias-forzadas": {
+      "title": "Galería servicio tuberias-forzadas",
+      "slug": "service-gallery/tuberias-forzadas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.turbinas": {
+      "title": "Galería servicio turbinas",
+      "slug": "service-gallery/turbinas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "service-gallery.valvulas": {
+      "title": "Galería servicio valvulas",
+      "slug": "service-gallery/valvulas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery2": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": ""
+        },
+        "gallery3": {
+          "type": "image",
+          "value": ""
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -821,6 +1777,24 @@
         }
       }
     },
+    "servicios.index.cta": {
+      "title": "CTA servicios",
+      "slug": "/servicios",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Ponerse en contacto"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont."
+        },
+        "title": {
+          "type": "text",
+          "value": "¿Necesita un servicio específico?"
+        }
+      }
+    },
     "servicios.index.hero": {
       "title": "Hero servicios",
       "slug": "/servicios",
@@ -844,6 +1818,72 @@
         "title": {
           "type": "text",
           "value": "Soluciones hidromecánicas llave en mano"
+        }
+      }
+    },
+    "servicios.index.metodologia": {
+      "title": "Metodología servicios",
+      "slug": "/servicios",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Metodología"
+        },
+        "item1Desc": {
+          "type": "textarea",
+          "value": "Desmontaje controlado de equipos para reparación o sustitución."
+        },
+        "item1Title": {
+          "type": "text",
+          "value": "Desmontajes"
+        },
+        "item2Desc": {
+          "type": "textarea",
+          "value": "Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado."
+        },
+        "item2Title": {
+          "type": "text",
+          "value": "Fabricación"
+        },
+        "item3Desc": {
+          "type": "textarea",
+          "value": "Limpieza, tratamiento superficial, juntas y sistemas de accionamiento."
+        },
+        "item3Title": {
+          "type": "text",
+          "value": "Reparaciones"
+        },
+        "item4Desc": {
+          "type": "textarea",
+          "value": "Recuperación de rodetes por cavitación, alineaciones y mecanizados."
+        },
+        "item4Title": {
+          "type": "text",
+          "value": "Rehabilitación de turbinas"
+        },
+        "item5Desc": {
+          "type": "textarea",
+          "value": "Procedimientos específicos con análisis de medios y tiempos."
+        },
+        "item5Title": {
+          "type": "text",
+          "value": "Montajes"
+        },
+        "item6Desc": {
+          "type": "textarea",
+          "value": "Diseño, fabricación y montaje de obturaciones especiales."
+        },
+        "item6Title": {
+          "type": "text",
+          "value": "Obturaciones"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto."
+        },
+        "title": {
+          "type": "text",
+          "value": "Actividades transversales"
         }
       }
     },

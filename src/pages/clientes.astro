@@ -46,9 +46,6 @@ const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as str
             {getCmsText('clientes.sectores', 'eyebrow', 'Sectores')}
           </EditableText>
         </Eyebrow>
-        <EditableText as="h2" entry="clientes.sectores" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('clientes.sectores', 'title', 'Referencias por sector')}
-        </EditableText>
       </div>
 
       {sectores.map((sector) => {

@@ -1,7 +1,15 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+// Cargar variables de entorno desde el archivo .env si existe
+const envPath = path.join(rootDir, '.env');
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envPath);
+}
+
 
 function intFromEnv(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -22,7 +30,7 @@ function csvFromEnv(name: string, fallback: string[]): string[] {
 export const config = {
   rootDir,
   cms: {
-    host: process.env.CMS_HOST ?? '0.0.0.0',
+    host: process.env.CMS_HOST ?? '127.0.0.1',
     port: intFromEnv('CMS_PORT', 8787),
     databasePath: process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
     allowedOrigins: csvFromEnv('CMS_ALLOWED_ORIGINS', [

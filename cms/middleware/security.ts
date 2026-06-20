@@ -14,11 +14,7 @@ declare module 'fastify' {
 export function registerCors(app: FastifyInstance): void {
   app.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
-    const isAllowed =
-      !origin ||
-      config.cms.allowedOrigins.includes(origin) ||
-      /^http:\/\/(localhost|127\.0\.0\.1|\[::1\]):\d+$/.test(origin) ||
-      /^http:\/\/(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(origin);
+    const isAllowed = !origin || config.cms.allowedOrigins.includes(origin);
 
     if (origin && isAllowed) {
       reply.header('Access-Control-Allow-Origin', origin);
