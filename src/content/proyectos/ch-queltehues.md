@@ -10,7 +10,7 @@ longitud: "550 m"
 orden: 3
 ---
 
-La rehabilitación de C.H. Queltehues implicó la renovación completa de la tubería forzada de la central, incluyendo el desmontaje de la instalación existente y la reconstrucción de los apoyos y machones de hormigón.
+El proyecto de C.H. Queltehues implicó la renovación completa de la tubería forzada de la central, incluyendo el desmontaje de la instalación existente y la reconstrucción de los apoyos y machones de hormigón.
 
 ## Alcance del proyecto
 

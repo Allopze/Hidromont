@@ -29,6 +29,7 @@ const clientesEntry = await getEntry('clientes', 'clientes');
 const instalaciones = [
   { title: 'Superficie total', description: '11.000 m² de terreno para almacenamiento, maniobras y logística', value: '11.000 m²' },
   { title: 'Taller industrial', description: '2.000 m² equipado para fabricación de equipos de gran dimensión', value: '2.000 m²' },
+  { title: 'Taller de pintura', description: '400 m² para preparación de superficies y aplicación de esquemas de pintura industrial', value: '400 m²' },
   { title: 'Oficinas e ingeniería', description: '320 m² con equipo técnico especializado en proyectos hidromecánicos', value: '320 m²' },
   { title: 'Capacidad de izaje', description: '5 puentes grúa de 10 a 20 toneladas para maniobras de gran peso', value: '5 grúas' },
 ];
@@ -36,22 +37,22 @@ const instalaciones = [
 const propuestaValor = [
   {
     title: 'Especialización sectorial',
-    description: 'Empresa enfocada exclusivamente en soluciones hidromecánicas e hidroeléctricas.',
+    description: 'Empresa enfocada en el ámbito hidromecánico e hidroeléctrico.',
   },
   {
-    title: 'Llave en mano',
-    description: 'Diseño, ingeniería, fabricación, suministro, montaje, mantenimiento y rehabilitación.',
+    title: 'Servicio integral',
+    description: 'Diseño, ingeniería, fabricación, suministro, montaje y mantenimiento.',
   },
   {
     title: 'Experiencia internacional',
-    description: 'Proyectos ejecutados en Chile, España, Honduras, Costa Rica y otros países.',
+    description: 'Proyectos ejecutados en Chile, España, Honduras y Costa Rica.',
   },
 ];
 ---
 
 <PageLayout
   title="Ingeniería y Montaje de Equipos Hidromecánicos"
-  description="Hidromont Chile S.A. — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983."
+  description="Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983."
   headerOverlay={true}
 >
   <!-- Hero -->
@@ -70,10 +71,10 @@ const propuestaValor = [
       <div class="text-center mb-12">
         <Eyebrow><EditableText entry="home.services" field="eyebrow">Servicios</EditableText></Eyebrow>
         <EditableText as="h2" entry="home.services" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-          {getCmsText('home.services', 'title', 'Soluciones hidromecánicas llave en mano')}
+          {getCmsText('home.services', 'title', 'Soluciones hidromecánicas integrales')}
         </EditableText>
         <EditableText as="p" entry="home.services" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-lead);">
-          {getCmsText('home.services', 'subtitle', 'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.')}
+          {getCmsText('home.services', 'subtitle', 'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje y mantenimiento.')}
         </EditableText>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
@@ -130,10 +131,10 @@ const propuestaValor = [
     </Container>
     <CapabilitiesBlock
       eyebrow={getCmsText('home.installations', 'eyebrow', 'Instalaciones y medios productivos')}
-      title={getCmsText('home.installations', 'title', 'Taller propio en Los Ángeles, Biobío')}
+      title={getCmsText('home.installations', 'title', 'Instalaciones en Los Ángeles, Biobío')}
       subtitle={getCmsText('home.installations', 'subtitle', 'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.')}
       items={instalaciones}
-      columns={4}
+      columns={5}
       light
       cmsEntry="home.installations"
     />
@@ -184,7 +185,7 @@ const propuestaValor = [
     cmsEntry="home.cta"
     title={getCmsText('home.cta', 'title', '¿Quiere saber más sobre nuestra empresa?')}
     subtitle={getCmsText('home.cta', 'subtitle', 'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.')}
-    primary={{ label: getCmsText('home.cta', 'primaryLabel', 'Ponerse en contacto'), href: '/contacto' }}
+    primary={{ label: getCmsText('home.cta', 'primaryLabel', 'Contacto'), href: '/contacto' }}
     secondary={{ label: getCmsText('home.cta', 'secondaryLabel', 'Conocer la empresa'), href: '/empresa' }}
   />
 </PageLayout>

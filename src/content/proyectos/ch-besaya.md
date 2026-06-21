@@ -8,7 +8,7 @@ ubicacion: "España"
 orden: 5
 ---
 
-C.H. Besaya fue un proyecto de rehabilitación en España que requirió el uso de teleférico para el transporte de la tubería hacia el emplazamiento de montaje, una condición especial que exigió planificación y logística precisas.
+C.H. Besaya fue un proyecto de renovación y montaje en España que requirió el uso de teleférico para el transporte de la tubería hacia el emplazamiento de montaje, una condición especial que exigió planificación y logística precisas.
 
 ## Alcance del proyecto
 

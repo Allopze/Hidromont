@@ -45,7 +45,7 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
   },
   'tanques-especiales': {
     src: '/fotos/curadas/fabricacion-tuberias-taller.webp',
-    alt: 'Fabricación y cilindrado de estanques y recipientes especiales en taller',
+    alt: 'Fabricación y cilindrado de tanques y recipientes especiales en taller',
     width: 1200,
     height: 800,
   },

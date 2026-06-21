@@ -12,19 +12,12 @@
     { "nombre": "Eléctrica Puntilla",  "sector": "electrica",    "logo": "/logos-clientes/electrica-puntilla.png" },
     { "nombre": "Engie",               "sector": "electrica" },
     { "nombre": "Endesa",              "sector": "electrica" },
-    { "nombre": "FCC",                 "sector": "construccion", "logo": "/logos-clientes/fcc.png" },
     { "nombre": "Ferrovial",           "sector": "construccion", "logo": "/logos-clientes/ferrovial.png" },
-    { "nombre": "Gas Natural Fenosa",  "sector": "electrica",    "logo": "/logos-clientes/gas-natural-fenosa.png" },
     { "nombre": "GPE",                 "sector": "electrica",    "logo": "/logos-clientes/gpe.png" },
     { "nombre": "Iberdrola",           "sector": "electrica",    "logo": "/logos-clientes/iberdrola.png" },
     { "nombre": "M.O.P. / D.O.H.",    "sector": "publica" },
     { "nombre": "Mainco",              "sector": "construccion" },
-    { "nombre": "NaturEner",           "sector": "electrica",    "logo": "/logos-clientes/naturener.png" },
-    { "nombre": "Navarro SiC",         "sector": "construccion", "logo": "/logos-clientes/navarro-sic.png" },
-    { "nombre": "Norvento",            "sector": "electrica",    "logo": "/logos-clientes/norvento.png" },
     { "nombre": "OHL",                 "sector": "construccion" },
-    { "nombre": "Pacific Hydro",       "sector": "electrica",    "logo": "/logos-clientes/pacific-hydro.png" },
-    { "nombre": "Plenium Partners",    "sector": "electrica",    "logo": "/logos-clientes/plenium-partners.png" },
-    { "nombre": "Viesgo",              "sector": "electrica",    "logo": "/logos-clientes/viesgo.png" }
+    { "nombre": "Pacific Hydro",       "sector": "electrica",    "logo": "/logos-clientes/pacific-hydro.png" }
   ]
 }

@@ -15,7 +15,7 @@ interface Props {
   title: string;
   subtitle?: string;
   items: Capability[];
-  columns?: 3 | 4;
+  columns?: 3 | 4 | 5;
   light?: boolean;
   cmsEntry?: string;
 }
@@ -83,7 +83,7 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
 
   {hasValues ? (
     /* Metric items: horizontal rule-divided list — no card boxes */
-    <div class={`grid grid-cols-1 sm:grid-cols-2 ${columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-0`}>
+    <div class={`grid grid-cols-1 sm:grid-cols-2 ${columns === 5 ? 'lg:grid-cols-5' : (columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')} gap-0`}>
       {items.map((item, i) => (
         <div
           class={`py-6 pr-6 ${i > 0 ? (light ? 'border-t sm:border-t-0 sm:border-l border-white/10' : 'border-t sm:border-t-0 sm:border-l border-border') : ''}`}

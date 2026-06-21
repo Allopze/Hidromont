@@ -20,7 +20,7 @@ export async function getStaticPaths() {
 }
 
 const { proyecto } = Astro.props;
-const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas } = proyecto.data;
+const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } = proyecto.data;
 const { Content } = await proyecto.render();
 const projectImageEntry = `project-image.${proyecto.slug}`;
 const heroImg = projectImages[proyecto.slug];
@@ -82,7 +82,7 @@ const jsonLd = {
 
         <!-- Sidebar con datos técnicos -->
         <aside class="space-y-5">
-          {(diametro || longitud || ubicacion) && (
+          {(diametro || longitud || ubicacion || peso || acero) && (
             <div class="p-5 border border-border rounded-lg bg-background-alt">
               <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4">Datos técnicos</h3>
               <dl class="space-y-3">
@@ -96,6 +96,18 @@ const jsonLd = {
                   <div>
                     <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
                     <dd class="font-mono font-semibold text-text">{longitud}</dd>
+                  </div>
+                )}
+                {acero && (
+                  <div>
+                    <dt class="text-xs text-text-muted uppercase tracking-wide">Acero</dt>
+                    <dd class="font-semibold text-text">{acero}</dd>
+                  </div>
+                )}
+                {peso && (
+                  <div>
+                    <dt class="text-xs text-text-muted uppercase tracking-wide">Peso</dt>
+                    <dd class="font-mono font-semibold text-text">{peso}</dd>
                   </div>
                 )}
                 {ubicacion && (

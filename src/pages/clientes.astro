@@ -14,17 +14,6 @@ import { getClienteLogoByNombre } from '../data/cliente-logos';
 const clientesEntry = await getEntry('clientes', 'clientes');
 const lista = clientesEntry.data.items;
 
-const sectorLabels: Record<string, string> = {
-  electrica: 'Eléctrica / Hidroeléctrica',
-  construccion: 'Construcción e Ingeniería',
-  minera: 'Minería',
-  sanitaria: 'Sanitaria',
-  publica: 'Sector Público',
-  industrial: 'Industrial',
-};
-
-const sectores = [...new Set(lista.map((c) => c.sector).filter(Boolean))] as string[];
-
 // Logos únicos para el hero marquee (mismos que se usan en el cuerpo)
 const heroLogos = [...new Set(
   lista.map((c) => getClienteLogoByNombre(c.nombre)).filter(Boolean)
@@ -40,7 +29,7 @@ for (const c of lista) {
 
 <PageLayout
   title="Clientes"
-  description="Referencias de Hidromont Chile S.A. — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
+  description="Referencias de Hidromont Chile — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
 >
   <ClientesHero
     title={getCmsText('clientes.hero', 'title', 'Clientes')}
@@ -56,60 +45,34 @@ for (const c of lista) {
       <div class="text-center mb-12">
         <Eyebrow>
           <EditableText entry="clientes.sectores" field="eyebrow">
-            {getCmsText('clientes.sectores', 'eyebrow', 'Sectores')}
+            {getCmsText('clientes.sectores', 'eyebrow', 'Referencias')}
           </EditableText>
         </Eyebrow>
       </div>
 
-      {sectores.map((sector) => {
-        const clientesSector = lista.filter((c) => c.sector === sector);
-        return (
-          <div class="mb-10">
-            <h3 class="font-heading font-semibold text-primary-dark mb-4 pb-2 border-b border-border" style="font-size: var(--font-size-h3);">
-              {sectorLabels[sector] ?? sector}
-            </h3>
-            <div class="flex flex-wrap items-center gap-4">
-              {clientesSector.map((c) => {
-                const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
-                const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                return logoSrc ? (
-                  <div class="flex items-center justify-center h-12 px-4 py-2 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
-                    <EditableImage
-                      entry="clientes.logos"
-                      field={`logo-${logoKey}`}
-                      src={logoSrc}
-                      alt={c.nombre}
-                      height={40}
-                      class="h-8 w-auto object-contain"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
-                    {c.nombre}
-                  </span>
-                );
-              })}
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        {lista.map((c) => {
+          const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
+          const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          return logoSrc ? (
+            <div class="flex items-center justify-center h-12 px-4 py-2 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
+              <EditableImage
+                entry="clientes.logos"
+                field={`logo-${logoKey}`}
+                src={logoSrc}
+                alt={c.nombre}
+                height={40}
+                class="h-8 w-auto object-contain"
+                loading="lazy"
+              />
             </div>
-          </div>
-        );
-      })}
-
-      <!-- Sin sector -->
-      {lista.filter(c => !c.sector).length > 0 && (
-        <div class="mb-10">
-          <h3 class="font-heading font-semibold text-primary-dark mb-4 pb-2 border-b border-border" style="font-size: var(--font-size-h3);">
-            Otros clientes
-          </h3>
-          <div class="flex flex-wrap gap-3">
-            {lista.filter(c => !c.sector).map((c) => (
-              <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text">
-                {c.nombre}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+          ) : (
+            <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
+              {c.nombre}
+            </span>
+          );
+        })}
+      </div>
     </Container>
   </Section>
 
@@ -117,6 +80,6 @@ for (const c of lista) {
     cmsEntry="clientes.cta"
     title={getCmsText('clientes.cta', 'title', 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica')}
     subtitle={getCmsText('clientes.cta', 'subtitle', 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.')}
-    primary={{ label: getCmsText('clientes.cta', 'buttonLabel', 'Ponerse en contacto'), href: '/contacto' }}
+    primary={{ label: getCmsText('clientes.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
   />
 </PageLayout>

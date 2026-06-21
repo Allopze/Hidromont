@@ -16,10 +16,10 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
 
 <PageLayout
   title="Servicios"
-  description="Servicios hidromecánicos de Hidromont Chile S.A.: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos llave en mano."
+  description="Servicios hidromecánicos de Hidromont Chile: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC."
 >
   <PageHero
-    title={getCmsText('servicios.index.hero', 'title', 'Soluciones hidromecánicas llave en mano')}
+    title={getCmsText('servicios.index.hero', 'title', 'Soluciones hidromecánicas integrales')}
     subtitle={getCmsText('servicios.index.hero', 'subtitle', 'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.')}
     imageSrc={getCmsText('servicios.index.hero', 'image', '/fotos/curadas/otros-montajes.jpg')}
     imageAlt={getCmsText('servicios.index.hero', 'imageAlt', 'Fabricación de grandes equipos hidromecánicos en taller')}
@@ -67,7 +67,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
                   'Desmontajes',
                   'Fabricación',
                   'Reparaciones',
-                  'Rehabilitación de turbinas',
+                  'Mantenimiento de turbinas',
                   'Montajes',
                   'Obturaciones',
                 ][i - 1])}
@@ -93,6 +93,6 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
     cmsEntry="servicios.index.cta"
     title={getCmsText('servicios.index.cta', 'title', '¿Necesita un servicio específico?')}
     subtitle={getCmsText('servicios.index.cta', 'subtitle', 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.')}
-    primary={{ label: getCmsText('servicios.index.cta', 'buttonLabel', 'Ponerse en contacto'), href: '/contacto' }}
+    primary={{ label: getCmsText('servicios.index.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
   />
 </PageLayout>

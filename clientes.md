@@ -1,57 +1,33 @@
-# Clientes de Hidromont Chile S.A.
+# Clientes de Hidromont Chile
 
 Listado completo de clientes que aparecen en la página web, según `src/content/clientes/clientes.json`.
 
 ---
 
-## Eléctrica / Hidroeléctrica
+## Listado de Referencias
 
 | Cliente | Logo |
 |---------|------|
+| Acciona | ✅ |
 | AES Andes | — |
+| Arauco | — |
+| Besalco | ✅ |
 | Colbún | ✅ |
+| Conpax | ✅ |
 | EDP | ✅ |
 | HC Energía | — |
 | Elecnor | ✅ |
 | Eléctrica Puntilla | ✅ |
 | Engie | — |
 | Endesa | — |
-| Gas Natural Fenosa | ✅ |
+| Ferrovial | ✅ |
 | GPE | ✅ |
 | Iberdrola | ✅ |
-| NaturEner | ✅ |
-| Norvento | ✅ |
-| Pacific Hydro | ✅ |
-| Plenium Partners | ✅ |
-| Viesgo | ✅ |
-
-## Construcción e Ingeniería
-
-| Cliente | Logo |
-|---------|------|
-| Acciona | ✅ |
-| Besalco | ✅ |
-| Besalco - Dragados | — |
-| Besalco - Ferrovial | — |
-| Conpax | ✅ |
-| FCC | ✅ |
-| Ferrovial | ✅ |
-| Mainco | — |
-| Navarro SiC | ✅ |
-| OHL | — |
-
-## Industrial
-
-| Cliente | Logo |
-|---------|------|
-| Arauco | — |
-
-## Sector Público
-
-| Cliente | Logo |
-|---------|------|
 | M.O.P. / D.O.H. | — |
+| Mainco | — |
+| OHL | — |
+| Pacific Hydro | ✅ |
 
 ---
 
-**Total: 28 clientes** · 18 con logo · 10 solo texto
+**Total: 19 clientes** · 11 con logo · 8 solo texto

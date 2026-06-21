@@ -129,7 +129,7 @@
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Ponerse en contacto"
+          "value": "Contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -191,17 +191,9 @@
           "type": "image",
           "value": "/logos-clientes/electrica-puntilla.png"
         },
-        "logo-fcc": {
-          "type": "image",
-          "value": "/logos-clientes/fcc.png"
-        },
         "logo-ferrovial": {
           "type": "image",
           "value": "/logos-clientes/ferrovial.png"
-        },
-        "logo-gas-natural-fenosa": {
-          "type": "image",
-          "value": "/logos-clientes/gas-natural-fenosa.png"
         },
         "logo-gpe": {
           "type": "image",
@@ -211,39 +203,19 @@
           "type": "image",
           "value": "/logos-clientes/iberdrola.png"
         },
-        "logo-naturener": {
-          "type": "image",
-          "value": "/logos-clientes/naturener.png"
-        },
-        "logo-navarro-sic": {
-          "type": "image",
-          "value": "/logos-clientes/navarro-sic.png"
-        },
-        "logo-norvento": {
-          "type": "image",
-          "value": "/logos-clientes/norvento.png"
-        },
         "logo-pacific-hydro": {
           "type": "image",
           "value": "/logos-clientes/pacific-hydro.png"
-        },
-        "logo-plenium-partners": {
-          "type": "image",
-          "value": "/logos-clientes/plenium-partners.png"
-        },
-        "logo-viesgo": {
-          "type": "image",
-          "value": "/logos-clientes/viesgo.png"
         }
       }
     },
     "clientes.sectores": {
-      "title": "Sectores clientes",
+      "title": "Referencias clientes",
       "slug": "/clientes",
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Sectores"
+          "value": "Referencias"
         }
       }
     },
@@ -449,7 +421,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
+          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje y mantenimiento de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
         },
         "title": {
           "type": "text",
@@ -515,7 +487,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica."
+          "value": "Trayectoria desde 1983. Especialización en ingeniería hidromecánica."
         },
         "title": {
           "type": "text",
@@ -533,11 +505,11 @@
         },
         "p1": {
           "type": "textarea",
-          "value": "Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
+          "value": "Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
         },
         "p2": {
           "type": "textarea",
-          "value": "La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra."
+          "value": "La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra."
         },
         "p3": {
           "type": "textarea",
@@ -583,37 +555,49 @@
         },
         "item3Desc": {
           "type": "textarea",
-          "value": "Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad."
+          "value": "Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial."
         },
         "item3Title": {
           "type": "text",
-          "value": "Oficinas e ingeniería"
+          "value": "Taller de pintura"
         },
         "item3Value": {
           "type": "text",
-          "value": "320 m²"
+          "value": "400 m²"
         },
         "item4Desc": {
           "type": "textarea",
-          "value": "Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa."
+          "value": "Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad."
         },
         "item4Title": {
           "type": "text",
-          "value": "Cilindradora hidráulica"
+          "value": "Oficinas e ingeniería"
         },
         "item4Value": {
           "type": "text",
-          "value": "65 mm"
+          "value": "320 m²"
         },
         "item5Desc": {
           "type": "textarea",
-          "value": "5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje."
+          "value": "Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa."
         },
         "item5Title": {
           "type": "text",
-          "value": "Puentes grúa"
+          "value": "Cilindradora hidráulica"
         },
         "item5Value": {
+          "type": "text",
+          "value": "65 mm"
+        },
+        "item6Desc": {
+          "type": "textarea",
+          "value": "5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje."
+        },
+        "item6Title": {
+          "type": "text",
+          "value": "Puentes grúa"
+        },
+        "item6Value": {
           "type": "text",
           "value": "5 unidades"
         },
@@ -753,37 +737,25 @@
         },
         "card2Desc": {
           "type": "text",
-          "value": "Los Ángeles, Biobío"
+          "value": "Ingeniería, fabricación y montaje"
         },
         "card2Label": {
           "type": "text",
-          "value": "Chile desde"
+          "value": "Modalidad"
         },
         "card2Value": {
           "type": "text",
-          "value": "1997"
+          "value": "EPC"
         },
         "card3Desc": {
           "type": "text",
-          "value": "Llave en mano"
+          "value": "Sistema de gestión"
         },
         "card3Label": {
           "type": "text",
-          "value": "Modalidad"
-        },
-        "card3Value": {
-          "type": "text",
-          "value": "EPC"
-        },
-        "card4Desc": {
-          "type": "text",
-          "value": "Sistema de gestión"
-        },
-        "card4Label": {
-          "type": "text",
           "value": "Calidad"
         },
-        "card4Value": {
+        "card3Value": {
           "type": "text",
           "value": "ISO 9001"
         },
@@ -821,7 +793,7 @@
         },
         "primaryLabel": {
           "type": "text",
-          "value": "Ponerse en contacto"
+          "value": "Contacto"
         },
         "secondaryLabel": {
           "type": "text",
@@ -885,7 +857,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Taller propio en Los Ángeles, Biobío"
+          "value": "Instalaciones en Los Ángeles, Biobío"
         }
       }
     },
@@ -917,11 +889,11 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno."
+          "value": "Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje y mantenimiento."
         },
         "title": {
           "type": "text",
-          "value": "Soluciones hidromecánicas llave en mano"
+          "value": "Soluciones hidromecánicas integrales"
         }
       }
     },
@@ -931,7 +903,7 @@
       "fields": {
         "brand": {
           "type": "text",
-          "value": "Hidromont Chile S.A."
+          "value": "Hidromont Chile"
         },
         "description": {
           "type": "textarea",
@@ -1021,7 +993,7 @@
         },
         "logoAlt": {
           "type": "text",
-          "value": "Hidromont Chile S.A."
+          "value": "Hidromont Chile"
         },
         "logoAriaLabel": {
           "type": "text",
@@ -1105,7 +1077,7 @@
         },
         "wordmarkSub": {
           "type": "text",
-          "value": "Chile S.A."
+          "value": "Chile"
         }
       }
     },
@@ -1523,7 +1495,7 @@
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Ponerse en contacto"
+          "value": "Contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -1913,7 +1885,7 @@
         },
         "imageAlt": {
           "type": "text",
-          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
+          "value": "Fabricación y cilindrado de tanques y recipientes especiales en taller"
         },
         "imageHeight": {
           "type": "number",
@@ -1997,7 +1969,7 @@
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Ponerse en contacto"
+          "value": "Contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -2031,7 +2003,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Soluciones hidromecánicas llave en mano"
+          "value": "Soluciones hidromecánicas integrales"
         }
       }
     },
@@ -2073,7 +2045,7 @@
         },
         "item4Title": {
           "type": "text",
-          "value": "Rehabilitación de turbinas"
+          "value": "Mantenimiento de turbinas"
         },
         "item5Desc": {
           "type": "textarea",
@@ -2127,7 +2099,7 @@
         },
         "domicilio": {
           "type": "text",
-          "value": "Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513"
+          "value": "Av. Las Industrias N° 10.950"
         },
         "email": {
           "type": "text",
@@ -2143,15 +2115,15 @@
         },
         "modalidad": {
           "type": "text",
-          "value": "Proyectos llave en mano / EPC"
+          "value": "Proyectos EPC"
         },
         "nombre": {
           "type": "text",
-          "value": "Hidromont Chile S.A."
+          "value": "Hidromont Chile"
         },
         "razonSocial": {
           "type": "text",
-          "value": "Hidromont Chile S.A."
+          "value": "Hidromont Chile"
         },
         "sitioWeb": {
           "type": "link",

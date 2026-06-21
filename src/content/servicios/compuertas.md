@@ -18,14 +18,6 @@ aplicaciones:
   - "Cierres de emergencia"
   - "Mantenimiento de equipos principales"
   - "Acceso a túneles de aducción"
-normas:
-  - "P.G.O.H."
-  - "DIN 19704-1"
-  - "DIN 19704-2"
-  - "DIN 19705"
-  - "ASME"
-  - "Criterios USBR"
-  - "Directiva de Máquinas 2006/42/CE"
 procesos:
   - titulo: "Ingeniería"
     descripcion: "Diseño 3D, análisis tensional y comprobación estructural por elementos finitos según las cargas y dimensiones del conducto."

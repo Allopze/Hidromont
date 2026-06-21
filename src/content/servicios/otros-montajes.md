@@ -1,10 +1,10 @@
 ---
 titulo: "Montajes y Fabricaciones Especiales"
-resumen: "Montajes electromecánicos, estanques, estructuras metálicas, vigas principales, canales metálicos, reparaciones de sifones, apoyos de tubería y otras obras vinculadas a infraestructura hidráulica e industrial."
+resumen: "Montajes electromecánicos, calderería pesada, estructuras metálicas, vigas principales, canales metálicos, reparaciones de sifones, apoyos de tubería y otras obras vinculadas a infraestructura hidráulica e industrial."
 icono: "crane"
 tipos:
   - "Montajes electromecánicos"
-  - "Estanques industriales"
+  - "Calderería pesada"
   - "Estructuras metálicas"
   - "Vigas principales y puentes"
   - "Canales metálicos"
@@ -32,6 +32,6 @@ orden: 4
 
 Hidromont complementa sus servicios principales con capacidades de montaje electromecánico general y fabricación de estructuras metálicas para cualquier requerimiento de infraestructura hidráulica e industrial.
 
-## Estanques y estructuras
+## Calderería y estructuras
 
-Hemos fabricado estanques de gran capacidad para la industria de la celulosa, incluyendo estanques DN 11.000 de hasta 145 toneladas y estructuras de soporte para plantas industriales. También ejecutamos reforzamientos estructurales de canales de hormigón y construcción de vigas para puentes sobre canales de descarga.
+Hemos ejecutado proyectos de calderería pesada y estructuras de soporte para plantas industriales y del sector de la celulosa. También ejecutamos reforzamientos estructurales de canales de hormigón y construcción de vigas para puentes sobre canales de descarga.

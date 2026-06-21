@@ -21,6 +21,8 @@ const proyectos = defineCollection({
       anio: z.number().optional(),
       diametro: z.string().optional(),
       longitud: z.string().optional(),
+      peso: z.string().optional(),
+      acero: z.string().optional(),
       normas: z.array(z.string()).optional(),
       heroImage: image().optional(),
       gallery: z.array(image()).optional(),

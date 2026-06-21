@@ -160,17 +160,10 @@ const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
   { key: 'edp',                nombre: 'EDP',                 logo: '/logos-clientes/edp-hc-energia.png' },
   { key: 'elecnor',            nombre: 'Elecnor',             logo: '/logos-clientes/elecnor.png' },
   { key: 'electrica-puntilla', nombre: 'Eléctrica Puntilla',  logo: '/logos-clientes/electrica-puntilla.png' },
-  { key: 'fcc',                nombre: 'FCC',                 logo: '/logos-clientes/fcc.png' },
   { key: 'ferrovial',          nombre: 'Ferrovial',           logo: '/logos-clientes/ferrovial.png' },
-  { key: 'gas-natural-fenosa', nombre: 'Gas Natural Fenosa',  logo: '/logos-clientes/gas-natural-fenosa.png' },
   { key: 'gpe',                nombre: 'GPE',                 logo: '/logos-clientes/gpe.png' },
   { key: 'iberdrola',          nombre: 'Iberdrola',           logo: '/logos-clientes/iberdrola.png' },
-  { key: 'naturener',          nombre: 'NaturEner',           logo: '/logos-clientes/naturener.png' },
-  { key: 'navarro-sic',        nombre: 'Navarro SiC',         logo: '/logos-clientes/navarro-sic.png' },
-  { key: 'norvento',           nombre: 'Norvento',            logo: '/logos-clientes/norvento.png' },
   { key: 'pacific-hydro',      nombre: 'Pacific Hydro',       logo: '/logos-clientes/pacific-hydro.png' },
-  { key: 'plenium-partners',   nombre: 'Plenium Partners',    logo: '/logos-clientes/plenium-partners.png' },
-  { key: 'viesgo',             nombre: 'Viesgo',              logo: '/logos-clientes/viesgo.png' },
 ];
 
 const imageEntries: EntrySeed[] = [
@@ -247,9 +240,9 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Datos corporativos',
     status: 'published',
     fields: {
-      nombre: { type: 'text', value: 'Hidromont Chile S.A.' },
-      razonSocial: { type: 'text', value: 'Hidromont Chile S.A.' },
-      domicilio: { type: 'text', value: 'Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513' },
+      nombre: { type: 'text', value: 'Hidromont Chile' },
+      razonSocial: { type: 'text', value: 'Hidromont Chile' },
+      domicilio: { type: 'text', value: 'Av. Las Industrias N° 10.950' },
       ciudad: { type: 'text', value: 'Los Ángeles, Región del Biobío, Chile' },
       casillaPostal: { type: 'text', value: 'Casilla 48 — Los Ángeles, Región del Biobío' },
       telefono: { type: 'text', value: '+56 43 32 84 14' },
@@ -272,7 +265,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas.',
       },
-      modalidad: { type: 'text', value: 'Proyectos llave en mano / EPC' },
+      modalidad: { type: 'text', value: 'Proyectos EPC' },
     },
   },
   ...imageEntries,
@@ -285,10 +278,10 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       logoSrc: { type: 'image', value: '' },
-      logoAlt: { type: 'text', value: 'Hidromont Chile S.A.' },
+      logoAlt: { type: 'text', value: 'Hidromont Chile' },
       logoAriaLabel: { type: 'text', value: 'Hidromont Chile — Inicio' },
       wordmarkPrimary: { type: 'text', value: 'HIDROMONT' },
-      wordmarkSub: { type: 'text', value: 'Chile S.A.' },
+      wordmarkSub: { type: 'text', value: 'Chile' },
       navInicio: { type: 'text', value: 'Inicio' },
       hrefInicio: { type: 'text', value: '/' },
       navServicios: { type: 'text', value: 'Servicios' },
@@ -354,11 +347,11 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Servicios' },
-      title: { type: 'text', value: 'Soluciones hidromecánicas llave en mano' },
+      title: { type: 'text', value: 'Soluciones hidromecánicas integrales' },
       subtitle: {
         type: 'textarea',
         value:
-          'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno.',
+          'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje y mantenimiento.',
       },
     },
   },
@@ -392,7 +385,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value: 'Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont',
       },
       eyebrow: { type: 'text', value: 'Instalaciones y medios productivos' },
-      title: { type: 'text', value: 'Taller propio en Los Ángeles, Biobío' },
+      title: { type: 'text', value: 'Instalaciones en Los Ángeles, Biobío' },
       subtitle: {
         type: 'textarea',
         value: 'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.',
@@ -427,7 +420,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.',
       },
-      primaryLabel: { type: 'text', value: 'Ponerse en contacto' },
+      primaryLabel: { type: 'text', value: 'Contacto' },
       secondaryLabel: { type: 'text', value: 'Conocer la empresa' },
     },
   },
@@ -444,7 +437,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica.',
+          'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.',
       },
       image: { type: 'image', value: '/fotos/curadas/taller-nave.webp' },
       imageAlt: { type: 'text', value: 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas' },
@@ -459,7 +452,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Servicios' },
-      title: { type: 'text', value: 'Soluciones hidromecánicas llave en mano' },
+      title: { type: 'text', value: 'Soluciones hidromecánicas integrales' },
       subtitle: {
         type: 'textarea',
         value:
@@ -516,7 +509,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas.',
+          'Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje y mantenimiento de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas.',
       },
     },
   },
@@ -646,7 +639,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Footer',
     status: 'published',
     fields: {
-      brand: { type: 'text', value: 'Hidromont Chile S.A.' },
+      brand: { type: 'text', value: 'Hidromont Chile' },
       description: {
         type: 'textarea',
         value:
@@ -685,12 +678,12 @@ export const defaultContentEntries: EntrySeed[] = [
       p1: {
         type: 'textarea',
         value:
-          'Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.',
+          'Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.',
       },
       p2: {
         type: 'textarea',
         value:
-          'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra.',
+          'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra.',
       },
       p3: {
         type: 'textarea',
@@ -710,15 +703,12 @@ export const defaultContentEntries: EntrySeed[] = [
       card1Value: { type: 'text', value: '1983' },
       card1Label: { type: 'text', value: 'Fundación' },
       card1Desc: { type: 'text', value: 'Origen español' },
-      card2Value: { type: 'text', value: '1997' },
-      card2Label: { type: 'text', value: 'Chile desde' },
-      card2Desc: { type: 'text', value: 'Los Ángeles, Biobío' },
-      card3Value: { type: 'text', value: 'EPC' },
-      card3Label: { type: 'text', value: 'Modalidad' },
-      card3Desc: { type: 'text', value: 'Llave en mano' },
-      card4Value: { type: 'text', value: 'ISO 9001' },
-      card4Label: { type: 'text', value: 'Calidad' },
-      card4Desc: { type: 'text', value: 'Sistema de gestión' },
+      card2Value: { type: 'text', value: 'EPC' },
+      card2Label: { type: 'text', value: 'Modalidad' },
+      card2Desc: { type: 'text', value: 'Ingeniería, fabricación y montaje' },
+      card3Value: { type: 'text', value: 'ISO 9001' },
+      card3Label: { type: 'text', value: 'Calidad' },
+      card3Desc: { type: 'text', value: 'Sistema de gestión' },
       ubicacionTitle: { type: 'text', value: 'Ubicación' },
     },
   },
@@ -743,15 +733,18 @@ export const defaultContentEntries: EntrySeed[] = [
       item2Title: { type: 'text', value: 'Taller industrial' },
       item2Value: { type: 'text', value: '2.000 m²' },
       item2Desc: { type: 'textarea', value: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
-      item3Title: { type: 'text', value: 'Oficinas e ingeniería' },
-      item3Value: { type: 'text', value: '320 m²' },
-      item3Desc: { type: 'textarea', value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
-      item4Title: { type: 'text', value: 'Cilindradora hidráulica' },
-      item4Value: { type: 'text', value: '65 mm' },
-      item4Desc: { type: 'textarea', value: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
-      item5Title: { type: 'text', value: 'Puentes grúa' },
-      item5Value: { type: 'text', value: '5 unidades' },
-      item5Desc: { type: 'textarea', value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' },
+      item3Title: { type: 'text', value: 'Taller de pintura' },
+      item3Value: { type: 'text', value: '400 m²' },
+      item3Desc: { type: 'textarea', value: 'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.' },
+      item4Title: { type: 'text', value: 'Oficinas e ingeniería' },
+      item4Value: { type: 'text', value: '320 m²' },
+      item4Desc: { type: 'textarea', value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
+      item5Title: { type: 'text', value: 'Cilindradora hidráulica' },
+      item5Value: { type: 'text', value: '65 mm' },
+      item5Desc: { type: 'textarea', value: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
+      item6Title: { type: 'text', value: 'Puentes grúa' },
+      item6Value: { type: 'text', value: '5 unidades' },
+      item6Desc: { type: 'textarea', value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' },
     },
   },
   {
@@ -914,7 +907,7 @@ export const defaultContentEntries: EntrySeed[] = [
       item2Desc: { type: 'textarea', value: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.' },
       item3Title: { type: 'text', value: 'Reparaciones' },
       item3Desc: { type: 'textarea', value: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.' },
-      item4Title: { type: 'text', value: 'Rehabilitación de turbinas' },
+      item4Title: { type: 'text', value: 'Mantenimiento de turbinas' },
       item4Desc: { type: 'textarea', value: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.' },
       item5Title: { type: 'text', value: 'Montajes' },
       item5Desc: { type: 'textarea', value: 'Procedimientos específicos con análisis de medios y tiempos.' },
@@ -932,7 +925,7 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       title: { type: 'text', value: '¿Necesita un servicio específico?' },
       subtitle: { type: 'textarea', value: 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.' },
-      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+      buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
 
@@ -973,7 +966,7 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       title: { type: 'text', value: 'Más de 40 años de proyectos en Chile y el exterior' },
       subtitle: { type: 'textarea', value: 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.' },
-      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+      buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
 
@@ -1001,10 +994,10 @@ export const defaultContentEntries: EntrySeed[] = [
     kind: 'page',
     slug: '/clientes',
     locale: 'es-CL',
-    title: 'Sectores clientes',
+    title: 'Referencias clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Sectores' },
+      eyebrow: { type: 'text', value: 'Referencias' },
     },
   },
   {
@@ -1017,7 +1010,7 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       title: { type: 'text', value: 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica' },
       subtitle: { type: 'textarea', value: 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.' },
-      buttonLabel: { type: 'text', value: 'Ponerse en contacto' },
+      buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
   {

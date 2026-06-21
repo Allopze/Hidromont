@@ -12,11 +12,11 @@ import { company } from '../data/company';
 
 <PageLayout
   title="Empresa"
-  description="Hidromont Chile S.A. — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con taller propio y equipo técnico especializado."
+  description="Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado."
 >
   <PageHero
     title={getCmsText('empresa.hero', 'title', 'Empresa')}
-    subtitle={getCmsText('empresa.hero', 'subtitle', 'Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica.')}
+    subtitle={getCmsText('empresa.hero', 'subtitle', 'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.')}
     imageSrc={getCmsText('empresa.hero', 'image', '/fotos/curadas/taller-nave.webp')}
     imageAlt={getCmsText('empresa.hero', 'imageAlt', 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas')}
     imageWidth={1536}
@@ -40,10 +40,10 @@ import { company } from '../data/company';
           </EditableText>
           <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-lead); line-height: 1.7;">
             <EditableText as="p" entry="empresa.historia" field="p1" type="textarea">
-              {getCmsText('empresa.historia', 'p1', 'Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.')}
+              {getCmsText('empresa.historia', 'p1', 'Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.')}
             </EditableText>
             <EditableText as="p" entry="empresa.historia" field="p2" type="textarea">
-              {getCmsText('empresa.historia', 'p2', 'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra.')}
+              {getCmsText('empresa.historia', 'p2', 'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra.')}
             </EditableText>
             <EditableText as="p" entry="empresa.historia" field="p3" type="textarea">
               {getCmsText('empresa.historia', 'p3', 'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.')}
@@ -53,16 +53,16 @@ import { company } from '../data/company';
 
         <div class="space-y-6">
           <dl class="grid grid-cols-2 gap-4">
-            {([1, 2, 3, 4] as const).map((i) => (
+            {([1, 2, 3] as const).map((i) => (
               <div class="flex flex-col p-5 border border-border rounded-lg bg-surface">
-                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Value`} class={`order-1 ${i <= 2 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}>
-                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', '1997', 'Llave en mano', 'Soporte'][i - 1])}
+                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Value`} class={`order-1 ${i <= 1 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}>
+                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', 'EPC', 'ISO 9001'][i - 1])}
                 </EditableText>
                 <EditableText as="dt" entry="empresa.metricas" field={`card${i}Label`} class="order-2 font-semibold text-text text-sm mt-1">
-                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Chile desde', 'Modalidad', 'Post-venta'][i - 1])}
+                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Modalidad', 'Calidad'][i - 1])}
                 </EditableText>
                 <EditableText as="dd" entry="empresa.metricas" field={`card${i}Desc`} class="order-3 text-text-muted text-xs mt-0.5">
-                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Los Ángeles, Biobío', 'Ingeniería, fabricación y montaje', 'Atención técnica continua'][i - 1])}
+                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Ingeniería, fabricación y montaje', 'Sistema de gestión'][i - 1])}
                 </EditableText>
               </div>
             ))}
@@ -98,19 +98,20 @@ import { company } from '../data/company';
           {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
         </EditableText>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {([1, 2, 3, 4, 5] as const).map((i) => (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        {([1, 2, 3, 4, 5, 6] as const).map((i) => (
           <div class="p-6 bg-surface border border-border rounded-lg">
             <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
-              {getCmsText('empresa.instalaciones', `item${i}Value`, ['11.000 m²', '2.000 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
+              {getCmsText('empresa.instalaciones', `item${i}Value`, ['11.000 m²', '2.000 m²', '400 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
             </EditableText>
             <EditableText as="h3" entry="empresa.instalaciones" field={`item${i}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
-              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Superficie de terreno', 'Taller industrial', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
+              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Superficie de terreno', 'Taller industrial', 'Taller de pintura', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
             </EditableText>
             <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
               {getCmsText('empresa.instalaciones', `item${i}Desc`, [
                 'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
                 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
+                'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.',
                 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
                 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.',
                 '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',

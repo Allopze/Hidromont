@@ -37,11 +37,23 @@ const { proyectos, titulo } = Astro.props;
             >
               <td class="px-5 py-4 align-top whitespace-nowrap">
                 <span class="font-semibold text-text">{p.data.nombre}</span>
-                {p.data.diametro && (
-                  <div class="mt-1.5">
-                    <span class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5">
-                      {p.data.diametro}
-                    </span>
+                {(p.data.diametro || p.data.peso || p.data.acero) && (
+                  <div class="mt-1.5 flex flex-wrap gap-1.5">
+                    {p.data.diametro && (
+                      <span class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5">
+                        {p.data.diametro}
+                      </span>
+                    )}
+                    {p.data.acero && (
+                      <span class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5">
+                        {p.data.acero}
+                      </span>
+                    )}
+                    {p.data.peso && (
+                      <span class="inline-block font-mono text-xs font-semibold text-accent bg-accent/10 px-1.5 py-0.5">
+                        {p.data.peso}
+                      </span>
+                    )}
                   </div>
                 )}
               </td>
@@ -66,10 +78,24 @@ const { proyectos, titulo } = Astro.props;
             <h4 class="font-heading font-semibold text-primary-dark leading-snug" style="font-size: var(--font-size-h4);">
               {p.data.nombre}
             </h4>
-            {p.data.diametro && (
-              <span class="shrink-0 inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5 mt-0.5">
-                {p.data.diametro}
-              </span>
+            {(p.data.diametro || p.data.peso || p.data.acero) && (
+              <div class="shrink-0 flex flex-wrap gap-1 mt-0.5">
+                {p.data.diametro && (
+                  <span class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5">
+                    {p.data.diametro}
+                  </span>
+                )}
+                {p.data.acero && (
+                  <span class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5">
+                    {p.data.acero}
+                  </span>
+                )}
+                {p.data.peso && (
+                  <span class="inline-block font-mono text-xs font-semibold text-accent bg-accent/10 px-1.5 py-0.5">
+                    {p.data.peso}
+                  </span>
+                )}
+              </div>
             )}
           </div>
 

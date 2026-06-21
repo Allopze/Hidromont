@@ -1,6 +1,6 @@
 ---
 titulo: "Tuberías Forzadas y Blindajes"
-resumen: "Proyectos llave en mano para tuberías forzadas, blindajes en acero mecano-soldado, bifurcaciones, codos, embocaduras, juntas de dilatación, apoyos, puntos fijos, repartidores, transiciones y piezas especiales."
+resumen: "Proyectos integrales para tuberías forzadas, blindajes en acero mecano-soldado, bifurcaciones, codos, embocaduras, juntas de dilatación, apoyos, puntos fijos, repartidores, transiciones y piezas especiales."
 icono: "pipe"
 tipos:
   - "Tuberías forzadas"
@@ -16,7 +16,7 @@ aplicaciones:
   - "Presas y embalses"
   - "Conducción de agua a presión"
   - "Obras subterráneas y en pendiente"
-  - "Rehabilitación y reemplazo de tuberías existentes"
+  - "Renovación y reemplazo de tuberías existentes"
 procesos:
   - titulo: "Ingeniería"
     descripcion: "Cálculos mecánicos, análisis estructural, planos de diseño básico y detalle, procedimientos de montaje, manuales de mantenimiento y operación, inspecciones y toma de datos."
@@ -24,12 +24,12 @@ procesos:
     descripcion: "Oxicorte, biselado, cilindrado, soldadura, ensamblado, mecanizado y protección superficial."
   - titulo: "Montaje"
     descripcion: "Instalación de tuberías forzadas y blindajes en condiciones especiales, incluyendo uso de teleférico o plataformas de montaje cuando la obra lo requiere."
-  - titulo: "Mantenimiento y Rehabilitación"
+  - titulo: "Mantenimiento y Reparación"
     descripcion: "Inspección, estudio, reparación y mantenimiento de instalaciones existentes."
 orden: 6
 ---
 
-Hidromont Chile S.A. Ejecuta proyectos completos llave en mano para tuberías forzadas y blindajes, integrando ingeniería, fabricación especializada y montaje en terreno. Nuestra experiencia abarca desde minicentrales hasta proyectos de gran envergadura con diámetros superiores a 5.500 mm y presiones de diseño de hasta 89 kg/cm².
+Hidromont Chile ejecuta proyectos completos de ingeniería, fabricación y montaje para tuberías forzadas y blindajes, integrando ingeniería, fabricación especializada y montaje en terreno. Nuestra experiencia abarca desde minicentrales hasta proyectos de gran envergadura con diámetros superiores a 5.500 mm y presiones de diseño de hasta 89 kg/cm².
 
 ## Capacidad de fabricación
 

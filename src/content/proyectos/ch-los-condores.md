@@ -1,12 +1,14 @@
 ---
 nombre: "C.H. Los Condores"
 cliente: "Ferrovial S.A."
-alcance: "Ingeniería, fabricación y montaje de tubería forzada DN 2200, bifurcación y ramales DN 2200-1600, blindaje vertical de 500 m en pique subterráneo, acceso vehicular y pieza de conexión. Tubería de aducción DN 3200 de 1.100 m y blindaje DN 3400."
+alcance: "Diseño, fabricación y montaje de tubería forzada DN 2200, bifurcación y ramales DN 2200-1600, blindaje vertical de 500 m en pique subterráneo, acceso vehicular y pieza de conexión. Tubería de aducción DN 3200 de 1.100 m y blindaje DN 3400."
 categoria: "tuberias"
 tipo: "destacado"
 ubicacion: "Chile"
 diametro: "DN 2200 / DN 3200 / DN 3400"
 longitud: "1.600 m tubería forzada + 1.100 m aducción + 500 m vertical"
+acero: "S460ML"
+peso: "[Por definir]"
 orden: 1
 ---
 
@@ -31,9 +33,10 @@ El proyecto C.H. Los Condores es uno de los más complejos y de mayor envergadur
 | Diámetro blindaje vertical | DN 2.200 mm |
 | Longitud blindaje vertical | 500 m |
 | Presión diseño máxima | 89 kg/cm² |
-| Material | S460ML |
+| Acero | S460ML |
+| Peso | [Por definir] |
 | Caudal nominal | 25 m³/s |
-| Espesores máximos | 38 mm |
+| Espesores | 38 mm |
 
 ## Cliente
 
