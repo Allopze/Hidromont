@@ -3,9 +3,9 @@ titulo: "Limpiarrejas"
 resumen: "Diseño, fabricación, montaje, mantenimiento y reparación de equipos limpiarrejas para canales, presas y centrales hidroeléctricas. Equipos para limpieza de desechos de rejas metálicas y libre admisión de agua."
 icono: "rack"
 tipos:
-  - "Limpiarejas de husillos"
-  - "Limpiarejas de cremallera"
-  - "Limpiarejas oleo-hidráulicos"
+  - "De husillos"
+  - "De cremallera"
+  - "Óleo-hidráulicos"
 aplicaciones:
   - "Bocatomas de canales"
   - "Torres de toma de presas"

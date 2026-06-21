@@ -980,7 +980,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Referencias' },
+      eyebrow: { type: 'text', value: 'Nuestros clientes' },
       title: { type: 'text', value: 'Clientes' },
       subtitle: {
         type: 'textarea',
@@ -997,7 +997,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Referencias clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Referencias' },
+      eyebrow: { type: 'text', value: 'Nuestros clientes' },
     },
   },
   {

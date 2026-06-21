@@ -45,7 +45,7 @@ for (const c of lista) {
       <div class="text-center mb-12">
         <Eyebrow>
           <EditableText entry="clientes.sectores" field="eyebrow">
-            {getCmsText('clientes.sectores', 'eyebrow', 'Referencias')}
+            {getCmsText('clientes.sectores', 'eyebrow', 'Nuestros clientes')}
           </EditableText>
         </Eyebrow>
       </div>
@@ -55,19 +55,19 @@ for (const c of lista) {
           const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
           const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
           return logoSrc ? (
-            <div class="flex items-center justify-center h-12 px-4 py-2 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
+            <div class="flex items-center justify-center h-20 px-8 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
               <EditableImage
                 entry="clientes.logos"
                 field={`logo-${logoKey}`}
                 src={logoSrc}
                 alt={c.nombre}
-                height={40}
-                class="h-8 w-auto object-contain"
+                height={48}
+                class="h-12 w-auto object-contain"
                 loading="lazy"
               />
             </div>
           ) : (
-            <span class="px-4 py-2 bg-background-alt border border-border rounded-md text-sm font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
+            <span class="flex items-center justify-center h-20 px-8 bg-background-alt border border-border rounded-md text-base font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
               {c.nombre}
             </span>
           );
