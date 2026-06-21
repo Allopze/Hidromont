@@ -153,16 +153,21 @@ const projectGallerySlugs = [
 ];
 
 const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
-  { key: 'acciona',            nombre: 'Acciona',             logo: '/logos-clientes/acciona.png' },
-  { key: 'besalco',            nombre: 'Besalco',             logo: '/logos-clientes/besalco.png' },
-  { key: 'colbun',             nombre: 'Colbún',              logo: '/logos-clientes/colbun.png' },
+  { key: 'acciona',            nombre: 'Acciona',             logo: '/logos-clientes/acciona.svg' },
+  { key: 'aes-andes',          nombre: 'AES Andes',           logo: '/logos-clientes/aes-andes.png' },
+  { key: 'arauco',             nombre: 'Arauco',              logo: '/logos-clientes/arauco.svg' },
+  { key: 'besalco',            nombre: 'Besalco',             logo: '/logos-clientes/besalco.webp' },
+  { key: 'colbun',             nombre: 'Colbún',              logo: '/logos-clientes/colbun.svg' },
   { key: 'conpax',             nombre: 'Conpax',              logo: '/logos-clientes/conpax.png' },
-  { key: 'edp',                nombre: 'EDP',                 logo: '/logos-clientes/edp-hc-energia.png' },
-  { key: 'elecnor',            nombre: 'Elecnor',             logo: '/logos-clientes/elecnor.png' },
+  { key: 'edp',                nombre: 'EDP',                 logo: '/logos-clientes/edp.svg' },
+  { key: 'elecnor',            nombre: 'Elecnor',             logo: '/logos-clientes/elecnor.svg' },
   { key: 'electrica-puntilla', nombre: 'Eléctrica Puntilla',  logo: '/logos-clientes/electrica-puntilla.png' },
+  { key: 'endesa',             nombre: 'Endesa',              logo: '/logos-clientes/endesa.png' },
+  { key: 'engie',              nombre: 'Engie',               logo: '/logos-clientes/engie.png' },
   { key: 'ferrovial',          nombre: 'Ferrovial',           logo: '/logos-clientes/ferrovial.png' },
   { key: 'gpe',                nombre: 'GPE',                 logo: '/logos-clientes/gpe.png' },
   { key: 'iberdrola',          nombre: 'Iberdrola',           logo: '/logos-clientes/iberdrola.png' },
+  { key: 'mop-doh',            nombre: 'M.O.P. / D.O.H.',    logo: '/logos-clientes/mop-doh.jpeg' },
   { key: 'pacific-hydro',      nombre: 'Pacific Hydro',       logo: '/logos-clientes/pacific-hydro.png' },
 ];
 
@@ -739,9 +744,6 @@ export const defaultContentEntries: EntrySeed[] = [
       item4Title: { type: 'text', value: 'Oficinas e ingeniería' },
       item4Value: { type: 'text', value: '320 m²' },
       item4Desc: { type: 'textarea', value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
-      item5Title: { type: 'text', value: 'Cilindradora hidráulica' },
-      item5Value: { type: 'text', value: '65 mm' },
-      item5Desc: { type: 'textarea', value: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.' },
       item6Title: { type: 'text', value: 'Puentes grúa' },
       item6Value: { type: 'text', value: '5 unidades' },
       item6Desc: { type: 'textarea', value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' },
@@ -997,7 +999,8 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Referencias clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Nuestros clientes' },
+      eyebrow: { type: 'text', value: 'Trayectoria' },
+      // IMPORTANTE: NO VOLVER A INCLUIR el campo 'title' (que contenía "Empresas que confían en nosotros" o similares). Solicitud expresa del usuario.
     },
   },
   {

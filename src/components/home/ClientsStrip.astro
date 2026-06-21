@@ -16,6 +16,11 @@ const lista = clientes.data.items;
 // Split into those with logos and those without
 const conLogo = lista.filter((c) => c.logo);
 const sinLogo = lista.filter((c) => !c.logo);
+
+// Split logos into two rows for marquee
+const mid = Math.ceil(conLogo.length / 2);
+const row1 = conLogo.slice(0, mid);
+const row2 = conLogo.slice(mid);
 ---
 
 <Container>
@@ -26,37 +31,60 @@ const sinLogo = lista.filter((c) => !c.logo);
     </EditableText>
   </div>
 
-  <!-- Logo wall — clients with logos -->
-  {conLogo.length > 0 && (
-    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-6 items-center mb-8">
-      {conLogo.map((c) => (
-        <div
-          class="flex items-center justify-center p-3 rounded-md transition-all duration-base ease-standard opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-          title={c.nombre}
-        >
-          <img
-            src={c.logo}
-            alt={c.nombre}
-            width="160"
-            height="40"
-            loading="lazy"
-            decoding="async"
-            class="max-h-10 w-auto object-contain"
-          />
+  {/* ── Marquee logo wall (Floating Clean Style) ── */}
+  <div class="clients-marquee-wrapper">
+    {/* Row 1 — scrolls left */}
+    {row1.length > 0 && (
+      <div class="clients-marquee-row">
+        <div class="clients-marquee-track logo-marquee-track">
+          {[...row1, ...row1].map((c) => (
+            <div class="clients-marquee-item" title={c.nombre}>
+              <img
+                src={c.logo}
+                alt={c.nombre}
+                width="160"
+                height="48"
+                loading="lazy"
+                decoding="async"
+                class="clients-marquee-logo"
+              />
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  )}
+      </div>
+    )}
 
-  <!-- Text fallback for clients without logos, grouped in a subdued list -->
+    {/* Row 2 — scrolls right */}
+    {row2.length > 0 && (
+      <div class="clients-marquee-row">
+        <div class="clients-marquee-track logo-marquee-track--rev">
+          {[...row2, ...row2].map((c) => (
+            <div class="clients-marquee-item" title={c.nombre}>
+              <img
+                src={c.logo}
+                alt={c.nombre}
+                width="160"
+                height="48"
+                loading="lazy"
+                decoding="async"
+                class="clients-marquee-logo"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+
+  {/* Text fallback for clients without logos */}
   {sinLogo.length > 0 && (
-    <div class="border-t border-border pt-6">
+    <div class="clients-text-fallback">
       <EditableText as="p" entry="clients.strip" field="fallbackLabel" class="text-xs text-text-muted uppercase tracking-wider mb-3 text-center">
         {getCmsText('clients.strip', 'fallbackLabel', 'También trabajamos con')}
       </EditableText>
       <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
         {sinLogo.map((c) => (
-          <span class="text-sm text-text-muted">{c.nombre}</span>
+          <span class="text-sm text-text-muted font-medium">{c.nombre}</span>
         ))}
       </div>
     </div>
@@ -65,7 +93,7 @@ const sinLogo = lista.filter((c) => !c.logo);
   <div class="text-center mt-8">
     <a
       href="/clientes"
-      class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast inline-flex items-center gap-1"
+      class="clients-strip-link"
     >
       <EditableText entry="clients.strip" field="linkLabel">
         {getCmsText('clients.strip', 'linkLabel', 'Ver todos los clientes')}
@@ -74,3 +102,79 @@ const sinLogo = lista.filter((c) => !c.logo);
     </a>
   </div>
 </Container>
+
+<style>
+  /* ── Marquee wrapper with edge fades ── */
+  .clients-marquee-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding-block: 16px;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  }
+
+  .clients-marquee-row {
+    display: flex;
+    overflow: hidden;
+  }
+
+  .clients-marquee-row + .clients-marquee-row {
+    margin-top: 24px;
+  }
+
+  .clients-marquee-track {
+    display: flex;
+    gap: 56px; /* Generous gap for clean separation of borderless logos */
+    flex-shrink: 0;
+  }
+
+  /* ── Individual clean logo item ── */
+  .clients-marquee-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 56px;
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .clients-marquee-item:hover {
+    transform: scale(1.06);
+  }
+
+  .clients-marquee-logo {
+    height: 100%;
+    width: auto;
+    max-width: 150px;
+    object-fit: contain;
+    filter: grayscale(100%) opacity(0.65);
+    transition: filter var(--motion-base) var(--ease-standard);
+  }
+
+  .clients-marquee-item:hover .clients-marquee-logo {
+    filter: grayscale(0%) opacity(1);
+  }
+
+  /* ── Fallback text section ── */
+  .clients-text-fallback {
+    border-top: 1px solid var(--color-border);
+    padding-top: 24px;
+    margin-top: 32px;
+  }
+
+  /* ── Link ── */
+  .clients-strip-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--ease-standard);
+  }
+
+  .clients-strip-link:hover {
+    color: var(--color-primary-dark);
+  }
+</style>

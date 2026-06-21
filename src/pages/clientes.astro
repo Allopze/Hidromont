@@ -12,14 +12,17 @@ import { getCmsText } from '../data/cms';
 import { getClienteLogoByNombre } from '../data/cliente-logos';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
-const lista = clientesEntry.data.items;
+const lista = [...clientesEntry.data.items];
 
-// Logos únicos para el hero marquee (mismos que se usan en el cuerpo)
+// Sort alphabetically by name for a neutral and orderly presentation
+lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+
+// Unique logos for the hero marquee
 const heroLogos = [...new Set(
   lista.map((c) => getClienteLogoByNombre(c.nombre)).filter(Boolean)
 )];
 
-// Alt text de cada logo (nombre del cliente correspondiente)
+// Alt text of each logo (client name)
 const logoAlts: Record<string, string> = {};
 for (const c of lista) {
   const src = getClienteLogoByNombre(c.nombre);
@@ -29,7 +32,7 @@ for (const c of lista) {
 
 <PageLayout
   title="Clientes"
-  description="Referencias de Hidromont Chile — empresas del sector eléctrico, construcción, minería, industria y sector público que confían en nuestros servicios hidromecánicos."
+  description="Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos."
 >
   <ClientesHero
     title={getCmsText('clientes.hero', 'title', 'Clientes')}
@@ -42,34 +45,38 @@ for (const c of lista) {
 
   <Section variant="default">
     <Container>
-      <div class="text-center mb-12">
+      <div class="text-center mb-16">
         <Eyebrow>
           <EditableText entry="clientes.sectores" field="eyebrow">
-            {getCmsText('clientes.sectores', 'eyebrow', 'Nuestros clientes')}
+            {getCmsText('clientes.sectores', 'eyebrow', 'Trayectoria')}
           </EditableText>
         </Eyebrow>
+        {/*
+          IMPORTANTE: NO VOLVER A INCLUIR LA FRASE "Empresas que confían en nosotros" O SIMILARES.
+          ESTA SECCIÓN DEBE QUEDAR SIN TÍTULO H2 ADICIONAL POR SOLICITUD EXPRESA DEL USUARIO.
+        */}
       </div>
 
-      <div class="flex flex-wrap items-center justify-center gap-4">
+      <div class="clientes-grid">
         {lista.map((c) => {
           const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
-          const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          return logoSrc ? (
-            <div class="flex items-center justify-center h-20 px-8 bg-white border border-border rounded-md hover:border-primary transition-colors duration-fast" title={c.nombre}>
-              <EditableImage
-                entry="clientes.logos"
-                field={`logo-${logoKey}`}
-                src={logoSrc}
-                alt={c.nombre}
-                height={48}
-                class="h-12 w-auto object-contain"
-                loading="lazy"
-              />
+          const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          return (
+            <div class="clientes-item" title={c.nombre}>
+              {logoSrc ? (
+                <EditableImage
+                  entry="clientes.logos"
+                  field={`logo-${logoKey}`}
+                  src={logoSrc}
+                  alt={c.nombre}
+                  height={56}
+                  class="clientes-logo-img"
+                  loading="lazy"
+                />
+              ) : (
+                <span class="clientes-fallback-text">{c.nombre}</span>
+              )}
             </div>
-          ) : (
-            <span class="flex items-center justify-center h-20 px-8 bg-background-alt border border-border rounded-md text-base font-semibold text-text hover:border-primary hover:text-primary transition-colors duration-fast">
-              {c.nombre}
-            </span>
           );
         })}
       </div>
@@ -83,3 +90,76 @@ for (const c of lista) {
     primary={{ label: getCmsText('clientes.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
   />
 </PageLayout>
+
+<style>
+  /* ── Clean Floating Logo Grid ── */
+  .clientes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    justify-items: center;
+    gap: 48px 32px;
+    max-width: 1000px;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 640px) {
+    .clientes-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 56px 40px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .clientes-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 64px 48px;
+    }
+  }
+
+  .clientes-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 80px; /* Generous area height for consistent vertical alignment */
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .clientes-item:hover {
+    transform: translateY(-3px);
+  }
+
+  .clientes-item :global(img) {
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    max-height: 56px; /* Constraints logo height within the flex item safely */
+    object-fit: contain;
+    filter: grayscale(100%) opacity(0.6);
+    transition: 
+      filter var(--motion-base) var(--ease-standard),
+      transform var(--motion-base) var(--ease-standard);
+  }
+
+  .clientes-item:hover :global(img) {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.05);
+  }
+
+  /* Text-only fallback styles for a premium look without cards */
+  .clientes-fallback-text {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    text-align: center;
+    text-transform: uppercase;
+    transition: color var(--motion-base) var(--ease-standard);
+  }
+
+  .clientes-item:hover .clientes-fallback-text {
+    color: var(--color-primary);
+  }
+</style>

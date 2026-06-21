@@ -98,24 +98,23 @@ import { company } from '../data/company';
           {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
         </EditableText>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        {([1, 2, 3, 4, 5, 6] as const).map((i) => (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        {[
+          { key: 1, val: '11.000 m²', title: 'Superficie de terreno', desc: 'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.' },
+          { key: 2, val: '2.000 m²', title: 'Taller industrial', desc: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
+          { key: 3, val: '400 m²', title: 'Taller de pintura', desc: 'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.' },
+          { key: 4, val: '320 m²', title: 'Oficinas e ingeniería', desc: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
+          { key: 6, val: '5 unidades', title: 'Puentes grúa', desc: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' }
+        ].map((item) => (
           <div class="p-6 bg-surface border border-border rounded-lg">
-            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
-              {getCmsText('empresa.instalaciones', `item${i}Value`, ['11.000 m²', '2.000 m²', '400 m²', '320 m²', '65 mm', '5 unidades'][i - 1])}
+            <EditableText as="p" entry="empresa.instalaciones" field={`item${item.key}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
+              {getCmsText('empresa.instalaciones', `item${item.key}Value`, item.val)}
             </EditableText>
-            <EditableText as="h3" entry="empresa.instalaciones" field={`item${i}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
-              {getCmsText('empresa.instalaciones', `item${i}Title`, ['Superficie de terreno', 'Taller industrial', 'Taller de pintura', 'Oficinas e ingeniería', 'Cilindradora hidráulica', 'Puentes grúa'][i - 1])}
+            <EditableText as="h3" entry="empresa.instalaciones" field={`item${item.key}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
+              {getCmsText('empresa.instalaciones', `item${item.key}Title`, item.title)}
             </EditableText>
-            <EditableText as="p" entry="empresa.instalaciones" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
-              {getCmsText('empresa.instalaciones', `item${i}Desc`, [
-                'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
-                'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
-                'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.',
-                'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
-                'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.',
-                '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
-              ][i - 1])}
+            <EditableText as="p" entry="empresa.instalaciones" field={`item${item.key}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
+              {getCmsText('empresa.instalaciones', `item${item.key}Desc`, item.desc)}
             </EditableText>
           </div>
         ))}

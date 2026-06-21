@@ -7,17 +7,22 @@ export function getClienteLogo(key: string, fallback = ''): string {
 
 /** Map from client nombre → logo path (CMS with fallback from clientes.json). */
 const logoMap: Record<string, string> = {
-  Acciona:            getCmsText('clientes.logos', 'logo-acciona',            '/logos-clientes/acciona.png'),
-  Besalco:            getCmsText('clientes.logos', 'logo-besalco',            '/logos-clientes/besalco.png'),
-  'Colbún':           getCmsText('clientes.logos', 'logo-colbun',             '/logos-clientes/colbun.png'),
-  Conpax:             getCmsText('clientes.logos', 'logo-conpax',             '/logos-clientes/conpax.png'),
-  EDP:                getCmsText('clientes.logos', 'logo-edp',                '/logos-clientes/edp-hc-energia.png'),
-  Elecnor:            getCmsText('clientes.logos', 'logo-elecnor',            '/logos-clientes/elecnor.png'),
+  Acciona:              getCmsText('clientes.logos', 'logo-acciona',            '/logos-clientes/acciona.svg'),
+  'AES Andes':          getCmsText('clientes.logos', 'logo-aes-andes',          '/logos-clientes/aes-andes.png'),
+  Arauco:               getCmsText('clientes.logos', 'logo-arauco',             '/logos-clientes/arauco.svg'),
+  Besalco:              getCmsText('clientes.logos', 'logo-besalco',            '/logos-clientes/besalco.webp'),
+  'Colbún':             getCmsText('clientes.logos', 'logo-colbun',             '/logos-clientes/colbun.svg'),
+  Conpax:               getCmsText('clientes.logos', 'logo-conpax',             '/logos-clientes/conpax.png'),
+  EDP:                  getCmsText('clientes.logos', 'logo-edp',                '/logos-clientes/edp.svg'),
+  Elecnor:              getCmsText('clientes.logos', 'logo-elecnor',            '/logos-clientes/elecnor.svg'),
   'Eléctrica Puntilla': getCmsText('clientes.logos', 'logo-electrica-puntilla', '/logos-clientes/electrica-puntilla.png'),
-  Ferrovial:          getCmsText('clientes.logos', 'logo-ferrovial',          '/logos-clientes/ferrovial.png'),
-  GPE:                getCmsText('clientes.logos', 'logo-gpe',                '/logos-clientes/gpe.png'),
-  Iberdrola:          getCmsText('clientes.logos', 'logo-iberdrola',          '/logos-clientes/iberdrola.png'),
-  'Pacific Hydro':    getCmsText('clientes.logos', 'logo-pacific-hydro',      '/logos-clientes/pacific-hydro.png'),
+  Endesa:               getCmsText('clientes.logos', 'logo-endesa',             '/logos-clientes/endesa.png'),
+  Engie:                getCmsText('clientes.logos', 'logo-engie',              '/logos-clientes/engie.png'),
+  Ferrovial:            getCmsText('clientes.logos', 'logo-ferrovial',          '/logos-clientes/ferrovial.png'),
+  GPE:                  getCmsText('clientes.logos', 'logo-gpe',                '/logos-clientes/gpe.png'),
+  Iberdrola:            getCmsText('clientes.logos', 'logo-iberdrola',          '/logos-clientes/iberdrola.png'),
+  'M.O.P. / D.O.H.':   getCmsText('clientes.logos', 'logo-mop-doh',            '/logos-clientes/mop-doh.jpeg'),
+  'Pacific Hydro':      getCmsText('clientes.logos', 'logo-pacific-hydro',      '/logos-clientes/pacific-hydro.png'),
 };
 
 export function getClienteLogoByNombre(nombre: string): string {

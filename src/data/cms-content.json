@@ -215,7 +215,7 @@
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Nuestros clientes"
+          "value": "Trayectoria"
         }
       }
     },
@@ -577,18 +577,7 @@
           "type": "text",
           "value": "320 m²"
         },
-        "item5Desc": {
-          "type": "textarea",
-          "value": "Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa."
-        },
-        "item5Title": {
-          "type": "text",
-          "value": "Cilindradora hidráulica"
-        },
-        "item5Value": {
-          "type": "text",
-          "value": "65 mm"
-        },
+
         "item6Desc": {
           "type": "textarea",
           "value": "5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje."
