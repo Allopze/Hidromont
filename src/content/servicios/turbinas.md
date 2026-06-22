@@ -24,8 +24,8 @@ procesos:
 orden: 7
 ---
 
-Hidromont ejecuta todos los trabajos mecánicos requeridos en turbinas hidráulicas: desde el montaje completo de nuevas instalaciones hasta la reparación y mantenimiento de máquinas con deterioro por cavitación o desgaste prolongado.
+Ejecutamos los trabajos mecánicos para turbinas hidráulicas: desde el montaje de nuevas unidades hasta la reparación y el mantenimiento por cavitación o desgaste.
 
 ## Experiencia en turbinas
 
-Hemos trabajado en turbinas para clientes como Besalco, Iberdrola, Acciona, EDP, Endesa y múltiples minicentrales en Chile y el extranjero. Nuestros tornos de hasta 6 m y el torno al aire con volteo de 4,5 m permiten mecanizar piezas de gran tamaño en nuestras instalaciones.
+Realizamos mantenimiento de turbinas para empresas como Besalco, Iberdrola, Acciona, EDP y Endesa, además de minicentrales. Mecanizamos piezas de gran escala en taller con tornos paralelos de hasta 6 m y torno al aire con volteo de 4,5 m.

@@ -29,12 +29,12 @@ procesos:
 orden: 6
 ---
 
-Hidromont Chile ejecuta proyectos completos de ingeniería, fabricación y montaje para tuberías forzadas y blindajes, integrando ingeniería, fabricación especializada y montaje en terreno. Nuestra experiencia abarca desde minicentrales hasta proyectos de gran envergadura con diámetros superiores a 5.500 mm y presiones de diseño de hasta 89 kg/cm².
+Ejecutamos proyectos de tuberías forzadas y blindajes, integrando la ingeniería, la fabricación en taller y el montaje en terreno. La experiencia abarca desde minicentrales hasta obras de gran envergadura, con diámetros de más de 5.500 mm y presiones de diseño de hasta 89 kg/cm².
 
 ## Capacidad de fabricación
 
-Nuestro taller en Los Ángeles, Región del Biobío, cuenta con equipamiento especializado para fabricar tuberías de gran diámetro: máquinas de arco sumergido ESAB y mesa de corte de plasma y oxicorte de 12 m × 3 m.
+El taller de Los Ángeles dispone de equipamiento para fabricar tuberías de gran diámetro, incluyendo arco sumergido ESAB y mesa de oxicorte y plasma de 12 × 3 metros.
 
 ## Experiencia comprobada
 
-Hemos ejecutado proyectos de tuberías forzadas para centrales como C.H. Los Condores (DN 2200, 1.600 m), C.H. Queltehues (DN 1500/1800, 550 m), C.H. Ralco (blindaje DN 5500), C.H. Nacaome en Honduras (DN 4000) y más de 40 proyectos adicionales en Chile y el extranjero.
+Construimos tuberías forzadas para centrales como Los Cóndores (DN 2200, 1.600 m), Queltehues (DN 1500/1800, 550 m), Ralco (blindaje DN 5500), Nacaome en Honduras (DN 4000) y más de 40 proyectos adicionales en Chile y el extranjero.

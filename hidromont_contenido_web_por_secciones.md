@@ -46,7 +46,7 @@ Fuente PDF: portada, paginas 1, 2, 5, 8 y 58.
 ## Mensaje hero sugerido
 
 **Ingenieria, fabricacion y montaje de equipos hidromecanicos para
-embalses y centrales hidroelectricas.** Hidromont Chile S.A. desarrolla
+embalses y centrales hidroelectricas.** Hidromont Chile S.A. Desarrolla
 proyectos llave en mano para tuberias forzadas, blindajes, compuertas,
 valvulas, turbinas y limpiarrejas, integrando diseno, fabricacion,
 montaje, mantenimiento y rehabilitacion.
@@ -93,7 +93,7 @@ hidroelectricas, presas, embalses y obras de conduccion de agua.
 
 Fuente PDF: pagina 2.
 
-Hidromont Chile S.A. es parte de una empresa de origen espanol con
+Hidromont Chile S.A. Es parte de una empresa de origen espanol con
 trayectoria desde 1983. Desde 1997 cuenta con sede en la Region del
 Biobio, Chile, desde donde participa en la construccion y rehabilitacion
 de proyectos hidraulicos a nivel nacional e internacional.
@@ -521,23 +521,23 @@ dossier.
 
 ## Palabras clave SEO sugeridas
 
-- equipos hidromecanicos Chile
+- Equipos hidromecanicos Chile
 
-- tuberias forzadas centrales hidroelectricas
+- Tuberias forzadas centrales hidroelectricas
 
-- fabricacion de compuertas hidraulicas
+- Fabricacion de compuertas hidraulicas
 
-- valvulas para embalses y presas
+- Valvulas para embalses y presas
 
-- montaje de turbinas hidraulicas
+- Montaje de turbinas hidraulicas
 
-- limpiarrejas para centrales hidroelectricas
+- Limpiarrejas para centrales hidroelectricas
 
-- blindajes en presion
+- Blindajes en presion
 
-- mantenimiento de equipos hidromecanicos
+- Mantenimiento de equipos hidromecanicos
 
-- ingenieria hidraulica industrial Biobio
+- Ingenieria hidraulica industrial Biobio
 
 ## Microcopys y llamados a la accion
 

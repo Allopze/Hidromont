@@ -2,7 +2,7 @@
 
 ## Register
 
-brand
+Brand
 
 ## Users
 

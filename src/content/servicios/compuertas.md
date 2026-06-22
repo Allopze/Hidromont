@@ -30,8 +30,8 @@ procesos:
 orden: 1
 ---
 
-Diseñamos y fabricamos compuertas para cualquier requerimiento de control hidráulico en obras de presa y central hidroeléctrica. Nuestro equipo de ingeniería realiza análisis por elementos finitos para garantizar que cada pieza cumpla con las cargas de diseño y las normativas aplicables.
+Diseñamos y fabricamos compuertas para control hidráulico en presas y centrales hidroeléctricas. Realizamos análisis por elementos finitos para asegurar que cada estructura cumpla con las cargas de diseño y la normativa técnica.
 
 ## Proyectos destacados en compuertas
 
-Hemos suministrado y montado compuertas en proyectos como Embalse Chironta, Embalse Chacrillas, Embalse El Bato, C.H. Pulelfu (4 compuertas radiales + 7 de emergencia + 3 vagón), Bocatoma Canal San Carlos (2 compuertas radiales 5×5 m) y más de 20 proyectos adicionales.
+Suministramos y montamos compuertas en obras como Embalse Chironta, Embalse Chacrillas, Embalse El Bato, Pulelfú (4 compuertas radiales + 7 de emergencia + 3 vagón), Bocatoma Canal San Carlos (2 compuertas radiales 5×5 m) y más de 20 proyectos adicionales.

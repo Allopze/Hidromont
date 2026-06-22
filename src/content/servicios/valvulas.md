@@ -33,8 +33,8 @@ procesos:
 orden: 8
 ---
 
-Las válvulas diseñadas y fabricadas por Hidromont cubren todo el espectro de aplicaciones en obras hidráulicas: desde válvulas de pequeño diámetro para control de caudal ecológico hasta válvulas Bureau y Howell-Bunger de gran tamaño para desagüe de fondo en embalses.
+Fabricamos válvulas para todas las aplicaciones hidráulicas: desde unidades de pequeño diámetro para control de caudal ecológico hasta válvulas Bureau y Howell-Bunger de gran escala para desagües de fondo.
 
 ## Capacidad técnica
 
-Fabricamos válvulas de cualquier diámetro y presión de trabajo. Nuestro equipo de ingeniería dimensiona cada válvula conforme a las normativas aplicables y realiza pruebas de presión y estanqueidad antes de la entrega.
+Diseñamos y fabricamos válvulas para cualquier diámetro y presión de servicio. El equipo de ingeniería dimensiona las unidades según la normativa aplicable y realiza pruebas de presión y estanqueidad antes del despacho.

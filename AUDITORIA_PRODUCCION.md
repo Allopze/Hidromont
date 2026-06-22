@@ -98,14 +98,14 @@ No se encontró **ningún hallazgo Crítico**. La nota no sube de 8 por: (1) un 
 - **CSRF**: token por sesión exigido en todos los métodos mutadores (`requireCsrf`).
 - **Rate-limiting**: 10 intentos/min por IP, persistente en `login_attempts` con respuesta `429` + `Retry-After`.
 - **Auditoría**: `audit_events` registra login, logout, CRUD de entradas/medios, export/publish, restauración de revisiones.
-- **Validación**: Zod en login, creación/edición de entradas (incl. regex de `id`), campos y medios.
+- **Validación**: Zod en login, creación/edición de entradas (incl. Regex de `id`), campos y medios.
 - **Subidas**: lista blanca de MIME, verificación extensión↔MIME, `safeFilename` con normalización, guard de path traversal en escritura y borrado.
 - **Publicación**: `execFile` (no shell) con args como array y `timeout`, comando configurable por env (no por usuario) → sin inyección de comandos.
 - **Revisiones**: snapshot por versión con restauración.
 
 **Riesgos.** El principal es **operativo, no de código**: contraseña por defecto + bind `0.0.0.0` por defecto (SEC-H1). CORS amplio en LAN (SEC-M3). Enumeración por timing (SEC-L1). Cookie sin `Secure` (SEC-L2).
 
-**Preparación.** El CMS **no se despliega a producción** (no forma parte del artefacto estático), por lo que no es un bloqueante del sitio público; sí debe endurecerse antes de operarse en cualquier red compartida.
+**Preparación.** El CMS **no se despliega a producción** (no forma parte del artefacto estático), por lo que no es un bloqueante del sitio público. Sí debe endurecerse antes de operarse en cualquier red compartida.
 
 ## 7. Auditoría de seguridad
 

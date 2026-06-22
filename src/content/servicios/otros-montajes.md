@@ -30,8 +30,8 @@ procesos:
 orden: 4
 ---
 
-Hidromont complementa sus servicios principales con capacidades de montaje electromecánico general y fabricación de estructuras metálicas para cualquier requerimiento de infraestructura hidráulica e industrial.
+Complementamos nuestros servicios principales con montaje electromecánico general y fabricación de estructuras metálicas para infraestructura hidráulica e industrial.
 
 ## Calderería y estructuras
 
-Hemos ejecutado proyectos de calderería pesada y estructuras de soporte para plantas industriales y del sector de la celulosa. También ejecutamos reforzamientos estructurales de canales de hormigón y construcción de vigas para puentes sobre canales de descarga.
+Fabricamos calderería pesada y estructuras de soporte para plantas industriales y de celulosa. También ejecutamos reforzamientos estructurales en canales de hormigón y vigas de puentes sobre canales de descarga.

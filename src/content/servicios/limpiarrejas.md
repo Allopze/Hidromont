@@ -13,7 +13,7 @@ aplicaciones:
   - "Desagüe de fondo con rejas"
 procesos:
   - titulo: "Ingeniería"
-    descripcion: "Diseño según tipo de desecho, dimensión de reja y requerimientos de carga. Comprobación estructural por elementos finitos y modelización."
+    descripcion: "Diseño según tipo de desecho, dimensión de reja y cargas de diseño. Validación estructural por elementos finitos y modelado 3D."
   - titulo: "Fabricación"
     descripcion: "Fabricación del equipo en taller con los sistemas de accionamiento y automatización requeridos."
   - titulo: "Montaje"
@@ -23,4 +23,4 @@ procesos:
 orden: 3
 ---
 
-Los equipos limpiarrejas de Hidromont garantizan la libre admisión de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos arrastrados por la corriente. Cada equipo se diseña a medida según las condiciones del proyecto.
+Los limpiarrejas Hidromont aseguran la entrada continua de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos. Diseñamos cada equipo a la medida del proyecto.
