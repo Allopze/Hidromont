@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: cms-overlay.spec.ts >> CMS overlay flow >> collections panel opens and shows entries
-- Location: e2e/cms-overlay.spec.ts:187:3
+- Name: cms-overlay.spec.ts >> CMS overlay flow >> overlay shows login form when not authenticated
+- Location: e2e/cms-overlay.spec.ts:159:3
 
 # Error details
 

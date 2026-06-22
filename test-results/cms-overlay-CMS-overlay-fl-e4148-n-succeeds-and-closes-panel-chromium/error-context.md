@@ -12,31 +12,49 @@
 # Error details
 
 ```
-Error: expect(locator).not.toBeVisible() failed
-
-Locator:  locator('.hm-cms-panel.open')
-Expected: not visible
-Received: visible
-Timeout:  3000ms
-
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/
 Call log:
-  - Expect "not toBeVisible" with timeout 3000ms
-  - waiting for locator('.hm-cms-panel.open')
-    10 × locator resolved to <aside aria-label="Editor CMS" class="hm-cms-panel open">…</aside>
-       - unexpected value "visible"
+  - navigating to "http://localhost:4321/", waiting until "load"
 
-```
-
-```yaml
-- complementary "Editor CMS":
-  - heading "Editor" [level=2]
-  - button "Cerrar"
-  - main
 ```
 
 # Test source
 
 ```ts
+  50  | 
+  51  |   test('proyectos index loads', async ({ page }) => {
+  52  |     await page.goto('/proyectos');
+  53  |     await expect(page.locator('h1')).toBeVisible();
+  54  |   });
+  55  | 
+  56  |   test('clientes page shows logos', async ({ page }) => {
+  57  |     await page.goto('/clientes');
+  58  |     // Should show at least one client logo img
+  59  |     const logos = page.locator('img[alt]').filter({ hasNot: page.locator('[alt=""]') });
+  60  |     await expect(logos.first()).toBeVisible();
+  61  |   });
+  62  | 
+  63  |   test('contacto page loads', async ({ page }) => {
+  64  |     await page.goto('/contacto');
+  65  |     await expect(page.locator('form')).toBeVisible();
+  66  |   });
+  67  | 
+  68  |   test('build output has no data-cms-* attributes', async ({ page }) => {
+  69  |     // In prod build there should be no cms attributes exposed
+  70  |     // This test runs against the dev server — just verify the overlay requires ?cms=1
+  71  |     await page.goto('/');
+  72  |     const cmsBar = page.locator('.hm-cms-bar');
+  73  |     // Without ?cms=1 in URL and no localStorage, overlay should not be visible
+  74  |     await expect(cmsBar).not.toBeVisible();
+  75  |   });
+  76  | });
+  77  | 
+  78  | test.describe('CMS API', () => {
+  79  |   test('health endpoint is reachable', async ({ request }) => {
+  80  |     const res = await request.get(`${CMS_URL}/api/cms/health`);
+  81  |     expect(res.ok()).toBeTruthy();
+  82  |     const body = await res.json();
+  83  |     expect(body.ok).toBe(true);
   84  |     expect(body.db).toBe('connected');
   85  |   });
   86  | 
@@ -103,7 +121,8 @@ Call log:
   147 | test.describe('CMS overlay flow', () => {
   148 |   test.beforeEach(async ({ page }) => {
   149 |     // Enable overlay via localStorage
-  150 |     await page.goto('/');
+> 150 |     await page.goto('/');
+      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/
   151 |     await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
   152 |   });
   153 | 
@@ -137,8 +156,7 @@ Call log:
   181 |     await loginForm.locator('button[type="submit"]').click();
   182 | 
   183 |     // Panel should close after login
-> 184 |     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible({ timeout: 3000 });
-      |                                                          ^ Error: expect(locator).not.toBeVisible() failed
+  184 |     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible({ timeout: 3000 });
   185 |   });
   186 | 
   187 |   test('collections panel opens and shows entries', async ({ page }) => {

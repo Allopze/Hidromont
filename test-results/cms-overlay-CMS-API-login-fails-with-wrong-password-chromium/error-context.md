@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: cms-overlay.spec.ts >> CMS API >> schema endpoint returns field types
-- Location: e2e/cms-overlay.spec.ts:136:3
+- Name: cms-overlay.spec.ts >> CMS API >> login fails with wrong password
+- Location: e2e/cms-overlay.spec.ts:103:3
 
 # Error details
 
@@ -19,6 +19,6 @@ Call log:
     - accept: */*
     - accept-encoding: gzip,deflate,br
     - content-type: application/json
-    - content-length: 71
+    - content-length: 61
 
 ```

@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: cms-overlay.spec.ts >> CMS API >> schema endpoint returns field types
-- Location: e2e/cms-overlay.spec.ts:136:3
+- Name: cms-overlay.spec.ts >> CMS API >> authenticated entries list returns items
+- Location: e2e/cms-overlay.spec.ts:115:3
 
 # Error details
 

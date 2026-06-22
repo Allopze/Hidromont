@@ -16,7 +16,8 @@ import { getCollection, getEntry } from 'astro:content';
 import { getCmsText } from '../data/cms';
 
 const servicios = await getCollection('servicios');
-servicios.sort((a, b) => a.data.orden - b.data.orden);
+servicios.sort((a, b) => a.data.titulo.localeCompare(b.data.titulo, 'es'));
+
 
 const proyectosDestacados = await getCollection(
   'proyectos',

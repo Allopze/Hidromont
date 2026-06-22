@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: cms-overlay.spec.ts >> CMS overlay flow >> collections panel opens and shows entries
-- Location: e2e/cms-overlay.spec.ts:187:3
+- Name: cms-overlay.spec.ts >> CMS overlay flow >> overlay bar appears with ?cms=1
+- Location: e2e/cms-overlay.spec.ts:154:3
 
 # Error details
 

@@ -6,21 +6,70 @@
 
 # Test info
 
-- Name: cms-overlay.spec.ts >> CMS overlay flow >> collections panel opens and shows entries
-- Location: e2e/cms-overlay.spec.ts:187:3
+- Name: cms-overlay.spec.ts >> Public site >> clientes page shows logos
+- Location: e2e/cms-overlay.spec.ts:56:3
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/clientes
 Call log:
-  - navigating to "http://localhost:4321/", waiting until "load"
+  - navigating to "http://localhost:4321/clientes", waiting until "load"
 
 ```
 
 # Test source
 
 ```ts
+  1   | /**
+  2   |  * E2E tests for the CMS overlay.
+  3   |  * Requires:
+  4   |  *   1. Astro dev server running: npm run dev (port 4321)
+  5   |  *   2. CMS server running:       npm run cms  (port 8787)
+  6   |  *
+  7   |  * Run with: npx playwright test
+  8   |  */
+  9   | import { test, expect } from '@playwright/test';
+  10  | 
+  11  | const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
+  12  | const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
+  13  | const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD ?? 'Hidromont-Admin-ChangeMe';
+  14  | 
+  15  | // Helper: login via API
+  16  | async function apiLogin(page: import('@playwright/test').Page) {
+  17  |   const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
+  18  |     data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+  19  |   });
+  20  |   expect(res.ok()).toBeTruthy();
+  21  |   return (await res.json()).csrfToken as string;
+  22  | }
+  23  | 
+  24  | test.describe('Public site', () => {
+  25  |   test('home page loads', async ({ page }) => {
+  26  |     await page.goto('/');
+  27  |     await expect(page).toHaveTitle(/Hidromont/i);
+  28  |     await expect(page.locator('header').first()).toBeVisible();
+  29  |   });
+  30  | 
+  31  |   test('navigation links work', async ({ page }) => {
+  32  |     await page.goto('/');
+  33  |     await page.click('a[href="/servicios"]');
+  34  |     await expect(page).toHaveURL(/\/servicios/);
+  35  |   });
+  36  | 
+  37  |   test('servicios index loads all cards', async ({ page }) => {
+  38  |     await page.goto('/servicios');
+  39  |     // At least one service card should be visible. Scope to <main>: the header
+  40  |     // nav dropdown also contains /servicios/* links but they start hidden
+  41  |     // (visibility:hidden until hover/focus), so .first() must not match those.
+  42  |     const cards = page.locator('main [href^="/servicios/"]');
+  43  |     await expect(cards.first()).toBeVisible();
+  44  |   });
+  45  | 
+  46  |   test('servicio detail page loads', async ({ page }) => {
+  47  |     await page.goto('/servicios/tuberias-forzadas');
+  48  |     await expect(page.locator('h1').first()).toBeVisible();
+  49  |   });
   50  | 
   51  |   test('proyectos index loads', async ({ page }) => {
   52  |     await page.goto('/proyectos');
@@ -28,7 +77,8 @@ Call log:
   54  |   });
   55  | 
   56  |   test('clientes page shows logos', async ({ page }) => {
-  57  |     await page.goto('/clientes');
+> 57  |     await page.goto('/clientes');
+      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/clientes
   58  |     // Should show at least one client logo img
   59  |     const logos = page.locator('img[alt]').filter({ hasNot: page.locator('[alt=""]') });
   60  |     await expect(logos.first()).toBeVisible();
@@ -121,8 +171,7 @@ Call log:
   147 | test.describe('CMS overlay flow', () => {
   148 |   test.beforeEach(async ({ page }) => {
   149 |     // Enable overlay via localStorage
-> 150 |     await page.goto('/');
-      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4321/
+  150 |     await page.goto('/');
   151 |     await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
   152 |   });
   153 | 
@@ -130,47 +179,4 @@ Call log:
   155 |     await page.goto('/?cms=1');
   156 |     await expect(page.locator('.hm-cms-bar')).toBeVisible();
   157 |   });
-  158 | 
-  159 |   test('overlay shows login form when not authenticated', async ({ page }) => {
-  160 |     await page.goto('/?cms=1');
-  161 |     // Click on any editable element to trigger login
-  162 |     const editable = page.locator('[data-cms-entry]').first();
-  163 |     if (await editable.count() > 0) {
-  164 |       await editable.click({ force: true });
-  165 |       await expect(page.locator('form[data-login]')).toBeVisible();
-  166 |     }
-  167 |   });
-  168 | 
-  169 |   test('overlay login succeeds and closes panel', async ({ page }) => {
-  170 |     await page.goto('/?cms=1');
-  171 |     // Open panel with any editable element
-  172 |     const editable = page.locator('[data-cms-entry]').first();
-  173 |     if (await editable.count() === 0) return;
-  174 |     await editable.click({ force: true });
-  175 | 
-  176 |     // Fill login form
-  177 |     const loginForm = page.locator('form[data-login]');
-  178 |     if (await loginForm.count() === 0) return; // Already logged in
-  179 |     await loginForm.locator('[name="email"]').fill(ADMIN_EMAIL);
-  180 |     await loginForm.locator('[name="password"]').fill(ADMIN_PASSWORD);
-  181 |     await loginForm.locator('button[type="submit"]').click();
-  182 | 
-  183 |     // Panel should close after login
-  184 |     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible({ timeout: 3000 });
-  185 |   });
-  186 | 
-  187 |   test('collections panel opens and shows entries', async ({ page }) => {
-  188 |     // Login first via API
-  189 |     await page.goto('/');
-  190 |     const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
-  191 |       data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-  192 |     });
-  193 |     expect(res.ok()).toBeTruthy();
-  194 | 
-  195 |     await page.goto('/?cms=1');
-  196 |     await page.locator('[data-action="collections"]').click();
-  197 |     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
-  198 |   });
-  199 | });
-  200 | 
 ```
