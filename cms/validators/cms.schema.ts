@@ -32,7 +32,7 @@ export const updateMediaSchema = z.object({
 export const createEntrySchema = z.object({
   id: z.string().min(1).max(160).regex(/^[a-z0-9._-]+$/, 'ID debe contener solo letras minúsculas, números, puntos, guiones y guiones bajos'),
   kind: z.enum(['page', 'layout', 'component', 'settings', 'servicio', 'proyecto']),
-  slug: z.string().min(1).max(240),
+  slug: z.string().min(1).max(240).regex(/^[a-z0-9/._-]+$/, 'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales').refine(val => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)'),
   locale: z.string().optional(),
   title: z.string().min(1).max(240),
   status: z.enum(['draft', 'published']).optional(),
@@ -41,7 +41,7 @@ export const createEntrySchema = z.object({
 
 export const updateEntryMetaSchema = z.object({
   title: z.string().min(1).max(240).optional(),
-  slug: z.string().min(1).max(240).optional(),
+  slug: z.string().min(1).max(240).regex(/^[a-z0-9/._-]+$/, 'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales').refine(val => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)').optional(),
   status: z.enum(['draft', 'published']).optional(),
 });
 

@@ -51,6 +51,7 @@ export function requireCsrf() {
     const csrf = request.headers['x-csrf-token'];
     if (!request.cmsSession || csrf !== request.cmsSession.csrfToken) {
       reply.status(403).send({ error: 'CSRF inválido' });
+      return;
     }
   };
 }

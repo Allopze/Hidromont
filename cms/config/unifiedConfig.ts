@@ -38,6 +38,7 @@ export const config = {
       'http://127.0.0.1:4321',
     ]),
     cookieName: process.env.CMS_COOKIE_NAME ?? 'hidromont_cms_session',
+    cookieSecure: process.env.CMS_COOKIE_SECURE ? process.env.CMS_COOKIE_SECURE === '1' : process.env.NODE_ENV === 'production',
     sessionDays: intFromEnv('CMS_SESSION_DAYS', 7),
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
     uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'public', 'uploads', 'cms'),

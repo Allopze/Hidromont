@@ -16,6 +16,7 @@ export class AuthController extends BaseController {
 
       reply.setCookie(config.cms.cookieName, session.sessionId, {
         httpOnly: true,
+        secure: config.cms.cookieSecure,
         sameSite: 'lax',
         path: '/',
         expires: new Date(session.expiresAt),

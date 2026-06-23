@@ -1,204 +1,226 @@
 # Auditoría de Producción
 
-> Auditoría técnica integral del repositorio `hidromont-chile-web` (sitio Astro estático + CMS propio Fastify/SQLite).
-> Fecha: 2026-06-20 · Rama auditada: `fix/auditoria-p0-p1` · Auditor: revisión senior automatizada.
-
 ## 1. Resumen ejecutivo
 
 ### Nota final
 
-**Nota: 7/10**
+Nota: 6.0/10
 
 ### Veredicto
 
-**Listo para producción: No** (muy cerca; bloqueado por 1 hallazgo Alto y la ambigüedad de cabeceras de despliegue).
+Listo para producción: No
 
 ### Justificación breve
 
-El proyecto está **notablemente bien construido** para su categoría. La decisión arquitectónica clave —el sitio público es **100% estático** (`output: 'static'`) y el CMS se inyecta **solo en desarrollo** (`import.meta.env.DEV`)— elimina de raíz la mayor parte de la superficie de ataque de producción: el artefacto desplegado no contiene servidor, ni panel administrativo, ni secretos, ni código del CMS. Eso es exactamente lo que se quiere ver.
+El proyecto presenta una arquitectura híbrida sumamente ingeniosa: un sitio web estático generado con Astro para un rendimiento óptimo en producción, respaldado por un CMS local desarrollado en Fastify y SQLite que exporta los cambios directamente a archivos JSON y Markdown en el repositorio. La calidad técnica general del código TypeScript, la configuración tipográfica de Astro y la suite de pruebas unitarias y E2E (con 49 tests aprobados) es excelente, obteniendo un comportamiento robusto en verificaciones locales.
 
-Las validaciones automáticas existen y pasan: `astro check` reporta **0 errores / 0 warnings** sobre 92 archivos, el build genera 21 páginas correctamente, y la suite de tests del CMS pasa **49/49** (más una suite E2E de Playwright). El CMS, aunque sea una herramienta local, implementa autenticación real (bcrypt cost 12), sesiones con cookie `httpOnly`, tokens CSRF, rate-limiting por IP, registro de auditoría, historial de revisiones y validación robusta de subidas (MIME + extensión + verificación con `sharp`). La documentación (`README.md`, `.env.example`) es completa y permite a un tercero instalar y desplegar sin adivinar.
+Sin embargo, **el proyecto no está listo para ser desplegado en producción debido a dos hallazgos de severidad alta** que impiden su correcto funcionamiento y comprometen la seguridad:
+1. **Formulario de contacto roto en producción por CSP**: La directiva de Content Security Policy (CSP) expuesta en las cabeceras del servidor (`public/_headers`) restringe los envíos de formularios (`form-action`) únicamente a `https://api.web3forms.com`, mientras que el código real de `ContactForm.astro` realiza envíos POST a `https://formsubmit.co/ajax/allopze@gmail.com`. El navegador bloqueará la petición por violación de CSP, invalidando el canal de contacto principal del sitio. Además, el destino del formulario está hardcodeado a una dirección personal de Gmail.
+2. **Vulnerabilidad de Path Traversal en el CMS**: El CMS no valida el parámetro `slug` en los esquemas de validación Zod al crear o renombrar entradas de colecciones. Un usuario con acceso administrativo (o mediante robo de credenciales) puede ingresar un slug con secuencias de escape del tipo `../../` para escribir y sobreescribir archivos críticos de código fuente del servidor (ej. `server.ts` u otros archivos del proyecto) al presionar "Exportar y validar", abriendo vectores de ejecución de código remoto (RCE).
 
-No se encontró **ningún hallazgo Crítico**. La nota no sube de 8 por: (1) un hallazgo **Alto** —el CMS combina contraseña de administrador por defecto con bind por defecto a `0.0.0.0`, lo que lo expone en la LAN con credenciales conocidas si se ejecuta sin endurecer; (2) la configuración de cabeceras de seguridad depende de `.htaccess` (solo Apache) mientras `public/_redirects` sugiere Cloudflare Pages, donde **no se aplicarían** y no existe `_headers` ni CSP; (3) la página `/contacto` no tiene `<h1>`. Resueltos esos puntos, el proyecto califica cómodamente para un 8.
+Adicionalmente, se detectan fallos medianos en la configuración de la cookie de sesión (falta el flag `Secure`) y la configuración de CORS para red (que por defecto bloquea el dominio productivo de la empresa). Hasta que no se subsanen estos problemas, el paso a producción es inviable.
+
+---
 
 ## 2. Estado general del proyecto
 
-**Arquitectura.** Separación limpia y madura. El sitio (`src/`) y el CMS (`cms/`) están desacoplados. El CMS sigue un patrón por capas correcto: `routes → controllers → services → repositories → db`, con `validators` (Zod), `middleware` (auth/CORS/CSRF), `config` unificada y `types`. No se observa lógica de negocio en controladores ni acceso directo a SQL desde servicios. Reutilización adecuada de componentes Astro (`ui/`, `layout/`, `home/`, etc.).
+La base del repositorio se encuentra en un estado muy limpio y modular. Astro compila de forma estática en la carpeta `dist/` sin advertencias ni errores de TypeScript. La separación de responsabilidades en la API del CMS (servicios, repositorios SQLite, controladores y validadores Zod) sigue buenas prácticas de desarrollo moderno de software. El sistema cuenta con mecanismos avanzados de seguridad local como rate limiting por IP para el inicio de sesión, un registro de auditoría completo y protección CSRF. 
 
-**Astro.** Uso idiomático: `output: 'static'`, `site` definido, integración de `sitemap`, Tailwind con `applyBaseStyles:false`, colecciones de contenido tipadas con Zod (`src/content/config.ts`), rutas dinámicas (`[slug].astro`) para servicios y proyectos, e imágenes optimizadas a WebP en build. Cero islas hidratadas innecesarias; la interactividad usa `<script is:inline>` puntual. El overlay del CMS y todos los atributos `data-cms-*` se eliminan del build de producción por estar detrás de `import.meta.env.DEV`.
+A pesar de esto, se aprecian desajustes importantes entre la documentación del proyecto (que hace referencia al uso de Web3Forms) y la implementación real (que utiliza FormSubmit.co), sumado a la falta de variables de entorno clave en los archivos de configuración de ejemplo, lo que dificulta la puesta en marcha de un despliegue automatizado seguro por un tercero.
 
-**CMS.** Es un CMS local/LAN serio, no un prototipo. Flujo completo: crear/editar/eliminar/publicar, revisiones con rollback, biblioteca de medios con detección de uso, exportación a `cms-content.json` + Markdown, y publicación que ejecuta `astro check` antes de dar por válido el contenido. El frontend nunca renderiza HTML crudo del CMS con `set:html` (los `set:html` existentes son `JSON.stringify` de datos estáticos), por lo que no hay vector de XSS almacenado en el sitio.
-
-**Preparación.** Build reproducible con guard explícito que **falla** si falta `PUBLIC_WEB3FORMS_KEY` en producción (evita el único canal de conversión roto en silencio). `.env` está en `.gitignore` y no se rastrea; `.env.example` es exhaustivo. Quedan pendientes de endurecer la operación del CMS y la entrega de cabeceras de seguridad según el host real.
+---
 
 ## 3. Hallazgos por severidad
 
 ### Críticos
 
-| ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
-|---|---|---|---|---|
-| — | No se identificaron hallazgos críticos. | — | — | — |
+*No se encontraron hallazgos de severidad Crítica.*
 
 ### Altos
 
 | ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
 |---|---|---|---|---|
-| SEC-H1 | El CMS define contraseña de admin por defecto (`Hidromont-Admin-ChangeMe`) y `CMS_HOST` por defecto `0.0.0.0`. Si se ejecuta `npm run cms` sin endurecer, el panel queda accesible en toda la LAN con credenciales públicas conocidas. Solo se imprime una advertencia; el servidor **arranca igual**. | `cms/config/unifiedConfig.ts:44-48`, `cms/server.ts:9-23` | Cualquiera en la red local podría autenticarse como administrador, editar contenido y subir archivos. | Hacer que el arranque **falle** (no solo advierta) si la contraseña es la de por defecto y el host no es loopback. Cambiar el default de `CMS_HOST` a `127.0.0.1`. Exigir `CMS_ADMIN_PASSWORD` sin valor por defecto utilizable. |
+| **SEC-001** | Path Traversal en exportación de colecciones del CMS | [exportService.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/services/exportService.ts#L66) y [cms.schema.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/validators/cms.schema.ts#L35) | Un slug malicioso del tipo `../../` permite escribir archivos Markdown fuera del directorio correspondiente y sobreescribir código ejecutable del servidor backend, lo que deriva en Compromiso del Servidor (RCE). | Validar el parámetro `slug` en `createEntrySchema` y `updateEntryMetaSchema` mediante una expresión regular restrictiva: `z.string().regex(/^[a-z0-9-]+$/)`. |
+| **SEC-002** | Bloqueo del formulario de contacto en producción por CSP | [_headers](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/public/_headers#L5) y [ContactForm.astro](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/src/components/contact/ContactForm.astro#L45) | La política CSP restringe `form-action` a Web3Forms, pero el formulario apunta a FormSubmit.co. Los envíos fallarán silenciosamente en el cliente, impidiendo la recepción de consultas comerciales. | Alinear la URL del formulario y el CSP. Se recomienda actualizar el CSP en `_headers` para permitir `https://formsubmit.co` o migrar el código del componente a Web3Forms. |
 
 ### Medios
 
 | ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
 |---|---|---|---|---|
-| SEC-M1 | Las cabeceras de seguridad están solo en `public/.htaccess` (exclusivo de Apache), pero `public/_redirects` indica Cloudflare Pages, donde `.htaccess` se ignora. No existe `_headers` ni Content-Security-Policy. | `public/.htaccess`, `public/_redirects` (no existe `public/_headers`) | En el host probable (Cloudflare Pages) el sitio se sirve **sin** `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` ni CSP: clickjacking y MIME-sniffing sin mitigar. | Añadir `public/_headers` con las mismas cabeceras + una CSP básica. Documentar el host real y eliminar la config que no aplique. |
-| SEC-M2 | `npm audit` reporta 16 vulnerabilidades (14 moderadas, 2 altas), todas en la cadena de `@astrojs/check` → `yaml-language-server` → `yaml`. | `package.json` (deps), `package-lock.json` | Solo afectan herramientas de build/type-check, no el artefacto estático; aun así amplían la superficie de la instalación. | Ejecutar `npm audit fix`; mantener `@astrojs/check` actualizado. Ver también CFG-M1. |
-| CFG-M1 | Dependencias exclusivas de build/dev (`@astrojs/check`, `typescript`, `tsx`, `concurrently`) están en `dependencies` en lugar de `devDependencies`. | `package.json:14-41` | Instalación de producción más pesada y mayor superficie de `npm audit`/supply-chain de lo necesario. | Mover herramientas de build/CLI a `devDependencies`. |
-| A11Y-M1 | La página `/contacto` no tiene `<h1>`; su mayor encabezado es un `<h2>`. Verificado en `dist/contacto/index.html` (h1=0; el resto de páginas tiene exactamente 1). | `src/pages/contacto.astro:9-28` | Jerarquía de encabezados rota: perjudica lectores de pantalla (WCAG 2.4.6/1.3.1) y SEO on-page. | Añadir un `<h1>` visible (o `sr-only`) con el título de la página, p. ej. "Contacto". |
-| SEC-M3 | CORS refleja con credenciales cualquier origen de red privada (`10.x`, `192.168.x`, `172.16–31.x`) y cualquier `localhost:*`. | `cms/middleware/security.ts:15-31` | Origen amplio para una API con cookies; mitigado por el token CSRF obligatorio en mutaciones, pero permisivo. | Restringir a `CMS_ALLOWED_ORIGINS` explícitos; evitar el reflejo automático de toda la LAN. |
+| **SEC-003** | Cookie de sesión del CMS sin flag `Secure` | [AuthController.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/controllers/AuthController.ts#L17) | La cookie de sesión `hidromont_cms_session` viaja sobre conexiones unencrypted HTTP (si el CMS está expuesto), posibilitando la interceptación del token y secuestro de sesión (Session Hijacking). | Añadir la propiedad `secure: true` a las opciones de `setCookie` en el controlador de autenticación de Fastify. |
+| **CONF-001** | CORS bloquea el origen de producción de forma predeterminada | [.env.example](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/.env.example#L26) y [security.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/middleware/security.ts#L17) | Si se intenta invocar el API del CMS desde la web pública expuesta, el navegador bloqueará las consultas preflight (OPTIONS) y de datos al no estar el dominio productivo en `CMS_ALLOWED_ORIGINS`. | Incluir los dominios reales (ej. `https://hidromont.cl`, `https://www.hidromont.cl`) en la variable `CMS_ALLOWED_ORIGINS` del servidor de producción. |
+| **CONF-002** | Casilla de correo receptora del formulario hardcodeada a Gmail personal | [ContactForm.astro](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/src/components/contact/ContactForm.astro#L45) | Todos los correos de contacto de clientes de Hidromont se enviarán al correo personal del desarrollador (`allopze@gmail.com`) en lugar de las casillas corporativas. | Parametrizar la URL del formulario mediante una variable de entorno (por ejemplo, `PUBLIC_CONTACT_EMAIL`) o a través de la configuración del CMS. |
 
 ### Bajos
 
 | ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
 |---|---|---|---|---|
-| REPO-L1 | Archivos pesados/no usados en build versionados en git: catálogo PDF de 5 MB, carpeta `fotos-hidromont/` (~141 imágenes en bruto), `LOGOTIPO - Editado.png`, `hidromont-chile.svg`, además de `brief.md`, `PLAN.md`, `DESIGN_SYSTEM.md`. | raíz del repo | Repo inflado, clones lentos; ninguno se despliega (no están en `public/`), pero ensucian el historial. | Mover material fuente a almacenamiento externo o `.gitignore`; conservar solo lo necesario para el build. |
-| SEC-L1 | Enumeración de usuarios por timing: `login()` lanza de inmediato si el email no existe y solo ejecuta `bcrypt.compare` si existe. | `cms/services/authService.ts:30-35` | Un atacante podría inferir qué emails son válidos por diferencia de latencia. Bajo impacto (1 solo admin, mensaje genérico). | Ejecutar siempre un `bcrypt.compare` contra un hash dummy para igualar el tiempo. |
-| SEC-L2 | La cookie de sesión no establece `Secure`. | `cms/controllers/AuthController.ts:21-26` | Aceptable en HTTP local; problemático si el CMS se expone por HTTPS en LAN. | Activar `secure` condicionalmente cuando el origen sea HTTPS. |
-| QA-L1 | No hay ESLint/Prettier configurados; el formateo/estilo no se valida automáticamente. | (ausencia) | Inconsistencias de estilo a largo plazo; no bloqueante (existe `astro check` + tests). | Añadir ESLint + Prettier y un script `lint`. |
-| DOC-L1 | Coexisten dos configuraciones de despliegue (`.htaccess` Apache y `_redirects` Cloudflare) sin documentar cuál es el host real. | `public/.htaccess`, `public/_redirects` | Confusión operativa; relacionado con SEC-M1. | Documentar el proveedor de hosting en el README y dejar solo la config aplicable. |
+| **SEC-004** | Endpoint de salud expone información interna sin autenticación | [cmsRoutes.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/routes/cmsRoutes.ts#L62) | El endpoint `/api/cms/health` entrega datos sobre el estado de la conexión a la BD SQLite, volumen de entradas y archivos de medios a cualquier usuario sin loguear. | Proteger este endpoint mediante el hook de autenticación `requireAuth` o limitar su salida a un simple estado de éxito (`{ ok: true }`). |
+| **CONF-003** | Variables de compilación del CMS no declaradas en el ejemplo del entorno | [.env.example](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/.env.example) | Dificultad para el despliegue del proyecto por parte de otros administradores al desconocer la existencia de `PUBLIC_ENABLE_CMS` y `PUBLIC_CMS_API_BASE`. | Agregar ambas variables comentadas y explicadas detalladamente en el archivo `.env.example`. |
+| **QUAL-001** | Falta de configuración de formateador y linter estandarizado | [package.json](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/package.json) | Degradación de la consistencia de estilos y reglas de código a medida que otros desarrolladores colaboren en el repositorio. | Instalar ESLint y Prettier como dependencias de desarrollo y configurar un script `lint` en el archivo de manifiesto del proyecto. |
+| **QUAL-002** | Flujo frágil en el middleware de CSRF por falta de retorno | [security.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/middleware/security.ts#L51) | Aunque Fastify corta la petición si se invoca `reply.send`, la falta de `return` puede dar lugar a la ejecución de código posterior accidentalmente si se modificase el hook en el futuro. | Agregar de manera explícita la palabra clave `return` inmediatamente después de ejecutar `reply.status(403).send(...)`. |
 
 ### Informativos
 
 | ID | Observación | Archivo/Ruta | Recomendación |
 |---|---|---|---|
-| INFO-1 | Excelente decisión de seguridad: producción es estática y el overlay/credenciales del CMS quedan fuera del build (`import.meta.env.DEV`). | `src/components/cms/CmsOverlay.astro:4` | Mantener este invariante en futuras features. |
-| INFO-2 | Guard de build que aborta si falta `PUBLIC_WEB3FORMS_KEY` en prod: evita formulario de contacto roto en silencio. | `src/components/contact/ContactForm.astro:14-22` | Patrón a replicar para otras integraciones externas. |
-| INFO-3 | Cobertura de pruebas razonable: 49 tests unitarios/integración del CMS + E2E Playwright + type-check en cada build. | `cms/test/`, `e2e/` | Ampliar E2E al flujo público (formulario, navegación). |
-| INFO-4 | SEO técnico sólido: `sitemap-index.xml`, `robots.txt`, canonical, Open Graph, Twitter Card y JSON-LD `Organization`. | `astro.config.mjs`, `src/layouts/BaseLayout.astro` | Considerar JSON-LD adicional (`Service`, `BreadcrumbList`). |
-| INFO-5 | Subidas validadas por MIME + extensión + metadata `sharp`; SVG bloqueado en uploads de usuario para evitar XSS embebido. | `cms/services/mediaService.ts:10-13,96-110` | Mantener. |
+| **INF-001** | Crawlers de buscadores pueden intentar rastrear las rutas del API | [robots.txt](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/public/robots.txt) | Agregar una línea `Disallow: /api/cms/` en el archivo de directivas de robots para mitigar peticiones innecesarias de indexación en los endpoints del CMS. |
+| **INF-002** | Limpieza de Rate Limit pasiva en inicialización del servidor | [cmsRoutes.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/routes/cmsRoutes.ts#L45) | La purga de intentos de login obsoletos en la tabla `login_attempts` solo se hace al arrancar. Se aconseja disparar `rateLimitRepository.cleanup()` de forma periódica o tras cada login fallido. |
+
+---
 
 ## 4. Auditoría de arquitectura
 
-**Análisis.** Estructura por capas correcta y consistente en el CMS (`controllers/`, `services/`, `repositories/`, `validators/`, `middleware/`, `config/`, `db/`, `types/`). Inyección de dependencias manual y explícita en `cms/routes/cmsRoutes.ts` (los repos reciben `db`, los servicios reciben repos, los controllers reciben servicios): testeable y sin acoplamiento global. El sitio Astro separa páginas, layouts, componentes por dominio y datos (`src/data/`). `ExportService` acepta `rootDir` inyectable para que los tests escriban a temporales y no pisen el contenido real: buena previsión.
+El proyecto adopta un enfoque híbrido muy pragmático:
+- **Modularidad**: El backend en `cms/` implementa una separación por capas clara y comprensible: `controllers` para la interacción HTTP, `services` para la lógica de negocio coordinada, `repositories` para las consultas preparadas a la base de datos de SQLite, y `validators` para la asimilación segura de cargas mediante Zod.
+- **Acoplamiento**: El frontend (Astro) y el backend del CMS se comunican de forma asíncrona a través del script cliente inyectado `cms-overlay.js` únicamente en el entorno habilitado para la edición. El sitio público es un generador de páginas estáticas de carga inmediata que consume datos estáticos compilados en `src/data/cms-content.json` y archivos Markdown en `src/content/`. Esto garantiza que los tiempos de respuesta del cliente en producción no dependan de llamadas al API del CMS ni de transacciones en SQLite.
 
-**Problemas.** (1) Mezcla de dependencias de build con runtime (CFG-M1). (2) Archivos de documentación/diseño y assets en bruto en la raíz (REPO-L1) restan claridad. (3) Pequeña duplicación de helpers de cabeceras de seguridad entre `cms/server.ts` (onSend) y `.htaccess`.
+*Recomendación de arquitectura*: Para escalar, se aconseja separar el servidor CMS y el servidor de archivos estáticos en producción, ya que Fastify no es tan eficiente sirviendo archivos estáticos como Nginx, Cloudflare Pages o AWS S3. Sin embargo, para entornos LAN y despliegues medianos, la arquitectura integrada actual es perfectamente admisible.
 
-**Recomendaciones.** Limpiar la raíz, separar dependencias de dev, y centralizar la lista de cabeceras de seguridad. La base arquitectónica es escalable y mantenible.
+---
 
 ## 5. Auditoría específica de Astro
 
-**Análisis.** `astro.config.mjs` correcto: `site` definido (necesario para canonical/sitemap), `output: 'static'`, `build.assets` personalizado, `trailingSlash: 'ignore'`. Colecciones tipadas con Zod, rutas dinámicas con `getStaticPaths` implícito en `[slug].astro`, imágenes optimizadas a WebP en build (visible en la salida). Fuentes auto-hospedadas con `preload` del peso de encabezado para evitar FOUT. Sin hidratación de cliente innecesaria.
+Astro se utiliza de acuerdo con las mejores prácticas:
+- **Astro Islands**: El sitio web aprovecha el renderizado completamente estático. No hay sobrehidratación en el cliente, lo que resulta en un tiempo de interactividad (Time to Interactive) excelente.
+- **Optimización de Assets**: Las imágenes dinámicas y de los artículos son procesadas en el build mediante la etiqueta `<Image>` de Astro, convirtiéndolas automáticamente a formato WebP moderno, con sus correspondientes dimensiones responsivas para evitar saltos en la maquetación (CLS).
+- **Rutas Dinámicas**: Las rutas como `src/pages/servicios/[slug].astro` y `src/pages/proyectos/[slug].astro` obtienen correctamente las rutas estáticas en tiempo de compilación con `getStaticPaths()`.
 
-**Problemas.** Sin endpoints SSR (esperado en sitio estático). El único riesgo conceptual sería contenido del CMS renderizado como HTML crudo; se verificó que **no ocurre** (los `set:html` son JSON estático y SVG de íconos controlado en `ServiceCard.astro`).
-
-**Recomendaciones.** Considerar `astro:assets` también para imágenes servidas desde `public/` cuando se pueda, para `width/height` automáticos.
+---
 
 ## 6. Auditoría del CMS propio
 
-**Análisis.** CMS por capas con autenticación real:
-- **Auth**: bcrypt (cost 12), sesiones en SQLite con expiración (`CMS_SESSION_DAYS`), cookie `httpOnly` + `sameSite:'lax'`, limpieza de sesiones expiradas.
-- **CSRF**: token por sesión exigido en todos los métodos mutadores (`requireCsrf`).
-- **Rate-limiting**: 10 intentos/min por IP, persistente en `login_attempts` con respuesta `429` + `Retry-After`.
-- **Auditoría**: `audit_events` registra login, logout, CRUD de entradas/medios, export/publish, restauración de revisiones.
-- **Validación**: Zod en login, creación/edición de entradas (incl. Regex de `id`), campos y medios.
-- **Subidas**: lista blanca de MIME, verificación extensión↔MIME, `safeFilename` con normalización, guard de path traversal en escritura y borrado.
-- **Publicación**: `execFile` (no shell) con args como array y `timeout`, comando configurable por env (no por usuario) → sin inyección de comandos.
-- **Revisiones**: snapshot por versión con restauración.
+El CMS implementa una experiencia visual in-situ muy pulida y fluida:
+- **Persistencia**: SQLite con soporte para WAL (Write-Ahead Logging) y claves foráneas activadas ofrece una base robusta contra la corrupción de datos y un rendimiento transaccional excelente en concurrencia.
+- **Sistema de Revisiones**: El backend registra instantáneas serializadas del contenido (`snapshot_json` en la tabla `revisions`) ante cada modificación de campo, posibilitando una reversión granular instantánea y segura.
+- **Validación**: Las subidas de imágenes pasan por la comprobación física del tipo MIME empleando la biblioteca `sharp` en el servidor, neutralizando el riesgo de almacenamiento de scripts maliciosos haciéndose pasar por archivos SVG o PNG.
+- **Riesgos Graves**: El CMS carece de validación en la estructura de los slugs ingresados para los contenidos Markdown de los servicios y proyectos. Esto vulnera el control de rutas del sistema operativo mediante Path Traversal y puede causar la sobreescritura de archivos esenciales de código fuente del servidor (ej. `server.ts` u otros archivos del proyecto) al presionar "Exportar y validar".
 
-**Riesgos.** El principal es **operativo, no de código**: contraseña por defecto + bind `0.0.0.0` por defecto (SEC-H1). CORS amplio en LAN (SEC-M3). Enumeración por timing (SEC-L1). Cookie sin `Secure` (SEC-L2).
-
-**Preparación.** El CMS **no se despliega a producción** (no forma parte del artefacto estático), por lo que no es un bloqueante del sitio público. Sí debe endurecerse antes de operarse en cualquier red compartida.
+---
 
 ## 7. Auditoría de seguridad
 
-| Vector | Estado | Evidencia |
-|---|---|---|
-| XSS almacenado/reflejado en el sitio | Mitigado | Sin `set:html` con contenido de usuario; `set:html` solo sobre `JSON.stringify` estático y SVG de íconos controlado. |
-| CSRF (CMS) | Mitigado | Token por sesión exigido en mutaciones (`cms/middleware/security.ts`). |
-| Inyección de comandos (publish) | Mitigado | `execFile` con array de args, comando desde env. |
-| Inyección SQL | Mitigado | Consultas parametrizadas en todos los repositorios. |
-| Exposición de secretos | Mitigado | `.env` en `.gitignore` y no rastreado; producción estática sin secretos. |
-| Credenciales por defecto | **Alto** | `Hidromont-Admin-ChangeMe` + host `0.0.0.0` por defecto (SEC-H1). |
-| Cabeceras de seguridad / CSP | **Medio** | `.htaccess` no aplica en Cloudflare; sin `_headers` ni CSP (SEC-M1). |
-| CORS | **Medio** | Reflejo de toda la LAN con credenciales (SEC-M3). |
-| Subida de archivos maliciosos | Mitigado | MIME+extensión+`sharp`, SVG bloqueado en uploads. |
-| Dependencias vulnerables | Medio | 16 vulns en cadena de `@astrojs/check` (build-only). |
-| Enumeración de usuarios | Bajo | Timing en login (SEC-L1). |
+La seguridad del sitio público estático es impecable, pero el servidor CMS presenta riesgos lógicos corregibles:
+- **SQL Injection**: Neutralizado por el uso estricto de sentencias parametrizadas y preparadas con `better-sqlite3`.
+- **Cross-Site Scripting (XSS)**: El CMS overlay se defiende correctamente sanitizando con una función `escapeHtml` propia los valores que se inyectan dinámicamente en el DOM del panel de administración. Además, se prohíbe la subida de archivos SVG, previniendo inyecciones XSS persistentes mediante SVG.
+- **Cross-Site Request Forgery (CSRF)**: Controlado en las peticiones mutables (`POST`, `PATCH`, `DELETE`) al exigir el encabezado `X-CSRF-Token` emitido de forma segura al inicio de cada sesión.
+- **Vulnerabilidad Crítica/Alta de CSP en Contacto**: La discrepancia detectada entre el receptor de los datos del formulario (FormSubmit.co) y la regla `form-action` de CSP (`https://api.web3forms.com`) bloqueará la funcionalidad de contacto en el navegador.
+
+---
 
 ## 8. Auditoría de performance
 
-**Fortalezas.** Sitio estático (TTFB mínimo), imágenes optimizadas a WebP con `srcset` en build, `loading="lazy"` por defecto en imágenes editables y en el iframe del mapa, `fetchpriority` configurable, `preload` de la fuente crítica, y cabeceras de cache agresivas para assets inmutables (`max-age=31536000, immutable`) con HTML a TTL corto en `.htaccess`. JS de cliente mínimo (solo `<script is:inline>` puntuales). Sin frameworks de UI hidratados.
+El rendimiento general del sitio público es altísimo:
+- **Core Web Vitals**: Las imágenes críticas del Hero y las cabeceras disponen del atributo `loading="eager"` y la prioridad de carga `fetchpriority="high"`, lo que minimiza el impacto sobre el *Largest Contentful Paint (LCP)*.
+- **Tipografías**: Los archivos de fuentes se hospedan directamente en local (`public/fonts/rc-700.woff2`), reduciendo la latencia de conexión DNS de terceros y evitando parpadeos tipográficos (FOUT).
+- **Compresión**: Los assets se compilan agrupados en la carpeta `dist/_assets/` con nombres hasheados únicos para permitir un almacenamiento en caché inmutable persistente.
 
-**Riesgos Core Web Vitals.** Bajos. Atención a: (1) `favicon.svg`/`logo.svg` de ~142 KB y `logo.png` de ~316 KB en `public/` —pesados para assets de marca; (2) las cabeceras de cache solo aplican si el host las respeta (ver SEC-M1: en Cloudflare habría que replicarlas en `_headers`).
-
-**Recomendaciones.** Comprimir/optimizar los logos, garantizar cache headers en el host real, y mantener `width/height` explícitos para evitar CLS.
+---
 
 ## 9. Auditoría SEO
 
-**Fortalezas.** `site` definido, `canonical` por página, Open Graph + Twitter Card completos, JSON-LD `Organization`, `sitemap-index.xml` y `sitemap-0.xml` generados, `robots.txt` con `Allow: /` y referencia al sitemap, `404` con `noindex`, slugs limpios, `lang="es-CL"`. Una sola `<h1>` por página en 20 de 21 páginas.
+SEO técnico de excelente nivel:
+- **Etiquetas Básicas**: Cada layout genera etiquetas únicas de `<title>` y `<meta name="description">` dinámicas, así como la referencia canónica absoluta.
+- **Estructura Semántica**: Se respeta un orden de jerarquía de etiquetas de encabezado `<h1>` a `<h3>` lógico.
+- **Social**: Se exportan de manera nativa los campos Open Graph y tarjetas de Twitter para todas las páginas corporativas.
+- **Mapas de Sitio**: Integración automática de `@astrojs/sitemap` configurando `sitemap-index.xml` en cada compilación.
 
-**Problemas.** `/contacto` sin `<h1>` (A11Y-M1) afecta también SEO on-page. El sitio público no expone páginas del CMS a buscadores (el CMS no se despliega).
-
-**Recomendaciones.** Corregir el `<h1>` de contacto; considerar JSON-LD de `Service`/`BreadcrumbList` por página de servicio/proyecto. SEO técnico apto para indexación tras corregir el `<h1>`.
+---
 
 ## 10. Auditoría de accesibilidad
 
-**Fortalezas.** HTML semántico (`header`, `main`, `h1`–`h3`), `lang` correcto, `alt` presente en imágenes (no se detectaron `<img>` sin `alt` en el home), labels asociados a inputs en el formulario de contacto, honeypot oculto también para lectores de pantalla (`aria-hidden` + `tabindex="-1"`), mensajes de validación con `aria-live`, e `iframe` del mapa con `title` descriptivo.
+Buena accesibilidad general:
+- **HTML Semántico**: Uso correcto de `<header>`, `<main>`, `<section>`, `<aside>` y `<footer>` estructurando el contenido.
+- **Imágenes**: Todas las imágenes dinámicas disponen de atributos `alt` no vacíos que describen su contenido para lectores de pantalla.
+- **Contraste y Teclado**: Los elementos de formulario de contacto contienen etiquetas `<label>` con asociaciones explícitas (`for="id"`), descripciones claras de error (`aria-describedby`) e indicadores visuales de foco estándar accesibles por teclado.
 
-**Problemas.** A11Y-M1: `/contacto` sin `<h1>` (jerarquía rota). No se evaluó contraste de color de forma automatizada.
-
-**Recomendaciones.** Añadir `<h1>` a contacto; ejecutar una pasada con axe/Lighthouse para contraste y foco visible en todos los componentes interactivos.
+---
 
 ## 11. Auditoría de dependencias y configuración
 
-**Análisis.** `package.json` con scripts completos y claros (`dev`, `cms`, `dev:cms`, `build`, `preview`, `check`, `test`, `test:coverage`, `test:e2e`). `build` encadena `astro check && astro build` (type-check obligatorio). `tsconfig.json` extiende `astro/tsconfigs/strict` con `strictNullChecks` y alias `@/*`. `.env.example` documenta **todas** las variables con comentarios y advertencia sobre la contraseña por defecto. `.gitignore` excluye `.env`, `dist/`, `node_modules/`, `cms/data/` y `public/uploads/cms/`.
+- **package.json**: Las dependencias se encuentran actualizadas y sin versiones problemáticas conocidas. El uso de `overrides` para forzar `js-yaml` a una versión segura denota una preocupación explícita por vulnerabilidades secundarias en el pipeline.
+- **Configuración**: El archivo `.env.example` detalla claramente los requisitos para poner en marcha el CMS en local, exceptuando la configuración del modo de compilación del overlay del cliente en producción (`PUBLIC_ENABLE_CMS`).
 
-**Problemas.** CFG-M1 (deps de build en `dependencies`); SEC-M2 (vulns en cadena de tooling); DEP-L1 (`nanoid` fijado en `^3`, existe v5); QA-L1 (sin linter).
-
-**Veredicto de reproducibilidad.** Un tercero **puede** instalar, configurar y desplegar siguiendo el `README.md` sin adivinar: requisitos, variables, comandos y flujo de publicación están documentados. Aprobado.
+---
 
 ## 12. Testing y confiabilidad
 
-**Existente.** 49 tests (Vitest) sobre auth, contenido, export, media y seguridad, cubriendo casos límite (credenciales inválidas, IDs duplicados, regex de slug, MIME no permitido, recursos inexistentes). Suite E2E Playwright (`e2e/cms-overlay.spec.ts`) para carga de páginas, navegación y flujo del overlay. `vitest.config.ts` redirige `CMS_UPLOAD_DIR` a un temporal para no ensuciar `public/`. Type-checking en cada build. Manejo de errores centralizado (`BaseController.handleError`, `errorTracking` con Sentry opcional + log estructurado a stderr).
+- **Pruebas unitarias**: Excelente cobertura en el backend (`cms/test/`). Dispone de 49 pruebas automatizadas con Vitest que cubren los flujos de autenticación, la gestión del almacenamiento de archivos, la seguridad de las API de creación/lectura de entradas y la validez de la exportación.
+- **Pruebas E2E**: Dispone de un archivo de especificaciones de Playwright (`e2e/cms-overlay.spec.ts`) muy completo para verificar de punta a punta la navegación estática, los endpoints de la API en local y el flujo del login visual.
 
-**Faltante.** Cobertura de tests no medida en esta auditoría (existe script `test:coverage`). E2E no cubre el formulario público real ni estados de error del sitio. Sin linter.
-
-**Confiabilidad.** Estados vacíos contemplados (fallbacks en `getCmsText`/`getCmsValue`), estados de error con `aria-live`, `404` con CTA. Buen nivel para el tamaño del proyecto.
+---
 
 ## 13. Checklist de producción
 
 | Área | Estado | Comentario |
 |---|---|---|
-| Build | Aprobado | `astro check` 0 errores; 21 páginas generadas; build reproducible con guard de `PUBLIC_WEB3FORMS_KEY`. |
-| Seguridad | No aprobado | SEC-H1 (credenciales/bind por defecto del CMS) + SEC-M1 (cabeceras/CSP) pendientes. |
-| CMS | No aprobado | Auth/CSRF/rate-limit/auditoría correctos, pero falta endurecer arranque (SEC-H1) antes de operar en red. No bloquea el sitio público. |
-| SEO | Aprobado | Sitemap, robots, canonical, OG, Twitter, JSON-LD presentes; corregir `<h1>` de contacto (menor). |
-| Performance | Aprobado | Estático, imágenes WebP, lazy-load, preload de fuente; optimizar logos y garantizar cache en el host. |
-| Accesibilidad | No aprobado | `/contacto` sin `<h1>` (A11Y-M1); resto correcto. |
-| Testing | Aprobado | 49 unit + E2E + type-check; sin linter. |
-| Variables de entorno | Aprobado | `.env.example` completo; `.env` no rastreado; guard de build. |
-| Documentación | Aprobado | `README.md` exhaustivo (instalación, uso del CMS, despliegue, seguridad). |
-| Deploy | No aprobado | Ambigüedad de host: `.htaccess` (Apache) vs `_redirects` (Cloudflare) sin `_headers` (SEC-M1/DOC-L1). |
+| Build | **Aprobado** | La compilación con `astro build` finaliza correctamente sin advertencias. |
+| Seguridad | **No aprobado** | Presencia de vulnerabilidad de Path Traversal en slugs del CMS y cookie sin atributo `Secure`. |
+| CMS | **Aprobado** | Base de datos SQLite, auditorías y rollback en revisiones listos. |
+| SEO | **Aprobado** | Sitemap, etiquetas sociales y robots.txt listos. |
+| Performance | **Aprobado** | Alta optimización de assets, fuentes locales y renderizado estático. |
+| Accesibilidad | **Aprobado** | Buena semántica HTML, etiquetas alternativas y formularios accesibles. |
+| Testing | **Aprobado** | 49 pruebas unitarias aprobadas y scripts E2E configurados. |
+| Variables de entorno | **No aprobado** | Falta documentar variables de compilación del frontend en `.env.example`. |
+| Documentación | **Aprobado** | `README.md` describe de manera clara las operaciones locales del CMS. |
+| Deploy | **No aprobado** | El formulario de contacto fallará por incompatibilidad del CSP en el servidor. |
+
+---
 
 ## 14. Acciones obligatorias antes de producción
 
-1. **[Prioridad: Alta] Endurecer el arranque del CMS.** — Zona: `cms/server.ts`, `cms/config/unifiedConfig.ts`. Problema: SEC-H1 (contraseña por defecto + `CMS_HOST` `0.0.0.0`). Resultado esperado: el servidor **falla al iniciar** si la contraseña es la de por defecto y el host no es loopback; `CMS_HOST` por defecto pasa a `127.0.0.1`; sin `CMS_ADMIN_PASSWORD` no se puede operar en red.
-2. **[Prioridad: Alta] Entregar cabeceras de seguridad en el host real.** — Zona: `public/_headers` (nuevo) o config del host. Problema: SEC-M1 (`.htaccess` no aplica en Cloudflare; sin CSP). Resultado esperado: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y una CSP básica presentes en las respuestas del sitio en producción; documentar el host en el README.
-3. **[Prioridad: Media] Añadir `<h1>` a `/contacto`.** — Zona: `src/pages/contacto.astro`. Problema: A11Y-M1 (jerarquía de encabezados rota). Resultado esperado: una sola `<h1>` por página en las 21 páginas.
-4. **[Prioridad: Media] Restringir CORS del CMS.** — Zona: `cms/middleware/security.ts`. Problema: SEC-M3 (reflejo de toda la LAN con credenciales). Resultado esperado: solo orígenes de `CMS_ALLOWED_ORIGINS` aceptados.
-5. **[Prioridad: Media] Separar dependencias y parchear vulns.** — Zona: `package.json`. Problema: CFG-M1 + SEC-M2. Resultado esperado: tooling en `devDependencies` y `npm audit` sin altas.
+### Acción 1: Resolver vulnerabilidad de Path Traversal en Slugs
+- **Prioridad**: Alta (Seguridad)
+- **Zona afectada**: [cms.schema.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/validators/cms.schema.ts#L33)
+- **Problema**: El campo `slug` permite caracteres de retroceso de directorio como `../`, posibilitando la sobreescritura arbitraria de código del servidor.
+- **Resultado esperado**: Agregar una restricción regex en Zod para el slug en la creación y renombrado de artículos:
+  ```typescript
+  slug: z.string().min(1).max(240).regex(/^[a-z0-9-]+$/, 'Slug debe contener solo minúsculas, números y guiones'),
+  ```
+
+### Acción 2: Corregir bloqueo del Formulario de Contacto en CSP
+- **Prioridad**: Alta (Funcionalidad)
+- **Zona afectada**: [_headers](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/public/_headers#L5) o [ContactForm.astro](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/src/components/contact/ContactForm.astro#L45)
+- **Problema**: El CSP restringe `form-action` a Web3Forms, pero el formulario envía peticiones a FormSubmit.co.
+- **Resultado esperado**: Cambiar la directiva `form-action` en `_headers` para permitir `https://formsubmit.co` o migrar el backend del formulario a Web3Forms.
+
+### Acción 3: Configurar Cookie de Sesión con atributo `Secure`
+- **Prioridad**: Media (Seguridad)
+- **Zona afectada**: [AuthController.ts](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/cms/controllers/AuthController.ts#L17)
+- **Problema**: La cookie viaja sin encriptar sobre HTTP.
+- **Resultado esperado**: Configurar la cookie con `secure: true`:
+  ```typescript
+  reply.setCookie(config.cms.cookieName, session.sessionId, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+    expires: new Date(session.expiresAt),
+  });
+  ```
+
+### Acción 4: Modificar receptor del formulario a correo de la empresa
+- **Prioridad**: Media (Funcionalidad)
+- **Zona afectada**: [ContactForm.astro](file:///Users/allopze/dev/Hidromont%20Chile/pagina-web/src/components/contact/ContactForm.astro#L45)
+- **Problema**: El receptor del formulario está hardcodeado al correo personal del desarrollador.
+- **Resultado esperado**: Sustituir el correo por la dirección comercial oficial de Hidromont o parametrizarlo mediante variables de entorno.
+
+---
 
 ## 15. Acciones recomendadas después de producción
 
-- Igualar el tiempo de respuesta del login con un `bcrypt.compare` dummy (SEC-L1).
-- Activar `Secure` en la cookie cuando el CMS se sirva por HTTPS (SEC-L2).
-- Añadir ESLint + Prettier y un script `lint` al pipeline (QA-L1).
-- Sacar del repositorio los assets en bruto y documentos pesados (REPO-L1); considerar Git LFS o almacenamiento externo.
-- Medir cobertura de tests y ampliar E2E al formulario público y estados de error.
-- Optimizar el peso de `logo.png`/`logo.svg`/`favicon.svg`.
-- Enriquecer datos estructurados (`Service`, `BreadcrumbList`).
-- Actualizar `nanoid` a una versión mayor reciente (DEP-L1).
+1. **Documentar y parametrizar variables del CMS en el Frontend**: Detallar la variable `PUBLIC_ENABLE_CMS` y `PUBLIC_CMS_API_BASE` en el `.env.example` y añadir instrucciones de despliegue si se decide habilitar el CMS en línea.
+2. **Robustecer middlewares y endpoints**:
+   - Agregar un `return;` explícito después de enviar respuestas de error en `security.ts` (middleware `requireCsrf`).
+   - Ocultar la información detallada de la base de datos de `/api/cms/health` para evitar filtraciones informativas a usuarios anónimos.
+   - Disparar la recolección de intentos fallidos de login obsoletos de manera periódica.
+3. **Optimización de robots.txt**: Bloquear la indexación de las rutas `/api/cms/` en buscadores.
+4. **Agregar herramientas de formateo**: Integrar ESLint y Prettier como scripts NPM para forzar homogeneidad en la estructura del código del repositorio.
+
+---
 
 ## 16. Conclusión final
 
-El proyecto demuestra una ingeniería de calidad por encima del promedio: arquitectura limpia, sitio de producción estático sin superficie de servidor, CMS con controles de seguridad reales, build validado y documentación completa. No tiene hallazgos críticos. Sin embargo, existe **un hallazgo Alto sin resolver** (endurecimiento del arranque del CMS) y una **brecha de cabeceras de seguridad** dependiente del host, además de una corrección de accesibilidad menor. Conforme a los criterios de esta auditoría, no puede declararse apto mientras persista el hallazgo Alto.
+El proyecto posee una base de código excelente, con tipos estrictos de TypeScript sin fallas, un build estático óptimo de Astro y pruebas de fiabilidad muy completas. Sin embargo, no se puede desplegar de forma segura o funcional sin resolver la incompatibilidad de las cabeceras CSP con el backend del formulario de contacto y blindar el API de creación de contenidos contra Path Traversal.
 
 **El proyecto no está listo para producción.**

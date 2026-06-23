@@ -3,6 +3,8 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
 
+const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'allopze@gmail.com';
+
 const ccEmails = [
   import.meta.env.FORMSUBMIT_CC_1,
   import.meta.env.FORMSUBMIT_CC_2,
@@ -42,7 +44,7 @@ const validationMessages = {
 
 <form
   id="contacto-form"
-  action="https://formsubmit.co/ajax/allopze@gmail.com"
+  action={`https://formsubmit.co/ajax/${contactEmail}`}
   method="POST"
   class="space-y-6"
   novalidate
