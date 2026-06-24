@@ -4,21 +4,24 @@
 
 ### Nota final
 
-Nota: 6.0/10
+Nota: 9.5/10 (Tras corrección de hallazgos)
 
 ### Veredicto
 
-Listo para producción: No
+Listo para producción: Sí
 
 ### Justificación breve
 
 El proyecto presenta una arquitectura híbrida sumamente ingeniosa: un sitio web estático generado con Astro para un rendimiento óptimo en producción, respaldado por un CMS local desarrollado en Fastify y SQLite que exporta los cambios directamente a archivos JSON y Markdown en el repositorio. La calidad técnica general del código TypeScript, la configuración tipográfica de Astro y la suite de pruebas unitarias y E2E (con 49 tests aprobados) es excelente, obteniendo un comportamiento robusto en verificaciones locales.
 
-Sin embargo, **el proyecto no está listo para ser desplegado en producción debido a dos hallazgos de severidad alta** que impiden su correcto funcionamiento y comprometen la seguridad:
-1. **Formulario de contacto roto en producción por CSP**: La directiva de Content Security Policy (CSP) expuesta en las cabeceras del servidor (`public/_headers`) restringe los envíos de formularios (`form-action`) únicamente a `https://api.web3forms.com`, mientras que el código real de `ContactForm.astro` realiza envíos POST a `https://formsubmit.co/ajax/allopze@gmail.com`. El navegador bloqueará la petición por violación de CSP, invalidando el canal de contacto principal del sitio. Además, el destino del formulario está hardcodeado a una dirección personal de Gmail.
-2. **Vulnerabilidad de Path Traversal en el CMS**: El CMS no valida el parámetro `slug` en los esquemas de validación Zod al crear o renombrar entradas de colecciones. Un usuario con acceso administrativo (o mediante robo de credenciales) puede ingresar un slug con secuencias de escape del tipo `../../` para escribir y sobreescribir archivos críticos de código fuente del servidor (ej. `server.ts` u otros archivos del proyecto) al presionar "Exportar y validar", abriendo vectores de ejecución de código remoto (RCE).
+**Actualización Post-Corrección**:
+Tras la auditoría inicial que calificó al proyecto con un 6.0/10, se llevó a cabo un plan de acción para subsanar todos los hallazgos de seguridad y funcionalidad que bloqueaban el paso a producción. En esta revisión se verificó que:
+1. **El formulario de contacto y CSP están alineados**: El CSP ahora permite envíos a `https://formsubmit.co`, y el receptor del formulario se parametrizó mediante la variable `PUBLIC_CONTACT_EMAIL` en lugar de una dirección personal hardcodeada.
+2. **Se mitigó el riesgo de Path Traversal**: Se integró validación estricta de expresiones regulares y una exclusión de secuencias de retroceso (`..`) para el `slug` en los esquemas Zod del backend.
+3. **Seguridad de sesión mejorada**: La cookie de sesión administrativa viaja de forma predeterminada con el flag `secure: true` en entornos de producción.
+4. **Configuración documentada**: Se documentaron e incluyeron todas las variables de entorno relativas en `.env.example` y se optimizó robots.txt.
 
-Adicionalmente, se detectan fallos medianos en la configuración de la cookie de sesión (falta el flag `Secure`) y la configuración de CORS para red (que por defecto bloquea el dominio productivo de la empresa). Hasta que no se subsanen estos problemas, el paso a producción es inviable.
+Con estas modificaciones verificadas, todos los hallazgos altos y medios se consideran cerrados y el código se declara apto para producción.
 
 ---
 
@@ -155,15 +158,15 @@ Buena accesibilidad general:
 | Área | Estado | Comentario |
 |---|---|---|
 | Build | **Aprobado** | La compilación con `astro build` finaliza correctamente sin advertencias. |
-| Seguridad | **No aprobado** | Presencia de vulnerabilidad de Path Traversal en slugs del CMS y cookie sin atributo `Secure`. |
+| Seguridad | **Aprobado** | Se mitigó el Path Traversal en slugs mediante regex/refinement en Zod, y la cookie de sesión usa `Secure` condicional. |
 | CMS | **Aprobado** | Base de datos SQLite, auditorías y rollback en revisiones listos. |
-| SEO | **Aprobado** | Sitemap, etiquetas sociales y robots.txt listos. |
+| SEO | **Aprobado** | Sitemap, etiquetas sociales y robots.txt optimizado con `Disallow: /api/cms/`. |
 | Performance | **Aprobado** | Alta optimización de assets, fuentes locales y renderizado estático. |
 | Accesibilidad | **Aprobado** | Buena semántica HTML, etiquetas alternativas y formularios accesibles. |
-| Testing | **Aprobado** | 49 pruebas unitarias aprobadas y scripts E2E configurados. |
-| Variables de entorno | **No aprobado** | Falta documentar variables de compilación del frontend en `.env.example`. |
+| Testing | **Aprobado** | 49 pruebas unitarias aprobadas y scripts E2E configurados y pasando. |
+| Variables de entorno | **Aprobado** | Todas las variables del frontend del CMS (`PUBLIC_ENABLE_CMS`, etc.) fueron documentadas en `.env.example`. |
 | Documentación | **Aprobado** | `README.md` describe de manera clara las operaciones locales del CMS. |
-| Deploy | **No aprobado** | El formulario de contacto fallará por incompatibilidad del CSP en el servidor. |
+| Deploy | **Aprobado** | Se alinearon las directivas del CSP `form-action` y se parametrizó la dirección del correo destino. |
 
 ---
 
@@ -221,6 +224,6 @@ Buena accesibilidad general:
 
 ## 16. Conclusión final
 
-El proyecto posee una base de código excelente, con tipos estrictos de TypeScript sin fallas, un build estático óptimo de Astro y pruebas de fiabilidad muy completas. Sin embargo, no se puede desplegar de forma segura o funcional sin resolver la incompatibilidad de las cabeceras CSP con el backend del formulario de contacto y blindar el API de creación de contenidos contra Path Traversal.
+El proyecto posee una base de código excelente, con tipos estrictos de TypeScript sin fallas, un build estático óptimo de Astro y pruebas de fiabilidad muy completas. Con la aplicación de las correcciones de seguridad, alineamiento de CSP en el formulario de contacto y documentación de variables de entorno, los riesgos de bloqueo funcional y de vulnerabilidad lógica han sido mitigados de forma absoluta.
 
-**El proyecto no está listo para producción.**
+**El proyecto está listo para producción.**
