@@ -3,20 +3,114 @@ import fs from 'node:fs';
 import path from 'node:path';
 import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
-import Container from '../../components/ui/Container.astro';
 import PageHero from '../../components/ui/PageHero.astro';
 import { getCmsText } from '../../data/cms';
 
+// Scan default curated photos folder
+const curadasDir = path.join(process.cwd(), 'public', 'fotos', 'curadas');
+const curadasImages = fs.existsSync(curadasDir)
+  ? fs.readdirSync(curadasDir)
+      .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
+      .map((f) => ({
+        src: `/fotos/curadas/${f}`,
+        alt: f.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, ''),
+        filename: f,
+      }))
+  : [];
+
+// Scan CMS uploads folder
 const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'cms');
-const images = fs.existsSync(uploadsDir)
+const cmsImages = fs.existsSync(uploadsDir)
   ? fs.readdirSync(uploadsDir)
       .filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
-      .sort()
       .map((f) => ({
         src: `/uploads/cms/${f}`,
         alt: f.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, ''),
+        filename: f,
       }))
   : [];
+
+// Merge images (CMS uploads first to show them at the top)
+const allImages = [...cmsImages, ...curadasImages];
+
+// Helper to classify images into categories based on filename keywords
+function getCategory(filename: string): { slug: string; name: string } {
+  const name = filename.toLowerCase();
+  if (name.includes('taller') || name.includes('oficina') || name.includes('instalacion') || name.includes('empresa')) {
+    return { slug: 'taller', name: 'Taller e Instalaciones' };
+  }
+  if (name.includes('montaje') || name.includes('obra') || name.includes('terreno') || name.includes('campo') || name.includes('caverna')) {
+    return { slug: 'montaje', name: 'Montaje en Obra' };
+  }
+  if (name.includes('tuberia') || name.includes('bifurcacion') || name.includes('tunel') || name.includes('blindaje')) {
+    return { slug: 'tuberias', name: 'Tuberías Forzadas' };
+  }
+  if (name.includes('valvula') || name.includes('compuerta') || name.includes('limpiarrejas') || name.includes('turbina')) {
+    return { slug: 'equipos', name: 'Válvulas y Equipos' };
+  }
+  return { slug: 'otros', name: 'Otros' };
+}
+
+// Clean and capitalize filename into a user-friendly title
+function capitalizeTitle(str: string): string {
+  return str
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Process all images with random bento grid layouts determined at build time
+const images = allImages.map((img) => {
+  const cat = getCategory(img.filename);
+  const title = capitalizeTitle(img.alt);
+
+  // Generate a stable pseudo-random value based on the filename to keep layouts stable across minor edits
+  let hash = 0;
+  for (let i = 0; i < img.filename.length; i++) {
+    hash = (hash << 5) - hash + img.filename.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  const rand = Math.abs(hash % 100) / 100;
+
+  let gridClasses = "col-span-1";
+  let aspectClasses = "aspect-square md:aspect-[4/3]";
+
+  if (rand < 0.55) {
+    // 55% Standard
+    gridClasses = "col-span-1";
+    aspectClasses = "aspect-square md:aspect-[4/3]";
+  } else if (rand < 0.72) {
+    // 17% Wide (2 columns, 1 row)
+    gridClasses = "col-span-1 lg:col-span-2";
+    aspectClasses = "aspect-square sm:aspect-video";
+  } else if (rand < 0.88) {
+    // 16% Large (2 columns, 2 rows)
+    gridClasses = "col-span-1 lg:col-span-2 lg:row-span-2";
+    aspectClasses = "aspect-square lg:aspect-auto lg:h-full";
+  } else {
+    // 12% Tall (1 column, 2 rows)
+    gridClasses = "col-span-1 lg:row-span-2";
+    aspectClasses = "aspect-square lg:aspect-auto lg:h-full";
+  }
+
+  return {
+    ...img,
+    title,
+    categorySlug: cat.slug,
+    categoryName: cat.name,
+    gridClasses,
+    aspectClasses,
+  };
+});
+
+// Category list for navigation
+const categories = [
+  { slug: 'all', name: 'Todas' },
+  { slug: 'taller', name: 'Taller' },
+  { slug: 'montaje', name: 'Montaje en Obra' },
+  { slug: 'tuberias', name: 'Tuberías' },
+  { slug: 'equipos', name: 'Válvulas y Equipos' },
+];
 ---
 
 <PageLayout
@@ -32,27 +126,311 @@ const images = fs.existsSync(uploadsDir)
     cmsEntry="page.galeria"
   />
 
-  <Section>
-    <Container>
+  <Section class="py-20 md:py-28">
+    <div class="w-full px-4 sm:px-8 md:px-12 lg:px-16">
+      <!-- Quick Filter Buttons -->
+      {images.length > 0 && (
+        <div class="flex flex-wrap gap-2 justify-center mb-14 lg:mb-16" id="filter-container">
+          {categories.map((cat) => (
+            <button
+              type="button"
+              data-filter={cat.slug}
+              class={`px-4 py-2 text-xs md:text-sm font-semibold tracking-wider border transition-all duration-base cursor-pointer rounded-none uppercase
+                ${cat.slug === 'all'
+                  ? 'bg-primary text-white border-primary shadow-sm'
+                  : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100 hover:border-neutral-300'
+                }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {images.length === 0 ? (
         <p class="text-center text-neutral-500 py-16">
           Próximamente se añadirán imágenes a esta galería.
         </p>
       ) : (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 grid-flow-row-dense">
           {images.map((img) => (
-            <div class="overflow-hidden rounded-lg aspect-[4/3] bg-neutral-100">
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                decoding="async"
-                class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              />
+            <div
+              class={`gallery-card group relative overflow-hidden rounded-none bg-neutral-100 cursor-pointer border border-border/20 transition-all duration-300 hover:shadow-md hover:border-primary/45 ${img.gridClasses}`}
+              data-category={img.categorySlug}
+              data-category-name={img.categoryName}
+              data-title={img.title}
+              style="display: block; opacity: 1; transform: scale(1);"
+            >
+              <div class={`w-full h-full overflow-hidden ${img.aspectClasses}`}>
+                <img
+                  src={img.src}
+                  alt={img.alt}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                />
+              </div>
+              <!-- Dark Overlay with Project Metadata on Hover -->
+              <div class="absolute inset-0 bg-neutral-900/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
+                <span class="text-[10px] md:text-xs text-accent font-semibold uppercase tracking-wider mb-1 font-mono">{img.categoryName}</span>
+                <h3 class="text-base md:text-lg font-bold font-heading uppercase leading-tight tracking-wide">{img.title}</h3>
+                <span class="text-[10px] md:text-xs text-white/70 mt-2 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.637 10.637z" />
+                  </svg>
+                  Ver en detalle
+                </span>
+              </div>
             </div>
           ))}
         </div>
       )}
-    </Container>
+    </div>
   </Section>
+
+  <!-- Interactive Lightbox Viewer -->
+  <div
+    id="lightbox"
+    class="fixed inset-0 z-50 hidden bg-neutral-950/95 flex flex-col justify-between p-4 md:p-6 select-none opacity-0 transition-opacity duration-300"
+    role="dialog"
+    aria-modal="true"
+  >
+    <!-- Top bar -->
+    <div class="flex justify-between items-center w-full text-white z-10">
+      <div class="text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-400 font-mono" id="lightbox-counter">
+        Imagen 1 de 10
+      </div>
+      <button
+        id="lightbox-close"
+        class="p-2 hover:bg-white/10 text-white transition-colors border border-transparent rounded-none cursor-pointer"
+        aria-label="Cerrar visor"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-8 h-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Image & Nav Arrows -->
+    <div class="relative flex items-center justify-center flex-grow w-full max-h-[78vh]" id="lightbox-img-container">
+      <!-- Prev -->
+      <button
+        id="lightbox-prev"
+        class="absolute left-2 md:left-4 z-10 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-colors border border-white/10 hover:border-white/20 rounded-none cursor-pointer"
+        aria-label="Imagen anterior"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+
+      <!-- Center Image -->
+      <div class="max-w-full max-h-full flex items-center justify-center p-2">
+        <img
+          id="lightbox-img"
+          src=""
+          alt=""
+          class="max-w-full max-h-[75vh] object-contain shadow-2xl transition-all duration-300 ease-out transform scale-100"
+        />
+      </div>
+
+      <!-- Next -->
+      <button
+        id="lightbox-next"
+        class="absolute right-2 md:right-4 z-10 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-colors border border-white/10 hover:border-white/20 rounded-none cursor-pointer"
+        aria-label="Siguiente imagen"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Metadata Bottom -->
+    <div class="w-full text-center text-white pb-4 max-w-3xl mx-auto z-10">
+      <h3 id="lightbox-title" class="text-base md:text-lg font-bold font-heading uppercase tracking-wide">Título de la Imagen</h3>
+      <p id="lightbox-category" class="text-xs text-accent font-semibold tracking-wider mt-1.5 uppercase font-mono">Categoría</p>
+    </div>
+  </div>
 </PageLayout>
+
+<style>
+  .gallery-card {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+</style>
+
+<script>
+  // ── FILTER SYSTEM ──
+  const filterButtons = document.querySelectorAll('[data-filter]');
+  const galleryItems = document.querySelectorAll('.gallery-card:not([data-cms-type])');
+
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Toggle button active styling
+      filterButtons.forEach(b => {
+        b.classList.remove('bg-primary', 'text-white', 'border-primary', 'shadow-sm');
+        b.classList.add('bg-neutral-50', 'text-neutral-700', 'border-neutral-200', 'hover:bg-neutral-100', 'hover:border-neutral-300');
+      });
+      btn.classList.add('bg-primary', 'text-white', 'border-primary', 'shadow-sm');
+      btn.classList.remove('bg-neutral-50', 'text-neutral-700', 'border-neutral-200', 'hover:bg-neutral-100', 'hover:border-neutral-300');
+
+      const filterValue = btn.getAttribute('data-filter');
+
+      galleryItems.forEach(element => {
+        const item = element as HTMLElement;
+        const itemCategory = item.getAttribute('data-category');
+        if (filterValue === 'all' || itemCategory === filterValue) {
+          item.style.display = 'block';
+          // Force layout reflow before opacity/scale transition
+          item.offsetHeight;
+          item.style.opacity = '1';
+          item.style.transform = 'scale(1)';
+        } else {
+          item.style.opacity = '0';
+          item.style.transform = 'scale(0.95)';
+          
+          const handleTransitionEnd = (e: Event) => {
+            const te = e as TransitionEvent;
+            if (te.propertyName === 'opacity' && item.style.opacity === '0') {
+              item.style.display = 'none';
+              item.removeEventListener('transitionend', handleTransitionEnd);
+            }
+          };
+          item.addEventListener('transitionend', handleTransitionEnd);
+        }
+      });
+    });
+  });
+
+  // ── LIGHTBOX SYSTEM ──
+  const lightbox = document.getElementById('lightbox') as HTMLElement | null;
+  const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  const lightboxClose = document.getElementById('lightbox-close') as HTMLButtonElement | null;
+  const lightboxPrev = document.getElementById('lightbox-prev') as HTMLButtonElement | null;
+  const lightboxNext = document.getElementById('lightbox-next') as HTMLButtonElement | null;
+  const lightboxCounter = document.getElementById('lightbox-counter') as HTMLElement | null;
+  const lightboxTitle = document.getElementById('lightbox-title') as HTMLElement | null;
+  const lightboxCategory = document.getElementById('lightbox-category') as HTMLElement | null;
+
+  interface ImageData {
+    src: string;
+    alt: string;
+    title: string;
+    category: string;
+  }
+
+  let activeImages: ImageData[] = [];
+  let currentIndex = 0;
+
+  function updateActiveImages() {
+    // Collect visible gallery cards only (exclude CMS upload triggers)
+    const visibleCards = Array.from(document.querySelectorAll('.gallery-card:not([data-cms-type])')).filter(card => {
+      const el = card as HTMLElement;
+      return el.style.display !== 'none';
+    }) as HTMLElement[];
+
+    activeImages = visibleCards.map(card => {
+      const img = card.querySelector('img') as HTMLImageElement | null;
+      return {
+        src: img?.getAttribute('src') || '',
+        alt: img?.getAttribute('alt') || '',
+        title: card.getAttribute('data-title') || '',
+        category: card.getAttribute('data-category-name') || ''
+      };
+    });
+  }
+
+  function showImage() {
+    if (activeImages.length === 0 || !lightboxImg || !lightboxTitle || !lightboxCategory || !lightboxCounter) return;
+    const imgData = activeImages[currentIndex];
+
+    // Smooth switch transition
+    lightboxImg.style.opacity = '0';
+    lightboxImg.style.transform = 'scale(0.97)';
+
+    setTimeout(() => {
+      lightboxImg.setAttribute('src', imgData.src);
+      lightboxImg.setAttribute('alt', imgData.alt);
+      lightboxTitle.textContent = imgData.title;
+      lightboxCategory.textContent = imgData.category;
+      lightboxCounter.textContent = `Imagen ${currentIndex + 1} de ${activeImages.length}`;
+
+      lightboxImg.onload = () => {
+        lightboxImg.style.opacity = '1';
+        lightboxImg.style.transform = 'scale(1)';
+      };
+    }, 150);
+  }
+
+  function openLightbox(cardElement: HTMLElement) {
+    updateActiveImages();
+    if (activeImages.length === 0 || !lightbox) return;
+
+    const img = cardElement.querySelector('img') as HTMLImageElement | null;
+    const clickedSrc = img?.getAttribute('src');
+    currentIndex = activeImages.findIndex(img => img.src === clickedSrc);
+    if (currentIndex === -1) currentIndex = 0;
+
+    showImage();
+    lightbox.classList.remove('hidden');
+    
+    requestAnimationFrame(() => {
+      lightbox.classList.remove('opacity-0');
+    });
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.classList.add('opacity-0');
+    const handleTransitionEnd = (e: Event) => {
+      const te = e as TransitionEvent;
+      if (te.propertyName === 'opacity' && lightbox.classList.contains('opacity-0')) {
+        lightbox.classList.add('hidden');
+        lightbox.removeEventListener('transitionend', handleTransitionEnd);
+      }
+    };
+    lightbox.addEventListener('transitionend', handleTransitionEnd);
+  }
+
+  function prevImage() {
+    if (activeImages.length <= 1) return;
+    currentIndex = (currentIndex - 1 + activeImages.length) % activeImages.length;
+    showImage();
+  }
+
+  function nextImage() {
+    if (activeImages.length <= 1) return;
+    currentIndex = (currentIndex + 1) % activeImages.length;
+    showImage();
+  }
+
+  // Bind click event to each visual card
+  document.querySelectorAll('.gallery-card:not([data-cms-type])').forEach(card => {
+    const el = card as HTMLElement;
+    el.addEventListener('click', () => {
+      openLightbox(el);
+    });
+  });
+
+  // Action listeners
+  lightboxClose?.addEventListener('click', closeLightbox);
+  lightboxPrev?.addEventListener('click', prevImage);
+  lightboxNext?.addEventListener('click', nextImage);
+
+  // Close when clicking outside of the active image
+  lightbox?.addEventListener('click', (e: Event) => {
+    const container = document.getElementById('lightbox-img-container');
+    if (e.target === lightbox || e.target === container) {
+      closeLightbox();
+    }
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (!lightbox || lightbox.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') prevImage();
+    if (e.key === 'ArrowRight') nextImage();
+  });
+</script>

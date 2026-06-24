@@ -15,8 +15,6 @@
     { "nombre": "GPE",                 "sector": "electrica",    "logo": "/logos-clientes/gpe.png" },
     { "nombre": "Iberdrola",           "sector": "electrica",    "logo": "/logos-clientes/iberdrola.png" },
     { "nombre": "M.O.P. / D.O.H.",    "sector": "publica",      "logo": "/logos-clientes/mop-doh.jpeg" },
-    { "nombre": "Mainco",              "sector": "construccion" },
-    { "nombre": "OHL",                 "sector": "construccion" },
     { "nombre": "Pacific Hydro",       "sector": "electrica",    "logo": "/logos-clientes/pacific-hydro.png" }
   ]
 }

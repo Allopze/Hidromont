@@ -35,23 +35,9 @@ const {
     loading="eager"
     fetchpriority="high"
     decoding="async"
-    class="absolute inset-0 w-full h-full object-cover pointer-events-none hero-ken-burns"
+    class="absolute inset-0 w-full h-full object-cover pointer-events-none"
     style="object-position: center 35%;"
   />
-
-  <!-- Overlay lateral: oscurece la izquierda para legibilidad del texto -->
-  <div
-    class="absolute inset-0 pointer-events-none"
-    aria-hidden="true"
-    style="background: linear-gradient(to right, rgba(15,36,51,0.88) 0%, rgba(15,36,51,0.55) 40%, rgba(15,36,51,0.15) 65%, transparent 100%);"
-  ></div>
-
-  <!-- Overlay inferior: funde hacia la sección siguiente -->
-  <div
-    class="absolute bottom-0 left-0 right-0 h-28 pointer-events-none"
-    aria-hidden="true"
-    style="background: linear-gradient(to top, rgba(15,36,51,0.85), transparent);"
-  ></div>
 
   <!-- Línea de acento superior -->
   <div
@@ -63,7 +49,7 @@ const {
   <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28">
     <div class="max-w-2xl">
 
-      <Eyebrow light>
+      <Eyebrow light class="text-on-photo">
         <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>
       </Eyebrow>
 
@@ -71,7 +57,7 @@ const {
         as="h1"
         entry={cmsEntry}
         field="title"
-        class="font-heading text-white leading-tight mb-6 mt-3"
+        class="font-heading text-white leading-tight mb-6 mt-3 text-on-photo--display"
         style="font-size: var(--font-size-display); font-weight: 700; letter-spacing: -0.02em;"
         type="text"
         reveal
@@ -83,7 +69,7 @@ const {
         as="p"
         entry={cmsEntry}
         field="subtitle"
-        class="text-white/80 mb-10 max-w-xl"
+        class="text-white/90 mb-10 max-w-xl text-on-photo"
         style="font-size: var(--font-size-lead); line-height: 1.65; --reveal-delay: 0.1s;"
         type="textarea"
         reveal

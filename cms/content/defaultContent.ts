@@ -999,7 +999,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Referencias clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Trayectoria' },
+      eyebrow: { type: 'text', value: 'Nuestros Clientes' },
       // IMPORTANTE: NO VOLVER A INCLUIR el campo 'title' (que contenía "Empresas que confían en nosotros" o similares). Solicitud expresa del usuario.
     },
   },
