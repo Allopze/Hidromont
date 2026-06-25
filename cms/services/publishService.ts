@@ -18,7 +18,7 @@ export class PublishService {
     private readonly publishJobRepository: PublishJobRepository
   ) {}
 
-  exportContent(): { job: PublishJob; exported: { files: string[] } } {
+  exportContent(): { job: PublishJob; exported: { files: string[] }; galleryExported?: { file: string; count: number } } {
     const startedAt = new Date().toISOString();
     const job = this.publishJobRepository.start({
       action: 'export',
@@ -40,6 +40,36 @@ export class PublishService {
         ],
       });
       return { job: completed, exported };
+    } catch (error) {
+      this.failJob(job, error);
+      throw error;
+    }
+  }
+
+  async exportContentWithGallery(): Promise<{ job: PublishJob; exported: { files: string[] }; galleryExported: { file: string; count: number } }> {
+    const startedAt = new Date().toISOString();
+    const job = this.publishJobRepository.start({
+      action: 'export',
+      now: startedAt,
+      logs: [`${startedAt} export started (content + gallery)`],
+    });
+
+    try {
+      const exported = this.exportService.exportContent();
+      const galleryExported = await this.exportService.exportGallery();
+      const completedAt = new Date().toISOString();
+      const completed = this.publishJobRepository.finish({
+        id: job.id,
+        status: 'succeeded',
+        now: completedAt,
+        logs: [
+          ...job.logs,
+          `${completedAt} exported ${exported.files.length} file(s)`,
+          ...exported.files.map((file) => `file: ${file}`),
+          `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
+        ],
+      });
+      return { job: completed, exported, galleryExported };
     } catch (error) {
       this.failJob(job, error);
       throw error;

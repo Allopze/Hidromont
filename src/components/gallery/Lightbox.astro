@@ -1,0 +1,358 @@
+---
+/**
+ * Lightbox — Premium accessible image viewer.
+ *
+ * Features:
+ * - Focus trap: moves focus into dialog on open, restores on close
+ * - Background inert: aria-hidden + pointer-events:none on main content
+ * - Keyboard: Escape closes, ArrowLeft/Right navigate, Tab cycles within
+ * - Preloads neighbor images for instant nav
+ * - Cross-fade with blur transition (Emil's technique for imperfect transitions)
+ * - Skeleton/spinner while loading
+ * - Respects prefers-reduced-motion
+ */
+
+// No props needed — data is embedded in gallery cards via data attributes
+---
+
+<div
+  id="lightbox"
+  class="fixed inset-0 z-50 hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Visor de imágenes de galería"
+  tabindex="-1"
+>
+  {/* Backdrop */}
+  <div class="absolute inset-0 bg-neutral-950/95 backdrop-blur-sm" data-lb-backdrop aria-hidden="true" />
+
+  {/* Content container */}
+  <div class="relative z-10 flex flex-col h-full select-none">
+    {/* Top bar */}
+    <div class="flex justify-between items-center px-4 md:px-6 py-3 shrink-0">
+      <div class="text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-400 font-mono" data-lb-counter />
+      <button
+        type="button"
+        class="p-2.5 hover:bg-white/10 text-white transition-colors duration-150 ease-out border border-transparent rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        data-lb-close
+        aria-label="Cerrar visor (Escape)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    {/* Image area with navigation arrows */}
+    <div class="relative flex items-center justify-center flex-grow min-h-0 px-4 md:px-16" data-lb-stage>
+      {/* Prev */}
+      <button
+        type="button"
+        class="absolute left-2 md:left-6 z-20 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        data-lb-prev
+        aria-label="Imagen anterior (←)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+
+      {/* Image container with loading skeleton */}
+      <div class="w-full h-full flex items-center justify-center" data-lb-img-wrap>
+        {/* Loading skeleton */}
+        <div data-lb-skeleton class="absolute inset-0 flex items-center justify-center">
+          <div class="w-8 h-8 border-2 border-white/20 border-t-accent rounded-full animate-spin" />
+        </div>
+        <img
+          data-lb-img
+          src=""
+          alt=""
+          class="max-w-full max-h-[72vh] md:max-h-[78vh] object-contain shadow-2xl transition-all duration-300 ease-out opacity-0 scale-[0.97]"
+          draggable="false"
+        />
+      </div>
+
+      {/* Next */}
+      <button
+        type="button"
+        class="absolute right-2 md:right-6 z-20 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        data-lb-next
+        aria-label="Siguiente imagen (→)"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
+    </div>
+
+    {/* Bottom metadata panel */}
+    <div class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full" data-lb-meta>
+      <span data-lb-category class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono mb-1.5" />
+      <h3 data-lb-title class="text-base md:text-lg font-bold font-heading uppercase tracking-wide text-white" />
+      <p data-lb-caption class="text-xs md:text-sm text-neutral-400 mt-1 hidden" />
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const lightbox = document.getElementById('lightbox');
+    if (!lightbox) return;
+
+    const img = lightbox.querySelector('[data-lb-img]') as HTMLImageElement;
+    const skeleton = lightbox.querySelector('[data-lb-skeleton]') as HTMLElement;
+    const counter = lightbox.querySelector('[data-lb-counter]') as HTMLElement;
+    const title = lightbox.querySelector('[data-lb-title]') as HTMLElement;
+    const category = lightbox.querySelector('[data-lb-category]') as HTMLElement;
+    const caption = lightbox.querySelector('[data-lb-caption]') as HTMLElement;
+    const closeBtn = lightbox.querySelector('[data-lb-close]') as HTMLButtonElement;
+    const prevBtn = lightbox.querySelector('[data-lb-prev]') as HTMLButtonElement;
+    const nextBtn = lightbox.querySelector('[data-lb-next]') as HTMLButtonElement;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    interface LightboxImage {
+      src: string;
+      srcset: string;
+      alt: string;
+      title: string;
+      category: string;
+      caption: string;
+      width: number;
+      height: number;
+    }
+
+    let images: LightboxImage[] = [];
+    let currentIndex = 0;
+    let previousFocus: HTMLElement | null = null;
+
+    // Collect all gallery cards
+    function collectImages(): LightboxImage[] {
+      const cards = document.querySelectorAll('.gallery-card');
+      return Array.from(cards).map((card) => {
+        const el = card as HTMLElement;
+        const imgEl = el.querySelector('img') as HTMLImageElement;
+        return {
+          src: imgEl?.src || '',
+          srcset: imgEl?.getAttribute('srcset') || '',
+          alt: imgEl?.alt || el.getAttribute('aria-label') || '',
+          title: el.querySelector('h3')?.textContent?.trim() || el.getAttribute('aria-label') || '',
+          category: el.querySelector('.font-mono')?.textContent?.trim() || '',
+          caption: '',
+          width: imgEl?.naturalWidth || 1600,
+          height: imgEl?.naturalHeight || 1200,
+        };
+      });
+    }
+
+    function showImage(index: number) {
+      if (index < 0 || index >= images.length) return;
+      currentIndex = index;
+      const data = images[index];
+
+      // Show skeleton, fade out current image
+      skeleton.style.display = 'flex';
+      img.style.opacity = '0';
+      if (!prefersReducedMotion) {
+        img.style.transform = 'scale(0.97)';
+      }
+
+      // Update metadata immediately
+      counter.textContent = `${index + 1} / ${images.length}`;
+      title.textContent = data.title;
+      category.textContent = data.category;
+      if (data.caption) {
+        caption.textContent = data.caption;
+        caption.classList.remove('hidden');
+      } else {
+        caption.classList.add('hidden');
+      }
+
+      // Load new image
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        img.src = data.src;
+        if (data.srcset) img.srcset = data.srcset;
+        img.alt = data.alt;
+        img.width = data.width;
+        img.height = data.height;
+        skeleton.style.display = 'none';
+
+        // Animate in (Emil: use ease-out for entering elements)
+        requestAnimationFrame(() => {
+          img.style.opacity = '1';
+          if (!prefersReducedMotion) {
+            img.style.transform = 'scale(1)';
+          }
+        });
+      };
+      tempImg.onerror = () => {
+        skeleton.style.display = 'none';
+        img.style.opacity = '1';
+        if (!prefersReducedMotion) img.style.transform = 'scale(1)';
+      };
+      tempImg.src = data.src;
+
+      // Preload neighbors
+      preloadNeighbor(index - 1);
+      preloadNeighbor(index + 1);
+    }
+
+    function preloadNeighbor(index: number) {
+      if (index < 0 || index >= images.length) return;
+      const neighbor = new Image();
+      neighbor.src = images[index].src;
+      if (images[index].srcset) neighbor.srcset = images[index].srcset;
+    }
+
+    function open(cardElement: HTMLElement) {
+      images = collectImages();
+      const cardId = cardElement.getAttribute('data-item-id');
+      const cardImg = cardElement.querySelector('img');
+      const src = cardImg?.src;
+
+      // Find by id first, then by src
+      currentIndex = cardId
+        ? images.findIndex((i) => {
+            const card = document.querySelector(`[data-item-id="${cardId}"]`);
+            return card?.querySelector('img')?.getAttribute('srcset') === i.srcset;
+          })
+        : images.findIndex((i) => i.src === src);
+
+      if (currentIndex === -1) currentIndex = 0;
+
+      // Save focus to restore on close
+      previousFocus = document.activeElement as HTMLElement;
+
+      // Mark main content as inert
+      const mainContent = document.querySelector('main') || document.getElementById('page-content');
+      if (mainContent) {
+        mainContent.setAttribute('aria-hidden', 'true');
+        mainContent.setAttribute('inert', '');
+      }
+
+      lightbox!.classList.remove('hidden');
+      // Force reflow before removing opacity
+      lightbox!.offsetHeight;
+      lightbox!.style.opacity = '1';
+
+      showImage(currentIndex);
+
+      // Move focus into dialog
+      requestAnimationFrame(() => closeBtn.focus());
+    }
+
+    function close() {
+      lightbox!.style.opacity = '0';
+
+      const onTransitionEnd = () => {
+        lightbox!.classList.add('hidden');
+        lightbox!.removeEventListener('transitionend', onTransitionEnd);
+
+        // Remove inert from main content
+        const mainContent = document.querySelector('main') || document.getElementById('page-content');
+        if (mainContent) {
+          mainContent.removeAttribute('aria-hidden');
+          mainContent.removeAttribute('inert');
+        }
+
+        // Restore focus
+        if (previousFocus) {
+          previousFocus.focus();
+          previousFocus = null;
+        }
+      };
+
+      if (prefersReducedMotion) {
+        onTransitionEnd();
+      } else {
+        lightbox!.addEventListener('transitionend', onTransitionEnd);
+      }
+    }
+
+    function prev() {
+      if (images.length <= 1) return;
+      showImage((currentIndex - 1 + images.length) % images.length);
+    }
+
+    function next() {
+      if (images.length <= 1) return;
+      showImage((currentIndex + 1) % images.length);
+    }
+
+    // ── Event delegation: click on gallery cards ──
+    document.addEventListener('click', (e) => {
+      const card = (e.target as HTMLElement)?.closest?.('.gallery-card') as HTMLElement;
+      if (card) {
+        e.preventDefault();
+        open(card);
+      }
+    });
+
+    // ── Lightbox button handlers ──
+    closeBtn?.addEventListener('click', close);
+    prevBtn?.addEventListener('click', prev);
+    nextBtn?.addEventListener('click', next);
+
+    // Close on backdrop click
+    lightbox.querySelector('[data-lb-backdrop]')?.addEventListener('click', close);
+    lightbox.querySelector('[data-lb-stage]')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) close();
+    });
+
+    // ── Keyboard ──
+    document.addEventListener('keydown', (e) => {
+      if (lightbox!.classList.contains('hidden')) return;
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'ArrowLeft') { prev(); return; }
+      if (e.key === 'ArrowRight') { next(); return; }
+
+      // Focus trap: Tab cycles within lightbox
+      if (e.key === 'Tab') {
+        const focusable = lightbox!.querySelectorAll('button, [tabindex]');
+        const first = focusable[0] as HTMLElement;
+        const last = focusable[focusable.length - 1] as HTMLElement;
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    // ── Touch swipe support ──
+    let touchStartX = 0;
+    let touchStartTime = 0;
+
+    lightbox.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    lightbox.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dt = Date.now() - touchStartTime;
+      const velocity = Math.abs(dx) / dt;
+
+      // Emil: momentum-based dismissal — velocity > 0.11 regardless of distance
+      if (velocity > 0.11 || Math.abs(dx) > 80) {
+        if (dx > 0) prev();
+        else next();
+      }
+    }, { passive: true });
+  })();
+</script>
+
+<style>
+  #lightbox {
+    opacity: 0;
+    transition: opacity 250ms ease-out;
+    will-change: opacity;
+  }
+  #lightbox[data-reduced-motion] {
+    transition: none;
+  }
+</style>

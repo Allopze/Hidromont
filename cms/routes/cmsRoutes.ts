@@ -6,11 +6,13 @@ import { AuthController } from '../controllers/AuthController';
 import { ContentController } from '../controllers/ContentController';
 import { MediaController } from '../controllers/MediaController';
 import { PublishController } from '../controllers/PublishController';
+import { GalleryController } from '../controllers/GalleryController';
 import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
 import { registerCors, requireAuth, requireCsrf } from '../middleware/security';
 import { AuditRepository } from '../repositories/AuditRepository';
 import { ContentRepository } from '../repositories/ContentRepository';
+import { GalleryRepository } from '../repositories/GalleryRepository';
 import { MediaRepository } from '../repositories/MediaRepository';
 import { PublishJobRepository } from '../repositories/PublishJobRepository';
 import { RateLimitRepository } from '../repositories/RateLimitRepository';
@@ -19,6 +21,8 @@ import { AuthService } from '../services/authService';
 import { BackupService } from '../services/backupService';
 import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
+import { GalleryService } from '../services/galleryService';
+import { ImageService } from '../services/imageService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
 
@@ -48,11 +52,17 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   await authService.ensureAdminUser();
 
   const contentService = new ContentService(contentRepository);
-  const exportService = new ExportService(contentRepository);
   const mediaService = new MediaService(mediaRepository);
+  await mediaService.syncPublicMedia();
+
+  const galleryRepository = new GalleryRepository(db);
+  const galleryService = new GalleryService(galleryRepository);
+  const galleryController = new GalleryController(galleryService);
+
+  const imageService = new ImageService();
+  const exportService = new ExportService(contentRepository, undefined, galleryRepository, imageService);
   const publishService = new PublishService(exportService, publishJobRepository);
   const backupService = new BackupService(db);
-  await mediaService.syncPublicMedia();
 
   const authController = new AuthController(authService);
   const contentController = new ContentController(contentService);
@@ -216,6 +226,67 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       entryKinds: ['page', 'layout', 'component', 'settings', 'servicio', 'proyecto'],
       entryStatuses: ['draft', 'published'],
     });
+  });
+
+  // ── Gallery routes ────────────────────────────────────────────
+
+  // Categories
+  app.get('/api/cms/gallery/categories', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    galleryController.listCategories(request, reply)
+  );
+  app.post('/api/cms/gallery/categories', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.createCategory(request, reply);
+    if (reply.statusCode === 201) {
+      auditRepository.log({ action: 'gallery.category.create', userId: request.cmsSession?.user.id, entityType: 'gallery_category', ip: request.ip });
+    }
+  });
+  app.patch('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.updateCategory(request, reply);
+    if (reply.statusCode === 200) {
+      const { id } = request.params as { id: string };
+      auditRepository.log({ action: 'gallery.category.update', userId: request.cmsSession?.user.id, entityType: 'gallery_category', entityId: id, ip: request.ip });
+    }
+  });
+  app.delete('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.deleteCategory(request, reply);
+    if (reply.statusCode === 200) {
+      const { id } = request.params as { id: string };
+      auditRepository.log({ action: 'gallery.category.delete', userId: request.cmsSession?.user.id, entityType: 'gallery_category', entityId: id, ip: request.ip });
+    }
+  });
+  app.post('/api/cms/gallery/categories/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.reorderCategories(request, reply);
+  });
+
+  // Items
+  app.get('/api/cms/gallery/items', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    galleryController.listItems(request, reply)
+  );
+  app.get('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    galleryController.getItem(request, reply)
+  );
+  app.post('/api/cms/gallery/items', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.createItem(request, reply);
+    if (reply.statusCode === 201) {
+      auditRepository.log({ action: 'gallery.item.create', userId: request.cmsSession?.user.id, entityType: 'gallery_item', ip: request.ip });
+    }
+  });
+  app.patch('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.updateItem(request, reply);
+    if (reply.statusCode === 200) {
+      const { id } = request.params as { id: string };
+      auditRepository.log({ action: 'gallery.item.update', userId: request.cmsSession?.user.id, entityType: 'gallery_item', entityId: id, ip: request.ip });
+    }
+  });
+  app.delete('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.deleteItem(request, reply);
+    if (reply.statusCode === 200) {
+      const { id } = request.params as { id: string };
+      auditRepository.log({ action: 'gallery.item.delete', userId: request.cmsSession?.user.id, entityType: 'gallery_item', entityId: id, ip: request.ip });
+    }
+  });
+  app.post('/api/cms/gallery/items/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
+    galleryController.reorderItems(request, reply);
   });
 
   // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)

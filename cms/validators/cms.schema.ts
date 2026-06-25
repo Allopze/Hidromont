@@ -48,3 +48,39 @@ export const updateEntryMetaSchema = z.object({
 export const listEntriesQuerySchema = z.object({
   kind: z.string().optional(),
 });
+
+// ── Gallery schemas ───────────────────────────────────────────
+
+export const createCategorySchema = z.object({
+  name: z.string().min(1).max(120),
+  slug: z.string().min(1).max(120).regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones').optional(),
+});
+
+export const updateCategorySchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  slug: z.string().min(1).max(120).regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones').optional(),
+});
+
+export const reorderSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1),
+});
+
+export const createGalleryItemSchema = z.object({
+  mediaId: z.string().min(1),
+  categoryId: z.string().min(1).nullable().optional(),
+  title: z.string().min(1).max(240),
+  alt: z.string().min(1).max(500),
+  caption: z.string().max(1000).nullable().optional(),
+  featured: z.boolean().optional(),
+  status: z.enum(['published', 'draft']).optional(),
+});
+
+export const updateGalleryItemSchema = z.object({
+  mediaId: z.string().min(1).optional(),
+  categoryId: z.string().min(1).nullable().optional(),
+  title: z.string().min(1).max(240).optional(),
+  alt: z.string().min(1).max(500).optional(),
+  caption: z.string().max(1000).nullable().optional(),
+  featured: z.boolean().optional(),
+  status: z.enum(['published', 'draft']).optional(),
+});

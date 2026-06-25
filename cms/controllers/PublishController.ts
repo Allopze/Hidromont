@@ -13,9 +13,16 @@ export class PublishController extends BaseController {
 
   async export(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-      this.handleSuccess(reply, this.publishService.exportContent());
+      // Use gallery-aware export if available, otherwise fallback to content-only
+      const result = await this.publishService.exportContentWithGallery();
+      this.handleSuccess(reply, result);
     } catch (error) {
-      this.handleError(error, reply, 'exportContent');
+      // Fallback: if gallery tables don't exist yet, export content only
+      try {
+        this.handleSuccess(reply, this.publishService.exportContent());
+      } catch (fallbackError) {
+        this.handleError(fallbackError, reply, 'exportContent');
+      }
     }
   }
 

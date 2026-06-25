@@ -1,0 +1,140 @@
+---
+/**
+ * GalleryGrid — Intentional bento grid with featured sizing.
+ *
+ * Featured items get 2×2 or 2×1 spans; standard items get 1×1.
+ * The grid uses CSS grid auto-placement with explicit span classes
+ * for a designed rhythm — no random hash-based layouts.
+ */
+import type { GalleryItemData } from '../../data/gallery';
+
+interface Props {
+  items: GalleryItemData[];
+}
+
+const { items } = Astro.props;
+
+/** Assign grid span based on featured flag and position within featured set */
+function getGridClasses(item: GalleryItemData, _index: number): string {
+  if (!item.featured) return 'col-span-1 row-span-1';
+
+  // Among featured items, alternate between wide (2×1) and large (2×2)
+  const featuredIndex = items.filter((i) => i.featured).indexOf(item);
+  if (featuredIndex === 0) return 'col-span-1 row-span-1 md:col-span-2 md:row-span-2';
+  if (featuredIndex === 1) return 'col-span-1 row-span-1 md:col-span-2';
+  return 'col-span-1 row-span-1';
+}
+
+function getAspectClasses(item: GalleryItemData): string {
+  if (!item.featured) return 'aspect-[4/3]';
+  const featuredIndex = items.filter((i) => i.featured).indexOf(item);
+  if (featuredIndex === 0) return 'aspect-square md:aspect-auto md:h-full';
+  return 'aspect-[16/9] md:aspect-[4/3]';
+}
+
+// Compute initial reveal delay for stagger (per item, capped at 8th)
+function getRevealDelay(index: number): string {
+  const delay = Math.min(index, 7) * 0.06;
+  return `${delay}s`;
+}
+---
+
+<div
+  class="gallery-grid"
+  data-reveal-group
+  style="display:grid;grid-template-columns:repeat(1,1fr);gap:clamp(8px,1.5vw,16px);"
+>
+  {items.map((item, index) => (
+    <button
+      type="button"
+      class={`gallery-card group relative overflow-hidden border border-border/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${getGridClasses(item, index)}`}
+      data-category={item.categorySlug ?? 'otros'}
+      data-item-id={item.id}
+      aria-label={`${item.title}${item.categoryName ? ` — ${item.categoryName}` : ''}`}
+      style={`--reveal-delay:${getRevealDelay(index)}`}
+    >
+      {/* Responsive image with LQIP placeholder */}
+      <div class={`w-full h-full overflow-hidden relative ${getAspectClasses(item)}`}>
+        {/* LQIP blur-up background */}
+        <div
+          class="absolute inset-0 bg-cover bg-center blur-lg scale-110 transition-opacity duration-500"
+          style={`background-image:url('${item.lqip}');`}
+          aria-hidden="true"
+          data-lqip
+        />
+        <img
+          src={item.src}
+          srcset={item.srcset}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          alt={item.alt}
+          width={item.width}
+          height={item.height}
+          loading={index < 3 ? 'eager' : 'lazy'}
+          fetchpriority={index < 3 ? 'high' : 'auto'}
+          decoding="async"
+          class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] relative z-10"
+          style={`object-position: ${item.focalX * 100}% ${item.focalY * 100}%`}
+          onload="this.previousElementSibling.style.opacity='0'"
+        />
+      </div>
+
+      {/* Persistent caption scrim — always visible, not just on hover */}
+      <div class="absolute inset-0 z-20 flex flex-col justify-end pointer-events-none">
+        {/* Scrim gradient — bottom 40% */}
+        <div class="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-navy/85 via-navy/50 to-transparent transition-all duration-300 group-hover:from-navy/90 group-hover:via-navy/60" />
+
+        {/* Caption content */}
+        <div class="relative z-10 p-3 md:p-4 text-white transition-transform duration-300 ease-out group-hover:-translate-y-1">
+          {item.categoryName && (
+            <span class="block text-[10px] md:text-[11px] text-accent font-semibold uppercase tracking-wider mb-1 font-mono">
+              {item.categoryName}
+            </span>
+          )}
+          <h3 class="text-sm md:text-base font-bold font-heading uppercase leading-tight tracking-wide">
+            {item.title}
+          </h3>
+          {/* "Ver en detalle" — visible on hover/focus only */}
+          <span class="block text-[10px] md:text-xs text-white/60 mt-1.5 opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-y-0">
+            Ver en detalle →
+          </span>
+        </div>
+      </div>
+    </button>
+  ))}
+</div>
+
+<style>
+  /* Responsive grid columns */
+  .gallery-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  @media (min-width: 640px) {
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1024px) {
+    .gallery-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .gallery-card {
+    background: var(--color-background-alt);
+    box-shadow: var(--shadow-sm);
+  }
+  .gallery-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: rgba(0, 166, 214, 0.3);
+  }
+  .gallery-card:active {
+    transform: scale(0.98);
+    transition-duration: 100ms;
+  }
+
+  /* Accessible focus ring */
+  .gallery-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+</style>

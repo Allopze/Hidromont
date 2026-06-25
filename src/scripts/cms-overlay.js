@@ -371,6 +371,56 @@
     }
     .hm-cms-badge.draft { background: #fef3c7; color: #92400e; }
     .hm-cms-badge.published { background: #dcfce7; color: #166534; }
+    .hm-cms-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .hm-cms-gallery-thumb {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      background: #e2e8f0;
+    }
+    .hm-cms-gallery-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hm-cms-gallery-thumb:hover { border-color: #2d9cdb; }
+    .hm-cms-gallery-thumb .hm-cms-gallery-featured {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: #00A6D6;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .hm-cms-gallery-cat-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      font-size: 13px;
+      color: #172331;
+    }
+    .hm-cms-gallery-cat-btn:hover { border-color: #2d9cdb; }
+    .hm-cms-gallery-cat-name { font-weight: 700; }
+    .hm-cms-gallery-cat-slug { font-size: 11px; color: #64748b; font-family: ui-monospace, monospace; }
     @media (max-width: 640px) {
       .hm-cms-bar {
         left: 8px;
@@ -392,6 +442,7 @@
       <strong>Hidromont CMS</strong>
       <span class="hm-cms-badge" data-state-badge style="display:none"></span>
       <button type="button" class="secondary" data-action="collections">Colecciones</button>
+      <button type="button" class="secondary" data-action="gallery">Galería</button>
       <button type="button" class="secondary" data-action="jobs">Historial</button>
       <button type="button" data-action="publish" title="Exporta el contenido a los archivos del sitio y ejecuta la validación (astro check). El despliegue a hidromont.cl es un paso aparte.">Exportar y validar</button>
       <button type="button" class="secondary" data-action="logout">Salir</button>
@@ -870,6 +921,253 @@
     setGlobalState('unsaved');
   }
 
+  // ─── Gallery management ──────────────────────────────────────────────────
+
+  // Gallery view state tracking
+
+  async function loadGallery() {
+    if (!(await ensureSession())) return;
+    galleryView = 'main';
+    setPanelTitle('Galería');
+    openPanel('<p class="hm-cms-muted">Cargando galería...</p>');
+    try {
+      const [catsData, itemsData] = await Promise.all([
+        api('/api/cms/gallery/categories'),
+        api('/api/cms/gallery/items'),
+      ]);
+      const cats = catsData.items || [];
+      const items = itemsData.items || [];
+      openPanel(`
+        <div style="display:grid;gap:12px">
+          <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid #cbd5e1;border-radius:6px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:#0065A9">${cats.length}</strong>
+              <span style="font-size:12px;color:#475569">Categorías</span>
+            </button>
+            <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid #cbd5e1;border-radius:6px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:#0065A9">${items.length}</strong>
+              <span style="font-size:12px;color:#475569">Imágenes</span>
+            </button>
+          </div>
+          <button type="button" data-action="gallery-cats">Gestionar categorías</button>
+          <button type="button" data-action="gallery-items">Gestionar imágenes</button>
+        </div>
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
+  async function loadGalleryCategories() {
+    if (!(await ensureSession())) return;
+    galleryView = 'categories';
+    setPanelTitle('Categorías de galería');
+    openPanel('<p class="hm-cms-muted">Cargando categorías...</p>');
+    try {
+      const data = await api('/api/cms/gallery/categories');
+      const cats = data.items || [];
+      openPanel(`
+        <div style="display:grid;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:13px;color:#64748b">${cats.length} categorías</span>
+            <button type="button" data-action="gallery-new-cat">+ Nueva categoría</button>
+          </div>
+          <div style="display:grid;gap:6px">
+            ${cats.map((cat) => `
+              <div class="hm-cms-gallery-cat-btn" data-cat-id="${escapeHtml(cat.id)}">
+                <div>
+                  <span class="hm-cms-gallery-cat-name">${escapeHtml(cat.name)}</span>
+                  <span class="hm-cms-gallery-cat-slug">${escapeHtml(cat.slug)}</span>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">Editar</button>
+                  <button type="button" class="secondary" style="font-size:11px;padding:4px 8px;background:#fee2e2;color:#991b1b" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}">×</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+        </div>
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
+  async function showGalleryCategoryForm(catId = null) {
+    if (!(await ensureSession())) return;
+    setPanelTitle(catId ? 'Editar categoría' : 'Nueva categoría');
+
+    let cat = { name: '', slug: '' };
+    if (catId) {
+      try {
+        const data = await api('/api/cms/gallery/categories');
+        cat = (data.items || []).find((c) => c.id === catId) || cat;
+      } catch { /* use defaults */ }
+    }
+
+    openPanel(`
+      <form data-gallery-cat-form data-cat-id="${catId ? escapeHtml(catId) : ''}">
+        <label>Nombre
+          <input name="name" value="${escapeHtml(cat.name)}" required />
+        </label>
+        <label>Slug (URL)
+          <input name="slug" value="${escapeHtml(cat.slug)}" pattern="[a-z0-9-]+" placeholder="auto-generado" />
+        </label>
+        <p class="hm-cms-muted">El slug se usa en la URL y los filtros. Solo letras minúsculas, números y guiones.</p>
+        <div class="hm-cms-actions">
+          <button type="submit">${catId ? 'Guardar cambios' : 'Crear categoría'}</button>
+          <button type="button" class="secondary" data-action="gallery-cats">Cancelar</button>
+        </div>
+        <p class="hm-cms-muted" data-status></p>
+      </form>
+    `);
+
+    // Auto-generate slug from name
+    const form = panelBody.querySelector('[data-gallery-cat-form]');
+    const nameInput = form?.querySelector('[name="name"]');
+    const slugInput = form?.querySelector('[name="slug"]');
+    if (nameInput && slugInput && !catId) {
+      nameInput.addEventListener('input', () => {
+        slugInput.value = nameInput.value
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      });
+    }
+  }
+
+  async function loadGalleryItemsList() {
+    if (!(await ensureSession())) return;
+    galleryView = 'items';
+    setPanelTitle('Imágenes de galería');
+    openPanel('<p class="hm-cms-muted">Cargando imágenes...</p>');
+    try {
+      const data = await api('/api/cms/gallery/items');
+      const items = data.items || [];
+      openPanel(`
+        <div style="display:grid;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:13px;color:#64748b">${items.length} imágenes</span>
+            <button type="button" data-action="gallery-new-item">+ Agregar imagen</button>
+          </div>
+          <div class="hm-cms-gallery-grid">
+            ${items.map((item) => `
+              <div class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}">
+                <img src="${escapeHtml(item.mediaPath)}" alt="${escapeHtml(item.alt)}" loading="lazy" />
+                ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+        </div>
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
+  async function showGalleryItemForm(itemId = null) {
+    if (!(await ensureSession())) return;
+    setPanelTitle(itemId ? 'Editar imagen' : 'Agregar imagen');
+
+    let item = { mediaId: '', categoryId: null, title: '', alt: '', caption: '', featured: false, status: 'published' };
+    let catsData = { items: [] };
+
+    try {
+      catsData = await api('/api/cms/gallery/categories');
+      if (itemId) {
+        item = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`);
+      }
+    } catch { /* use defaults */ }
+
+    const cats = catsData.items || [];
+
+    openPanel(`
+      <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
+        <input name="mediaId" type="hidden" value="${escapeHtml(item.mediaId || '')}" />
+        <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt=""
+          style="width:100%;max-height:180px;object-fit:contain;background:#e2e8f0;border-radius:6px;${item.mediaPath ? '' : 'display:none'}" />
+        <label>Seleccionar imagen
+          <input name="mediaSearch" type="search" placeholder="Buscar en la biblioteca de medios..." data-gallery-media-search />
+        </label>
+        <label>O subir nueva imagen
+          <input name="file" type="file" accept="image/png,image/jpeg,image/webp" data-gallery-upload />
+        </label>
+        <div data-gallery-media-grid class="hm-cms-media-grid" style="max-height:200px">
+          <p class="hm-cms-muted">Cargando medios...</p>
+        </div>
+        <label>Título
+          <input name="title" value="${escapeHtml(item.title)}" required />
+        </label>
+        <label>Texto alternativo (accesibilidad)
+          <input name="alt" value="${escapeHtml(item.alt)}" required />
+        </label>
+        <label>Categoría
+          <select name="categoryId">
+            <option value="">Sin categoría</option>
+            ${cats.map((cat) => `<option value="${escapeHtml(cat.id)}" ${cat.id === item.categoryId ? 'selected' : ''}>${escapeHtml(cat.name)}</option>`).join('')}
+          </select>
+        </label>
+        <label>Descripción (opcional)
+          <textarea name="caption" style="min-height:80px">${escapeHtml(item.caption || '')}</textarea>
+        </label>
+        <div class="hm-cms-two">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input name="featured" type="checkbox" ${item.featured ? 'checked' : ''} />
+            Destacada
+          </label>
+          <label>Estado
+            <select name="status">
+              <option value="published" ${item.status === 'published' ? 'selected' : ''}>Publicada</option>
+              <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Borrador</option>
+            </select>
+          </label>
+        </div>
+        <div class="hm-cms-actions">
+          <button type="submit">${itemId ? 'Guardar cambios' : 'Agregar a galería'}</button>
+          ${itemId ? `<button type="button" class="secondary" style="background:#fee2e2;color:#991b1b" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.title)}">Eliminar</button>` : ''}
+          <button type="button" class="secondary" data-action="gallery-items">Cancelar</button>
+        </div>
+        <p class="hm-cms-muted" data-status></p>
+      </form>
+    `);
+
+    // Load media picker
+    try {
+      const mediaData = await api('/api/cms/media');
+      state.mediaItems = mediaData.items || [];
+      renderGalleryMediaPicker(item.mediaId);
+    } catch { /* silent */ }
+  }
+
+  function renderGalleryMediaPicker(selectedId = '') {
+    const grid = panelBody.querySelector('[data-gallery-media-grid]');
+    if (!grid) return;
+    const searchInput = panelBody.querySelector('[data-gallery-media-search]');
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    const items = !query
+      ? state.mediaItems.slice(0, 60)
+      : state.mediaItems.filter((item) => `${item.name} ${item.alt || ''}`.toLowerCase().includes(query)).slice(0, 60);
+
+    if (!items.length) {
+      grid.innerHTML = '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
+      return;
+    }
+
+    grid.innerHTML = items.map((item) => `
+      <button
+        type="button"
+        class="hm-cms-media-item ${item.id === selectedId ? 'selected' : ''}"
+        data-action="gallery-select-media"
+        data-media-id="${escapeHtml(item.id)}"
+      >
+        <img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />
+        <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
+      </button>
+    `).join('');
+  }
+
   // ─── CRUD de colecciones ─────────────────────────────────────────────────
 
   const COLLECTION_KINDS = [
@@ -1048,6 +1346,85 @@
     if (action === 'collections') {
       loadCollections();
     }
+    if (action === 'gallery') {
+      loadGallery();
+    }
+    if (action === 'gallery-cats') {
+      loadGalleryCategories();
+    }
+    if (action === 'gallery-items') {
+      loadGalleryItemsList();
+    }
+    if (action === 'gallery-new-cat') {
+      showGalleryCategoryForm();
+    }
+    if (action === 'gallery-edit-cat' && target instanceof Element) {
+      const catId = target.closest('[data-cat-id]')?.dataset.catId;
+      if (catId) showGalleryCategoryForm(catId);
+    }
+    if (action === 'gallery-delete-cat' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const btn = target.closest('[data-cat-id]');
+      if (!btn) return;
+      const catId = btn.dataset.catId;
+      const name = btn.dataset.catName || catId;
+      if (!window.confirm(`¿Eliminar la categoría "${name}"?`)) return;
+      try {
+        await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, { method: 'DELETE' });
+        loadGalleryCategories();
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+      }
+      return;
+    }
+    if (action === 'gallery-new-item') {
+      showGalleryItemForm();
+    }
+    if (action === 'gallery-edit-item' && target instanceof Element) {
+      const itemId = target.closest('[data-item-id]')?.dataset.itemId;
+      if (itemId) showGalleryItemForm(itemId);
+    }
+    if (action === 'gallery-delete-item' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const btn = target.closest('[data-item-id]');
+      if (!btn) return;
+      const itemId = btn.dataset.itemId;
+      const title = btn.dataset.itemTitle || itemId;
+      if (!window.confirm(`¿Eliminar "${title}" de la galería?`)) return;
+      try {
+        await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+        loadGalleryItemsList();
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+      }
+      return;
+    }
+    if (action === 'gallery-select-media' && target instanceof Element) {
+      event.preventDefault();
+      event.stopPropagation();
+      const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
+      const asset = state.mediaItems.find((item) => item.id === mediaId);
+      if (asset) {
+        const form = panelBody.querySelector('[data-gallery-item-form]');
+        if (form) {
+          const mediaIdInput = form.querySelector('[name="mediaId"]');
+          const titleInput = form.querySelector('[name="title"]');
+          const altInput = form.querySelector('[name="alt"]');
+          const preview = form.querySelector('[data-gallery-media-preview]');
+          if (mediaIdInput) mediaIdInput.value = asset.id;
+          if (titleInput && !titleInput.value) titleInput.value = asset.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+          if (altInput && !altInput.value) altInput.value = asset.alt || '';
+          if (preview) {
+            preview.src = asset.path;
+            preview.style.display = 'block';
+          }
+          renderGalleryMediaPicker(asset.id);
+        }
+      }
+      return;
+    }
     if (action === 'tab-kind' && target instanceof Element) {
       const kind = target.closest('[data-kind]')?.dataset.kind;
       if (kind) loadCollections(kind);
@@ -1224,6 +1601,100 @@
         if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       });
     }
+
+    if (form.matches('[data-gallery-cat-form]')) {
+      event.preventDefault();
+      const status = form.querySelector('[data-status]');
+      const catId = form.dataset.catId;
+      try {
+        if (status) status.textContent = 'Guardando...';
+        const body = {
+          name: form.elements.name.value,
+          slug: form.elements.slug.value || undefined,
+        };
+        if (catId) {
+          await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        } else {
+          await api('/api/cms/gallery/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+        loadGalleryCategories();
+      } catch (error) {
+        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      }
+    }
+
+    if (form.matches('[data-gallery-item-form]')) {
+      event.preventDefault();
+      const status = form.querySelector('[data-status]');
+      const itemId = form.dataset.itemId;
+      try {
+        if (status) status.textContent = 'Guardando...';
+
+        // Upload file if selected
+        const fileInput = form.elements.file;
+        const file = fileInput?.files?.[0];
+        let currentMediaId = form.elements.mediaId.value;
+
+        if (file && !currentMediaId) {
+          if (status) status.textContent = 'Subiendo imagen...';
+          const payload = new FormData();
+          payload.append('file', file);
+          const uploaded = await fetch(`${apiBase}/api/cms/media`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'X-CSRF-Token': state.csrfToken },
+            body: payload,
+          }).then(async (response) => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Error al subir imagen');
+            return data;
+          });
+          currentMediaId = uploaded.id;
+          form.elements.mediaId.value = uploaded.id;
+          if (!form.elements.title.value) {
+            form.elements.title.value = uploaded.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+          }
+          if (!form.elements.alt.value) {
+            form.elements.alt.value = uploaded.alt || '';
+          }
+        }
+
+        if (!currentMediaId) throw new Error('Selecciona o sube una imagen primero');
+        const body = {
+          mediaId: currentMediaId,
+          title: form.elements.title.value,
+          alt: form.elements.alt.value,
+          categoryId: form.elements.categoryId.value || null,
+          caption: form.elements.caption.value || null,
+          featured: form.elements.featured.checked,
+          status: form.elements.status.value,
+        };
+        if (itemId) {
+          await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        } else {
+          await api('/api/cms/gallery/items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        }
+        loadGalleryItemsList();
+      } catch (error) {
+        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      }
+    }
   });
 
   document.addEventListener('input', (event) => {
@@ -1234,6 +1705,39 @@
       filterMediaPicker(target.value);
       return;
     }
+
+    if (target instanceof HTMLInputElement && target.matches('[data-gallery-media-search]')) {
+      const form = target.closest('[data-gallery-item-form]');
+      const selectedId = form?.querySelector('[name="mediaId"]')?.value || '';
+      renderGalleryMediaPicker(selectedId);
+      return;
+    }
+  });
+
+  // Handle file upload preview in gallery item form
+  document.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (!target.matches('[data-gallery-upload]')) return;
+    const file = target.files?.[0];
+    if (!file) return;
+    const form = target.closest('[data-gallery-item-form]');
+    if (!form) return;
+    // Clear mediaId so upload happens on submit
+    const mediaIdInput = form.querySelector('[name="mediaId"]');
+    if (mediaIdInput) mediaIdInput.value = '';
+    // Preview
+    const preview = form.querySelector('[data-gallery-media-preview]');
+    if (preview) {
+      const reader = new FileReader();
+      reader.onload = () => { preview.src = String(reader.result); preview.style.display = 'block'; };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  document.addEventListener('input', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');

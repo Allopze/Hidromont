@@ -10,6 +10,7 @@ import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
 import { AuditRepository } from '../repositories/AuditRepository';
 import { ContentRepository } from '../repositories/ContentRepository';
+import { GalleryRepository } from '../repositories/GalleryRepository';
 import { MediaRepository } from '../repositories/MediaRepository';
 import { PublishJobRepository } from '../repositories/PublishJobRepository';
 import { RateLimitRepository } from '../repositories/RateLimitRepository';
@@ -17,10 +18,12 @@ import { UserRepository } from '../repositories/UserRepository';
 import { AuthService } from '../services/authService';
 import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
+import { GalleryService } from '../services/galleryService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
 import { AuthController } from '../controllers/AuthController';
 import { ContentController } from '../controllers/ContentController';
+import { GalleryController } from '../controllers/GalleryController';
 import { MediaController } from '../controllers/MediaController';
 import { PublishController } from '../controllers/PublishController';
 import { requireAuth, requireCsrf } from '../middleware/security';
@@ -116,6 +119,31 @@ const SCHEMA_SQL = `
     FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
     FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
   );
+
+    CREATE TABLE IF NOT EXISTS gallery_categories (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      position INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS gallery_items (
+      id TEXT PRIMARY KEY,
+      media_id TEXT NOT NULL,
+      category_id TEXT,
+      title TEXT NOT NULL,
+      alt TEXT NOT NULL,
+      caption TEXT,
+      position INTEGER NOT NULL DEFAULT 0,
+      featured INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'published',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
+    );
 `;
 
 export interface TestApp {
@@ -156,6 +184,10 @@ export async function createTestApp(): Promise<TestApp> {
   const exportService = new ExportService(contentRepository);
   const mediaService = new MediaService(mediaRepository);
   const publishService = new PublishService(exportService, publishJobRepository);
+
+  const galleryRepository = new GalleryRepository(db);
+  const galleryService = new GalleryService(galleryRepository);
+  const galleryController = new GalleryController(galleryService);
 
   const authController = new AuthController(authService);
   const contentController = new ContentController(contentService);
@@ -218,6 +250,41 @@ export async function createTestApp(): Promise<TestApp> {
   app.get('/api/cms/audit', { preHandler: [requireAuth(authService)] }, async (_req, reply) => {
     return reply.send({ events: auditRepository.list(200) });
   });
+
+  // Gallery routes
+  app.get('/api/cms/gallery/categories', { preHandler: [requireAuth(authService)] }, (req, reply) =>
+    galleryController.listCategories(req, reply)
+  );
+  app.post('/api/cms/gallery/categories', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.createCategory(req, reply)
+  );
+  app.patch('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.updateCategory(req, reply)
+  );
+  app.delete('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.deleteCategory(req, reply)
+  );
+  app.post('/api/cms/gallery/categories/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.reorderCategories(req, reply)
+  );
+  app.get('/api/cms/gallery/items', { preHandler: [requireAuth(authService)] }, (req, reply) =>
+    galleryController.listItems(req, reply)
+  );
+  app.get('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService)] }, (req, reply) =>
+    galleryController.getItem(req, reply)
+  );
+  app.post('/api/cms/gallery/items', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.createItem(req, reply)
+  );
+  app.patch('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.updateItem(req, reply)
+  );
+  app.delete('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.deleteItem(req, reply)
+  );
+  app.post('/api/cms/gallery/items/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
+    galleryController.reorderItems(req, reply)
+  );
 
   await app.ready();
 
