@@ -18,17 +18,21 @@ const categories = getGalleryCategories();
 const allItems = getGalleryItems();
 const categoryCounts = getCategoryCounts();
 const totalCount = allItems.length;
-const categoryCount = categories.length;
 
-// Build filter list with counts
+// Build filter list with counts — hide categories that have no images
 const filters = [
   { slug: 'all', name: 'Todas', count: totalCount },
-  ...categories.map((cat) => ({
-    slug: cat.slug,
-    name: cat.name,
-    count: categoryCounts[cat.slug] ?? 0,
-  })),
+  ...categories
+    .map((cat) => ({
+      slug: cat.slug,
+      name: cat.name,
+      count: categoryCounts[cat.slug] ?? 0,
+    }))
+    .filter((cat) => cat.count > 0),
 ];
+
+// Only count non-empty categories (exclude the "Todas" pseudo-filter)
+const categoryCount = filters.length - 1;
 ---
 
 <PageLayout
@@ -42,58 +46,60 @@ const filters = [
     imageAlt={getCmsText('page.galeria', 'imageAlt', 'Galería de proyectos Hidromont Chile')}
     breadcrumbs={[{ label: 'Galería' }]}
     cmsEntry="page.galeria"
+    compact
   />
 
   <Section padding="tight" class="bg-background">
-    <Container>
-      {allItems.length === 0 ? (
+    {allItems.length === 0 ? (
+      <Container>
         <div class="text-center py-20" data-reveal>
           <p class="text-text-muted text-lg">
             Próximamente se añadirán imágenes a esta galería.
           </p>
         </div>
-      ) : (
-        <>
-          {/* ── Editorial header + segmented filter control ── */}
-          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-8 mb-8 md:mb-10" data-reveal>
-            {/* Context line */}
-            <div>
-              <p class="text-sm text-text-muted font-mono uppercase tracking-wider">
-                {totalCount} imágenes · {categoryCount} {categoryCount === 1 ? 'categoría' : 'categorías'}
-              </p>
-            </div>
+      </Container>
+    ) : (
+      <div class="w-full px-4 md:px-6">
+        {/* Full-width wrapper: header + grid share one gutter so left/right
+            margins stay symmetric and aligned */}
+        {/* ── Editorial header + segmented filter control ── */}
+        <div class="mb-8 md:mb-10" data-reveal>
+          {/* Meta line */}
+          <p class="text-xs text-text-muted font-mono uppercase tracking-wider mb-3">
+            {totalCount} imágenes · {categoryCount} {categoryCount === 1 ? 'categoría' : 'categorías'}
+          </p>
 
-            {/* Segmented filter control — industrial, connected, with counts */}
-            <nav
-              aria-label="Filtrar por categoría"
-              class="flex flex-wrap gap-0 border border-border rounded-none overflow-hidden"
-              id="filter-container"
-              role="radiogroup"
-            >
+          {/* Segmented control — full width, equal segments, connected */}
+          <nav
+            aria-label="Filtrar por categoría"
+            class="w-full border border-border overflow-x-auto scrollbar-hide"
+            id="filter-container"
+          >
+            <div class="flex min-w-max" role="radiogroup">
               {filters.map((filter) => (
                 <button
                   type="button"
                   role="radio"
                   aria-checked={filter.slug === 'all' ? 'true' : 'false'}
                   data-filter={filter.slug}
-                  class={`gallery-filter-btn relative px-3 md:px-4 py-2.5 text-[11px] md:text-xs font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
+                  class={`gallery-filter-btn relative flex-1 px-3 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
                     filter.slug === 'all'
                       ? 'bg-primary text-white'
                       : 'bg-background text-text-muted hover:bg-background-alt hover:text-text'
                   }`}
                 >
                   {filter.name}
-                  <span class="ml-1.5 opacity-60">{filter.count}</span>
+                  <span class="ml-1 opacity-60">{filter.count}</span>
                 </button>
               ))}
-            </nav>
-          </div>
+            </div>
+          </nav>
+        </div>
 
-          {/* ── Gallery grid ── */}
-          <GalleryGrid items={allItems} />
-        </>
-      )}
-    </Container>
+        {/* ── Gallery grid — spans the full page width ── */}
+        <GalleryGrid items={allItems} />
+      </div>
+    )}
   </Section>
 
   {/* ── Lightbox (progressive enhancement — hidden until JS activates) ── */}
@@ -101,23 +107,26 @@ const filters = [
 </PageLayout>
 
 <script>
-  // ── Filter system ──
+  // ── Filter system with ARIA radio group keyboard navigation ──
   (() => {
-    const buttons = document.querySelectorAll('[data-filter]');
+    const container = document.getElementById('filter-container');
+    const buttons = container?.querySelectorAll('[data-filter]');
     const cards = document.querySelectorAll('.gallery-card');
-    if (!buttons.length || !cards.length) return;
+    if (!buttons?.length || !cards.length) return;
+
+    const btnArray = Array.from(buttons) as HTMLElement[];
 
     function applyFilter(slug: string) {
-      buttons.forEach((btn) => {
+      btnArray.forEach((btn) => {
         const isActive = btn.getAttribute('data-filter') === slug;
         btn.setAttribute('aria-checked', String(isActive));
 
         if (isActive) {
           btn.classList.add('bg-primary', 'text-white');
-          btn.classList.remove('bg-background', 'text-text-muted', 'hover:bg-background-alt', 'hover:text-text');
+          btn.classList.remove('bg-background', 'text-text-muted');
         } else {
           btn.classList.remove('bg-primary', 'text-white');
-          btn.classList.add('bg-background', 'text-text-muted', 'hover:bg-background-alt', 'hover:text-text');
+          btn.classList.add('bg-background', 'text-text-muted');
         }
       });
 
@@ -128,8 +137,7 @@ const filters = [
 
         if (show) {
           el.style.removeProperty('display');
-          // Force reflow, then animate in
-          el.offsetHeight;
+          el.offsetHeight; // force reflow
           el.style.opacity = '1';
           el.style.transform = 'scale(1)';
         } else {
@@ -146,11 +154,33 @@ const filters = [
       });
     }
 
-    buttons.forEach((btn) => {
+    // Click handlers
+    btnArray.forEach((btn) => {
       btn.addEventListener('click', () => {
         const slug = btn.getAttribute('data-filter');
         if (slug) applyFilter(slug);
       });
+    });
+
+    // Arrow key navigation (ARIA radio group pattern)
+    container?.addEventListener('keydown', (e: KeyboardEvent) => {
+      const current = document.activeElement as HTMLElement;
+      const idx = btnArray.indexOf(current);
+      if (idx === -1) return;
+
+      let next = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        next = (idx + 1) % btnArray.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        next = (idx - 1 + btnArray.length) % btnArray.length;
+      }
+
+      if (next !== -1) {
+        e.preventDefault();
+        btnArray[next].focus();
+        const slug = btnArray[next].getAttribute('data-filter');
+        if (slug) applyFilter(slug);
+      }
     });
   })();
 </script>

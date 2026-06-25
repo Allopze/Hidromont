@@ -23,6 +23,7 @@ interface Props {
   cmsEyebrowField?: string | false; // kept for backward compat
   cmsTitleField?: string | false;
   cmsSubtitleField?: string | false;
+  compact?: boolean;       // tighter vertical rhythm (text-only layout) — e.g. gallery/index pages
 }
 
 const {
@@ -38,7 +39,10 @@ const {
   cmsImageEntry = cmsEntry,
   cmsTitleField = 'title',
   cmsSubtitleField = 'subtitle',
+  compact = false,
 } = Astro.props;
+
+const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg:py-24';
 ---
 
 <section class="relative bg-background-strong text-white overflow-hidden">
@@ -155,7 +159,7 @@ const {
   {/* ── Text-only layout (no image) ── */}
   {!imageSrc && (
     <Container size="2xl">
-      <div class="relative z-10 py-16 md:py-20 lg:py-24 max-w-3xl">
+      <div class={`relative z-10 ${textOnlyPadding} max-w-3xl`}>
         {/* Grid motif */}
         <div
           class="absolute inset-0 pointer-events-none"

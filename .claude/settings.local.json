@@ -14,7 +14,10 @@
       "Bash(curl -s http://localhost:4321/servicios/)",
       "Bash(curl -s http://localhost:4321/contacto/)",
       "Bash(curl -s http://localhost:4321/proyectos/)",
-      "Bash(curl -s http://localhost:4321/proyectos/ch-los-condores/)"
+      "Bash(curl -s http://localhost:4321/proyectos/ch-los-condores/)",
+      "Skill(impeccable)",
+      "Bash(node *)",
+      "Bash(git -C \"/Users/allopze/dev/Hidromont Chile/pagina-web\" log --oneline -5)"
     ]
   }
 }
