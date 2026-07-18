@@ -1,0 +1,103 @@
+# A4-001: CI bloqueante. Ejecuta build, type-check, tests unitarios y el gate
+# anti-overlay (H1) en cada PR y push. El job e2e-full corre los tests que requieren
+# los servidores Astro+CMS levantados.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build + Unit tests + Build gate (H1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # H1: el build de producción DEBE generarse con PUBLIC_ENABLE_CMS=0 para que el
+      # dist/ no incluya el overlay del CMS. El gate e2e lo verifica.
+      PUBLIC_ENABLE_CMS: '0'
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check + Build (astro check && astro build)
+        run: npm run build
+
+      - name: Unit tests (vitest)
+        run: npm test
+
+      - name: Build gate — dist/ must not contain CMS overlay (H1)
+        run: npx playwright test --project=chromium e2e/build-gate.spec.ts
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  e2e-full:
+    name: E2E (Astro + CMS servers)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # E2E full requiere el overlay activo para probar el flujo del editor.
+      PUBLIC_ENABLE_CMS: '1'
+      CMS_HOST: '127.0.0.1'
+      CMS_PORT: '8787'
+      CMS_ADMIN_EMAIL: admin@hidromont.local
+      CMS_ADMIN_PASSWORD: Hidromont-Admin-ChangeMe
+      CMS_DATABASE_PATH: ':memory:'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build (with overlay, for preview)
+        run: npm run build
+
+      - name: Start CMS server
+        run: npm run cms &
+        # El CMS arranca en 127.0.0.1:8787 (cookie insegura permitida solo en local).
+
+      - name: Start preview server
+        run: npm run preview &
+        # Astro preview en localhost:4321 por defecto.
+
+      - name: Wait for servers
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:4321/ >/dev/null 2>&1 && curl -sf http://127.0.0.1:8787/api/cms/health >/dev/null 2>&1; then
+              echo "Both servers up"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Servers did not come up in time"; exit 1
+
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium e2e/cms-overlay.spec.ts

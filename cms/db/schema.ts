@@ -74,6 +74,7 @@ export function migrate(): void {
       status TEXT NOT NULL,
       logs TEXT NOT NULL,
       created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
       completed_at TEXT
     );
 
@@ -115,7 +116,7 @@ export function migrate(): void {
 
     CREATE TABLE IF NOT EXISTS gallery_items (
       id TEXT PRIMARY KEY,
-      media_id TEXT NOT NULL,
+      media_id TEXT,
       category_id TEXT,
       title TEXT NOT NULL,
       alt TEXT NOT NULL,
@@ -125,8 +126,76 @@ export function migrate(): void {
       status TEXT NOT NULL DEFAULT 'published',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
       FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
     );
   `);
+
+  // A1-004: migrar bases de datos existentes del esquema anterior (media_id NOT NULL
+  // + ON DELETE CASCADE) al nuevo (media_id NULLABLE + ON DELETE SET NULL). SQLite no
+  // soporta ALTER para cambiar NOT NULL ni la accion ON DELETE de una FK, asi que se
+  // recrea la tabla. Es idempotente: si ya esta migrada, no hace nada.
+  migrateGalleryItemsOnDeleteSetNull(db);
+
+  // A1-009: anade la columna updated_at a publish_jobs para soportar reap de jobs
+  // trabados en 'running' tras un crash. Idempotente.
+  migratePublishJobsUpdatedAt(db);
+}
+
+/**
+ * Migracion A1-004: convierte gallery_items.media_id de `NOT NULL ... ON DELETE CASCADE`
+ * a `NULL ... ON DELETE SET NULL`. Antes, borrar un media_asset usado por items de
+ * galeria borraba los items en cascada (perdida silenciosa de contenido). Ahora los
+ * items se conservan con media_id=NULL y se excluyen de la exportacion hasta que se
+ * les reasigne un media valido.
+ *
+ * Idempotente: detecta via pragma si la FK actual ya es SET NULL y salta.
+ */
+function migrateGalleryItemsOnDeleteSetNull(db: ReturnType<typeof getDb>): void {
+  // Usar PRAGMA (no la forma funcioń pragma_*) para evitar el parser de comillas.
+  // pragma_foreign_key_list devuelve una fila por FK con columna "on_delete".
+  const fk = db
+    .prepare('PRAGMA foreign_key_list(gallery_items)')
+    .all() as Array<{ on_delete: string | null; table: string | null }>;
+
+  // Buscar la FK cuya tabla referenciada sea media_assets. Si ya es SET NULL, nada que hacer.
+  const mediaFk = fk.find((row) => row.table === 'media_assets');
+  if (!mediaFk) return;
+  if (mediaFk.on_delete === 'SET NULL') return;
+
+  db.exec(`
+    BEGIN;
+    CREATE TABLE gallery_items_new (
+      id TEXT PRIMARY KEY,
+      media_id TEXT,
+      category_id TEXT,
+      title TEXT NOT NULL,
+      alt TEXT NOT NULL,
+      caption TEXT,
+      position INTEGER NOT NULL DEFAULT 0,
+      featured INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'published',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
+      FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
+    );
+    INSERT INTO gallery_items_new (id, media_id, category_id, title, alt, caption, position, featured, status, created_at, updated_at)
+      SELECT id, media_id, category_id, title, alt, caption, position, featured, status, created_at, updated_at FROM gallery_items;
+    DROP TABLE gallery_items;
+    ALTER TABLE gallery_items_new RENAME TO gallery_items;
+    COMMIT;
+  `);
+}
+
+/**
+ * Migracion A1-009: anade la columna updated_at a publish_jobs para poder detectar
+ * jobs trabados en 'running' tras un crash del proceso. Idempotente.
+ */
+function migratePublishJobsUpdatedAt(db: ReturnType<typeof getDb>): void {
+  const cols = db.prepare('PRAGMA table_info(publish_jobs)').all() as Array<{ name: string }>;
+  if (cols.some((c) => c.name === 'updated_at')) return;
+  // Backfill: los jobs existentes toman created_at como updated_at (mejor que nada).
+  db.exec(`ALTER TABLE publish_jobs ADD COLUMN updated_at TEXT NOT NULL DEFAULT '';
+           UPDATE publish_jobs SET updated_at = created_at WHERE updated_at = '';`);
 }

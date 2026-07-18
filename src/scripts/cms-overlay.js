@@ -850,6 +850,38 @@
     }
   }
 
+  /**
+   * X-001: actualiza el contenido de texto editable de un elemento sin destruir
+   * markup anidado (iconos, badges, spans hermanos).
+   *
+   * Estrategia:
+   *   - Si el elemento tiene un unico child node de tipo texto, lo actualiza in place.
+   *   - Si tiene varios nodos, busca el primer textNode directo y lo actualiza,
+   *     preservando el resto. Si no hay textNode directo, inserta uno al inicio.
+   *   - Solo recurre a `textContent` cuando el elemento no tiene hijos elemento
+   *     (caso texto plano, el mas comun).
+   */
+  function updateEditableText(element, newValue) {
+    const children = Array.from(element.childNodes);
+    const elementChildren = children.filter((node) => node.nodeType === Node.ELEMENT_NODE);
+
+    // Caso simple: solo texto (o vacio). textNode seguro, no destruye nada.
+    if (elementChildren.length === 0) {
+      element.textContent = newValue;
+      return;
+    }
+
+    // Hay markup anidado: preservarlo, actualizar solo el texto editable.
+    const textNodes = children.filter((node) => node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim().length > 0);
+    if (textNodes.length > 0) {
+      // Actualizar el primer textNode significativo.
+      textNodes[0].nodeValue = newValue;
+    } else {
+      // No habia textNode directo: insertar uno antes del primer elemento hijo.
+      element.insertBefore(document.createTextNode(newValue), elementChildren[0]);
+    }
+  }
+
   async function saveEdit(form) {
     const element = state.selected;
     if (!element || !state.entry) return;
@@ -914,7 +946,12 @@
         element.setAttribute('alt', altValue);
       }
     } else {
-      element.textContent = updated.fields[field]?.value ?? value;
+      // X-001: actualizar el contenido de texto sin destruir markup anidado.
+      // Antes se hacia `element.textContent = value`, lo que borraba cualquier hijo
+      // elemento (iconos, badges, spans) dentro de un <EditableText as="h1"> con slot
+      // multi-nodo. Ahora editamos solo el textNode editable, preservando el resto.
+      const newValue = updated.fields[field]?.value ?? value;
+      updateEditableText(element, newValue);
     }
 
     status.textContent = 'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';

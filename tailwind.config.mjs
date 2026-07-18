@@ -56,6 +56,15 @@ export default {
       transitionTimingFunction: {
         standard: 'cubic-bezier(0.2, 0, 0, 1)',
       },
+      // B1-003: z-index scale alineada con los tokens CSS de tokens.css.
+      zIndex: {
+        base: '0',
+        raised: '10',
+        dropdown: '20',
+        sticky: '50',
+        overlay: '100',
+        toast: '1000',
+      },
       typography: {
         DEFAULT: {
           css: {

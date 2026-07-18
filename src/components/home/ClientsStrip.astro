@@ -177,4 +177,11 @@ const row2 = conLogo.slice(mid);
   .clients-strip-link:hover {
     color: var(--color-primary-dark);
   }
+
+  /* B3-001: focus-visible consistente en el enlace del strip (los items del marquee
+     son decorativos, no interactivos, por lo que no requieren focus ring). */
+  .clients-strip-link:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+  }
 </style>

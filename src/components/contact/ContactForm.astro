@@ -3,7 +3,8 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
 
-const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'allopze@gmail.com';
+// A2-005: fallback al correo corporativo, no a una cuenta personal.
+const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'contacto@hidromont.cl';
 
 const ccEmails = [
   import.meta.env.FORMSUBMIT_CC_1,

@@ -10,6 +10,7 @@
     "cms:import": "tsx cms/scripts/import.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",
+    "cms:reset-password": "tsx cms/scripts/reset-password.ts",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
@@ -17,7 +18,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

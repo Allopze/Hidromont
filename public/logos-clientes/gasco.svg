@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <g transform="translate(10, 10)">
+    <!-- Flame symbol -->
+    <path d="M 28 5 C 28 15 18 25 18 38 C 18 50 27 58 38 58 C 49 58 58 50 58 38 C 58 24 42 14 40 5 C 37 17 32 23 28 20 Z" fill="#004494"/>
+    <path d="M 34 22 C 34 29 27 34 27 41 C 27 48 32 53 38 53 C 44 53 49 48 49 42 C 49 33 38 28 38 22 Z" fill="#FFC72C"/>
+    <!-- Gasco Typography -->
+    <text x="72" y="46" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="38" fill="#004494" letter-spacing="-1">gasco</text>
+  </g>
+</svg>

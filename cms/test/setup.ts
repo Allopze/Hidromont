@@ -93,6 +93,7 @@ const SCHEMA_SQL = `
     status TEXT NOT NULL,
     logs TEXT NOT NULL,
     created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
     completed_at TEXT
   );
   CREATE TABLE IF NOT EXISTS audit_events (
@@ -131,7 +132,7 @@ const SCHEMA_SQL = `
 
     CREATE TABLE IF NOT EXISTS gallery_items (
       id TEXT PRIMARY KEY,
-      media_id TEXT NOT NULL,
+      media_id TEXT,
       category_id TEXT,
       title TEXT NOT NULL,
       alt TEXT NOT NULL,
@@ -141,7 +142,7 @@ const SCHEMA_SQL = `
       status TEXT NOT NULL DEFAULT 'published',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
+      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
       FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
     );
 `;
@@ -152,6 +153,9 @@ export interface TestApp {
   authService: AuthService;
   contentService: ContentService;
   mediaService: MediaService;
+  galleryService: GalleryService;
+  galleryRepository: GalleryRepository;
+  publishJobRepository: PublishJobRepository;
   auditRepository: AuditRepository;
   rateLimitRepository: RateLimitRepository;
   adminEmail: string;
@@ -300,5 +304,5 @@ export async function createTestApp(): Promise<TestApp> {
     return { csrfToken: data.csrfToken, cookieHeader };
   };
 
-  return { app, db, authService, contentService, mediaService, auditRepository, rateLimitRepository, adminEmail, adminPassword, login };
+  return { app, db, authService, contentService, mediaService, galleryService, galleryRepository, publishJobRepository, auditRepository, rateLimitRepository, adminEmail, adminPassword, login };
 }
