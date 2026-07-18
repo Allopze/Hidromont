@@ -94,3 +94,48 @@ describe('ExportService — filtro de status (CMS-002)', () => {
     expect(json.entries['home.draft']).toBeUndefined();
   });
 });
+
+describe('ExportService — slugs con subdirectorio (A1-001)', () => {
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-subdir-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'proyectos'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+    // Entrada de proyecto con slug que contiene un subdirectorio (`tanques/316l`).
+    // El validador admite `/` en slugs; el export debe crear el directorio padre.
+    repo.upsertEntry({
+      id: 'proj.tanques-316l', kind: 'proyecto', slug: 'tanques/316l', locale: 'es-CL',
+      title: 'Tanque 316L', status: 'published', now,
+      fields: [{ key: 'nombre', type: 'text', value: 'Tanque 316L' }],
+    });
+    // Forzar version > 1 para que entre en el export de colecciones.
+    db.prepare('UPDATE content_entries SET version = 2 WHERE id = ?').run('proj.tanques-316l');
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('crea el subdirectorio del slug y escribe el .md sin lanzar ENOENT', () => {
+    const result = exportService.exportContent();
+    const expectedFile = path.join(tmpRoot, 'src', 'content', 'proyectos', 'tanques', '316l.md');
+    expect(result.files).toContain('src/content/proyectos/tanques/316l.md');
+    expect(fs.existsSync(expectedFile)).toBe(true);
+    // Atomic write: no debe quedar un .tmp residual.
+    expect(fs.existsSync(`${expectedFile}.tmp`)).toBe(false);
+  });
+});
+

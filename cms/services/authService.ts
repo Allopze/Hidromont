@@ -24,6 +24,30 @@ export class AuthService {
     });
   }
 
+  /**
+   * A1-007: resetea la contraseña del admin definido en config.admin.
+   * A diferencia de `ensureAdminUser`, este metodo SIEMPRE re-hashea y actualiza
+   * la fila existente (o la crea si no existe). Invalida todas las sesiones
+   * activas del usuario para forzar re-login con la nueva contraseña.
+   *
+   * Disparado por el script `npm run cms:reset-password`. No se ejecuta en cada
+   * arranque para no pisar cambios de contraseña hechos manualmente.
+   */
+  async resetAdminPassword(email: string = config.admin.email, password: string = config.admin.password, costFactor = 12): Promise<{ created: boolean; sessionsRevoked: number }> {
+    const now = new Date().toISOString();
+    const passwordHash = await bcrypt.hash(password, costFactor);
+    const existing = this.userRepository.findByEmail(email);
+
+    if (!existing) {
+      this.userRepository.createUser({ id: nanoid(), email, passwordHash, now });
+      return { created: true, sessionsRevoked: 0 };
+    }
+
+    this.userRepository.updatePassword(existing.id, passwordHash, now);
+    this.userRepository.deleteSessionsByUser(existing.id);
+    return { created: false, sessionsRevoked: -1 };
+  }
+
   async login(email: string, password: string): Promise<{ sessionId: string; csrfToken: string; expiresAt: string }> {
     const user = this.userRepository.findByEmail(email);
     if (!user) throw new Error('Credenciales inválidas');

@@ -91,6 +91,14 @@ export class MediaRepository {
       .map((r) => ({ entryId: r.entry_id, fieldKey: r.field_key, updatedAt: r.updated_at }));
   }
 
+  /** A1-004: cuenta cuantos items de galeria referencian un media (para advertir antes de borrar). */
+  countGalleryItemsByMedia(mediaId: string): number {
+    const row = this.db
+      .prepare('SELECT COUNT(*) AS n FROM gallery_items WHERE media_id = ?')
+      .get(mediaId) as { n: number };
+    return row?.n ?? 0;
+  }
+
   findByPath(assetPath: string): MediaAsset | undefined {
     const row = this.db.prepare('SELECT * FROM media_assets WHERE path = ?').get(assetPath) as MediaRow | undefined;
     return row ? this.fromRow(row) : undefined;

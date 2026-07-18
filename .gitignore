@@ -27,3 +27,7 @@ public/uploads/cms/
 .idea/
 *.swp
 *.swo
+
+# Screenshots
+
+/screenshots

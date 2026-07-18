@@ -132,9 +132,18 @@ export class MediaService {
     });
   }
 
-  deleteMedia(id: string): void {
+  /**
+   * Elimina un media asset. Antes de borrar, reporta cuantos items de galeria quedaran
+   * huerfanos (media_id -> NULL tras el ON DELETE SET NULL, ver A1-004). El caller
+   * puede usar este recuento para advertir al usuario en la UI.
+   */
+  deleteMedia(id: string): { orphanedGalleryItems: number } {
     const asset = this.mediaRepository.find(id);
     if (!asset) throw new Error(`Media asset ${id} no encontrado`);
+
+    // Contar items de galeria que referencian este media ANTES de borrarlo.
+    // FK ON DELETE SET NULL los dejara con media_id=NULL (no se pierden).
+    const orphanedGalleryItems = this.mediaRepository.countGalleryItemsByMedia(id);
 
     // Sólo eliminar del disco si fue subido a través del CMS (uploads/cms)
     if (asset.path.startsWith(config.cms.publicUploadBase)) {
@@ -147,6 +156,7 @@ export class MediaService {
     }
 
     this.mediaRepository.delete(id);
+    return { orphanedGalleryItems };
   }
 
   findMedia(id: string) {

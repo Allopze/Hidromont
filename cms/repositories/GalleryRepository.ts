@@ -11,7 +11,7 @@ export interface GalleryCategory {
 
 export interface GalleryItem {
   id: string;
-  mediaId: string;
+  mediaId: string | null;
   categoryId: string | null;
   title: string;
   alt: string;
@@ -24,13 +24,15 @@ export interface GalleryItem {
 }
 
 export interface GalleryItemWithMedia extends GalleryItem {
-  mediaPath: string;
-  mediaMime: string;
+  // Opcionales: un item huerfano (media_id NULL tras borrar el media, A1-004) no tiene
+  // informacion de media asociada hasta que se le reasigne uno.
+  mediaPath: string | null;
+  mediaMime: string | null;
   mediaWidth: number | null;
   mediaHeight: number | null;
   mediaAlt: string | null;
-  mediaFocalX: number;
-  mediaFocalY: number;
+  mediaFocalX: number | null;
+  mediaFocalY: number | null;
   categorySlug: string | null;
   categoryName: string | null;
 }
@@ -94,15 +96,15 @@ function fromItemWithMediaRow(row: ItemWithMediaRow): GalleryItemWithMedia {
     status: row.status as 'published' | 'draft',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    mediaPath: row.media_path,
-    mediaMime: row.media_mime,
-    mediaWidth: row.media_width,
-    mediaHeight: row.media_height,
-    mediaAlt: row.media_alt,
-    mediaFocalX: row.media_focal_x,
-    mediaFocalY: row.media_focal_y,
-    categorySlug: row.category_slug,
-    categoryName: row.category_name,
+    mediaPath: row.media_path ?? null,
+    mediaMime: row.media_mime ?? null,
+    mediaWidth: row.media_width ?? null,
+    mediaHeight: row.media_height ?? null,
+    mediaAlt: row.media_alt ?? null,
+    mediaFocalX: row.media_focal_x ?? null,
+    mediaFocalY: row.media_focal_y ?? null,
+    categorySlug: row.category_slug ?? null,
+    categoryName: row.category_name ?? null,
   };
 }
 
@@ -177,6 +179,9 @@ export class GalleryRepository {
   // ── Items ───────────────────────────────────────────────────
 
   listItems(opts?: { categoryId?: string; status?: string }): GalleryItemWithMedia[] {
+    // LEFT JOIN media_assets para que los items huerfanos (media_id NULL tras borrar
+    // el media, ver A1-004) sigan visibles en el admin y el operador pueda reasignarles
+    // un media. La exportacion (listPublishedForExport) filtra los huerfanos.
     let sql = `
       SELECT gi.*,
              m.path AS media_path, m.mime AS media_mime, m.width AS media_width,
@@ -184,7 +189,7 @@ export class GalleryRepository {
              m.focal_y AS media_focal_y,
              gc.slug AS category_slug, gc.name AS category_name
       FROM gallery_items gi
-      JOIN media_assets m ON gi.media_id = m.id
+      LEFT JOIN media_assets m ON gi.media_id = m.id
       LEFT JOIN gallery_categories gc ON gi.category_id = gc.id
     `;
     const conditions: string[] = [];
@@ -217,7 +222,7 @@ export class GalleryRepository {
                m.focal_y AS media_focal_y,
                gc.slug AS category_slug, gc.name AS category_name
         FROM gallery_items gi
-        JOIN media_assets m ON gi.media_id = m.id
+        LEFT JOIN media_assets m ON gi.media_id = m.id
         LEFT JOIN gallery_categories gc ON gi.category_id = gc.id
         WHERE gi.id = ?
       `)

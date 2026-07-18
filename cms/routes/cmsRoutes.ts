@@ -48,6 +48,14 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const rateLimitRepository = new RateLimitRepository(db);
   rateLimitRepository.cleanup();
 
+  // A1-009: reap jobs de publicacion trabados en 'running' por un crash previo del
+  // proceso. Umbral de 10 min: un publish/build sano tarda <120s, asi que cualquier
+  // job 'running' mas viejo que eso es seguro que esta huérfano.
+  const reaped = publishJobRepository.reapStaleJobs(new Date().toISOString(), 10 * 60 * 1000);
+  if (reaped > 0) {
+    auditRepository.log({ action: 'publish.jobs_reaped', data: { count: reaped } });
+  }
+
   const authService = new AuthService(userRepository);
   await authService.ensureAdminUser();
 

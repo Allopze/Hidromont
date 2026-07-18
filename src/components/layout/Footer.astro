@@ -175,3 +175,13 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+
+<style>
+  /* B3-001: focus-visible consistente para todos los enlaces y botones del footer.
+     Outline en accent (cyan) para contrastar sobre el fondo oscuro background-strong. */
+  footer :where(a, button, summary):focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 0;
+  }
+</style>

@@ -49,7 +49,9 @@ const servicios = defineCollection({
           })
         )
         .optional(),
-      orden: z.number(),
+      // A2-001: default alineado con la coleccion `proyectos` (orden.default(100)).
+      // Sin este default, un servicio exportado desde el CMS sin `orden` rompia el build.
+      orden: z.number().default(100),
     }),
 });
 

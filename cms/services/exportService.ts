@@ -7,6 +7,21 @@ import type { GalleryRepository } from '../repositories/GalleryRepository';
 import type { ImageService } from './imageService';
 import type { CmsEntry } from '../types/cms';
 
+/**
+ * A1-001 + A1-003: escritura atomica y robusta.
+ * - Crea el directorio padre recursivamente (slugs con subdirectorio como
+ *   `tanques/316l` ya no lanzan ENOENT).
+ * - Escribe a `${target}.tmp` y luego renombra, de modo que un crash a mitad
+ *   de escritura nunca deje un archivo truncado/corrupto (rename es atomico
+ *   en el mismo sistema de ficheros).
+ */
+function writeFileSyncAtomic(target: string, data: string): void {
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const tmp = `${target}.tmp`;
+  fs.writeFileSync(tmp, data);
+  fs.renameSync(tmp, target);
+}
+
 export class ExportService {
   /**
    * @param rootDir raíz del repo donde escribir los archivos exportados.
@@ -60,7 +75,7 @@ export class ExportService {
       ),
     };
 
-    fs.writeFileSync(target, JSON.stringify(payload, null, 2) + '\n');
+    writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
     return path.relative(this.rootDir, target);
   }
 
@@ -79,7 +94,7 @@ export class ExportService {
         }
       }
 
-      fs.writeFileSync(target, matter.stringify(body.trim() + '\n', frontmatter));
+      writeFileSyncAtomic(target, matter.stringify(body.trim() + '\n', frontmatter));
       return path.relative(this.rootDir, target);
     });
   }
@@ -93,7 +108,17 @@ export class ExportService {
     const items = this.galleryRepository.listItems({ status: 'published' });
 
     const processedItems = [];
+    let skippedOrphan = 0;
     for (const item of items) {
+      // A1-004: un item huerfano (media borrada, media_id NULL) no se puede exportar
+      // porque no tiene imagen. Lo saltamos explicitamente para no romper el export.
+      if (!item.mediaPath) {
+        skippedOrphan += 1;
+        process.stderr.write(
+          `  ⚠ Skipping gallery item ${item.id}: media huerfano (media_id NULL). Reasigna un media en el CMS.\n`
+        );
+        continue;
+      }
       try {
         const derivatives = await this.imageService.generateDerivatives(item.mediaPath);
         processedItems.push({
@@ -110,8 +135,8 @@ export class ExportService {
           height: derivatives.height,
           srcset: derivatives.srcset,
           lqip: derivatives.lqip,
-          focalX: item.mediaFocalX,
-          focalY: item.mediaFocalY,
+          focalX: item.mediaFocalX ?? 0.5,
+          focalY: item.mediaFocalY ?? 0.5,
         });
       } catch (err) {
         process.stderr.write(`  ⚠ Skipping gallery item ${item.id} (${item.mediaPath}): ${err instanceof Error ? err.message : String(err)}\n`);
@@ -125,7 +150,7 @@ export class ExportService {
       items: processedItems,
     };
 
-    fs.writeFileSync(target, JSON.stringify(payload, null, 2) + '\n');
+    writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
     return { file: path.relative(this.rootDir, target), count: processedItems.length };
   }
 }

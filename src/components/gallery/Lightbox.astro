@@ -132,6 +132,10 @@
       return Array.from(cards).map((card) => {
         const el = card as HTMLElement;
         const imgEl = el.querySelector('img') as HTMLImageElement;
+        // A2-007: preferir los atributos width/height (siempre presentes desde gallery.json)
+        // sobre naturalWidth, que es 0 hasta que la imagen lazy carga. Evita aspect erróneo.
+        const attrWidth = Number.parseInt(imgEl?.getAttribute('width') || '', 10);
+        const attrHeight = Number.parseInt(imgEl?.getAttribute('height') || '', 10);
         return {
           src: imgEl?.src || '',
           srcset: imgEl?.getAttribute('srcset') || '',
@@ -139,8 +143,8 @@
           title: el.querySelector('h3')?.textContent?.trim() || el.getAttribute('aria-label') || '',
           category: el.querySelector('.font-mono')?.textContent?.trim() || '',
           caption: '',
-          width: imgEl?.naturalWidth || 1600,
-          height: imgEl?.naturalHeight || 1200,
+          width: Number.isFinite(attrWidth) && attrWidth > 0 ? attrWidth : (imgEl?.naturalWidth || 1600),
+          height: Number.isFinite(attrHeight) && attrHeight > 0 ? attrHeight : (imgEl?.naturalHeight || 1200),
         };
       });
     }
@@ -352,7 +356,7 @@
     transition: opacity 250ms ease-out;
     will-change: opacity;
   }
-  #lightbox[data-reduced-motion] {
-    transition: none;
-  }
+  /* A2-008: el soporte reduced-motion real se maneja en JS (prefersReducedMotion al
+     abrir/cerrar). El atributo data-reduced-motion nunca se setea, asi que esta regla
+     era CSS muerto; eliminada. */
 </style>

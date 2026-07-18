@@ -63,4 +63,16 @@ export class UserRepository {
   deleteExpiredSessions(now: string): void {
     this.db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now);
   }
+
+  /** A1-007: actualiza el hash de contraseña de un usuario existente. */
+  updatePassword(userId: string, passwordHash: string, now: string): void {
+    this.db
+      .prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .run(passwordHash, now, userId);
+  }
+
+  /** Invalida todas las sesiones de un usuario (tras reset de contraseña). */
+  deleteSessionsByUser(userId: string): void {
+    this.db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+  }
 }

@@ -63,6 +63,15 @@
   --shadow-md: 0 8px 24px rgba(15, 36, 51, 0.10);
   --shadow-lg: 0 16px 40px rgba(15, 36, 51, 0.14);
 
+  /* B1-003: z-index scale. Contrato de stacking documentado para evitar colisiones
+     ad-hoc. Valores separados por orden de magnitud para dejar hueco a casos intermedios. */
+  --z-base: 0;
+  --z-raised: 10;       /* elementos que sobresalen ligeramente (badges, dots) */
+  --z-dropdown: 20;     /* menus desplegables, dropdowns */
+  --z-sticky: 50;       /* header sticky/fijo */
+  --z-overlay: 100;     /* skip-link, lightbox, overlays modales */
+  --z-toast: 1000;      /* notificaciones efímeras (reservado) */
+
   /* Layout containers */
   --container-sm: 640px;
   --container-md: 768px;
