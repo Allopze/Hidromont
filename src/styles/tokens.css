@@ -51,7 +51,16 @@
   --space-24: 96px;
   --space-32: 128px;
 
-  /* Border radius */
+  /* Border radius — industrial aesthetic: todo a 0px por defecto.
+     B1-002: las excepciones intencionales (rounded-full) son SOLO:
+       - dots decorativos de bullet (w-1.5 h-1.5) en CapabilitiesBlock, ServiceCard,
+         servicios/[slug], empresa
+       - el spinner de carga del Lightbox (w-8 h-8)
+       - el success-badge circular de la pagina gracias (w-16 h-16, convencion UX)
+     Todo lo demas (cards, botones, contenedores, inputs, chips) usa rounded-none.
+     rounded-sm/md/lg/xl estan overrided a 0px en tailwind.config.mjs, pero por
+     claridad el codigo fuente usa directamente `rounded-none` en lugar de apoyarse
+     en el override. */
   --radius-xs: 0px;
   --radius-sm: 0px;
   --radius-md: 0px;

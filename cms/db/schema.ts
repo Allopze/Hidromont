@@ -72,6 +72,7 @@ export function migrate(): void {
     CREATE TABLE IF NOT EXISTS publish_jobs (
       id TEXT PRIMARY KEY,
       status TEXT NOT NULL,
+      action TEXT NOT NULL DEFAULT 'publish',
       logs TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -140,6 +141,11 @@ export function migrate(): void {
   // A1-009: anade la columna updated_at a publish_jobs para soportar reap de jobs
   // trabados en 'running' tras un crash. Idempotente.
   migratePublishJobsUpdatedAt(db);
+
+  // A1-010: anade la columna action a publish_jobs (antes la accion iba serializada
+  // dentro del JSON de logs, dificultando queries como "ultima publicacion exitosa").
+  // Idempotente.
+  migratePublishJobsAction(db);
 }
 
 /**
@@ -198,4 +204,27 @@ function migratePublishJobsUpdatedAt(db: ReturnType<typeof getDb>): void {
   // Backfill: los jobs existentes toman created_at como updated_at (mejor que nada).
   db.exec(`ALTER TABLE publish_jobs ADD COLUMN updated_at TEXT NOT NULL DEFAULT '';
            UPDATE publish_jobs SET updated_at = created_at WHERE updated_at = '';`);
+}
+
+/**
+ * Migracion A1-010: anade la columna action a publish_jobs y backfilla desde el
+ * JSON de logs existente (campo `action` dentro del blob) para no perder el tipo de
+ * los jobs historicos. Idempotente.
+ */
+function migratePublishJobsAction(db: ReturnType<typeof getDb>): void {
+  const cols = db.prepare('PRAGMA table_info(publish_jobs)').all() as Array<{ name: string }>;
+  if (cols.some((c) => c.name === 'action')) return;
+  db.exec(`ALTER TABLE publish_jobs ADD COLUMN action TEXT NOT NULL DEFAULT 'publish';`);
+  // Backfill: intentar leer action del JSON de logs; si falla, queda 'publish' (default).
+  const rows = db.prepare('SELECT id, logs FROM publish_jobs').all() as Array<{ id: string; logs: string }>;
+  const update = db.prepare('UPDATE publish_jobs SET action = ? WHERE id = ?');
+  for (const row of rows) {
+    try {
+      const parsed = JSON.parse(row.logs) as { action?: string } | string[];
+      const action = Array.isArray(parsed) ? 'publish' : (parsed.action === 'export' ? 'export' : 'publish');
+      update.run(action, row.id);
+    } catch {
+      // logs corrupto: deja el default 'publish'.
+    }
+  }
 }

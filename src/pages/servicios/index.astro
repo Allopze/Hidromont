@@ -61,7 +61,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
         </EditableText>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
           {([1, 2, 3, 4, 5, 6] as const).map((i) => (
-            <div class="p-4 bg-surface border border-border rounded-md">
+            <div class="p-4 bg-surface border border-border rounded-none">
               <EditableText as="h3" entry="servicios.index.metodologia" field={`item${i}Title`} class="font-semibold text-primary-dark text-sm mb-1">
                 {getCmsText('servicios.index.metodologia', `item${i}Title`, [
                   'Desmontajes',

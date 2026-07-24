@@ -20,15 +20,14 @@ function insertMedia(ctx: TestApp, id: string, publicPath = `/uploads/cms/${id}.
 
 describe('A1-004 — borrar media NO elimina items de galería (SET NULL)', () => {
   let ctx: TestApp;
-  let csrfToken: string;
-  let cookieHeader: string;
   let mediaId: string;
   let categoryId: string;
   let itemId: string;
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    ({ csrfToken, cookieHeader } = await ctx.login());
+    // Login valida que el admin funciona (este bloque usa servicios directos, no HTTP).
+    await ctx.login();
 
     mediaId = nanoid();
     insertMedia(ctx, mediaId);
@@ -94,16 +93,17 @@ describe('A1-009 — reap stale publish jobs at startup', () => {
     const jobId = nanoid();
     (ctx.db as import('better-sqlite3').Database)
       .prepare(
-        `INSERT INTO publish_jobs (id, status, logs, created_at, updated_at, completed_at)
-         VALUES (?, 'running', ?, ?, ?, NULL)`
+        `INSERT INTO publish_jobs (id, status, action, logs, created_at, updated_at, completed_at)
+         VALUES (?, 'running', 'publish', ?, ?, ?, NULL)`
       )
-      .run(jobId, JSON.stringify({ action: 'publish', lines: ['started'] }), stale, stale);
+      .run(jobId, JSON.stringify(['started']), stale, stale);
 
     const reaped = ctx.publishJobRepository.reapStaleJobs(new Date().toISOString(), 10 * 60 * 1000);
     expect(reaped).toBe(1);
 
     const job = ctx.publishJobRepository.find(jobId);
     expect(job?.status).toBe('failed');
+    expect(job?.action).toBe('publish');
     expect(job?.completedAt).toBeDefined();
     expect(job?.logs.some((line) => line.includes('crashed: job reaped'))).toBe(true);
   });
@@ -113,16 +113,17 @@ describe('A1-009 — reap stale publish jobs at startup', () => {
     const jobId = nanoid();
     (ctx.db as import('better-sqlite3').Database)
       .prepare(
-        `INSERT INTO publish_jobs (id, status, logs, created_at, updated_at, completed_at)
-         VALUES (?, 'running', ?, ?, ?, NULL)`
+        `INSERT INTO publish_jobs (id, status, action, logs, created_at, updated_at, completed_at)
+         VALUES (?, 'running', 'export', ?, ?, ?, NULL)`
       )
-      .run(jobId, JSON.stringify({ action: 'export', lines: ['started'] }), fresh, fresh);
+      .run(jobId, JSON.stringify(['started']), fresh, fresh);
 
     const reaped = ctx.publishJobRepository.reapStaleJobs(new Date().toISOString(), 10 * 60 * 1000);
     expect(reaped).toBe(0);
 
     const job = ctx.publishJobRepository.find(jobId);
     expect(job?.status).toBe('running');
+    expect(job?.action).toBe('export');
   });
 
   it('reapStaleJobs es idempotente (segunda llamada no reap nada)', () => {

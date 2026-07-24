@@ -5,6 +5,7 @@ import type { PublishJob, PublishJobAction, PublishJobStatus } from '../types/cm
 interface PublishJobRow {
   id: string;
   status: PublishJobStatus;
+  action: PublishJobAction;
   logs: string;
   created_at: string;
   updated_at: string;
@@ -29,8 +30,8 @@ export class PublishJobRepository {
     };
 
     this.db
-      .prepare('INSERT INTO publish_jobs (id, status, logs, created_at, updated_at, completed_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .run(job.id, job.status, this.serializeLogs(job.action, job.logs), job.createdAt, job.createdAt, null);
+      .prepare('INSERT INTO publish_jobs (id, status, action, logs, created_at, updated_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      .run(job.id, job.status, job.action, this.serializeLogs(job.logs), job.createdAt, job.createdAt, null);
 
     return job;
   }
@@ -41,7 +42,7 @@ export class PublishJobRepository {
 
     this.db
       .prepare('UPDATE publish_jobs SET status = ?, logs = ?, updated_at = ?, completed_at = ? WHERE id = ?')
-      .run(input.status, this.serializeLogs(existing.action, input.logs), input.now, input.now, input.id);
+      .run(input.status, this.serializeLogs(input.logs), input.now, input.now, input.id);
 
     const updated = this.find(input.id);
     if (!updated) throw new Error(`Publish job ${input.id} disappeared after update`);
@@ -57,8 +58,8 @@ export class PublishJobRepository {
   reapStaleJobs(now: string, staleMs: number): number {
     const cutoff = new Date(Date.now() - staleMs).toISOString();
     const stale = this.db
-      .prepare('SELECT id, logs FROM publish_jobs WHERE status = ? AND updated_at < ?')
-      .all('running', cutoff) as Array<{ id: string; logs: string }>;
+      .prepare('SELECT id, logs, action FROM publish_jobs WHERE status = ? AND updated_at < ?')
+      .all('running', cutoff) as Array<{ id: string; logs: string; action: PublishJobAction }>;
 
     if (stale.length === 0) return 0;
 
@@ -67,8 +68,8 @@ export class PublishJobRepository {
     );
     const txn = this.db.transaction((rows: typeof stale) => {
       for (const row of rows) {
-        const parsed = this.parseLogs(row.logs);
-        update.run('failed', now, now, this.serializeLogs(parsed.action, [...parsed.lines, `${now} crashed: job reaped at startup (stale > ${Math.round(staleMs / 1000)}s)`]), row.id);
+        const lines = this.parseLogs(row.logs);
+        update.run('failed', now, now, this.serializeLogs([...lines, `${now} crashed: job reaped at startup (stale > ${Math.round(staleMs / 1000)}s)`]), row.id);
       }
     });
     txn(stale);
@@ -77,43 +78,41 @@ export class PublishJobRepository {
 
   list(limit = 30): PublishJob[] {
     return (this.db
-      .prepare('SELECT id, status, logs, created_at, updated_at, completed_at FROM publish_jobs ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs ORDER BY created_at DESC LIMIT ?')
       .all(limit) as PublishJobRow[]).map((row) => this.fromRow(row));
   }
 
   find(id: string): PublishJob | undefined {
     const row = this.db
-      .prepare('SELECT id, status, logs, created_at, updated_at, completed_at FROM publish_jobs WHERE id = ?')
+      .prepare('SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs WHERE id = ?')
       .get(id) as PublishJobRow | undefined;
     return row ? this.fromRow(row) : undefined;
   }
 
-  private serializeLogs(action: PublishJobAction, lines: string[]): string {
-    return JSON.stringify({ action, lines });
+  private serializeLogs(lines: string[]): string {
+    return JSON.stringify(lines);
   }
 
   private fromRow(row: PublishJobRow): PublishJob {
-    const parsed = this.parseLogs(row.logs);
     return {
       id: row.id,
-      action: parsed.action,
+      action: row.action,
       status: row.status,
-      logs: parsed.lines,
+      logs: this.parseLogs(row.logs),
       createdAt: row.created_at,
       completedAt: row.completed_at ?? undefined,
     };
   }
 
-  private parseLogs(raw: string): { action: PublishJobAction; lines: string[] } {
+  private parseLogs(raw: string): string[] {
     try {
       const parsed = JSON.parse(raw) as StoredLogs | string[];
-      if (Array.isArray(parsed)) return { action: 'publish', lines: parsed.map(String) };
-      return {
-        action: parsed.action === 'export' ? 'export' : 'publish',
-        lines: Array.isArray(parsed.lines) ? parsed.lines.map(String) : [],
-      };
+      // A1-010: el formato nuevo es un array de strings. El formato viejo era
+      // { action, lines }; conservamos compat de lectura para jobs historicos.
+      if (Array.isArray(parsed)) return parsed.map(String);
+      return Array.isArray(parsed.lines) ? parsed.lines.map(String) : [];
     } catch {
-      return { action: 'publish', lines: raw ? [raw] : [] };
+      return raw ? [raw] : [];
     }
   }
 }

@@ -54,7 +54,7 @@ import { company } from '../data/company';
         <div class="space-y-6">
           <dl class="grid grid-cols-2 gap-4">
             {([1, 2, 3] as const).map((i) => (
-              <div class="flex flex-col p-5 border border-border rounded-lg bg-surface">
+              <div class="flex flex-col p-5 border border-border rounded-none bg-surface">
                 <EditableText as="dd" entry="empresa.metricas" field={`card${i}Value`} class={`order-1 ${i <= 1 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}>
                   {getCmsText('empresa.metricas', `card${i}Value`, ['1983', 'EPC', 'ISO 9001'][i - 1])}
                 </EditableText>
@@ -68,7 +68,7 @@ import { company } from '../data/company';
             ))}
           </dl>
 
-          <div class="p-6 bg-surface border border-border rounded-lg">
+          <div class="p-6 bg-surface border border-border rounded-none">
             <EditableText as="h3" entry="empresa.metricas" field="ubicacionTitle" class="font-heading font-semibold text-primary-dark mb-3">
               {getCmsText('empresa.metricas', 'ubicacionTitle', 'Ubicación')}
             </EditableText>
@@ -106,7 +106,7 @@ import { company } from '../data/company';
           { key: 4, val: '320 m²', title: 'Oficinas e ingeniería', desc: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
           { key: 6, val: '5 unidades', title: 'Puentes grúa', desc: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' }
         ].map((item) => (
-          <div class="p-6 bg-surface border border-border rounded-lg">
+          <div class="p-6 bg-surface border border-border rounded-none">
             <EditableText as="p" entry="empresa.instalaciones" field={`item${item.key}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
               {getCmsText('empresa.instalaciones', `item${item.key}Value`, item.val)}
             </EditableText>

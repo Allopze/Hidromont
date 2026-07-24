@@ -1,128 +1,6 @@
 {
   "updatedAt": "2026-07-18T19:40:38.950Z",
   "entries": {
-    "calidad.badge": {
-      "title": "Badge ISO calidad",
-      "slug": "/calidad",
-      "fields": {
-        "caption": {
-          "type": "text",
-          "value": "Sistema de gestión de calidad"
-        },
-        "line1": {
-          "type": "text",
-          "value": "ISO"
-        },
-        "line2": {
-          "type": "text",
-          "value": "9001"
-        }
-      }
-    },
-    "calidad.contenido": {
-      "title": "Contenido calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Sistema de gestión"
-        },
-        "p1": {
-          "type": "textarea",
-          "value": "Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica."
-        },
-        "p2": {
-          "type": "textarea",
-          "value": "El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables."
-        },
-        "title": {
-          "type": "text",
-          "value": "ISO 9001"
-        }
-      }
-    },
-    "calidad.cta": {
-      "title": "CTA calidad",
-      "slug": "/calidad",
-      "fields": {
-        "buttonLabel": {
-          "type": "text",
-          "value": "Contactar equipo técnico"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico."
-        },
-        "title": {
-          "type": "text",
-          "value": "Proyectos que exigen calidad certificada"
-        }
-      }
-    },
-    "calidad.hero": {
-      "title": "Hero calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Gestión de Calidad"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
-        },
-        "title": {
-          "type": "text",
-          "value": "Calidad y Medioambiente"
-        }
-      }
-    },
-    "calidad.principios": {
-      "title": "Principios calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Principios"
-        },
-        "p1Desc": {
-          "type": "textarea",
-          "value": "Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto."
-        },
-        "p1Title": {
-          "type": "text",
-          "value": "Satisfacción del cliente"
-        },
-        "p2Desc": {
-          "type": "textarea",
-          "value": "Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega."
-        },
-        "p2Title": {
-          "type": "text",
-          "value": "Mejora continua"
-        },
-        "p3Desc": {
-          "type": "textarea",
-          "value": "Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto."
-        },
-        "p3Title": {
-          "type": "text",
-          "value": "Cumplimiento normativo"
-        },
-        "p4Desc": {
-          "type": "textarea",
-          "value": "El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios."
-        },
-        "p4Title": {
-          "type": "text",
-          "value": "Planificación y organización"
-        },
-        "title": {
-          "type": "text",
-          "value": "Nuestros compromisos de calidad"
-        }
-      }
-    },
     "clientes.cta": {
       "title": "CTA clientes",
       "slug": "/clientes",
@@ -955,10 +833,6 @@
           "type": "text",
           "value": "Contáctenos"
         },
-        "hrefCalidad": {
-          "type": "text",
-          "value": "/calidad"
-        },
         "hrefClientes": {
           "type": "text",
           "value": "/clientes"
@@ -1034,10 +908,6 @@
         "mobileMenuOpenLabel": {
           "type": "text",
           "value": "Abrir menú de navegación"
-        },
-        "navCalidad": {
-          "type": "text",
-          "value": "Calidad"
         },
         "navClientes": {
           "type": "text",
@@ -1701,27 +1571,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanques-pintados-despacho.jpg"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Tanques de GLP pintados y listos para despacho a obra"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-taller.jpg"
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Tanque de GLP de 30.000 galones en fabricación"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/grua-hidromont-tanque.jpg"
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Maniobra de izaje con grúa Hidromont en exterior del taller"
         }
       }
     },
@@ -2160,6 +2030,66 @@
         "telefono": {
           "type": "text",
           "value": "+56 43 32 84 14"
+        }
+      }
+    },
+    "project-gallery.tanques-glp-coyhaique": {
+      "title": "Galería proyecto tanques-glp-coyhaique",
+      "slug": "project-gallery/tanques-glp-coyhaique",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-taller.jpg"
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": "Tanque de GLP 30.000 galones completo en taller"
+        },
+        "gallery2": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-grua-exterior.jpg"
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": "Cabezal semiesférico con grúa amarilla en exterior de taller"
+        },
+        "gallery3": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-cabezal.jpg"
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": "Tanque GLP completo con cabezal semiesférico soldado"
+        }
+      }
+    },
+    "project-gallery.tanques-glp-puerto-williams": {
+      "title": "Galería proyecto tanques-glp-puerto-williams",
+      "slug": "project-gallery/tanques-glp-puerto-williams",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-semiesferico-taller.jpg"
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": "Cabezal semiesférico de tanque GLP en fabricación en taller"
+        },
+        "gallery2": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanque-saliendo-taller-grua.jpg"
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": "Tanque GLP saliendo del taller con grúa Hidromont"
+        },
+        "gallery3": {
+          "type": "image",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanques-pintados-despacho.jpg"
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": "Tanques de GLP pintados de blanco listos para despacho"
         }
       }
     }

@@ -47,7 +47,7 @@ export class MediaService {
     return { ...asset, usages };
   }
 
-  async syncPublicMedia(): Promise<{ imported: number }> {
+  async syncPublicMedia(): Promise<{ imported: number; orphaned: string[] }> {
     let imported = 0;
     for (const root of publicMediaRoots) {
       const directory = path.join(config.rootDir, 'public', root);
@@ -83,7 +83,38 @@ export class MediaService {
       }
     }
 
-    return { imported };
+    // A1-012: detección de media huerfano. Un media_asset puede apuntar a un archivo
+    // que fue borrado de disco fuera del CMS (p. ej. limpieza manual, git pull sin
+    // assets). No lo borramos automaticamente (podria estar en uso por items de
+    // galería); lo reportamos para que el operador decida.
+    const orphaned = this.detectOrphanedMedia();
+    if (orphaned.length > 0) {
+      process.stderr.write(
+        `[CMS] ADVERTENCIA: ${orphaned.length} media asset(s) referencian archivos que ya no existen en disco:\n` +
+          orphaned.slice(0, 10).map((p) => `  - ${p}`).join('\n') +
+          (orphaned.length > 10 ? `\n  ... y ${orphaned.length - 10} más` : '') +
+          '\n[CMS] Revise la biblioteca de medios y reasigne o elimine según corresponda.\n'
+      );
+    }
+
+    return { imported, orphaned };
+  }
+
+  /**
+   * A1-012: retorna los paths públicos de media_assets cuyo archivo físico ya no
+   * existe en disco. No muta la DB; sólo reporta para que el operador actúe.
+   */
+  private detectOrphanedMedia(): string[] {
+    const all = this.mediaRepository.list();
+    const orphaned: string[] = [];
+    for (const asset of all) {
+      // Sólo verificar assets de los roots públicos (no uploads huérfanos de otros origenes).
+      const localPath = path.join(config.rootDir, 'public', asset.path);
+      if (!fs.existsSync(localPath)) {
+        orphaned.push(`${asset.path} (${asset.name})`);
+      }
+    }
+    return orphaned;
   }
 
   async createMedia(input: { filename: string; mime: string; buffer: Buffer; alt?: string }) {

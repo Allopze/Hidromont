@@ -1,32 +1,37 @@
 import { getCmsText } from './cms';
 
-/** Returns CMS-overridable logo path for a client by its slugified key, or '' if none. */
-export function getClienteLogo(key: string, fallback = ''): string {
-  return getCmsText('clientes.logos', `logo-${key}`, fallback);
+/**
+ * A3-003: fuente única de verdad para los logos de clientes.
+ *
+ * Antes, los 18 paths de logos estaban duplicados entre
+ * `src/content/clientes/clientes.json` (content collection, campo `logo`) y un
+ * `logoMap` hardcoded aquí. Ahora el path canónico vive en `clientes.json` y esta
+ * función es un helper fino que aplica la capa de override del CMS:
+ *
+ *   getClienteLogoByNombre(c.nombre, c.logo)
+ *     → devuelve el valor CMS si existe y no está vacío, si no el path de la
+ *       colección (`c.logo`), si no '' .
+ *
+ * La clave CMS se derive del nombre del cliente con el mismo slugify que usa la UI
+ * (lowercase, sin acentos, separadores `-`). Esto preserva la editabilidad via el
+ * overlay (`EditableImage field={`logo-${logoKey}`}`) sin duplicar datos.
+ */
+function logoKeyFor(nombre: string): string {
+  return nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 }
 
-/** Map from client nombre → logo path (CMS with fallback from clientes.json). */
-const logoMap: Record<string, string> = {
-  Acciona:              getCmsText('clientes.logos', 'logo-acciona',            '/logos-clientes/acciona.svg'),
-  'AES Andes':          getCmsText('clientes.logos', 'logo-aes-andes',          '/logos-clientes/aes-andes.png'),
-  Arauco:               getCmsText('clientes.logos', 'logo-arauco',             '/logos-clientes/arauco.svg'),
-  Besalco:              getCmsText('clientes.logos', 'logo-besalco',            '/logos-clientes/besalco.webp'),
-  'Colbún':             getCmsText('clientes.logos', 'logo-colbun',             '/logos-clientes/colbun.svg'),
-  Conpax:               getCmsText('clientes.logos', 'logo-conpax',             '/logos-clientes/conpax.png'),
-  'Constructora Renaico SpA': getCmsText('clientes.logos', 'logo-constructora-renaico', '/logos-clientes/constructora-renaico.svg'),
-  EDP:                  getCmsText('clientes.logos', 'logo-edp',                '/logos-clientes/edp.svg'),
-  Elecnor:              getCmsText('clientes.logos', 'logo-elecnor',            '/logos-clientes/elecnor.svg'),
-  'Eléctrica Puntilla': getCmsText('clientes.logos', 'logo-electrica-puntilla', '/logos-clientes/electrica-puntilla.png'),
-  Endesa:               getCmsText('clientes.logos', 'logo-endesa',             '/logos-clientes/endesa.png'),
-  Engie:                getCmsText('clientes.logos', 'logo-engie',              '/logos-clientes/engie.png'),
-  Ferrovial:            getCmsText('clientes.logos', 'logo-ferrovial',          '/logos-clientes/ferrovial.png'),
-  GPE:                  getCmsText('clientes.logos', 'logo-gpe',                '/logos-clientes/gpe.png'),
-  Iberdrola:            getCmsText('clientes.logos', 'logo-iberdrola',          '/logos-clientes/iberdrola.png'),
-  Gasco:                getCmsText('clientes.logos', 'logo-gasco',               '/logos-clientes/gasco.svg'),
-  'M.O.P. / D.O.H.':   getCmsText('clientes.logos', 'logo-mop-doh',            '/logos-clientes/mop-doh.jpeg'),
-  'Pacific Hydro':      getCmsText('clientes.logos', 'logo-pacific-hydro',      '/logos-clientes/pacific-hydro.png'),
-};
-
-export function getClienteLogoByNombre(nombre: string): string {
-  return logoMap[nombre] ?? '';
+/**
+ * Devuelve el path del logo para un cliente, permitiendo override via CMS.
+ *
+ * @param nombre   Nombre del cliente (igual a `clientes.json` `nombre`).
+ * @param fallback Path del logo desde la content collection (`c.logo`). Requerido
+ *                 para que no haya duplicación: la fuente canónica es la colección.
+ */
+export function getClienteLogoByNombre(nombre: string, fallback = ''): string {
+  return getCmsText('clientes.logos', `logo-${logoKeyFor(nombre)}`, fallback);
 }

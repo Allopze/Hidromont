@@ -260,6 +260,32 @@ if (form) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // A2-004: anti-spam ligero del lado del cliente. Limita a 3 envíos por ventana
+    // de 5 minutos (persistente en sessionStorage para sobrevivir recargas dentro de
+    // la sesión). Es defensa en profundidad junto al honeypot _honey; el rate-limit
+    // server-side real lo provee FormSubmit.co.
+    const RATE_LIMIT_MAX = 3;
+    const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
+    const RATE_KEY = 'hidromont:contact:submits';
+    const errorBanner = document.getElementById('contacto-error');
+    const now = Date.now();
+    let timestamps: number[] = [];
+    try {
+      timestamps = JSON.parse(sessionStorage.getItem(RATE_KEY) ?? '[]').filter(
+        (t: number) => Number.isFinite(t) && now - t < RATE_LIMIT_WINDOW_MS
+      );
+    } catch {
+      timestamps = [];
+    }
+    if (timestamps.length >= RATE_LIMIT_MAX) {
+      const retrySec = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - timestamps[0])) / 1000);
+      if (errorBanner) {
+        errorBanner.textContent = `Demasiados envíos. Intente nuevamente en ${retrySec} segundos.`;
+        errorBanner.classList.remove('hidden');
+      }
+      return;
+    }
+
     let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
     let allValid = true;
     requiredFields.forEach((field) => {
@@ -274,10 +300,13 @@ if (form) {
       return;
     }
 
+    // Registro del envío dentro de la ventana de rate-limit (sólo si pasó validación).
+    timestamps.push(now);
+    try { sessionStorage.setItem(RATE_KEY, JSON.stringify(timestamps)); } catch { /* ignore quota */ }
+
     const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
     const submitText = document.getElementById('contacto-submit-text');
     const submitLoading = document.getElementById('contacto-submit-loading');
-    const errorBanner = document.getElementById('contacto-error');
     if (submitBtn) submitBtn.disabled = true;
     if (submitText) submitText.classList.add('invisible');
     if (submitLoading) submitLoading.classList.remove('invisible');

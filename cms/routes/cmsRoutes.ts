@@ -48,6 +48,12 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const rateLimitRepository = new RateLimitRepository(db);
   rateLimitRepository.cleanup();
 
+  // A1-008: barrido periodico de rate-limit. Ademas del cleanup al arranque,
+  // un intervalo de 5 min evita que login_attempts crezca sin recoleccion si el
+  // proceso vive mucho tiempo entre reinicios. unref() para no bloquear el shutdown.
+  const rateLimitCleanupTimer = setInterval(() => rateLimitRepository.cleanup(), 5 * 60 * 1000);
+  rateLimitCleanupTimer.unref();
+
   // A1-009: reap jobs de publicacion trabados en 'running' por un crash previo del
   // proceso. Umbral de 10 min: un publish/build sano tarda <120s, asi que cualquier
   // job 'running' mas viejo que eso es seguro que esta huérfano.
@@ -61,7 +67,12 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
 
   const contentService = new ContentService(contentRepository);
   const mediaService = new MediaService(mediaRepository);
-  await mediaService.syncPublicMedia();
+  // A1-012: syncPublicMedia importa media nuevo y reporta huérfanos (archivos
+  // borrados de disco fuera del CMS). La advertencia se emite dentro del servicio.
+  const mediaSync = await mediaService.syncPublicMedia();
+  if (mediaSync.imported > 0) {
+    app.log.info(`[CMS] ${mediaSync.imported} media asset(s) importado(s) desde public/.`);
+  }
 
   const galleryRepository = new GalleryRepository(db);
   const galleryService = new GalleryService(galleryRepository);

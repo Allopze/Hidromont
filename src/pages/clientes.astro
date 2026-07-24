@@ -19,13 +19,13 @@ lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base
 
 // Unique logos for the hero marquee
 const heroLogos = [...new Set(
-  lista.map((c) => getClienteLogoByNombre(c.nombre)).filter(Boolean)
+  lista.map((c) => getClienteLogoByNombre(c.nombre, c.logo || '')).filter(Boolean)
 )];
 
 // Alt text of each logo (client name)
 const logoAlts: Record<string, string> = {};
 for (const c of lista) {
-  const src = getClienteLogoByNombre(c.nombre);
+  const src = getClienteLogoByNombre(c.nombre, c.logo || '');
   if (src && !logoAlts[src]) logoAlts[src] = c.nombre;
 }
 ---
@@ -59,7 +59,7 @@ for (const c of lista) {
 
       <div class="clientes-grid">
         {lista.map((c) => {
-          const logoSrc = getClienteLogoByNombre(c.nombre) || c.logo || '';
+          const logoSrc = getClienteLogoByNombre(c.nombre, c.logo || '');
           const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
           return (
             <div class="clientes-item" title={c.nombre}>
