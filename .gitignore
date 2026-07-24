@@ -31,3 +31,11 @@ public/uploads/cms/
 # Screenshots
 
 /screenshots
+
+# Playwright artifacts (L1: no versionar reportes/resultados de tests)
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+GASCO/

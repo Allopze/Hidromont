@@ -58,8 +58,12 @@ const allJsonLd = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Preload heading font (Roboto Condensed Bold) to avoid FOUT on first paint -->
+    <!-- Preload fonts: heading (Roboto Condensed Bold) + body (Inter variable) para
+         evitar FOUT/fallback en el primer paint. B1-001: Inter ahora va con preload
+         además de font-display: optional, para que el body no caiga a Arial en
+         conexiones lentas (48 KB, variable font en un solo archivo). -->
     <link rel="preload" href="/fonts/rc-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-vf.woff2" as="font" type="font/woff2" crossorigin />
 
     <title>{pageTitle}</title>
     <meta name="description" content={description} />

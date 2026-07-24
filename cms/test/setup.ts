@@ -91,6 +91,7 @@ const SCHEMA_SQL = `
   CREATE TABLE IF NOT EXISTS publish_jobs (
     id TEXT PRIMARY KEY,
     status TEXT NOT NULL,
+    action TEXT NOT NULL DEFAULT 'publish',
     logs TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,

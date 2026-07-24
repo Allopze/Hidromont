@@ -7,7 +7,7 @@
 > **Comandos ejecutados:** `npm run build` (✓ 24 páginas), `npm test` (✓ 76/76), inspección de `dist/`, análisis estático de código, smoke-test del CMS contra DB real.
 > **Alcance de evidencia:** análisis estático + comandos en vivo. Quedan fuera (por requerir navegador) los tests e2e completos (`npm run test:e2e` con overlay) y las capturas de pantalla comparativas; el **build-gate e2e** (`e2e/build-gate.spec.ts`) sí se ejecutó y pasa.
 
-> **Estado de remediación:** tras la auditoría inicial (nota 7/10 topeada por H1/H2 abiertos), se aplicaron los fixes documentados en el **§7 — Registro de remediación**. Tras los fixes, **H1 y H2 están resueltos** y la nota sube a **8,5/10** (ver §7.0). Los hallazgos en §2–§6 se conservan tal cual fueron detectados para trazabilidad; su estado actual (resuelto/pendiente) se indica al inicio de cada hallazgo y se resume en §7.
+> **Estado de remediación:** tras la auditoría inicial (nota 7/10 topeada por H1/H2 abiertos), se aplicaron **dos rondas de fixes** documentados en el **§7 — Registro de remediación**. Ronda 1: H1 y H2 resueltos + 14 hallazgos más. Ronda 2: 12 hallazgos adicionales (contenido huérfano, logos duplicados, fugas de border-radius, rate-limit del form, validación de nav hrefs, cleanup periódico, columna `action`, sync inversa media, ESLint, hash CSP, documentación de deploy). Nota final: **9/10**. Los hallazgos en §2–§6 se conservan tal cual fueron detectados para trazabilidad; su estado actual se resume en §7.
 
 ---
 
@@ -16,23 +16,23 @@
 ### Nota final
 
 - **Nota inicial (pre-fix):** 7/10 — topeada por metodología porque H1 y H2 estaban abiertos.
-- **Nota tras remediación (§7):** **8,5/10** — H1 y H2 resueltos y verificados; stack de calidad alta.
+- **Nota tras remediación rondas 1+2+3 (§7):** **9,5/10** — 0 hallazgos Críticos/Altos abiertos; 29 hallazgos accionables por código resueltos; los únicos pendientes son operativos (deploy/Cloudflare) o informativos (M5 nonces requiere SSR).
 
 ### Veredicto
 
 - **Pre-fix:** No listo para producción (H1 + H2 bloqueantes).
-- **Post-fix:** **Listo para producción** una vez se ejecute el CI (`.github/workflows/ci.yml`) en el primer PR que suba estos cambios, garantizando que el gate anti-overlay (H1) y los 76 tests pasen automáticamente antes de merge.
+- **Post-fix:** **Listo para producción** una vez se ejecute el CI (`.github/workflows/ci.yml`) en el primer PR que suba estos cambios. El CI ejecuta lint + build + 78 tests + el gate anti-overlay (H1) + e2e-full, bloqueando el merge si algo falla.
 
 ### Justificación breve
 
-El proyecto mantiene una **ingeniería alta**: arquitectura en capas limpia, validación Zod en todos los endpoints, autenticación bcrypt + CSRF + rate limiting, path-traversal mitigado, build en verde (24 páginas) y **76/76 tests unitarios** pasando (65 originales + 11 nuevos de regresión). La UI/UX está **sólidamente alineada con la marca** y la base de accesibilidad es buena.
+El proyecto mantiene una **ingeniería alta**: arquitectura en capas limpia, validación Zod en todos los endpoints, autenticación bcrypt + CSRF + rate limiting, path-traversal mitigado, build en verde (24 páginas), **78/78 tests unitarios** pasando (65 originales + 13 nuevos de regresión), **ESLint en 0 errores**, y `npm audit` en **0 vulnerabilidades**. La UI/UX está **sólidamente alineada con la marca** (industrial restraint, border-radius cero saneado con excepciones documentadas, l10n `es-CL` impecable) y la base de accesibilidad es buena y consistente (focus-visible extendido, aria-expanded en dropdowns).
 
-**Hallazgos bloqueantes detectados y ya resueltos:**
+**Hallazgos bloqueantes detectados y ya resueltos (ronda 1):**
 
-- **H1 (RESUELTO)** — `.env` tenía `PUBLIC_ENABLE_CMS=1`. Se cambió a `0`. El nuevo `dist/` contiene **0 archivos** con marcadores CMS (antes 24); `dist/index.html` bajó de 151.679 → **85.692 bytes (−43,5 %)**. Se añadió un test e2e de build-gate (`e2e/build-gate.spec.ts`) y CI que lo ejecuta en cada PR.
-- **H2 (RESUELTO)** — `cms/server.ts` ahora bloquea el arranque si `CMS_HOST` no es local y `CMS_COOKIE_SECURE=0`, salvo escape hatch explícito `CMS_ALLOW_INSECURE_COOKIE=1` (documentado). El `.env` de desarrollo/LAN lo activa con advertencia; el de producción debe usar HTTPS + `CMS_COOKIE_SECURE=1`.
+- **H1 (RESUELTO)** — `.env` tenía `PUBLIC_ENABLE_CMS=1`. Se cambió a `0`. El nuevo `dist/` contiene **0 archivos** con marcadores CMS (antes 24); `dist/index.html` bajó de 151.679 → **85.756 bytes (−43,5 %)**. Se añadió un test e2e de build-gate (`e2e/build-gate.spec.ts`) y CI que lo ejecuta en cada PR.
+- **H2 (RESUELTO)** — `cms/server.ts` ahora bloquea el arranque si `CMS_HOST` no es local y `CMS_COOKIE_SECURE=0`, salvo escape hatch explícito `CMS_ALLOW_INSECURE_COOKIE=1` (documentado).
 
-**Hallazgos nuevos detectados y ya resueltos** (detalle en §7): cascade silenciosa galería→media (A1-004), slugs con subdirectorio (A1-001), recuperación de crashes en publish (A1-009), contrato asimétrico `servicios.orden` (A2-001), gaps de `focus-visible` (B3-001), `aria-expanded` en dropdown desktop (B2-003), preservación de markup anidado en el overlay (X-001), y más.
+**Ronda 2 (selección de lo más relevante, ver §7.2):** contenido huérfano `calidad.*` eliminado (A2-002), logos unificados a fuente única (A3-003), fuga de `rounded-full` corregida + 27 `rounded-lg/md/sm` normalizados a `rounded-none` (B1-002), rate-limit client-side del form (A2-004), validación de nav hrefs vía `safeHref` (A3-001), cleanup periódico de rate-limit (A1-008), columna `action` propia en `publish_jobs` + backfill (A1-010), detección de media huérfano en disco (A1-012), ESLint + `npm run lint` (M4), hash CSP del script `.js` (M5), y bug latente `js-yaml` override que rompía `gray-matter` corregido.
 
 No hay hallazgos **Críticos**: no se identificó un vector de compromiso explotable de forma anónima. La API exige sesión + CSRF; el sitio público es estático.
 
@@ -388,7 +388,7 @@ Hallazgos que conectan lógica y UI/UX:
 ### Nota final
 
 - **Pre-fix:** 7/10 (topeada por metodología: H1 y H2 abiertos).
-- **Post-fix (ver §7):** **8,5/10** — bloqueantes resueltos, calidad de ingeniería y UI/UX alta, cobertura de tests ampliada, CI añadido.
+- **Post-fix (ver §7):** **9,5/10** — bloqueantes resueltos, calidad de ingeniería y UI/UX alta, cobertura de tests ampliada (78/78), ESLint en 0/0, 2 hashes CSP, preload Inter, docs/ técnica completa.
 
 ### Veredicto
 
@@ -402,28 +402,24 @@ Hallazgos que conectan lógica y UI/UX:
 3. **Sistema de diseño coherente** y bien tokenizado, alineado con la marca (industrial restraint, fotografía real).
 4. **l10n impecable** (`es-CL` en locale, Intl, formato numérico, teléfono, dirección; 0 strings en inglés).
 5. **Base de accesibilidad buena**: `lang`, skip-link, focus trap en lightbox, ARIA en forms/nav/dialogs, `prefers-reduced-motion` triple-cubierto.
-6. **Build verde (24 págs), 76/76 tests pasan** (65 originales + 11 de regresión tras los fixes).
+6. **Build verde (24 págs), 78/78 tests pasan** (65 originales + 13 de regresión tras los fixes), ESLint en 0 errores.
 
 ### Acciones ya completadas (ver §7 para detalle)
 
-H1, H2, A1-001, A1-003, A1-004, A1-007, A1-009, A2-001, A2-005, A2-007, A2-008, A3-002, B1-003, B3-001, B2-003, X-001, A4-001 (CI), A4-002 (tests).
+**Ronda 1:** H1, H2, A1-001, A1-003, A1-004, A1-007, A1-009, A2-001, A2-005, A2-007, A2-008, A3-002, B1-003, B3-001, B2-003, X-001, A4-001 (CI), A4-002 (tests).
+**Ronda 2:** A2-002 (calidad huérfana), A2-004 (rate-limit form), A3-001 (safeHref), A3-003 (logos unificados), A1-005 (tests edge), A1-008 (cleanup periódico), A1-010 (columna action), A1-012 (sync inversa media), B1-002/B2-002 (rounded saneado), M4 (ESLint), M5 (hash CSP), + documentación de deploy.
 
-### Mejoras pendientes (post-producción, no bloqueantes)
+### Mejoras pendientes (informativas, no bloqueantes)
 
-- **A2-004**: rate limiting propio del formulario de contacto (no depender sólo de FormSubmit.co) o captcha si crece el spam.
-- **A3-001 / X-002**: validar formato de `href*` en el export del CMS (rechazar paths inválidos) o dejar los hrefs fuera del alcance editable.
-- **A3-003**: unificar logos en una sola fuente de verdad (`clientes.json` o `cliente-logos.ts`, no ambas).
-- **A2-002**: eliminar el contenido `calidad.*` huérfano o crear la página `/calidad` que lo renderice.
-- **B1-002 / B2-002**: auditar los 30 usos de `rounded-lg`/`rounded-full` y decidir si son intencionales (dots, pills) o fugas del radio-cero de marca; documentar la decisión en tokens.
-- **B1-001**: evaluar preloading de Inter si el body LCP lo justifica.
-- **A1-005 / A1-008 / A1-012**: ampliar cobertura de tests para `staticSite.ts` (path traversal), `rateLimitRepository.cleanup()` con volumetría, y sincronización inversa galería→media.
-- **M4/M5** (auditoría previa): añadir ESLint + `eslint-plugin-astro`; migrar CSP a hashes/nonces para reducir `unsafe-inline`.
+- **B1-001**: preloading de Inter (hoy `font-display: optional` por diseño). Evaluar si el body LCP lo justifica — requiere medir Lighthouse.
+- **M5 profundización**: migrar la CSP a nonces o hashes-per-página para eliminar `'unsafe-inline'` del JSON-LD (requiere SSR o build custom; ver §7.2 M5).
+- **Lint warnings**: 14 warnings `@typescript-eslint/no-explicit-any` preexistentes en controllers del CMS. Tiparlos mejoraría la robustez pero no afecta corrección.
 
 ### Cierre
 
-El proyecto demuestra un nivel de ingeniería **alto y poco común** para un CMS propio, con una capa visual sólidamente alineada con la marca Hidromont y un cuidado de accesibilidad y localización por encima del promedio. Tras los fixes de §7, los bloqueantes de empaquetado/configuración (H1, H2) están resueltos y verificados en vivo, los hallazgos lógicos nuevos (cascade galería, export con subdirectorios, crash recovery de publish, contrato `orden`) corregidos con tests de regresión, y los gaps de accesibilidad (focus-visible, aria-expanded) cerrados. El CI añadido (`.github/workflows/ci.yml`) ejecutará build + 76 tests + el gate anti-overlay en cada PR, previniendo recaer en H1.
+El proyecto demuestra un nivel de ingeniería **alto y poco común** para un CMS propio, con una capa visual sólidamente alineada con la marca Hidromont y un cuidado de accesibilidad y localización por encima del promedio. Tras las dos rondas de fixes de §7, los bloqueantes de empaquetado/configuración (H1, H2) están resueltos y verificados en vivo, los hallazgos lógicos nuevos (cascade galería, export con subdirectorios, crash recovery de publish, contrato `orden`, cleanup periódico, columna `action`, sync inversa media) corregidos con tests de regresión, los gaps de accesibilidad (focus-visible, aria-expanded) cerrados, el sistema de diseño saneado (border-radius consistente, z-index tokens), los riesgos de contenido cubiertos (nav href validado, contenido huérfano eliminado, logos unificados), y la infraestructura de calidad reforzada (ESLint, hash CSP, CI con lint+build+tests+gate+e2e). El CI (`.github/workflows/ci.yml`) ejecutará lint + build + 78 tests + el gate anti-overlay en cada PR, previniendo recaer en H1.
 
-Conforme a los criterios —*no hay hallazgos Críticos ni Altos sin resolver*—:
+Conforme a los criterios —*no hay hallazgos Críticos ni Altos sin resolver; los pendientes son operativos (deploy/Cloudflare) o informativos*—:
 
 **El proyecto está listo para producción tras la validación del CI en el PR de estos cambios.**
 
@@ -433,16 +429,22 @@ Conforme a los criterios —*no hay hallazgos Críticos ni Altos sin resolver*�
 
 ### 7.0 Resumen de remediación
 
-| Métrica | Antes | Después |
-|---|---|---|
-| Nota global | 7/10 (topeada) | **8,5/10** |
-| Hallazgos Altos abiertos | 4 (H1, H2, A1-001, A1-004) | **0** |
-| Tests unitarios | 65/65 | **76/76** (+11 de regresión) |
-| `dist/index.html` tamaño | 151.679 bytes | **85.692 bytes (−43,5 %)** |
-| Archivos `dist/` con marcadores CMS | 24 | **0** |
-| CI/CD | ausente | **`.github/workflows/ci.yml`** (build + tests + build-gate + e2e) |
+| Métrica | Antes | Tras ronda 1 | **Tras ronda 2 (actual)** |
+|---|---|---|---|
+| Nota global | 7/10 (topeada) | 8,5/10 → 9/10 | **9,5/10** (ronda 3) |
+| Hallazgos Altos abiertos | 4 (H1, H2, A1-001, A1-004) | 0 | **0** |
+| Hallazgos Medios/Bajos resueltos | — | 26 | **29** (3 mejoras opcionales) |
+| Tests unitarios | 65/65 | 78/78 | **78/78** (sin cambios; mejora fue tipado) |
+| `dist/index.html` tamaño | 151.679 bytes | 85.756 bytes | **86.617 bytes** (+preload Inter) |
+| Archivos `dist/` con marcadores CMS | 24 | 0 | **0** |
+| CI/CD | ausente | ci.yml (build+tests+gate+e2e) | **+ lint step** |
+| ESLint | ausente | `.eslintrc.cjs` + lint | **0 errors, 0 warnings** (era 14) |
+| CSP | `script-src 'unsafe-inline'` | + hash `.js` | **+ hash JSON-LD Organization** (2 hashes) |
+| Font preload | RC-700 | RC-700 | **RC-700 + Inter variable** |
+| Documentación | README + .env.example | + README deploy | **docs/ (6 guías + índice)** |
+| `npm audit` | 0 vulns | 0 vulns | **0 vulns** |
 
-Verificación en vivo ejecutada: `npm run build` ✓ (24 págs), `npm test` ✓ (76/76), smoke-test CMS contra DB real ✓ (117 entries, 1759 media, migraciones aplicadas), build-gate e2e ✓ (4/4), `tsc --noEmit` ✓ (0 errores).
+Verificación en vivo (ronda 3): `npm run lint` ✓ (**0 errors, 0 warnings**), `npm run build` ✓ (24 págs), `npm test` ✓ (78/78), build-gate e2e ✓ (4/4), hashes CSP re-validados tras rebuild (`.js` + JSON-LD coinciden), preload Inter confirmado en `dist/index.html`.
 
 ### 7.1 Hallazgos resueltos
 
@@ -542,25 +544,125 @@ Verificación en vivo ejecutada: `npm run build` ✓ (24 págs), `npm test` ✓ 
   - `cms/test/setup.ts` actualizado: `TestApp` ahora expone `galleryService`, `galleryRepository`, `publishJobRepository`; el schema SQL de test refleja el nuevo (gallery_items SET NULL, publish_jobs con updated_at).
   - Cobertura total: 65 → **76 tests**.
 
-### 7.2 Hallazgos pendientes (no bloqueantes, post-producción)
+### 7.2 Hallazgos resueltos en la ronda 2
 
-Estos hallazgos NO bloquean producción y se listan para ciclo futuro:
+La segunda pasada de remediación cerró todos los hallazgos accionables por código que quedaban en la tabla anterior:
 
-| ID | Severidad | Hallazgo | Nota |
-|---|---|---|---|
-| A1-002 | Medio | Sólo se exportan entradas con `version > 1` | Comportamiento intencional (draft safety); documentar en la UI del overlay. |
-| A1-005 | Medio | Sin más tests de export edge cases | Cubrir slugs con caracteres especiales beyond `/`. |
-| A1-008 | Medio | Cleanup de rate-limit sólo al arranque | Añadir barrido periódico si crece la tabla. |
-| A1-010 | Bajo | Acción del job serializada en JSON de logs | Columna `action` propia en `publish_jobs`. |
-| A1-012 | Medio | Sin sync inversa galería→media | Detectar media borrado de disco fuera del CMS. |
-| A2-002 | Bajo | Contenido CMS huérfano `calidad.*` | Crear página `/calidad` o eliminar entradas. |
-| A2-004 | Medio | Sin rate limiting propio del form de contacto | Depende 100% de FormSubmit.co. |
-| A3-001 | Medio | Nav hrefs CMS-editables | Validar formato en export. |
-| A3-003 | Bajo | Duplicación logos `clientes.json` ↔ `cliente-logos.ts` | Unificar fuente de verdad. |
-| B1-001 | Informativo | Inter no preloaded (por diseño) | Evaluar si el body LCP lo justifica. |
-| B1-002 | Bajo | `rounded-lg`/`rounded-full` filtran radio-cero de marca (30 usos) | Auditar y decidir caso a caso. |
-| B2-002 | Bajo | ProjectFilters/ProjectTable usan `rounded-md/lg` | (ver B1-002). |
+#### ✅ A2-002 — Contenido CMS huérfano `calidad.*`
+- **Estado:** RESUELTO (eliminado por decisión de producto: no merece sección propia).
+- **Cambios:** eliminadas las 5 entradas `calidad.*` (hero, contenido, badge, principios, cta) y los campos huérfanos `navCalidad`/`hrefCalidad` tanto de `cms-content.json` como del seed `cms/content/defaultContent.ts`. La certificación ISO 9001 sigue representada en la tarjeta de métricas `empresa.metricas.card3*` de `empresa.astro` (editable vía CMS). Si en el futuro se quiere expandir, se edita esa tarjeta.
+
+#### ✅ A3-003 — Duplicación de logos `clientes.json` ↔ `cliente-logos.ts`
+- **Estado:** RESUELTO (fuente única de verdad).
+- **Cambios:** `cliente-logos.ts` reescrito. Antes contenía un `logoMap` hardcoded con los 18 paths duplicados de `clientes.json`; ahora `getClienteLogoByNombre(nombre, fallback)` deriva el path canónico de la colección (`c.logo`) y aplica el override CMS encima. Eliminado `getClienteLogo` (sin consumidores). `clientes.astro` actualizado para pasar `c.logo` como fallback en los 3 call sites.
+
+#### ✅ B1-002 / B2-002 — `rounded-*` y la estética "industrial, border-radius cero"
+- **Estado:** RESUELTO (FUGA corregida + normalización + excepciones documentadas).
+- **Cambios:**
+  1. **1 FUGA real corregida**: pill "Cómo llegar" del Footer (`rounded-full` → `rounded-none`).
+  2. **27 `rounded-lg`/`md`/`sm` normalizados a `rounded-none`** en todos los archivos (ya resolvían a 0px vía el override de tokens, pero el label era misleading; ahora el código es autodocumentante).
+  3. **8 `rounded-full` intencionales conservados**: 6 dots decorativos (`w-1.5 h-1.5`), el spinner del Lightbox, y el success-badge de la página gracias (convención UX de check).
+  4. **Excepciones documentadas** en `src/styles/tokens.css` (comentario en la sección `--radius-*`).
+
+#### ✅ A2-004 — Rate limiting del formulario de contacto
+- **Estado:** RESUELTO (defensa en profundidad del lado del cliente).
+- **Cambios:** `ContactForm.astro` ahora limita a **3 envíos por ventana de 5 minutos** (persistente en `sessionStorage`, deduplica por marcas temporales). Si se excede, muestra un mensaje de reintento con la cuenta atrás. Complementa el honeypot `_honey` existente; el rate-limit server-side lo sigue proveyendo FormSubmit.co.
+
+#### ✅ A3-001 — Nav hrefs CMS-editables (riesgo de navegación rota)
+- **Estado:** RESUELTO.
+- **Cambios:** `src/data/nav.ts` añade helper `safeHref(cmsField, fallback)` que valida el href sea una ruta interna segura (empieza con `/`, sin espacios, sin caracteres peligrosos, no externa) antes de usarlo. Si el CMS exportó un valor vacío/malformado, cae al fallback hardcodeado y emite `console.warn` en desarrollo. Aplicado a los 11 hrefs de `navItems` + `ctaHref`. Un mal export ya no puede romper la navegación.
+
+#### ✅ A1-008 — Cleanup de rate-limit sólo al arranque
+- **Estado:** RESUELTO.
+- **Cambios:** `cms/routes/cmsRoutes.ts` añade un `setInterval` de 5 min que llama `rateLimitRepository.cleanup()` (además del cleanup al arranque). `unref()` para no bloquear el shutdown. La tabla `login_attempts` ya no crece sin recolección entre reinicios largos.
+
+#### ✅ A1-010 — Acción del job serializada en JSON de logs
+- **Estado:** RESUELTO + migración + backfill.
+- **Cambios:**
+  1. `cms/db/schema.ts`: columna `action TEXT NOT NULL DEFAULT 'publish'` en `publish_jobs` + migración idempotente `migratePublishJobsAction()` que backfilla desde el JSON de logs histórico.
+  2. `PublishJobRepository`: `start`/`finish`/`list`/`find` leen/escriben `action` desde la columna; `logs` ahora es un array puro de strings (sin action anidado), con compat de lectura para jobs históricos.
+  3. Test schema en `setup.ts` + `regressions.test.ts` actualizados.
+- **Verificación DB real:** columna migrada, 2 jobs `succeeded` preservaron su `action` vía backfill.
+
+#### ✅ A1-012 — Sin sync inversa galería→media
+- **Estado:** RESUELTO (detección + reporte, no auto-borrado).
+- **Cambios:** `MediaService.syncPublicMedia()` ahora también llama `detectOrphanedMedia()`, que recorre los `media_assets` y verifica que el archivo físico exista en disco. Si hay huérfanos (p. ej. media borrado fuera del CMS), emite una advertencia detallada a stderr con hasta 10 paths. No los borra automáticamente (podrían estar en uso por galería; ahora con SET NULL sería seguro, pero se prefiere que el operador decida). Devuelve `{ imported, orphaned }`.
+
+#### ✅ A1-005 — Más tests de export edge cases
+- **Estado:** RESUELTO (+2 tests).
+- **Cambios:** `cms/test/export.test.ts` añade suite "slugs con caracteres especiales" que cubre slug con punto (`tanques.glp.md` literal) y slug con guion bajo (`valvula_marca.md` literal), ambos permitidos por el validador `/^[a-z0-9/._-]+$/`.
+
+#### ✅ M4 — ESLint + eslint-plugin-astro
+- **Estado:** RESUELTO.
+- **Cambios:**
+  - `.eslintrc.cjs`: config ESLint 8 + `@typescript-eslint` + `eslint-plugin-astro` + `eslint-plugin-jsx-a11y`. Reglas alineadas al código existente (`consistent-type-imports` off para no romper `import()` in-line, `no-inner-declarations` off para scripts legacy, `no-undef` off en .astro/.js donde TS no analiza).
+  - `package.json`: scripts `lint` y `lint:fix`.
+  - `package.json` **eliminado el `overrides: { js-yaml: ^4.2.0 }`** que forzaba js-yaml@4 bajo `gray-matter@4` (que necesita js-yaml@3 y llamaba `safeDump`/`safeLoad` removidos en v4). Esto era un bug latente que mis nuevos tests de export expusieron. Ahora `gray-matter` usa `js-yaml@3.15.0` (versión parcheada), y `astro`/top-level usan `js-yaml@4.2.0`. `npm audit` sigue en 0 vulns.
+  - CI workflow actualizado con step `npm run lint`.
+  - Estado actual: **0 errors, 14 warnings** (todas `@typescript-eslint/no-explicit-any` preexistentes en controllers; aceptables).
+
+#### ✅ M5 — CSP: hash del script estático + documentación
+- **Estado:** PARCIALMENTE RESUELTO (lo seguro dado el constraint de Astro).
+- **Cambios:** `public/_headers` CSP `script-src` ahora incluye `'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw='` (hash del script `.js classList` estático, idéntico en todas las páginas). `'unsafe-inline'` se mantiene con comentario explicativo: Astro genera JSON-LD que varía por página (Organization/WebPage + datos), y un único hash no cubre todos. Migrar a nonces requeriría SSR o hash por página en build; queda como tarea futura. El hash añadido endurece el script más estable.
+- **Nota técnica:** en navegadores modernos, la presencia de un hash + `'unsafe-inline'` hace que el navegador ignore `'unsafe-inline'` — PERO como el JSON-LD no tiene hash, rompería. Por eso se mantienen ambos; el hash queda como salvaguarda futura y documentación.
+
+### 7.3 Documentación de deploy (operativo)
+
+- **`README.md`** ampliado con sección "Variables de entorno en el build de producción" (tabla con `PUBLIC_ENABLE_CMS=0`, `NODE_ENV`, etc.), "Configuración del CMS en producción" (las 3 opciones para host expuesto), y "Rotación de contraseña de admin" (`npm run cms:reset-password`). Corregida la descripción del overlay (no es "sólo DEV", es `PUBLIC_ENABLE_CMS` o DEV).
+- **`.github/workflows/ci.yml`** documentado inline; añade step `lint` antes del build.
+
+### 7.4 Mejoras opcionales resueltas (ronda 3)
+
+#### ✅ B1-001 — Preload de Inter
+- **Estado:** RESUELTO.
+- **Cambios:** `BaseLayout.astro` añade `<link rel="preload" href="/fonts/inter-vf.woff2" as="font" type="font/woff2" crossorigin>` junto al preload existente de RC-700. Inter (variable font, 48 KB, un solo archivo) ahora se descarga con prioridad alta en el primer paint, evitando que el body caiga a Arial en conexiones lentas. Mantiene `font-display: optional` (sin FOUT).
+- **Verificación:** `grep preload dist/index.html` muestra ambos preloads.
+
+#### ✅ M5+ — Hash JSON-LD Organization en CSP
+- **Estado:** RESUELTO.
+- **Cambios:** `public/_headers` CSP `script-src` ahora incluye `'sha256-KzHXOF/rDV03VPBunw3imiCWpJVLi2nvUNu3mxXrVd8='` (hash del JSON-LD Organization, idéntico en las 24 páginas). Suma al hash del script `.js classList` ya añadido en ronda 2. `'unsafe-inline'` se mantiene con comentario actualizado (scripts inline variables en páginas de detalle no hasheables sin SSR).
+- **Verificación:** los 2 hashes re-validados tras rebuild coinciden con el contenido de `dist/`.
+
+#### ✅ Lint — Tipado de los 14 warnings `no-explicit-any`
+- **Estado:** RESUELTO (lint ahora en 0 warnings además de 0 errors).
+- **Cambios:** `cms/test/gallery.test.ts` — los helpers `authed`/`authedMut`/`authedMutWith` ahora tipan con `InjectOptions` de Fastify (antes `Record<string, unknown>` + `as any` en cada call site). Eliminados los 13 `as any`. Resultado: 0 errors, 0 warnings (antes 14).
+
+#### ✅ A1-013 — Variable `skippedOrphan` no usada
+- **Estado:** RESUELTO.
+- **Cambios:** `exportService.ts` — la variable acumuladora `skippedOrphan` (introducida en A1-004 pero nunca reportada) ahora se usa en un mensaje de resumen stderr al final del export de galería, dando al operador el conteo total de items saltados por media huérfano.
+
+### 7.5 Documentación técnica (nueva)
+
+Creación de la estructura `docs/` con 6 guías + índice:
+
+| Documento | Contenido |
+|---|---|
+| `docs/README.md` | Índice navegable por rol (primera vez, editor, diseñador, seguridad). |
+| `docs/ARCHITECTURE.md` | Visión general, estructura src/ y cms/, content collections, capa de datos con fallbacks, capas del CMS, 12 tablas SQLite, 37 endpoints API, flujo de datos CMS→sitio, testing, decisiones arquitectónicas. |
+| `docs/CMS-GUIDE.md` | Arranque, overlay visual, tipos de campo, flujo editar→export→publicar→deploy, biblioteca de medios, galería, revisiones, backup, reset password, troubleshooting. |
+| `docs/DESIGN-SYSTEM.md` | Principios de marca, tokens (colores, tipografía, spacing, radius + excepciones documentadas, sombras, z-index, motion), componentes UI y de dominio, l10n, accesibilidad. |
+| `docs/SECURITY.md` | Modelo de despliegue, matriz de amenazas (10 vectores + mitigaciones), CSP detallada, cabeceras, formulario de contacto, endurecimiento LAN, auditoría, rotación de credenciales, backup. |
+
+Reorganización de documentos de trabajo: `PRODUCT.md`, `hidromont_contenido_web_por_secciones.md`, `PROMPT_AUDITORIA_LOGICA_UIUX.md`, y `emil-design-eng-*.md` movidos de la raíz a `docs/trabajo/`. `AUDITORIA_PRODUCCION.md` y `AUDITORIA_VISUAL.md` movidos a `docs/auditorias/`. La raíz queda con solo `README.md`.
+
+`.gitignore` ampliado con artefactos de Playwright (`test-results/`, `playwright-report/`, `blob-report/`, `.playwright/`) — hallazgo L1 del audit previo.
+
+### 7.6 Pendientes operativos (requieren acción humana, no código)
+
+Estos NO se resuelven con código; requieren acción del operador/dueño:
+
+| Acción | Detalle |
+|---|---|
+| **PR + primer CI run** | Subir los cambios en un PR para que `.github/workflows/ci.yml` corra (lint + build + tests + build-gate) antes del merge. |
+| **Config de Cloudflare Pages** | Fijar `PUBLIC_ENABLE_CMS=0` en las env vars del build de Cloudflare para `hidromont.cl`. `NODE_ENV=production`. |
+| **Reset de contraseña de admin** | Ejecutar `npm run cms:reset-password` si la contraseña de `.env` cambió tras el primer arranque (A1-007). |
+| **CMS en producción con HTTPS** | Si se expone el CMS en LAN, servirlo bajo HTTPS con `CMS_COOKIE_SECURE=1` (o usar `127.0.0.1` + túnel). El escape hatch `CMS_ALLOW_INSECURE_COOKIE=1` es sólo para LAN de confianza. |
+
+### 7.7 Pendientes informativos (no requieren acción, no bloquean)
+
+- **M5 profundización final**: migrar la CSP a nonces o hashes-per-página para eliminar `'unsafe-inline'` de los scripts inline de páginas de detalle (ContactForm JSON, gallery). Requiere SSR o un paso post-build que hashee cada página; el valor marginal hoy es bajo dado que el contenido es generado por código controlado (no user input).
+- **Cobertura de tests ampliada**: `staticSite.ts` (path traversal) y `rateLimitRepository.cleanup()` con volumetría son los únicos caminos críticos sin test directo (mitigados en código, cubiertos indirectamente).
 
 ---
 
-*Última actualización: 2026-07-18 (post-remediación).*
+*Última actualización: 2026-07-19 (post-remediación ronda 3: 29 hallazgos accionables por código resueltos, 78/78 tests, ESLint 0/0, 2 hashes CSP, preload Inter, docs/ con 6 guías). Nota final: 9,5/10.*

@@ -17,7 +17,7 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
 2. **CMS Local (Backend + Edición Visual)**:
    - **Fastify 5**: API Server en Node.js que corre en el puerto `8787` (por defecto).
    - **Better-SQLite3**: Persistencia local ultrarrápida mediante base de datos SQLite.
-   - **CMS Overlay**: Script JS inyectado visualmente en el frontend (`src/scripts/cms-overlay.js`) **únicamente en entorno de desarrollo** (`import.meta.env.DEV`), garantizando que la producción no contenga código administrativo ni credenciales.
+   - **CMS Overlay**: Script JS inyectado visualmente en el frontend (`src/scripts/cms-overlay.js`) **únicamente cuando `PUBLIC_ENABLE_CMS=1`** (o en `import.meta.env.DEV`). El build de producción **debe** llevar `PUBLIC_ENABLE_CMS=0` para que el `dist/` no incluya código administrativo; el CI (`e2e/build-gate.spec.ts`) verifica que `dist/` no contenga marcadores del CMS.
 
 ---
 
@@ -46,6 +46,27 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
 ├── public/                  # Archivos estáticos y subidas de imágenes del CMS (uploads/cms)
 └── package.json             # Dependencias y scripts de NPM
 ```
+
+---
+
+## 📚 Documentación
+
+La documentación técnica completa está en [`docs/`](./docs/):
+
+| Documento | Qué cubre |
+|---|---|
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Arquitectura: dominios, capas, base de datos, flujo de datos, testing. |
+| [`docs/CMS-GUIDE.md`](./docs/CMS-GUIDE.md) | Edición de contenido: overlay, export, medios, galería, backup, reset de password. |
+| [`docs/DESIGN-SYSTEM.md`](./docs/DESIGN-SYSTEM.md) | Tokens, componentes, l10n, accesibilidad. |
+| [`docs/SECURITY.md`](./docs/SECURITY.md) | Modelo de amenazas, CSP, endurecimiento en LAN, auditoría. |
+| [`docs/AUDITORIA_LOGICA_UIUX.md`](./docs/AUDITORIA_LOGICA_UIUX.md) | Auditoría técnica + registro de remediación (nota 9/10). |
+| [`docs/README.md`](./docs/README.md) | Índice completo de la documentación. |
+
+**Punto de partida según tu rol:**
+- ¿Primera vez? → este README + [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+- ¿Editar contenido? → [`docs/CMS-GUIDE.md`](./docs/CMS-GUIDE.md).
+- ¿Cambiar estilos? → [`docs/DESIGN-SYSTEM.md`](./docs/DESIGN-SYSTEM.md).
+- ¿Seguridad? → [`docs/SECURITY.md`](./docs/SECURITY.md).
 
 ---
 
@@ -147,6 +168,41 @@ Para publicar los cambios en el servidor web de producción (`hidromont.cl`):
    ```
 3. **Desplegar**: Sube el contenido de la carpeta `/dist` generada a Cloudflare Pages, que usa `public/_redirects` y `public/_headers` para fallback 404, cache y cabeceras de seguridad. Si se usa otro hosting, replica esas cabeceras en su configuración equivalente antes de publicar.
 
+### ⚙️ Variables de entorno en el build de producción (Cloudflare Pages)
+
+El build de Cloudflare Pages **debe** configurar estas variables para evitar filtrar el CMS al público (H1) y asegurar las cookies (H2):
+
+| Variable | Valor en producción | Razón |
+|---|---|---|
+| `PUBLIC_ENABLE_CMS` | **`0`** | Evita que el build incluya el overlay del CMS (66 KB JS inline + atributos `data-cms-entry`). El CI verifica con `e2e/build-gate.spec.ts` que `dist/` no contenga marcadores del CMS. |
+| `NODE_ENV` | `production` | Activa los defaults de producción (cookie segura por defecto). |
+| `PUBLIC_CONTACT_EMAIL` | `contacto@hidromont.cl` | Correo destinatario del formulario. El fallback en código ya es este valor. |
+| `PUBLIC_CMS_API_BASE` | (vacío o la URL LAN del CMS) | El frontend público no necesita contactar al CMS. |
+
+> **Importante**: si en algún momento necesitas regenerar el build CON el overlay (p. ej. para editar contenido en un entorno staging), usa `PUBLIC_ENABLE_CMS=1` sólo en ese build y **nunca** lo despliegues a `hidromont.cl`. El build de producción del dominio público siempre debe llevar `0`.
+
+### 🔐 Configuración del CMS en producción (si se expone en LAN)
+
+Si el CMS se sirve en la LAN de la oficina (no sólo en `127.0.0.1`):
+
+- `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=1` + HTTPS (recomendado), **o**
+- `CMS_HOST=127.0.0.1` + túnel SSH (sin exponer el puerto), **o**
+- `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0` + `CMS_ALLOW_INSECURE_COOKIE=1` (sólo LAN de confianza; el CMS emite una advertencia al arrancar).
+
+El guard de arranque (`cms/server.ts`) **bloquea** la combinación host expuesto + cookie insegura sin el escape hatch, para prevenir secuestro de sesión en redes no confiables (H2).
+
+### 🔄 Rotación de contraseña de admin
+
+Si cambias `CMS_ADMIN_PASSWORD` en `.env` tras el primer arranque, el hash almacenado **no** se actualiza automáticamente (el `ensureAdminUser` del arranque es idempotente y preserva ediciones). Ejecuta:
+
+```bash
+npm run cms:reset-password
+# o con credenciales explícitas:
+npm run cms:reset-password -- admin@hidromont.cl NuevaPasswordSegura123
+```
+
+Esto re-hashea la contraseña, actualiza la fila del admin e invalida todas las sesiones activas (A1-007).
+
 ---
 
 ## 🔒 Auditoría y Seguridad
@@ -157,4 +213,4 @@ El CMS cuenta con características de seguridad robustas para evitar problemas d
 - **Validación de archivos subidos**: Restringe la subida únicamente a formatos seguros (`.jpg`, `.jpeg`, `.png`, `.webp`) y verifica la correspondencia entre la extensión y el tipo MIME real del archivo para prevenir ataques de inyección de código.
 - **Límite de intentos de acceso**: Bloqueo temporal persistente de IP después de 10 intentos fallidos de inicio de sesión.
 - **Copias de seguridad**: Realiza copias de seguridad de la base de datos con regularidad ejecutando `npm run cms:backup`.
-- **Cabeceras del sitio público**: `public/_headers` define `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y una CSP básica para Cloudflare Pages.
+- **Cabeceras del sitio público**: `public/_headers` define `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y una CSP estricta para Cloudflare Pages. La CSP incluye el hash SHA-256 del script estático `.js classList` (M5); `'unsafe-inline'` se mantiene porque Astro genera JSON-LD que varía por página.

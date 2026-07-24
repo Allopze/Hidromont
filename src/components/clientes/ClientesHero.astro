@@ -113,7 +113,7 @@ const row2 = logos.slice(mid);
         <div class="flex" style="overflow: hidden;">
           <div class="flex gap-4 shrink-0 logo-marquee-track">
             {[...row1, ...row1].map((src) => (
-              <div class="shrink-0 h-16 px-6 bg-white rounded-md flex items-center shadow-sm">
+              <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
                 <img
                   src={src}
                   alt={logoAlts[src] ?? ''}
@@ -133,7 +133,7 @@ const row2 = logos.slice(mid);
         <div class="flex" style="overflow: hidden;">
           <div class="flex gap-4 shrink-0 logo-marquee-track--rev">
             {[...row2, ...row2].map((src) => (
-              <div class="shrink-0 h-16 px-6 bg-white rounded-md flex items-center shadow-sm">
+              <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
                 <img
                   src={src}
                   alt={logoAlts[src] ?? ''}

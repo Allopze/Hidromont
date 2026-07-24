@@ -139,3 +139,55 @@ describe('ExportService — slugs con subdirectorio (A1-001)', () => {
   });
 });
 
+describe('ExportService — slugs con caracteres especiales (A1-005)', () => {
+  // El validador admite `/^[a-z0-9/._-]+$/` (puntos, guiones bajos, barras, guiones).
+  // Cubrimos los casos de slug con punto y con guion bajo, que deben escribir un
+  // archivo .md con el nombre literal (sin normalizacion).
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-special-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'servicios'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+    repo.upsertEntry({
+      id: 'srv.tanques.glp', kind: 'servicio', slug: 'tanques.glp', locale: 'es-CL',
+      title: 'Tanques GLP', status: 'published', now,
+      fields: [{ key: 'titulo', type: 'text', value: 'Tanques GLP' }],
+    });
+    repo.upsertEntry({
+      id: 'srv.valvula_marca', kind: 'servicio', slug: 'valvula_marca', locale: 'es-CL',
+      title: 'Válvula Marca', status: 'published', now,
+      fields: [{ key: 'titulo', type: 'text', value: 'Válvula Marca' }],
+    });
+    db.prepare('UPDATE content_entries SET version = 2 WHERE id IN (?, ?)').run('srv.tanques.glp', 'srv.valvula_marca');
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('slug con punto escribe tanques.glp.md literal', () => {
+    const result = exportService.exportContent();
+    expect(result.files).toContain('src/content/servicios/tanques.glp.md');
+    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'tanques.glp.md'))).toBe(true);
+  });
+
+  it('slug con guion bajo escribe valvula_marca.md literal', () => {
+    const result = exportService.exportContent();
+    expect(result.files).toContain('src/content/servicios/valvula_marca.md');
+    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'valvula_marca.md'))).toBe(true);
+  });
+});
+

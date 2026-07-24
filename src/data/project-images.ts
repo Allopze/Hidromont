@@ -50,6 +50,18 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
     width: 1425,
     height: 1104,
   },
+  'tanques-glp-coyhaique': {
+    src: '/fotos/curadas/tanques-glp-coyhaique.jpg',
+    alt: 'Tanque de GLP 30.000 galones en fabricación en taller',
+    width: 1500,
+    height: 2000,
+  },
+  'tanques-glp-puerto-williams': {
+    src: '/fotos/curadas/tanques-glp-puerto-williams.jpg',
+    alt: 'Tanques aéreos de GLP pintados listos para despacho',
+    width: 1500,
+    height: 2000,
+  },
 };
 
 export const projectImages: Record<string, ProjectImageData> = Object.fromEntries(

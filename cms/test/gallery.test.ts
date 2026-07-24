@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { nanoid } from 'nanoid';
+import type { InjectOptions } from 'fastify';
 import { createTestApp, type TestApp } from './setup';
 
 describe('Gallery API', () => {
@@ -27,15 +28,16 @@ describe('Gallery API', () => {
     await ctx.app.close();
   });
 
-  const authed = (opts: Record<string, unknown>) => ({
+  // Helpers que devuelven opciones tipadas para app.inject (sin `as any`).
+  const authed = (opts: InjectOptions): InjectOptions => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...(opts.headers as Record<string, string> | undefined),
       cookie: cookieHeader,
     },
   });
 
-  const authedMut = (body: unknown) => ({
+  const authedMut = (body: unknown): InjectOptions => ({
     method: 'POST',
     headers: {
       cookie: cookieHeader,
@@ -45,10 +47,10 @@ describe('Gallery API', () => {
     body: JSON.stringify(body),
   });
 
-  const authedMutWith = (opts: Record<string, unknown>) => ({
+  const authedMutWith = (opts: InjectOptions): InjectOptions => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...(opts.headers as Record<string, string> | undefined),
       cookie: cookieHeader,
       'x-csrf-token': csrfToken,
       ...(opts.method !== 'DELETE' ? { 'content-type': 'application/json' } : {}),
@@ -69,7 +71,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject({
         ...authedMut({ name: 'Montaje en Obra' }),
         url: '/api/cms/gallery/categories',
-      } as any);
+      });
       expect(res.statusCode).toBe(201);
       const cat = res.json<{ id: string; name: string; slug: string }>();
       expect(cat.name).toBe('Montaje en Obra');
@@ -81,7 +83,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject({
         ...authedMut({ name: 'Montaje', slug: 'montaje-en-obra' }),
         url: '/api/cms/gallery/categories',
-      } as any);
+      });
       expect(res.statusCode).toBe(400);
     });
 
@@ -97,7 +99,7 @@ describe('Gallery API', () => {
         method: 'PATCH',
         url: `/api/cms/gallery/categories/${catId}`,
         body: JSON.stringify({ name: 'Montaje Industrial' }),
-      }) as any);
+      }));
       expect(res.statusCode).toBe(200);
       expect(res.json<{ name: string }>().name).toBe('Montaje Industrial');
     });
@@ -106,7 +108,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject(authedMutWith({
         method: 'DELETE',
         url: `/api/cms/gallery/categories/${catId}`,
-      }) as any);
+      }));
       expect(res.statusCode).toBe(200);
       expect(res.json<{ ok: boolean }>().ok).toBe(true);
     });
@@ -123,7 +125,7 @@ describe('Gallery API', () => {
       const catRes = await ctx.app.inject({
         ...authedMut({ name: 'Tuberías Forzadas' }),
         url: '/api/cms/gallery/categories',
-      } as any);
+      });
       catId = catRes.json<{ id: string }>().id;
     });
 
@@ -137,7 +139,7 @@ describe('Gallery API', () => {
           featured: true,
         }),
         url: '/api/cms/gallery/items',
-      } as any);
+      });
       expect(res.statusCode).toBe(201);
       const item = res.json<{ id: string; title: string; featured: boolean; categoryName: string }>();
       expect(item.title).toBe('Tubería en taller');
@@ -150,7 +152,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject({
         ...authedMut({ title: 'No media', alt: 'Test' }),
         url: '/api/cms/gallery/items',
-      } as any);
+      });
       expect(res.statusCode).toBe(400);
     });
 
@@ -185,7 +187,7 @@ describe('Gallery API', () => {
         method: 'PATCH',
         url: `/api/cms/gallery/items/${itemId}`,
         body: JSON.stringify({ title: 'Tubería actualizada', featured: false }),
-      }) as any);
+      }));
       expect(res.statusCode).toBe(200);
       const item = res.json<{ title: string; featured: boolean }>();
       expect(item.title).toBe('Tubería actualizada');
@@ -197,14 +199,14 @@ describe('Gallery API', () => {
       const res2 = await ctx.app.inject({
         ...authedMut({ mediaId, title: 'Segunda imagen', alt: 'Alt test' }),
         url: '/api/cms/gallery/items',
-      } as any);
+      });
       const itemId2 = res2.json<{ id: string }>().id;
 
       const reorderRes = await ctx.app.inject(authedMutWith({
         method: 'POST',
         url: '/api/cms/gallery/items/reorder',
         body: JSON.stringify({ ids: [itemId2, itemId] }),
-      }) as any);
+      }));
       expect(reorderRes.statusCode).toBe(200);
 
       // Verify order
@@ -219,7 +221,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject(authedMutWith({
         method: 'DELETE',
         url: `/api/cms/gallery/items/${itemId}`,
-      }) as any);
+      }));
       expect(res.statusCode).toBe(200);
 
       // Verify gone
@@ -235,7 +237,7 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject({
         ...authedMut({ name: 'Test', slug: 'INVALID SLUG!' }),
         url: '/api/cms/gallery/categories',
-      } as any);
+      });
       expect(res.statusCode).toBe(400);
     });
 
@@ -244,7 +246,7 @@ describe('Gallery API', () => {
         method: 'POST',
         url: '/api/cms/gallery/items/reorder',
         body: JSON.stringify({ ids: [] }),
-      }) as any);
+      }));
       expect(res.statusCode).toBe(400);
     });
   });

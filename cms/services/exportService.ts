@@ -151,6 +151,9 @@ export class ExportService {
     };
 
     writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
+    if (skippedOrphan > 0) {
+      process.stderr.write(`  ⚠ ${skippedOrphan} gallery item(s) saltado(s) por media huerfano.\n`);
+    }
     return { file: path.relative(this.rootDir, target), count: processedItems.length };
   }
 }

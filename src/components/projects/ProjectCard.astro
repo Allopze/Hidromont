@@ -19,7 +19,7 @@ const isDestacado = proyecto.data.tipo === 'destacado';
 const photo = projectImages[proyecto.slug];
 ---
 
-<article class="group relative card-lift bg-surface border border-border rounded-lg overflow-hidden flex flex-col hover:border-primary hover:shadow-md" data-reveal>
+<article class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md" data-reveal>
   <!-- Project photo (only for destacado projects that have a curated image) -->
   {isDestacado && photo && (
     <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
@@ -67,7 +67,7 @@ const photo = projectImages[proyecto.slug];
       <Button
         href={`/proyectos/${proyecto.slug}`}
         variant="link"
-        class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-lg"
+        class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-none"
       >
         <span class="relative">Ver detalle</span>
         <ArrowIcon class="relative transition-transform group-hover:translate-x-0.5" />

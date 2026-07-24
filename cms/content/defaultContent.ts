@@ -313,8 +313,6 @@ export const defaultContentEntries: EntrySeed[] = [
       hrefGaleria: { type: 'text', value: '/galeria' },
       navEmpresa: { type: 'text', value: 'Empresa' },
       hrefEmpresa: { type: 'text', value: '/empresa' },
-      navCalidad: { type: 'text', value: 'Calidad' },
-      hrefCalidad: { type: 'text', value: '/calidad' },
       navClientes: { type: 'text', value: 'Clientes' },
       hrefClientes: { type: 'text', value: '/clientes' },
       navContacto: { type: 'text', value: 'Contacto' },
@@ -620,23 +618,6 @@ export const defaultContentEntries: EntrySeed[] = [
     },
   },
   {
-    id: 'calidad.hero',
-    kind: 'page',
-    slug: '/calidad',
-    locale: 'es-CL',
-    title: 'Hero calidad',
-    status: 'published',
-    fields: {
-      eyebrow: { type: 'text', value: 'Gestión de Calidad' },
-      title: { type: 'text', value: 'Calidad y Medioambiente' },
-      subtitle: {
-        type: 'textarea',
-        value:
-          'La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables.',
-      },
-    },
-  },
-  {
     id: 'layout.footer',
     kind: 'layout',
     slug: 'footer',
@@ -815,76 +796,10 @@ export const defaultContentEntries: EntrySeed[] = [
     },
   },
 
-  // ─── Calidad ──────────────────────────────────────────────────────────────
-
-  {
-    id: 'calidad.contenido',
-    kind: 'page',
-    slug: '/calidad',
-    locale: 'es-CL',
-    title: 'Contenido calidad',
-    status: 'published',
-    fields: {
-      eyebrow: { type: 'text', value: 'Sistema de gestión' },
-      title: { type: 'text', value: 'ISO 9001' },
-      p1: {
-        type: 'textarea',
-        value:
-          'Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica.',
-      },
-      p2: {
-        type: 'textarea',
-        value:
-          'El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables.',
-      },
-    },
-  },
-  {
-    id: 'calidad.badge',
-    kind: 'page',
-    slug: '/calidad',
-    locale: 'es-CL',
-    title: 'Badge ISO calidad',
-    status: 'published',
-    fields: {
-      line1: { type: 'text', value: 'ISO' },
-      line2: { type: 'text', value: '9001' },
-      caption: { type: 'text', value: 'Sistema de gestión de calidad' },
-    },
-  },
-  {
-    id: 'calidad.principios',
-    kind: 'page',
-    slug: '/calidad',
-    locale: 'es-CL',
-    title: 'Principios calidad',
-    status: 'published',
-    fields: {
-      eyebrow: { type: 'text', value: 'Principios' },
-      title: { type: 'text', value: 'Nuestros compromisos de calidad' },
-      p1Title: { type: 'text', value: 'Satisfacción del cliente' },
-      p1Desc: { type: 'textarea', value: 'Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto.' },
-      p2Title: { type: 'text', value: 'Mejora continua' },
-      p2Desc: { type: 'textarea', value: 'Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega.' },
-      p3Title: { type: 'text', value: 'Cumplimiento normativo' },
-      p3Desc: { type: 'textarea', value: 'Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto.' },
-      p4Title: { type: 'text', value: 'Planificación y organización' },
-      p4Desc: { type: 'textarea', value: 'El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios.' },
-    },
-  },
-  {
-    id: 'calidad.cta',
-    kind: 'page',
-    slug: '/calidad',
-    locale: 'es-CL',
-    title: 'CTA calidad',
-    status: 'published',
-    fields: {
-      title: { type: 'text', value: 'Proyectos que exigen calidad certificada' },
-      subtitle: { type: 'textarea', value: 'Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico.' },
-      buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
-    },
-  },
+  // ─── Calidad (A2-002): entradas calidad.* eliminadas. No merecen sección propia;
+  //     la certificación ISO 9001 ya está representada en la tarjeta de métricas
+  //     `empresa.metricas.card3*` de empresa.astro. Reubicar el contenido futuro
+  //     editando esa tarjeta vía CMS si se quiere expandir. ─────────────────────
 
   // ─── Servicios index ──────────────────────────────────────────────────────
 
