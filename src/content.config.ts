@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { glob, file } from 'astro/loaders';
 
 const categoriaProyecto = z.enum([
   'tuberias',
@@ -9,7 +10,7 @@ const categoriaProyecto = z.enum([
 ]);
 
 const proyectos = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.md', base: './src/content/proyectos' }),
   schema: ({ image }) =>
     z.object({
       nombre: z.string(),
@@ -31,7 +32,7 @@ const proyectos = defineCollection({
 });
 
 const servicios = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.md', base: './src/content/servicios' }),
   schema: ({ image }) =>
     z.object({
       titulo: z.string(),
@@ -49,15 +50,16 @@ const servicios = defineCollection({
           })
         )
         .optional(),
-      // A2-001: default alineado con la coleccion `proyectos` (orden.default(100)).
-      // Sin este default, un servicio exportado desde el CMS sin `orden` rompia el build.
       orden: z.number().default(100),
     }),
 });
 
 const clientes = defineCollection({
-  type: 'data',
+  loader: file('src/content/clientes/clientes.json', {
+    parser: (text) => [{ id: 'clientes', ...JSON.parse(text) }],
+  }),
   schema: z.object({
+    id: z.string(),
     items: z.array(
       z.object({
         nombre: z.string(),

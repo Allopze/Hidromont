@@ -40,7 +40,7 @@ function isActive(href: string) {
   data-overlay={overlay ? 'true' : undefined}
 >
   <div class="w-full mx-auto px-6 max-w-container">
-    <div class="flex items-center justify-between h-24">
+    <div class="flex items-center justify-between h-20 md:h-24">
 
       <!-- Logo -->
       <a href="/" class="flex items-center gap-4 shrink-0 no-underline" aria-label={getCmsText('layout.header', 'logoAriaLabel', 'Hidromont Chile — Inicio')}>
@@ -51,10 +51,10 @@ function isActive(href: string) {
             altField="logoAlt"
             src={cmsLogoSrc}
             alt={cmsLogoAlt}
-            width={300}
-            height={100}
+            width={1181}
+            height={708}
             class={[
-              'h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+              'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
               overlay ? 'logo-img' : '',
             ].join(' ')}
             loading="eager"
@@ -63,10 +63,10 @@ function isActive(href: string) {
           <Image
             src={logo}
             alt={cmsLogoAlt}
-            width={300}
-            height={100}
+            width={1181}
+            height={708}
             class={[
-              'h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+              'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
               overlay ? 'logo-img' : '',
             ].join(' ')}
             loading="eager"
@@ -281,7 +281,7 @@ function isActive(href: string) {
       }
     }
 
-    // Apply initial invert on load (transparent state)
+    // Apply initial clean filter on load (transparent state)
     if (logoImg) logoImg.style.filter = 'brightness(0) invert(1)';
 
     window.addEventListener('scroll', () => {

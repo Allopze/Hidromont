@@ -5,7 +5,7 @@ import Container from '../../components/ui/Container.astro';
 import Button from '../../components/ui/Button.astro';
 import Badge from '../../components/ui/Badge.astro';
 import PageHero from '../../components/ui/PageHero.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { projectImages } from '../../data/project-images';
 import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
@@ -14,18 +14,19 @@ import { categoriaLabels } from '../../data/categories';
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
   return proyectos.map((p) => ({
-    params: { slug: p.slug },
+    params: { slug: p.id },
     props: { proyecto: p },
   }));
 }
 
 const { proyecto } = Astro.props;
 const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } = proyecto.data;
-const { Content } = await proyecto.render();
-const projectImageEntry = `project-image.${proyecto.slug}`;
-const heroImg = projectImages[proyecto.slug];
-const gallery = projectGalleries[proyecto.slug];
-const galleryEntryId = `project-gallery.${proyecto.slug}`;
+const { Content } = await render(proyecto);
+const slug = proyecto.id;
+const projectImageEntry = `project-image.${slug}`;
+const heroImg = projectImages[slug];
+const gallery = projectGalleries[slug];
+const galleryEntryId = `project-gallery.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 const servicioHref: Record<string, string> = {
@@ -63,7 +64,7 @@ const jsonLd = {
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
     breadcrumbs={[{ label: 'Proyectos', href: '/proyectos' }, { label: nombre }]}
-    cmsEntry={`proyectos.${proyecto.slug}`}
+    cmsEntry={`proyectos.${slug}`}
     cmsEyebrowField={false}
     cmsTitleField="nombre"
     cmsSubtitleField={false}

@@ -121,7 +121,7 @@
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Sectores"
+          "value": "Han confiado en nosotros"
         }
       }
     },
@@ -1481,27 +1481,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Cúpulas modulares y estructura metálica para pasarelas peatonales en Ruta Nahuelbuta"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/curadas/pasarela-nahuelbuta-instalacion.webp"
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Montaje de cúpulas de policarbonato y arcos de acero galvanizado en pasarela vial"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/curadas/pasarela-nahuelbuta-estructura.webp"
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Estructura metálica modular de 6 metros para pasarela peatonal"
         }
       }
     },
@@ -1713,19 +1713,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Estructuras metálicas y obras civiles de infraestructura"
+          "value": "Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta"
         },
         "imageHeight": {
           "type": "number",
-          "value": 629
+          "value": 720
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1600
         }
       }
     },
@@ -1779,19 +1779,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+          "value": "/fotos/curadas/tanques-glp-coyhaique.jpg"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
+          "value": "Tanques especiales de almacenamiento de GLP de gran capacidad fabricados por Hidromont"
         },
         "imageHeight": {
           "type": "number",
-          "value": 800
+          "value": 2000
         },
         "imageWidth": {
           "type": "number",
-          "value": 1200
+          "value": 1500
         }
       }
     },

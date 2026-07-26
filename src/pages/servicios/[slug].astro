@@ -5,7 +5,7 @@ import Container from '../../components/ui/Container.astro';
 import Button from '../../components/ui/Button.astro';
 import Badge from '../../components/ui/Badge.astro';
 import PageHero from '../../components/ui/PageHero.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { serviceImages } from '../../data/service-images';
 import { serviceGalleries } from '../../data/service-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
@@ -13,18 +13,19 @@ import EditableImage from '../../components/cms/EditableImage.astro';
 export async function getStaticPaths() {
   const servicios = await getCollection('servicios');
   return servicios.map((s) => ({
-    params: { slug: s.slug },
+    params: { slug: s.id },
     props: { servicio: s },
   }));
 }
 
 const { servicio } = Astro.props;
 const { titulo, resumen, tipos, aplicaciones, normas } = servicio.data;
-const { Content } = await servicio.render();
-const serviceImageEntry = `service-image.${servicio.slug}`;
-const heroImg = serviceImages[servicio.slug];
-const gallery = serviceGalleries[servicio.slug];
-const galleryEntryId = `service-gallery.${servicio.slug}`;
+const { Content } = await render(servicio);
+const slug = servicio.id;
+const serviceImageEntry = `service-image.${slug}`;
+const heroImg = serviceImages[slug];
+const gallery = serviceGalleries[slug];
+const galleryEntryId = `service-gallery.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 const jsonLd = [
@@ -67,7 +68,7 @@ const jsonLd = [
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
     breadcrumbs={[{ label: 'Servicios', href: '/servicios' }, { label: titulo }]}
-    cmsEntry={`servicios.${servicio.slug}`}
+    cmsEntry={`servicios.${slug}`}
     cmsEyebrowField={false}
     cmsTitleField="titulo"
     cmsSubtitleField="resumen"

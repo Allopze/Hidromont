@@ -7,6 +7,7 @@ import PageHero from '../../components/ui/PageHero.astro';
 import ServiceCard from '../../components/services/ServiceCard.astro';
 import CTASection from '../../components/ui/CTASection.astro';
 import EditableText from '../../components/cms/EditableText.astro';
+import EditableImage from '../../components/cms/EditableImage.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
 
@@ -36,11 +37,60 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
           <ServiceCard
             title={s.data.titulo}
             description={s.data.resumen}
-            href={`/servicios/${s.slug}`}
+            href={`/servicios/${s.id}`}
             icon={s.data.icono}
             bullets={s.data.tipos?.slice(0, 4)}
           />
         ))}
+      </div>
+    </Container>
+  </Section>
+
+  <!-- Banner de Infraestructura y Estándares -->
+  <Section variant="strong" divider>
+    <Container size="xl">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <Eyebrow light>
+            <EditableText entry="servicios.index.banner" field="eyebrow">
+              {getCmsText('servicios.index.banner', 'eyebrow', 'Capacidad Industrial')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText as="h2" entry="servicios.index.banner" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
+            {getCmsText('servicios.index.banner', 'title', 'Fabricación de gran dimensión en instalaciones propias')}
+          </EditableText>
+          <EditableText as="p" entry="servicios.index.banner" field="subtitle" type="textarea" class="text-white/90 mb-6" style="font-size: var(--font-size-lead);">
+            {getCmsText('servicios.index.banner', 'subtitle', 'En nuestras instalaciones de 11.000 m² en Los Ángeles contamos con taller de calderería, mecanizado y pintura industrial, preparados para enfrentar requerimientos urgentes e hitos críticos de obra.')}
+          </EditableText>
+          <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
+            <div>
+              <p class="font-mono font-bold text-accent text-xl">2.000 m²</p>
+              <p class="text-xs text-white/70">Nave Industrial</p>
+            </div>
+            <div>
+              <p class="font-mono font-bold text-accent text-xl">5 Puentes</p>
+              <p class="text-xs text-white/70">Grúa 10–20 Tn</p>
+            </div>
+            <div>
+              <p class="font-mono font-bold text-accent text-xl">AWS D1.1</p>
+              <p class="text-xs text-white/70">Soldadura Certificada</p>
+            </div>
+          </div>
+        </div>
+        <div class="relative overflow-hidden rounded-none border border-white/10 shadow-lg">
+          <EditableImage
+            entry="servicios.index.banner"
+            field="image"
+            altField="imageAlt"
+            src={getCmsText('servicios.index.banner', 'image', '/fotos/curadas/fabricacion-tuberias-taller.webp')}
+            alt={getCmsText('servicios.index.banner', 'imageAlt', 'Proceso de fabricacion y caldereria hidromecanica en taller')}
+            width="1200"
+            height="675"
+            loading="lazy"
+            decoding="async"
+            class="block w-full h-auto object-cover max-h-[380px]"
+          />
+        </div>
       </div>
     </Container>
   </Section>

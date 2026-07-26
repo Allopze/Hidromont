@@ -89,7 +89,17 @@
     <div class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full" data-lb-meta>
       <span data-lb-category class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono mb-1.5" />
       <h3 data-lb-title class="text-base md:text-lg font-bold font-heading uppercase tracking-wide text-white" />
-      <p data-lb-caption class="text-xs md:text-sm text-neutral-400 mt-1 hidden" />
+      <p data-lb-caption class="text-xs md:text-sm text-neutral-300 mt-2 leading-relaxed hidden" />
+      <a
+        data-lb-project-link
+        href="#"
+        class="inline-flex items-center gap-1.5 mt-3 text-xs md:text-sm font-semibold text-accent hover:text-white transition-colors duration-150 font-mono uppercase tracking-wider hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span>Ver Proyecto Relacionado</span>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 transition-transform group-hover:translate-x-1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+      </a>
     </div>
   </div>
 </div>
@@ -105,6 +115,7 @@
     const title = lightbox.querySelector('[data-lb-title]') as HTMLElement;
     const category = lightbox.querySelector('[data-lb-category]') as HTMLElement;
     const caption = lightbox.querySelector('[data-lb-caption]') as HTMLElement;
+    const projectLink = lightbox.querySelector('[data-lb-project-link]') as HTMLAnchorElement;
     const closeBtn = lightbox.querySelector('[data-lb-close]') as HTMLButtonElement;
     const prevBtn = lightbox.querySelector('[data-lb-prev]') as HTMLButtonElement;
     const nextBtn = lightbox.querySelector('[data-lb-next]') as HTMLButtonElement;
@@ -118,6 +129,7 @@
       title: string;
       category: string;
       caption: string;
+      projectSlug: string;
       width: number;
       height: number;
     }
@@ -132,8 +144,6 @@
       return Array.from(cards).map((card) => {
         const el = card as HTMLElement;
         const imgEl = el.querySelector('img') as HTMLImageElement;
-        // A2-007: preferir los atributos width/height (siempre presentes desde gallery.json)
-        // sobre naturalWidth, que es 0 hasta que la imagen lazy carga. Evita aspect erróneo.
         const attrWidth = Number.parseInt(imgEl?.getAttribute('width') || '', 10);
         const attrHeight = Number.parseInt(imgEl?.getAttribute('height') || '', 10);
         return {
@@ -142,7 +152,8 @@
           alt: imgEl?.alt || el.getAttribute('aria-label') || '',
           title: el.querySelector('h3')?.textContent?.trim() || el.getAttribute('aria-label') || '',
           category: el.querySelector('.font-mono')?.textContent?.trim() || '',
-          caption: '',
+          caption: el.getAttribute('data-caption') || '',
+          projectSlug: el.getAttribute('data-project-slug') || '',
           width: Number.isFinite(attrWidth) && attrWidth > 0 ? attrWidth : (imgEl?.naturalWidth || 1600),
           height: Number.isFinite(attrHeight) && attrHeight > 0 ? attrHeight : (imgEl?.naturalHeight || 1200),
         };
@@ -170,6 +181,13 @@
         caption.classList.remove('hidden');
       } else {
         caption.classList.add('hidden');
+      }
+
+      if (data.projectSlug && projectLink) {
+        projectLink.href = `/proyectos/${data.projectSlug}`;
+        projectLink.classList.remove('hidden');
+      } else if (projectLink) {
+        projectLink.classList.add('hidden');
       }
 
       // Load new image

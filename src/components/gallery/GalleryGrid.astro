@@ -30,6 +30,8 @@ function getRevealDelay(index: number): string {
       class="gallery-card group relative overflow-hidden border border-border/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 min-h-0"
       data-category={item.categorySlug ?? 'otros'}
       data-item-id={item.id}
+      data-caption={item.caption ?? ''}
+      data-project-slug={item.projectSlug ?? ''}
       aria-label={`${item.title}${item.categoryName ? ` — ${item.categoryName}` : ''}`}
       style={`--reveal-delay:${getRevealDelay(index)}`}
     >
