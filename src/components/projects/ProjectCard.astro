@@ -16,7 +16,8 @@ const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion } = p
 
 const isDestacado = proyecto.data.tipo === 'destacado';
 
-const photo = projectImages[proyecto.slug];
+const slug = proyecto.id;
+const photo = projectImages[slug];
 ---
 
 <article class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md" data-reveal>
@@ -43,29 +44,30 @@ const photo = projectImages[proyecto.slug];
   )}
 
   <div class="p-6 flex flex-col flex-1 gap-4">
-    <div>
-      <Badge>{categoriaLabels[categoria] ?? categoria}</Badge>
-      <h3 class="font-heading font-semibold text-primary-dark mt-3 mb-1" style="font-size: var(--font-size-h4);">
-        {nombre}
-      </h3>
-      {cliente && (
-        <p class="text-xs text-text-muted font-semibold uppercase tracking-wide">{cliente}</p>
-      )}
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <Badge variant="muted">{categoriaLabels[categoria] || categoria}</Badge>
+      {cliente && <span class="text-xs text-text-muted font-body font-medium">{cliente}</span>}
     </div>
 
-    <p class="text-sm text-text-muted leading-relaxed line-clamp-3 flex-1">{alcance}</p>
+    <h3 class="font-heading font-bold text-text text-xl group-hover:text-primary transition-colors">
+      {nombre}
+    </h3>
 
-    {(diametro || longitud || ubicacion) && (
-      <div class="flex flex-wrap gap-3 text-xs font-mono text-text-muted border-t border-border pt-3">
-        {diametro && <span>{diametro}</span>}
-        {longitud && <span>{longitud}</span>}
-        {ubicacion && ubicacion !== 'Chile' && <span class="text-primary">{ubicacion}</span>}
+    <p class="text-text-muted text-sm leading-relaxed line-clamp-3">
+      {alcance}
+    </p>
+
+    {(ubicacion || diametro || longitud) && (
+      <div class="pt-3 border-t border-border flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted font-mono">
+        {ubicacion && <span>📍 {ubicacion}</span>}
+        {diametro && <span>⌀ {diametro}</span>}
+        {longitud && <span>📏 {longitud}</span>}
       </div>
     )}
 
     {isDestacado && (
       <Button
-        href={`/proyectos/${proyecto.slug}`}
+        href={`/proyectos/${slug}`}
         variant="link"
         class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-none"
       >

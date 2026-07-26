@@ -14,6 +14,7 @@ export interface GalleryItemData {
   caption: string | null;
   categorySlug: string | null;
   categoryName: string | null;
+  projectSlug?: string | null;
   featured: boolean;
   position: number;
   src: string;

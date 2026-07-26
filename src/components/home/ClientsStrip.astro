@@ -6,16 +6,22 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText } from '../../data/cms';
 
+interface ClienteItem {
+  nombre: string;
+  sector?: string;
+  logo?: string;
+}
+
 interface Props {
-  clientes: CollectionEntry<'clientes'>;
+  clientes?: CollectionEntry<'clientes'> | { data: { items: ClienteItem[] } };
 }
 
 const { clientes } = Astro.props;
-const lista = clientes.data.items;
+const lista: ClienteItem[] = clientes?.data?.items || [];
 
 // Split into those with logos and those without
-const conLogo = lista.filter((c) => c.logo);
-const sinLogo = lista.filter((c) => !c.logo);
+const conLogo = lista.filter((c: ClienteItem) => c.logo);
+const sinLogo = lista.filter((c: ClienteItem) => !c.logo);
 
 // Split logos into two rows for marquee
 const mid = Math.ceil(conLogo.length / 2);
@@ -83,7 +89,7 @@ const row2 = conLogo.slice(mid);
         {getCmsText('clients.strip', 'fallbackLabel', 'También trabajamos con')}
       </EditableText>
       <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
-        {sinLogo.map((c) => (
+        {sinLogo.map((c: ClienteItem) => (
           <span class="text-sm text-text-muted font-medium">{c.nombre}</span>
         ))}
       </div>

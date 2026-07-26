@@ -1,7 +1,7 @@
 ---
 nombre: "Tanques Aéreos de GLP 18.000 Galones — Puerto Williams"
 cliente: "Gasco"
-alcance: "Ingeniería, fabricación y suministro de 3 tanques aéreos de GLP de 18.000 galones para la planta de distribución en Puerto Williams. Proceso integral que incluye fabricación, control de calidad, suministro de válvulas, transporte en tres etapas y descarga en sitio. Diseñados bajo norma ASME Sección VIII División 1 para operaciones en climas fríos y extrema exposición sísmica."
+alcance: "Ingeniería, fabricación y suministro de 3 tanques aéreos de GLP de 18.000 galones para la planta de distribución en Puerto Williams. Proceso integral que incluye fabricación, control de calidad, suministro de válvulas, transporte en tres etapas y descarga en sitio. Diseñados bajo norma ASME División 1 para operaciones en climas fríos y extrema exposición sísmica."
 categoria: "estructuras"
 tipo: "banco"
 ubicacion: "Puerto Williams, Región de Magallanes, Chile"

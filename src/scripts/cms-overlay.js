@@ -20,8 +20,8 @@
       outline-offset: 4px;
     }
     [data-cms-entry]:hover {
-      outline: 2px solid #2d9cdb;
-      box-shadow: 0 0 0 5px rgba(45,156,219,0.16);
+      outline: 2px solid #0065A9;
+      box-shadow: 0 0 0 4px rgba(0,101,169,0.2);
     }
     .hm-cms-shell {
       position: fixed;
@@ -39,26 +39,35 @@
       align-items: center;
       gap: 8px;
       padding: 8px;
-      background: #0f2433;
+      background: #0F2433;
       color: white;
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 8px;
+      border: 1px solid #D9E2EC;
+      border-radius: 0px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.24);
     }
     .hm-cms-bar button,
     .hm-cms-panel button {
       border: 0;
-      border-radius: 6px;
+      border-radius: 0px;
       padding: 9px 12px;
       font-weight: 700;
-      background: #2d9cdb;
+      background: #0065A9;
       color: #fff;
       cursor: pointer;
+      transition: background-color 150ms ease;
+    }
+    .hm-cms-bar button:hover,
+    .hm-cms-panel button:hover {
+      background: #004B7D;
     }
     .hm-cms-bar button.secondary,
     .hm-cms-panel button.secondary {
       background: rgba(255,255,255,0.1);
       color: #fff;
+    }
+    .hm-cms-bar button.secondary:hover,
+    .hm-cms-panel button.secondary:hover {
+      background: rgba(255,255,255,0.2);
     }
     .hm-cms-panel {
       pointer-events: auto;
@@ -67,9 +76,9 @@
       right: 0;
       width: min(420px, 100vw);
       height: 100dvh;
-      background: #f8fafc;
-      color: #172331;
-      border-left: 1px solid #cbd5e1;
+      background: #F5F8FA;
+      color: #1F2933;
+      border-left: 1px solid #D9E2EC;
       box-shadow: -20px 0 60px rgba(15,36,51,0.24);
       transform: translateX(104%);
       transition: transform 180ms ease;
@@ -81,7 +90,7 @@
     }
     .hm-cms-panel header {
       padding: 18px;
-      background: #0f2433;
+      background: #0F2433;
       color: white;
       display: flex;
       align-items: center;
@@ -103,17 +112,17 @@
       gap: 6px;
       font-size: 13px;
       font-weight: 700;
-      color: #334155;
+      color: #1F2933;
     }
     .hm-cms-panel input,
     .hm-cms-panel textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border: 1px solid #D9E2EC;
+      border-radius: 0px;
       padding: 10px;
       font: inherit;
-      color: #172331;
+      color: #1F2933;
       background: white;
     }
     .hm-cms-panel textarea {
@@ -121,11 +130,11 @@
       resize: vertical;
     }
     .hm-cms-error {
-      color: #b42318;
+      color: #C62828;
       font-size: 13px;
     }
     .hm-cms-muted {
-      color: #64748b;
+      color: #5B6770;
       font-size: 12px;
       line-height: 1.5;
     }
@@ -142,8 +151,8 @@
       display: grid;
       gap: 8px;
       padding: 10px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border: 1px solid #D9E2EC;
+      border-radius: 0px;
       background: white;
     }
     .hm-cms-job-title {
@@ -153,33 +162,33 @@
       gap: 8px;
       font-size: 13px;
       font-weight: 800;
-      color: #172331;
+      color: #1F2933;
     }
     .hm-cms-badge {
       display: inline-flex;
       align-items: center;
-      border-radius: 999px;
+      border-radius: 0px;
       padding: 3px 8px;
-      background: #e2e8f0;
-      color: #334155;
+      background: #E6F2FA;
+      color: #004B7D;
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
     }
     .hm-cms-badge.succeeded {
-      background: #dcfce7;
-      color: #166534;
+      background: #e8f5e9;
+      color: #2E7D32;
     }
     .hm-cms-badge.failed {
-      background: #fee2e2;
-      color: #991b1b;
+      background: #ffebee;
+      color: #C62828;
     }
     .hm-cms-log {
       max-height: 150px;
       overflow: auto;
       margin: 0;
       padding: 8px;
-      border-radius: 4px;
+      border-radius: 0px;
       background: #0f172a;
       color: #dbeafe;
       font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -190,7 +199,7 @@
       gap: 8px;
       padding: 10px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       background: white;
     }
     .hm-cms-image-preview img {
@@ -198,7 +207,7 @@
       max-height: 180px;
       object-fit: contain;
       background: #e2e8f0;
-      border-radius: 4px;
+      border-radius: 0px;
     }
     .hm-cms-media-grid {
       display: grid;
@@ -212,7 +221,7 @@
       display: grid;
       gap: 6px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       padding: 6px;
       background: white;
       color: #172331;
@@ -221,14 +230,14 @@
     }
     .hm-cms-media-item:hover,
     .hm-cms-media-item.selected {
-      border-color: #2d9cdb;
-      box-shadow: 0 0 0 3px rgba(45,156,219,0.16);
+      border-color: #0065A9;
+      box-shadow: 0 0 0 3px rgba(0,101,169,0.16);
     }
     .hm-cms-media-item img {
       width: 100%;
       aspect-ratio: 4 / 3;
       object-fit: cover;
-      border-radius: 4px;
+      border-radius: 0px;
       background: #e2e8f0;
     }
     .hm-cms-media-name {
@@ -254,11 +263,11 @@
       gap: 8px;
       padding: 8px 10px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       background: white;
     }
     .hm-cms-revision-item.current {
-      border-color: #2d9cdb;
+      border-color: #0065A9;
       background: #eff8ff;
     }
     .hm-cms-revision-info {
@@ -285,11 +294,11 @@
       gap: 8px;
       padding: 10px 12px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       background: white;
     }
     .hm-cms-collection-item:hover {
-      border-color: #2d9cdb;
+      border-color: #0065A9;
     }
     .hm-cms-collection-info {
       display: grid;
@@ -322,14 +331,14 @@
       gap: 4px;
       padding: 4px;
       background: #e2e8f0;
-      border-radius: 8px;
+      border-radius: 0px;
       margin-bottom: 12px;
     }
     .hm-cms-tab {
       flex: 1;
       padding: 7px 8px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 0px;
       font: inherit;
       font-size: 12px;
       font-weight: 700;
@@ -359,7 +368,7 @@
       width: 100%;
       box-sizing: border-box;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       padding: 9px 10px;
       font: inherit;
       color: #172331;
@@ -380,7 +389,7 @@
       position: relative;
       aspect-ratio: 1;
       overflow: hidden;
-      border-radius: 4px;
+      border-radius: 0px;
       border: 2px solid transparent;
       cursor: pointer;
       background: #e2e8f0;
@@ -390,7 +399,7 @@
       height: 100%;
       object-fit: cover;
     }
-    .hm-cms-gallery-thumb:hover { border-color: #2d9cdb; }
+    .hm-cms-gallery-thumb:hover { border-color: #0065A9; }
     .hm-cms-gallery-thumb .hm-cms-gallery-featured {
       position: absolute;
       top: 3px;
@@ -400,7 +409,7 @@
       font-size: 9px;
       font-weight: 800;
       padding: 1px 4px;
-      border-radius: 3px;
+      border-radius: 0px;
       text-transform: uppercase;
     }
     .hm-cms-gallery-cat-btn {
@@ -410,7 +419,7 @@
       gap: 6px;
       padding: 8px 10px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 0px;
       background: white;
       cursor: pointer;
       text-align: left;
@@ -418,7 +427,7 @@
       font-size: 13px;
       color: #172331;
     }
-    .hm-cms-gallery-cat-btn:hover { border-color: #2d9cdb; }
+    .hm-cms-gallery-cat-btn:hover { border-color: #0065A9; }
     .hm-cms-gallery-cat-name { font-weight: 700; }
     .hm-cms-gallery-cat-slug { font-size: 11px; color: #64748b; font-family: ui-monospace, monospace; }
     @media (max-width: 640px) {
@@ -589,12 +598,12 @@
           <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
             ${items.map((item, i) => `
               <div style="display:flex;gap:6px;align-items:center">
-                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;font:inherit" />
-                <button type="button" data-action="remove-list-item" data-index="${i}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
+                <button type="button" data-action="remove-list-item" data-index="${i}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
               </div>
             `).join('')}
           </div>
-          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:6px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
+          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
           <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(items))}" />
         </div>
       `;
@@ -769,7 +778,7 @@
     openPanel(`
       <section class="hm-cms-job-list">
         <p class="hm-cms-muted">Historial de exportaciones y validaciones.</p>
-        <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:6px;padding:8px 10px">
+        <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:0px;padding:8px 10px">
           ℹ️ Exportar y validar escribe los archivos del sitio y corre <code>astro check</code>. Para que los cambios aparezcan en <strong>hidromont.cl</strong> falta compilar y desplegar (<code>npm run build</code> + deploy del hosting).
         </p>
         ${items.map((job) => `
@@ -978,11 +987,11 @@
         <div style="display:grid;gap:12px">
           <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid #cbd5e1;border-radius:6px;background:white;cursor:pointer;text-align:center">
+            <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
               <strong style="display:block;font-size:24px;color:#0065A9">${cats.length}</strong>
               <span style="font-size:12px;color:#475569">Categorías</span>
             </button>
-            <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid #cbd5e1;border-radius:6px;background:white;cursor:pointer;text-align:center">
+            <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
               <strong style="display:block;font-size:24px;color:#0065A9">${items.length}</strong>
               <span style="font-size:12px;color:#475569">Imágenes</span>
             </button>
@@ -1124,7 +1133,7 @@
       <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
         <input name="mediaId" type="hidden" value="${escapeHtml(item.mediaId || '')}" />
         <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt=""
-          style="width:100%;max-height:180px;object-fit:contain;background:#e2e8f0;border-radius:6px;${item.mediaPath ? '' : 'display:none'}" />
+          style="width:100%;max-height:180px;object-fit:contain;background:#e2e8f0;border-radius:0px;${item.mediaPath ? '' : 'display:none'}" />
         <label>Seleccionar imagen
           <input name="mediaSearch" type="search" placeholder="Buscar en la biblioteca de medios..." data-gallery-media-search />
         </label>
@@ -1291,7 +1300,7 @@
           </select>
         </label>
         ${!entryId && (kind === 'servicio' || kind === 'proyecto') ? `
-          <p class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 10px">
+          <p class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:8px 10px">
             Se crearán campos obligatorios con valores de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Edítalos luego haciendo clic en los elementos de la página antes de exportar.
           </p>` : ''}
         ${(entry ? Object.entries(entry.fields || {}).filter(([, f]) => f.type === 'text' || f.type === 'textarea').map(([key, f]) => `
@@ -1505,8 +1514,8 @@
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;gap:6px;align-items:center';
       row.innerHTML = `
-        <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;font:inherit" />
-        <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+        <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
+        <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
       `;
       container.appendChild(row);
       row.querySelector('input')?.focus();

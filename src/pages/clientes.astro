@@ -12,7 +12,7 @@ import { getCmsText } from '../data/cms';
 import { getClienteLogoByNombre } from '../data/cliente-logos';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
-const lista = [...clientesEntry.data.items];
+const lista = clientesEntry?.data?.items ? [...clientesEntry.data.items] : [];
 
 // Sort alphabetically by name for a neutral and orderly presentation
 lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
@@ -48,7 +48,7 @@ for (const c of lista) {
       <div class="text-center mb-16">
         <Eyebrow>
           <EditableText entry="clientes.sectores" field="eyebrow">
-            {getCmsText('clientes.sectores', 'eyebrow', 'Nuestros Clientes')}
+            {getCmsText('clientes.sectores', 'eyebrow', 'Han confiado en nosotros')}
           </EditableText>
         </Eyebrow>
         {/*

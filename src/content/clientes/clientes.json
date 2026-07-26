@@ -15,8 +15,9 @@
     { "nombre": "Ferrovial",           "sector": "construccion", "logo": "/logos-clientes/ferrovial.png" },
     { "nombre": "GPE",                 "sector": "electrica",    "logo": "/logos-clientes/gpe.png" },
     { "nombre": "Iberdrola",           "sector": "electrica",    "logo": "/logos-clientes/iberdrola.png" },
-    { "nombre": "Gasco",               "sector": "industrial",   "logo": "/logos-clientes/gasco.svg" },
+    { "nombre": "Gasco",               "sector": "industrial",   "logo": "/logos-clientes/gasco.png" },
     { "nombre": "M.O.P. / D.O.H.",    "sector": "publica",      "logo": "/logos-clientes/mop-doh.jpeg" },
-    { "nombre": "Pacific Hydro",       "sector": "electrica",    "logo": "/logos-clientes/pacific-hydro.png" }
+    { "nombre": "Pacific Hydro",       "sector": "electrica",    "logo": "/logos-clientes/pacific-hydro.png" },
+    { "nombre": "Sociedad Concesionaria Ruta Nahuelbuta", "sector": "construccion", "logo": "/logos-clientes/ruta-nahuelbuta.jpg" }
   ]
 }

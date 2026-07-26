@@ -38,16 +38,16 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     height: 629,
   },
   'infraestructuras': {
-    src: '/fotos/curadas/otros-montajes.jpg',
-    alt: 'Estructuras metálicas y obras civiles de infraestructura',
-    width: 471,
-    height: 629,
+    src: '/fotos/curadas/pasarela-ruta-nahuelbuta.webp',
+    alt: 'Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta',
+    width: 1600,
+    height: 720,
   },
   'tanques-especiales': {
-    src: '/fotos/curadas/fabricacion-tuberias-taller.webp',
-    alt: 'Fabricación y cilindrado de tanques y recipientes especiales en taller',
-    width: 1200,
-    height: 800,
+    src: '/fotos/curadas/tanques-glp-coyhaique.jpg',
+    alt: 'Tanques especiales de almacenamiento de GLP de gran capacidad fabricados por Hidromont',
+    width: 1500,
+    height: 2000,
   },
 };
 
