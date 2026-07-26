@@ -119,6 +119,7 @@ export function migrate(): void {
       id TEXT PRIMARY KEY,
       media_id TEXT,
       category_id TEXT,
+      project_slug TEXT,
       title TEXT NOT NULL,
       alt TEXT NOT NULL,
       caption TEXT,
@@ -132,19 +133,9 @@ export function migrate(): void {
     );
   `);
 
-  // A1-004: migrar bases de datos existentes del esquema anterior (media_id NOT NULL
-  // + ON DELETE CASCADE) al nuevo (media_id NULLABLE + ON DELETE SET NULL). SQLite no
-  // soporta ALTER para cambiar NOT NULL ni la accion ON DELETE de una FK, asi que se
-  // recrea la tabla. Es idempotente: si ya esta migrada, no hace nada.
+  migrateGalleryItemsProjectSlug(db);
   migrateGalleryItemsOnDeleteSetNull(db);
-
-  // A1-009: anade la columna updated_at a publish_jobs para soportar reap de jobs
-  // trabados en 'running' tras un crash. Idempotente.
   migratePublishJobsUpdatedAt(db);
-
-  // A1-010: anade la columna action a publish_jobs (antes la accion iba serializada
-  // dentro del JSON de logs, dificultando queries como "ultima publicacion exitosa").
-  // Idempotente.
   migratePublishJobsAction(db);
 }
 
@@ -175,6 +166,7 @@ function migrateGalleryItemsOnDeleteSetNull(db: ReturnType<typeof getDb>): void 
       id TEXT PRIMARY KEY,
       media_id TEXT,
       category_id TEXT,
+      project_slug TEXT,
       title TEXT NOT NULL,
       alt TEXT NOT NULL,
       caption TEXT,
@@ -186,8 +178,8 @@ function migrateGalleryItemsOnDeleteSetNull(db: ReturnType<typeof getDb>): void 
       FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
       FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
     );
-    INSERT INTO gallery_items_new (id, media_id, category_id, title, alt, caption, position, featured, status, created_at, updated_at)
-      SELECT id, media_id, category_id, title, alt, caption, position, featured, status, created_at, updated_at FROM gallery_items;
+    INSERT INTO gallery_items_new (id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at)
+      SELECT id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at FROM gallery_items;
     DROP TABLE gallery_items;
     ALTER TABLE gallery_items_new RENAME TO gallery_items;
     COMMIT;
@@ -227,4 +219,13 @@ function migratePublishJobsAction(db: ReturnType<typeof getDb>): void {
       // logs corrupto: deja el default 'publish'.
     }
   }
+}
+
+/**
+  * Migración idempotente para añadir la columna project_slug a gallery_items si no existe.
+  */
+function migrateGalleryItemsProjectSlug(db: ReturnType<typeof getDb>): void {
+  const cols = db.prepare('PRAGMA table_info(gallery_items)').all() as Array<{ name: string }>;
+  if (cols.some((c) => c.name === 'project_slug')) return;
+  db.exec(`ALTER TABLE gallery_items ADD COLUMN project_slug TEXT;`);
 }

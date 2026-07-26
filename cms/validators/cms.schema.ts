@@ -68,6 +68,7 @@ export const reorderSchema = z.object({
 export const createGalleryItemSchema = z.object({
   mediaId: z.string().min(1),
   categoryId: z.string().min(1).nullable().optional(),
+  projectSlug: z.string().min(1).nullable().optional(),
   title: z.string().min(1).max(240),
   alt: z.string().min(1).max(500),
   caption: z.string().max(1000).nullable().optional(),
@@ -78,6 +79,7 @@ export const createGalleryItemSchema = z.object({
 export const updateGalleryItemSchema = z.object({
   mediaId: z.string().min(1).optional(),
   categoryId: z.string().min(1).nullable().optional(),
+  projectSlug: z.string().min(1).nullable().optional(),
   title: z.string().min(1).max(240).optional(),
   alt: z.string().min(1).max(500).optional(),
   caption: z.string().max(1000).nullable().optional(),
