@@ -26,6 +26,16 @@ export interface GalleryItemData {
   focalY: number;
 }
 
+export interface ProjectAlbumData {
+  projectSlug: string;
+  projectName: string;
+  categorySlug: string | null;
+  categoryName: string | null;
+  coverImage: GalleryItemData;
+  itemCount: number;
+  items: GalleryItemData[];
+}
+
 interface GalleryExport {
   updatedAt: string;
   categories: GalleryCategoryData[];
@@ -33,6 +43,12 @@ interface GalleryExport {
 }
 
 const data = galleryData as GalleryExport;
+
+const PROJECT_NAME_MAP: Record<string, string> = {
+  'tanques-glp-coyhaique': 'Tanques Especiales GLP Coyhaique',
+  'tanques-glp-puerto-williams': 'Tanques Especiales GLP Puerto Williams',
+  'ruta-nahuelbuta-pasarelas': 'Pasarelas Peatonales Ruta Nahuelbuta',
+};
 
 export function getGalleryCategories(): GalleryCategoryData[] {
   return data.categories.sort((a, b) => a.position - b.position);
@@ -62,4 +78,34 @@ export function getCategoryCounts(): Record<string, number> {
     counts[slug] = (counts[slug] ?? 0) + 1;
   }
   return counts;
+}
+
+export function getProjectAlbums(): ProjectAlbumData[] {
+  const albumsMap = new Map<string, GalleryItemData[]>();
+
+  for (const item of data.items) {
+    const slug = item.projectSlug || 'general';
+    if (!albumsMap.has(slug)) {
+      albumsMap.set(slug, []);
+    }
+    albumsMap.get(slug)!.push(item);
+  }
+
+  const albums: ProjectAlbumData[] = [];
+  for (const [slug, items] of albumsMap.entries()) {
+    items.sort((a, b) => a.position - b.position);
+    const cover = items.find((i) => i.featured) || items[0];
+    const name = PROJECT_NAME_MAP[slug] || cover.title;
+    albums.push({
+      projectSlug: slug,
+      projectName: name,
+      categorySlug: cover.categorySlug,
+      categoryName: cover.categoryName,
+      coverImage: cover,
+      itemCount: items.length,
+      items,
+    });
+  }
+
+  return albums;
 }

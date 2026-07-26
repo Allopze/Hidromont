@@ -1,27 +1,33 @@
 ---
 /**
- * /galeria — Curated gallery page.
+ * /galeria — Project-based Gallery Page.
  *
- * Reads from gallery.json (exported by CMS) instead of scanning public/uploads.
- * Uses GalleryGrid + Lightbox components for intentional layout and accessible viewing.
+ * Configurable 100% from CMS (gallery.json export).
+ * Groups photos into Project Album cards with search bar and category filtering.
  */
 import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import PageHero from '../../components/ui/PageHero.astro';
-import GalleryGrid from '../../components/gallery/GalleryGrid.astro';
+import ProjectAlbumCard from '../../components/gallery/ProjectAlbumCard.astro';
 import Lightbox from '../../components/gallery/Lightbox.astro';
 import { getCmsText } from '../../data/cms';
-import { getGalleryCategories, getGalleryItems, getCategoryCounts } from '../../data/gallery';
+import {
+  getGalleryCategories,
+  getGalleryItems,
+  getCategoryCounts,
+  getProjectAlbums,
+} from '../../data/gallery';
 
 const categories = getGalleryCategories();
 const allItems = getGalleryItems();
+const albums = getProjectAlbums();
 const categoryCounts = getCategoryCounts();
 const totalCount = allItems.length;
 
-// Build filter list with counts — hide categories that have no images
+// Filter list by category
 const filters = [
-  { slug: 'all', name: 'Todas', count: totalCount },
+  { slug: 'all', name: 'Todas las Categorías', count: totalCount },
   ...categories
     .map((cat) => ({
       slug: cat.slug,
@@ -30,18 +36,15 @@ const filters = [
     }))
     .filter((cat) => cat.count > 0),
 ];
-
-// Only count non-empty categories (exclude the "Todas" pseudo-filter)
-const categoryCount = filters.length - 1;
 ---
 
 <PageLayout
-  title={getCmsText('page.galeria', 'title', 'Galería') + ' | Hidromont Chile'}
-  description={getCmsText('page.galeria', 'subtitle', 'Imágenes de nuestros proyectos, instalaciones y equipo.')}
+  title={getCmsText('page.galeria', 'title', 'Galería de Proyectos') + ' | Hidromont Chile'}
+  description={getCmsText('page.galeria', 'subtitle', 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.')}
 >
   <PageHero
-    title={getCmsText('page.galeria', 'title', 'Galería')}
-    subtitle={getCmsText('page.galeria', 'subtitle', 'Imágenes de nuestros proyectos, instalaciones y equipo.')}
+    title={getCmsText('page.galeria', 'title', 'Galería de Proyectos')}
+    subtitle={getCmsText('page.galeria', 'subtitle', 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.')}
     imageSrc={getCmsText('page.galeria', 'image', '') || undefined}
     imageAlt={getCmsText('page.galeria', 'imageAlt', 'Galería de proyectos Hidromont Chile')}
     breadcrumbs={[{ label: 'Galería' }]}
@@ -50,29 +53,50 @@ const categoryCount = filters.length - 1;
   />
 
   <Section padding="tight" class="bg-background">
-    {allItems.length === 0 ? (
+    {albums.length === 0 ? (
       <Container>
         <div class="text-center py-20" data-reveal>
           <p class="text-text-muted text-lg">
-            Próximamente se añadirán imágenes a esta galería.
+            Próximamente se añadirán proyectos a esta galería.
           </p>
         </div>
       </Container>
     ) : (
-      <div class="w-full px-4 md:px-6">
-        {/* Full-width wrapper: header + grid share one gutter so left/right
-            margins stay symmetric and aligned */}
-        {/* ── Editorial header + segmented filter control ── */}
-        <div class="mb-8 md:mb-10" data-reveal>
-          {/* Meta line */}
-          <p class="text-xs text-text-muted font-mono uppercase tracking-wider mb-3">
-            {totalCount} imágenes · {categoryCount} {categoryCount === 1 ? 'categoría' : 'categorías'}
-          </p>
+      <div class="w-full px-4 md:px-8 max-w-7xl mx-auto">
+        {/* ── Search & Filter Controls Bar ── */}
+        <div class="mb-8 md:mb-10 space-y-4" data-reveal>
+          {/* Search input */}
+          <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
+            {/* Real-time Search Field */}
+            <div class="relative w-full sm:w-72 md:w-80">
+              <input
+                type="text"
+                id="gallery-search"
+                placeholder="Buscar proyecto o cliente..."
+                aria-label="Buscar proyecto en galería"
+                class="w-full bg-background-alt text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 border border-border focus:border-accent focus:outline-none transition-colors font-mono"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </div>
+          </div>
 
-          {/* Segmented control — full width, equal segments, connected */}
+          {/* Category Filter Pills — full width responsive bar */}
           <nav
-            aria-label="Filtrar por categoría"
-            class="w-full border border-border overflow-x-auto scrollbar-hide"
+            aria-label="Filtrar por categoría de servicio"
+            class="w-full border border-border overflow-x-auto scrollbar-hide bg-background-alt"
             id="filter-container"
           >
             <div class="flex min-w-max" role="radiogroup">
@@ -82,60 +106,77 @@ const categoryCount = filters.length - 1;
                   role="radio"
                   aria-checked={filter.slug === 'all' ? 'true' : 'false'}
                   data-filter={filter.slug}
-                  class={`gallery-filter-btn relative flex-1 px-3 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
+                  class={`gallery-filter-btn relative px-3.5 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
                     filter.slug === 'all'
                       ? 'bg-primary text-white'
-                      : 'bg-background text-text-muted hover:bg-background-alt hover:text-text'
+                      : 'bg-background-alt text-text-muted hover:bg-background hover:text-text'
                   }`}
                 >
                   {filter.name}
-                  <span class="ml-1 opacity-60">{filter.count}</span>
+                  <span class="ml-1 opacity-60">({filter.count})</span>
                 </button>
               ))}
             </div>
           </nav>
         </div>
 
-        {/* ── Gallery grid — spans the full page width ── */}
-        <GalleryGrid items={allItems} />
+        {/* ── Project Albums Grid ── */}
+        <div
+          id="album-grid"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
+        >
+          {albums.map((album, index) => (
+            <ProjectAlbumCard album={album} index={index} />
+          ))}
+        </div>
+
+        {/* Empty state message when search yields no results */}
+        <div id="no-results" class="hidden text-center py-16">
+          <p class="text-text-muted text-base font-mono">
+            No se encontraron proyectos coincidentes con tu búsqueda.
+          </p>
+        </div>
+
+        {/* ── Data payload for Lightbox ── */}
+        <script id="lightbox-data" type="application/json" is:inline set:html={JSON.stringify(allItems)} />
       </div>
     )}
   </Section>
 
-  {/* ── Lightbox (progressive enhancement — hidden until JS activates) ── */}
+  {/* ── Lightbox (interactive modal viewer) ── */}
   <Lightbox />
 </PageLayout>
 
 <script>
-  // ── Filter system with ARIA radio group keyboard navigation ──
   (() => {
+    const searchInput = document.getElementById('gallery-search') as HTMLInputElement | null;
     const container = document.getElementById('filter-container');
     const buttons = container?.querySelectorAll('[data-filter]');
-    const cards = document.querySelectorAll('.gallery-card');
-    if (!buttons?.length || !cards.length) return;
+    const albumCards = document.querySelectorAll('.project-album-card');
+    const noResults = document.getElementById('no-results');
 
-    const btnArray = Array.from(buttons) as HTMLElement[];
+    if (!albumCards.length) return;
 
-    function applyFilter(slug: string) {
-      btnArray.forEach((btn) => {
-        const isActive = btn.getAttribute('data-filter') === slug;
-        btn.setAttribute('aria-checked', String(isActive));
+    let activeCategory = 'all';
+    let searchQuery = '';
 
-        if (isActive) {
-          btn.classList.add('bg-primary', 'text-white');
-          btn.classList.remove('bg-background', 'text-text-muted');
-        } else {
-          btn.classList.remove('bg-primary', 'text-white');
-          btn.classList.add('bg-background', 'text-text-muted');
-        }
-      });
+    const btnArray = Array.from(buttons || []) as HTMLElement[];
 
-      cards.forEach((card) => {
+    function updateFilter() {
+      let visibleCount = 0;
+
+      albumCards.forEach((card) => {
         const el = card as HTMLElement;
         const cat = el.getAttribute('data-category') ?? '';
-        const show = slug === 'all' || cat === slug;
+        const name = (el.getAttribute('data-project-name') ?? '').toLowerCase();
+
+        const matchesCat = activeCategory === 'all' || cat === activeCategory;
+        const matchesSearch = !searchQuery || name.includes(searchQuery);
+
+        const show = matchesCat && matchesSearch;
 
         if (show) {
+          visibleCount++;
           el.style.removeProperty('display');
           el.offsetHeight; // force reflow
           el.style.opacity = '1';
@@ -152,17 +193,45 @@ const categoryCount = filters.length - 1;
           el.addEventListener('transitionend', onEnd);
         }
       });
+
+      if (noResults) {
+        if (visibleCount === 0) {
+          noResults.classList.remove('hidden');
+        } else {
+          noResults.classList.add('hidden');
+        }
+      }
     }
 
-    // Click handlers
+    // Category button clicks
     btnArray.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const slug = btn.getAttribute('data-filter');
-        if (slug) applyFilter(slug);
+        const slug = btn.getAttribute('data-filter') || 'all';
+        activeCategory = slug;
+
+        btnArray.forEach((b) => {
+          const isActive = b.getAttribute('data-filter') === slug;
+          b.setAttribute('aria-checked', String(isActive));
+          if (isActive) {
+            b.classList.add('bg-primary', 'text-white');
+            b.classList.remove('bg-background-alt', 'text-text-muted');
+          } else {
+            b.classList.remove('bg-primary', 'text-white');
+            b.classList.add('bg-background-alt', 'text-text-muted');
+          }
+        });
+
+        updateFilter();
       });
     });
 
-    // Arrow key navigation (ARIA radio group pattern)
+    // Real-time search input event
+    searchInput?.addEventListener('input', (e) => {
+      searchQuery = (e.target as HTMLInputElement).value.trim().toLowerCase();
+      updateFilter();
+    });
+
+    // ARIA Radio group arrow navigation
     container?.addEventListener('keydown', (e: KeyboardEvent) => {
       const current = document.activeElement as HTMLElement;
       const idx = btnArray.indexOf(current);
@@ -178,20 +247,14 @@ const categoryCount = filters.length - 1;
       if (next !== -1) {
         e.preventDefault();
         btnArray[next].focus();
-        const slug = btnArray[next].getAttribute('data-filter');
-        if (slug) applyFilter(slug);
+        btnArray[next].click();
       }
     });
   })();
 </script>
 
 <style>
-  /* Gallery cards transition for filter animations */
-  .gallery-card {
-    transition:
-      opacity 200ms ease-out,
-      transform 200ms ease-out,
-      border-color 150ms ease,
-      box-shadow 150ms ease;
+  .project-album-card {
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
   }
 </style>

@@ -61,6 +61,7 @@ export class GalleryService {
   createItem(input: {
     mediaId: string;
     categoryId?: string | null;
+    projectSlug?: string | null;
     title: string;
     alt: string;
     caption?: string | null;
@@ -77,6 +78,7 @@ export class GalleryService {
       id: nanoid(),
       mediaId: input.mediaId,
       categoryId: input.categoryId ?? null,
+      projectSlug: input.projectSlug ?? null,
       title: input.title,
       alt: input.alt,
       caption: input.caption ?? null,
@@ -93,6 +95,7 @@ export class GalleryService {
     input: {
       mediaId?: string;
       categoryId?: string | null;
+      projectSlug?: string | null;
       title?: string;
       alt?: string;
       caption?: string | null;

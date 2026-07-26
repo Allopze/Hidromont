@@ -128,6 +128,7 @@ export class ExportService {
           caption: item.caption,
           categorySlug: item.categorySlug,
           categoryName: item.categoryName,
+          projectSlug: item.projectSlug ?? null,
           featured: item.featured,
           position: item.position,
           src: derivatives.src,

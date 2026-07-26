@@ -123,6 +123,7 @@
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     interface LightboxImage {
+      id?: string;
       src: string;
       srcset: string;
       alt: string;
@@ -138,8 +139,29 @@
     let currentIndex = 0;
     let previousFocus: HTMLElement | null = null;
 
-    // Collect all gallery cards
+    // Collect all gallery images from JSON script tag or DOM fallback
     function collectImages(): LightboxImage[] {
+      const dataScript = document.getElementById('lightbox-data');
+      if (dataScript && dataScript.textContent) {
+        try {
+          const rawItems = JSON.parse(dataScript.textContent);
+          return rawItems.map((item: any) => ({
+            id: item.id || '',
+            src: item.src || '',
+            srcset: item.srcset || '',
+            alt: item.alt || item.title || '',
+            title: item.title || '',
+            category: item.categoryName || '',
+            caption: item.caption || '',
+            projectSlug: item.projectSlug || '',
+            width: item.width || 1600,
+            height: item.height || 1200,
+          }));
+        } catch (e) {
+          console.error('Error al parsear JSON de datos de galería', e);
+        }
+      }
+
       const cards = document.querySelectorAll('.gallery-card');
       return Array.from(cards).map((card) => {
         const el = card as HTMLElement;
@@ -147,6 +169,7 @@
         const attrWidth = Number.parseInt(imgEl?.getAttribute('width') || '', 10);
         const attrHeight = Number.parseInt(imgEl?.getAttribute('height') || '', 10);
         return {
+          id: el.getAttribute('data-item-id') || '',
           src: imgEl?.src || '',
           srcset: imgEl?.getAttribute('srcset') || '',
           alt: imgEl?.alt || el.getAttribute('aria-label') || '',
@@ -235,11 +258,8 @@
 
       // Find by id first, then by src
       currentIndex = cardId
-        ? images.findIndex((i) => {
-            const card = document.querySelector(`[data-item-id="${cardId}"]`);
-            return card?.querySelector('img')?.getAttribute('srcset') === i.srcset;
-          })
-        : images.findIndex((i) => i.src === src);
+        ? images.findIndex((i) => i.id === cardId)
+        : images.findIndex((i) => i.src === src || (cardImg && i.srcset === cardImg.getAttribute('srcset')));
 
       if (currentIndex === -1) currentIndex = 0;
 
@@ -261,6 +281,31 @@
       showImage(currentIndex);
 
       // Move focus into dialog
+      requestAnimationFrame(() => closeBtn.focus());
+    }
+
+    function openAlbum(albumElement: HTMLElement) {
+      const projectSlug = albumElement.getAttribute('data-project-slug');
+      const allImages = collectImages();
+      images = projectSlug
+        ? allImages.filter((img) => img.projectSlug === projectSlug)
+        : allImages;
+      if (!images.length) images = allImages;
+      currentIndex = 0;
+
+      previousFocus = document.activeElement as HTMLElement;
+
+      const mainContent = document.querySelector('main') || document.getElementById('page-content');
+      if (mainContent) {
+        mainContent.setAttribute('aria-hidden', 'true');
+        mainContent.setAttribute('inert', '');
+      }
+
+      lightbox!.classList.remove('hidden');
+      lightbox!.offsetHeight;
+      lightbox!.style.opacity = '1';
+
+      showImage(currentIndex);
       requestAnimationFrame(() => closeBtn.focus());
     }
 
@@ -302,8 +347,14 @@
       showImage((currentIndex + 1) % images.length);
     }
 
-    // ── Event delegation: click on gallery cards ──
+    // ── Event delegation: click on project album cards or gallery cards ──
     document.addEventListener('click', (e) => {
+      const albumCard = (e.target as HTMLElement)?.closest?.('.project-album-card') as HTMLElement;
+      if (albumCard) {
+        e.preventDefault();
+        openAlbum(albumCard);
+        return;
+      }
       const card = (e.target as HTMLElement)?.closest?.('.gallery-card') as HTMLElement;
       if (card) {
         e.preventDefault();

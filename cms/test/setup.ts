@@ -135,6 +135,7 @@ const SCHEMA_SQL = `
       id TEXT PRIMARY KEY,
       media_id TEXT,
       category_id TEXT,
+      project_slug TEXT,
       title TEXT NOT NULL,
       alt TEXT NOT NULL,
       caption TEXT,

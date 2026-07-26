@@ -13,6 +13,7 @@ export interface GalleryItem {
   id: string;
   mediaId: string | null;
   categoryId: string | null;
+  projectSlug: string | null;
   title: string;
   alt: string;
   caption: string | null;
@@ -50,6 +51,7 @@ interface ItemRow {
   id: string;
   media_id: string;
   category_id: string | null;
+  project_slug: string | null;
   title: string;
   alt: string;
   caption: string | null;
@@ -88,6 +90,7 @@ function fromItemWithMediaRow(row: ItemWithMediaRow): GalleryItemWithMedia {
     id: row.id,
     mediaId: row.media_id,
     categoryId: row.category_id,
+    projectSlug: row.project_slug ?? null,
     title: row.title,
     alt: row.alt,
     caption: row.caption,
@@ -234,6 +237,7 @@ export class GalleryRepository {
     id: string;
     mediaId: string;
     categoryId?: string | null;
+    projectSlug?: string | null;
     title: string;
     alt: string;
     caption?: string | null;
@@ -245,12 +249,13 @@ export class GalleryRepository {
   }): GalleryItemWithMedia {
     this.db
       .prepare(
-        'INSERT INTO gallery_items (id, media_id, category_id, title, alt, caption, position, featured, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO gallery_items (id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       )
       .run(
         input.id,
         input.mediaId,
         input.categoryId ?? null,
+        input.projectSlug ?? null,
         input.title,
         input.alt,
         input.caption ?? null,
@@ -271,6 +276,7 @@ export class GalleryRepository {
     input: {
       mediaId?: string;
       categoryId?: string | null;
+      projectSlug?: string | null;
       title?: string;
       alt?: string;
       caption?: string | null;
@@ -287,13 +293,14 @@ export class GalleryRepository {
     this.db
       .prepare(
         `UPDATE gallery_items SET
-          media_id = ?, category_id = ?, title = ?, alt = ?, caption = ?,
+          media_id = ?, category_id = ?, project_slug = ?, title = ?, alt = ?, caption = ?,
           featured = ?, status = ?, updated_at = ?
          WHERE id = ?`
       )
       .run(
         input.mediaId ?? existing.media_id,
         input.categoryId !== undefined ? input.categoryId : existing.category_id,
+        input.projectSlug !== undefined ? input.projectSlug : existing.project_slug,
         input.title ?? existing.title,
         input.alt ?? existing.alt,
         input.caption !== undefined ? input.caption : existing.caption,
