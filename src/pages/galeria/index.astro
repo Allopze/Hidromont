@@ -144,7 +144,9 @@ const filters = [
   </Section>
 
   {/* ── Lightbox (interactive modal viewer) ── */}
-  <Lightbox />
+  {/* JS-1 fix: rendered in the "overlay" slot, outside <main>, so <main> can be
+      made inert while the modal is open without disabling the modal itself. */}
+  <Lightbox slot="overlay" />
 </PageLayout>
 
 <script>

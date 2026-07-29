@@ -139,6 +139,50 @@
     let currentIndex = 0;
     let previousFocus: HTMLElement | null = null;
 
+    // ── Background inert handling ──
+    // JS-1 fix: target only <header>/<main> (siblings of this lightbox once it's
+    // rendered in PageLayout's "overlay" slot) — never an ancestor of the modal
+    // itself, or the modal would disable its own buttons.
+    function getInertTargets(): HTMLElement[] {
+      const targets = [
+        document.querySelector('header'),
+        document.querySelector('main') || document.getElementById('page-content'),
+      ];
+      return targets.filter((el): el is HTMLElement => el !== null);
+    }
+
+    function setBackgroundInert(inert: boolean) {
+      for (const el of getInertTargets()) {
+        if (inert) {
+          el.setAttribute('aria-hidden', 'true');
+          el.setAttribute('inert', '');
+        } else {
+          el.removeAttribute('aria-hidden');
+          el.removeAttribute('inert');
+        }
+      }
+      document.body.classList.toggle('overflow-hidden', inert);
+    }
+
+    // ── Pending close-transition bookkeeping ──
+    // JS-2 fix: the interactive cleanup (inert/aria-hidden/focus) happens
+    // synchronously in close(); only the visual fade rides the transition, with
+    // a timeout fallback in case transitionend never fires (double-close,
+    // opacity already at 0, backgrounded tab, or a future CSS change).
+    let pendingCloseTimer: ReturnType<typeof setTimeout> | null = null;
+    let pendingCloseHandler: (() => void) | null = null;
+
+    function cancelPendingClose() {
+      if (pendingCloseTimer !== null) {
+        clearTimeout(pendingCloseTimer);
+        pendingCloseTimer = null;
+      }
+      if (pendingCloseHandler) {
+        lightbox!.removeEventListener('transitionend', pendingCloseHandler);
+        pendingCloseHandler = null;
+      }
+    }
+
     // Collect all gallery images from JSON script tag or DOM fallback
     function collectImages(): LightboxImage[] {
       const dataScript = document.getElementById('lightbox-data');
@@ -263,15 +307,14 @@
 
       if (currentIndex === -1) currentIndex = 0;
 
+      // A previous close() may still have a pending transitionend/timeout in
+      // flight if the user reopens quickly; cancel it so it can't fire late.
+      cancelPendingClose();
+
       // Save focus to restore on close
       previousFocus = document.activeElement as HTMLElement;
 
-      // Mark main content as inert
-      const mainContent = document.querySelector('main') || document.getElementById('page-content');
-      if (mainContent) {
-        mainContent.setAttribute('aria-hidden', 'true');
-        mainContent.setAttribute('inert', '');
-      }
+      setBackgroundInert(true);
 
       lightbox!.classList.remove('hidden');
       // Force reflow before removing opacity
@@ -293,13 +336,11 @@
       if (!images.length) images = allImages;
       currentIndex = 0;
 
+      cancelPendingClose();
+
       previousFocus = document.activeElement as HTMLElement;
 
-      const mainContent = document.querySelector('main') || document.getElementById('page-content');
-      if (mainContent) {
-        mainContent.setAttribute('aria-hidden', 'true');
-        mainContent.setAttribute('inert', '');
-      }
+      setBackgroundInert(true);
 
       lightbox!.classList.remove('hidden');
       lightbox!.offsetHeight;
@@ -310,31 +351,34 @@
     }
 
     function close() {
+      // Cancel any close already in flight (double-close) before starting a new one.
+      cancelPendingClose();
+
+      // JS-2 fix: the interactive cleanup happens synchronously and
+      // unconditionally — it must never depend on a transitionend firing.
+      setBackgroundInert(false);
+      if (previousFocus) {
+        previousFocus.focus();
+        previousFocus = null;
+      }
+
       lightbox!.style.opacity = '0';
 
-      const onTransitionEnd = () => {
+      const finishFade = () => {
+        cancelPendingClose();
         lightbox!.classList.add('hidden');
-        lightbox!.removeEventListener('transitionend', onTransitionEnd);
-
-        // Remove inert from main content
-        const mainContent = document.querySelector('main') || document.getElementById('page-content');
-        if (mainContent) {
-          mainContent.removeAttribute('aria-hidden');
-          mainContent.removeAttribute('inert');
-        }
-
-        // Restore focus
-        if (previousFocus) {
-          previousFocus.focus();
-          previousFocus = null;
-        }
       };
 
       if (prefersReducedMotion) {
-        onTransitionEnd();
-      } else {
-        lightbox!.addEventListener('transitionend', onTransitionEnd);
+        finishFade();
+        return;
       }
+
+      pendingCloseHandler = finishFade;
+      lightbox!.addEventListener('transitionend', pendingCloseHandler);
+      // Fallback in case transitionend never fires (opacity already at 0,
+      // backgrounded tab, or a future CSS change removing the transition).
+      pendingCloseTimer = setTimeout(finishFade, 300);
     }
 
     function prev() {

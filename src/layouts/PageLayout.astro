@@ -31,6 +31,11 @@ const { currentPath, headerOverlay = false, hideFooterMap = false, ...baseProps 
     <slot />
   </main>
   <Footer hideMap={hideFooterMap} />
+  {/* JS-1 fix: modals (e.g. the gallery Lightbox) must render here, as a sibling
+      of <header>/<main>, not inside the default slot. Marking <main> `inert`
+      while a modal is open would otherwise make the modal — being <main>'s own
+      descendant — inert too, disabling its own buttons. */}
+  <slot name="overlay" />
   <!-- Motion: scroll reveals, parallax, counters -->
   <script src="../scripts/motion.ts"></script>
 </BaseLayout>
