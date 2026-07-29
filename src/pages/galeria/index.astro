@@ -5,6 +5,7 @@
  * Configurable 100% from CMS (gallery.json export).
  * Groups photos into Project Album cards with search bar and category filtering.
  */
+import { getCollection } from 'astro:content';
 import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
@@ -24,6 +25,15 @@ const allItems = getGalleryItems();
 const albums = getProjectAlbums();
 const categoryCounts = getCategoryCounts();
 const totalCount = allItems.length;
+
+// ESTRUCT-2 fix: only project detail pages for `tipo: destacado` entries are
+// actually built (see proyectos/[slug].astro's getStaticPaths). Gallery items
+// can reference other projectSlugs (used for album grouping) that have no
+// page, which would 404 if the Lightbox's "Ver Proyecto" CTA linked to them.
+// This set lets the client hide that CTA unless the slug is provably buildable.
+const buildableProjectSlugs = (
+  await getCollection('proyectos', ({ data }) => data.tipo === 'destacado')
+).map((p) => p.id);
 
 // Filter list by category
 const filters = [
@@ -139,6 +149,8 @@ const filters = [
 
         {/* ── Data payload for Lightbox ── */}
         <script id="lightbox-data" type="application/json" is:inline set:html={JSON.stringify(allItems)} />
+        {/* ESTRUCT-2 fix: slugs the Lightbox may safely link "Ver Proyecto" to. */}
+        <script id="lightbox-valid-project-slugs" type="application/json" is:inline set:html={JSON.stringify(buildableProjectSlugs)} />
       </div>
     )}
   </Section>

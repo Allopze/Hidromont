@@ -139,6 +139,24 @@
     let currentIndex = 0;
     let previousFocus: HTMLElement | null = null;
 
+    // ESTRUCT-2 fix: only link "Ver Proyecto" to slugs that actually have a
+    // built page (see the "lightbox-valid-project-slugs" payload). Gallery
+    // items can carry a projectSlug used purely for album grouping that has
+    // no detail page — linking to those would 404.
+    function parseValidProjectSlugs(): Set<string> {
+      const el = document.getElementById('lightbox-valid-project-slugs');
+      if (!el?.textContent) return new Set();
+      try {
+        const slugs = JSON.parse(el.textContent);
+        return new Set(Array.isArray(slugs) ? slugs : []);
+      } catch (e) {
+        console.error('Error al parsear los slugs de proyecto válidos', e);
+        return new Set();
+      }
+    }
+
+    const validProjectSlugs = parseValidProjectSlugs();
+
     // ── Background inert handling ──
     // JS-1 fix: target only <header>/<main> (siblings of this lightbox once it's
     // rendered in PageLayout's "overlay" slot) — never an ancestor of the modal
@@ -250,7 +268,7 @@
         caption.classList.add('hidden');
       }
 
-      if (data.projectSlug && projectLink) {
+      if (data.projectSlug && validProjectSlugs.has(data.projectSlug) && projectLink) {
         projectLink.href = `/proyectos/${data.projectSlug}`;
         projectLink.classList.remove('hidden');
       } else if (projectLink) {
