@@ -8,7 +8,6 @@
     "start": "node server.mjs",
     "dev:cms": "concurrently \"npm run dev\" \"npm run cms\"",
     "cms:import": "tsx cms/scripts/import.ts",
-    "cms:import-gallery": "tsx cms/scripts/import-gallery.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",
     "cms:reset-password": "tsx cms/scripts/reset-password.ts",
