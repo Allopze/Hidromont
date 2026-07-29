@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import { getInitialEntries } from './contentSeed';
 
@@ -115,7 +118,21 @@ export class ContentService {
   }
 
   deleteEntry(id: string): void {
+    const entry = this.contentRepository.findEntry(id);
     this.contentRepository.deleteEntry(id);
+
+    // CMS-2 fix: deleting a proyecto/servicio entry from the CMS previously
+    // left its exported .md file on disk — the "deleted" content stayed live
+    // on the site until someone happened to notice and remove the file by
+    // hand. Remove it here, at the one point where we have unambiguous
+    // knowledge of exactly which file belonged to this entry.
+    if (entry && (entry.kind === 'servicio' || entry.kind === 'proyecto')) {
+      const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
+      const target = path.join(config.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
+      if (fs.existsSync(target)) {
+        fs.unlinkSync(target);
+      }
+    }
   }
 
   listRevisions(entryId: string) {

@@ -18,7 +18,7 @@ export class PublishService {
     private readonly publishJobRepository: PublishJobRepository
   ) {}
 
-  exportContent(): { job: PublishJob; exported: { files: string[] }; galleryExported?: { file: string; count: number } } {
+  exportContent(): { job: PublishJob; exported: { files: string[]; removed: string[] }; galleryExported?: { file: string; count: number } } {
     const startedAt = new Date().toISOString();
     const job = this.publishJobRepository.start({
       action: 'export',
@@ -37,6 +37,7 @@ export class PublishService {
           ...job.logs,
           `${completedAt} exported ${exported.files.length} file(s)`,
           ...exported.files.map((file) => `file: ${file}`),
+          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
         ],
       });
       return { job: completed, exported };
@@ -46,7 +47,7 @@ export class PublishService {
     }
   }
 
-  async exportContentWithGallery(): Promise<{ job: PublishJob; exported: { files: string[] }; galleryExported: { file: string; count: number } }> {
+  async exportContentWithGallery(): Promise<{ job: PublishJob; exported: { files: string[]; removed: string[] }; galleryExported: { file: string; count: number } }> {
     const startedAt = new Date().toISOString();
     const job = this.publishJobRepository.start({
       action: 'export',
@@ -66,6 +67,7 @@ export class PublishService {
           ...job.logs,
           `${completedAt} exported ${exported.files.length} file(s)`,
           ...exported.files.map((file) => `file: ${file}`),
+          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
           `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
         ],
       });
@@ -78,7 +80,7 @@ export class PublishService {
 
   async publishContent(): Promise<{
     job: PublishJob;
-    exported: { files: string[] };
+    exported: { files: string[]; removed: string[] };
     galleryExported: { file: string; count: number };
     publish: { stdout: string; stderr: string };
   }> {
@@ -110,6 +112,7 @@ export class PublishService {
         logs: [
           ...job.logs,
           `${completedAt} exported ${exported.files.length} file(s)`,
+          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
           `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
           `publish: ${config.cms.publishCheckCommand}`,
           ...this.nonEmptyLines(result.stdout, 'stdout'),

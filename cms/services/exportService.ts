@@ -35,13 +35,12 @@ export class ExportService {
     private readonly imageService?: ImageService
   ) {}
 
-  exportContent(): { files: string[] } {
+  exportContent(): { files: string[]; removed: string[] } {
     // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
     // llega a los archivos del sitio. Al excluirlo, el frontend recae en los
     // valores por defecto (page content) o conserva el .md previo (colecciones).
-    const entries = this.contentRepository
-      .listEntries()
-      .filter((entry) => entry.status === 'published');
+    const allEntries = this.contentRepository.listEntries();
+    const entries = allEntries.filter((entry) => entry.status === 'published');
     const written = [
       this.exportPageContent(
         entries.filter((entry) => ['page', 'layout', 'component', 'settings'].includes(entry.kind))
@@ -51,7 +50,18 @@ export class ExportService {
       ),
     ];
 
-    return { files: written };
+    // CMS-2 fix: a renamed or unpublished collection entry previously left its
+    // old .md behind (the export loop above only ever *writes*, never
+    // deletes), so renamed/unpublished/deleted content kept shipping on the
+    // site. Prune those, scoped to slugs a currently-known proyecto/servicio
+    // entry claims (its current slug, or the slug it was originally imported
+    // under) — never touches a file with no matching entry at all, so
+    // hand-authored content added outside the CMS is left alone.
+    const removed = this.pruneStaleCollectionFiles(
+      allEntries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind))
+    );
+
+    return { files: written, removed };
   }
 
   private exportPageContent(entries: CmsEntry[]): string {
@@ -77,6 +87,66 @@ export class ExportService {
 
     writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
     return path.relative(this.rootDir, target);
+  }
+
+  /**
+   * CMS-2 fix: deletes stale .md files left behind by an unpublish or a slug
+   * rename. Entries are imported with id `${collection}.${originalSlug}` (see
+   * contentSeed.ts), and that id never changes even if `slug` is later
+   * edited — so it reliably tells us the filename this entry was
+   * *originally* exported under, without needing extra DB state.
+   *
+   * IMPORTANT: whether an entry's CURRENT slug is allowed to have a file is
+   * governed by `status === 'published'` alone — NOT by `version > 1`. That
+   * version gate (used by exportCollection()/exportContent() above, and
+   * originating from CMS-3, a separate known issue) only means "has this
+   * entry ever been field-edited via the CMS overlay"; nearly every
+   * long-standing project/service here was bulk-imported once and never
+   * individually edited since, so it's permanently stuck at version 1 while
+   * still being perfectly live, published content. An earlier version of this
+   * method conflated the two and deleted every such file — caught in manual
+   * testing before shipping, never actually released.
+   */
+  private pruneStaleCollectionFiles(entries: CmsEntry[]): string[] {
+    const removed: string[] = [];
+
+    for (const entry of entries) {
+      const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
+      const idPrefix = `${collection}.`;
+      const originalSlug = entry.id.startsWith(idPrefix) ? entry.id.slice(idPrefix.length) : entry.slug;
+      const isPublished = entry.status === 'published';
+      // Matches exportCollection()'s own eligibility filter exactly — true
+      // only when we know a fresh file was just (re)written under
+      // entry.slug in this same export pass.
+      const rewrittenThisPass = isPublished && entry.version > 1;
+
+      const staleSlugs = new Set<string>();
+
+      // Unpublished: nothing should exist under the current slug anymore.
+      if (!isPublished) staleSlugs.add(entry.slug);
+
+      // Renamed: the old filename is stale. Only remove it once we're sure
+      // the new one is covered — either it was just rewritten this pass, or
+      // the entry is unpublished so no file should exist under any slug.
+      // Otherwise (published, but still at version 1 under the new slug —
+      // i.e. renamed without ever being individually edited via the CMS)
+      // exportCollection() won't write the new file either, so deleting the
+      // old one would leave this entry with zero files. Leaving the stale
+      // file in place is a known, narrow gap tied to CMS-3, not this fix.
+      if (originalSlug !== entry.slug && (rewrittenThisPass || !isPublished)) {
+        staleSlugs.add(originalSlug);
+      }
+
+      for (const slug of staleSlugs) {
+        const target = path.join(this.rootDir, 'src', 'content', collection, `${slug}.md`);
+        if (fs.existsSync(target)) {
+          fs.unlinkSync(target);
+          removed.push(path.relative(this.rootDir, target));
+        }
+      }
+    }
+
+    return removed;
   }
 
   private exportCollection(entries: CmsEntry[]): string[] {
