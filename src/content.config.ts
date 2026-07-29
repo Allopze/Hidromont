@@ -11,7 +11,7 @@ const categoriaProyecto = z.enum([
 
 const proyectos = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/proyectos' }),
-  schema: ({ image }) =>
+  schema: () =>
     z.object({
       nombre: z.string(),
       cliente: z.string().optional(),
@@ -25,20 +25,17 @@ const proyectos = defineCollection({
       peso: z.string().optional(),
       acero: z.string().optional(),
       normas: z.array(z.string()).optional(),
-      heroImage: image().optional(),
-      gallery: z.array(image()).optional(),
       orden: z.number().default(100),
     }),
 });
 
 const servicios = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/servicios' }),
-  schema: ({ image }) =>
+  schema: () =>
     z.object({
       titulo: z.string(),
       resumen: z.string(),
       icono: z.string(),
-      heroImage: image().optional(),
       tipos: z.array(z.string()).optional(),
       aplicaciones: z.array(z.string()).optional(),
       normas: z.array(z.string()).optional(),
@@ -55,23 +52,14 @@ const servicios = defineCollection({
 });
 
 const clientes = defineCollection({
-  loader: file('src/content/clientes/clientes.json', {
-    parser: (text) => [{ id: 'clientes', ...JSON.parse(text) }],
-  }),
+  loader: file('src/content/clientes/clientes.json'),
   schema: z.object({
     id: z.string(),
     items: z.array(
       z.object({
         nombre: z.string(),
         sector: z
-          .enum([
-            'electrica',
-            'construccion',
-            'minera',
-            'sanitaria',
-            'publica',
-            'industrial',
-          ])
+          .enum(['electrica', 'construccion', 'minera', 'sanitaria', 'publica', 'industrial'])
           .optional(),
         logo: z.string().optional(),
       })

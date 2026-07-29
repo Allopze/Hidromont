@@ -24,27 +24,46 @@
   tabindex="-1"
 >
   {/* Backdrop */}
-  <div class="absolute inset-0 bg-neutral-950/95 backdrop-blur-sm" data-lb-backdrop aria-hidden="true" />
+  <div
+    class="absolute inset-0 bg-neutral-950/95 backdrop-blur-sm"
+    data-lb-backdrop
+    aria-hidden="true"
+  >
+  </div>
 
   {/* Content container */}
   <div class="relative z-10 flex flex-col h-full select-none">
     {/* Top bar */}
     <div class="flex justify-between items-center px-4 md:px-6 py-3 shrink-0">
-      <div class="text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-400 font-mono" data-lb-counter />
+      <div
+        class="text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-400 font-mono"
+        data-lb-counter
+      >
+      </div>
       <button
         type="button"
         class="p-2.5 hover:bg-white/10 text-white transition-colors duration-150 ease-out border border-transparent rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-close
         aria-label="Cerrar visor (Escape)"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-7 h-7"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
     </div>
 
     {/* Image area with navigation arrows */}
-    <div class="relative flex items-center justify-center flex-grow min-h-0 px-4 md:px-16" data-lb-stage>
+    <div
+      class="relative flex items-center justify-center flex-grow min-h-0 px-4 md:px-16"
+      data-lb-stage
+    >
       {/* Prev */}
       <button
         type="button"
@@ -52,8 +71,16 @@
         data-lb-prev
         aria-label="Imagen anterior (←)"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-5 h-5 md:w-6 md:h-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"
+          ></path>
         </svg>
       </button>
 
@@ -61,7 +88,8 @@
       <div class="w-full h-full flex items-center justify-center" data-lb-img-wrap>
         {/* Loading skeleton */}
         <div data-lb-skeleton class="absolute inset-0 flex items-center justify-center">
-          <div class="w-8 h-8 border-2 border-white/20 border-t-accent rounded-full animate-spin" />
+          <div class="w-8 h-8 border-2 border-white/20 border-t-accent rounded-full animate-spin">
+          </div>
         </div>
         <img
           data-lb-img
@@ -79,25 +107,60 @@
         data-lb-next
         aria-label="Siguiente imagen (→)"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-5 h-5 md:w-6 md:h-6"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"></path>
         </svg>
       </button>
     </div>
 
     {/* Bottom metadata panel */}
-    <div class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full" data-lb-meta>
-      <span data-lb-category class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono mb-1.5" />
-      <h3 data-lb-title class="text-base md:text-lg font-bold font-heading uppercase tracking-wide text-white" />
-      <p data-lb-caption class="text-xs md:text-sm text-neutral-300 mt-2 leading-relaxed hidden" />
+    <div
+      class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full"
+      data-lb-meta
+    >
+      <span
+        data-lb-category
+        class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono mb-1.5"
+      ></span>
+      {
+        /* eslint-disable jsx-a11y/heading-has-content -- set via showImage() before the dialog is ever revealed. Uses disable/enable, not -next-line: prettier-plugin-astro always wraps a standalone comment expression onto its own line, which breaks next-line's line-adjacency requirement. */
+      }
+      <h3
+        data-lb-title
+        class="text-base md:text-lg font-bold font-heading uppercase tracking-wide text-white"
+      >
+      </h3>
+      {/* eslint-enable jsx-a11y/heading-has-content */}
+      <p data-lb-caption class="text-xs md:text-sm text-neutral-300 mt-2 leading-relaxed hidden">
+      </p>
+      {
+        /* eslint-disable jsx-a11y/anchor-is-valid -- showImage() sets a real href before this is ever shown (see ESTRUCT-2) */
+      }
       <a
         data-lb-project-link
         href="#"
         class="inline-flex items-center gap-1.5 mt-3 text-xs md:text-sm font-semibold text-accent hover:text-white transition-colors duration-150 font-mono uppercase tracking-wider hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <span>Ver Proyecto Relacionado</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 transition-transform group-hover:translate-x-1">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-4 h-4 transition-transform group-hover:translate-x-1"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
         </svg>
       </a>
     </div>
@@ -239,8 +302,12 @@
           category: el.querySelector('.font-mono')?.textContent?.trim() || '',
           caption: el.getAttribute('data-caption') || '',
           projectSlug: el.getAttribute('data-project-slug') || '',
-          width: Number.isFinite(attrWidth) && attrWidth > 0 ? attrWidth : (imgEl?.naturalWidth || 1600),
-          height: Number.isFinite(attrHeight) && attrHeight > 0 ? attrHeight : (imgEl?.naturalHeight || 1200),
+          width:
+            Number.isFinite(attrWidth) && attrWidth > 0 ? attrWidth : imgEl?.naturalWidth || 1600,
+          height:
+            Number.isFinite(attrHeight) && attrHeight > 0
+              ? attrHeight
+              : imgEl?.naturalHeight || 1200,
         };
       });
     }
@@ -321,7 +388,9 @@
       // Find by id first, then by src
       currentIndex = cardId
         ? images.findIndex((i) => i.id === cardId)
-        : images.findIndex((i) => i.src === src || (cardImg && i.srcset === cardImg.getAttribute('srcset')));
+        : images.findIndex(
+            (i) => i.src === src || (cardImg && i.srcset === cardImg.getAttribute('srcset'))
+          );
 
       if (currentIndex === -1) currentIndex = 0;
 
@@ -348,9 +417,7 @@
     function openAlbum(albumElement: HTMLElement) {
       const projectSlug = albumElement.getAttribute('data-project-slug');
       const allImages = collectImages();
-      images = projectSlug
-        ? allImages.filter((img) => img.projectSlug === projectSlug)
-        : allImages;
+      images = projectSlug ? allImages.filter((img) => img.projectSlug === projectSlug) : allImages;
       if (!images.length) images = allImages;
       currentIndex = 0;
 
@@ -438,9 +505,18 @@
     // ── Keyboard ──
     document.addEventListener('keydown', (e) => {
       if (lightbox!.classList.contains('hidden')) return;
-      if (e.key === 'Escape') { close(); return; }
-      if (e.key === 'ArrowLeft') { prev(); return; }
-      if (e.key === 'ArrowRight') { next(); return; }
+      if (e.key === 'Escape') {
+        close();
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        prev();
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        next();
+        return;
+      }
 
       // Focus trap: Tab cycles within lightbox
       if (e.key === 'Tab') {
@@ -462,22 +538,30 @@
     let touchStartX = 0;
     let touchStartTime = 0;
 
-    lightbox.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartTime = Date.now();
-    }, { passive: true });
+    lightbox.addEventListener(
+      'touchstart',
+      (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartTime = Date.now();
+      },
+      { passive: true }
+    );
 
-    lightbox.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dt = Date.now() - touchStartTime;
-      const velocity = Math.abs(dx) / dt;
+    lightbox.addEventListener(
+      'touchend',
+      (e) => {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dt = Date.now() - touchStartTime;
+        const velocity = Math.abs(dx) / dt;
 
-      // Emil: momentum-based dismissal — velocity > 0.11 regardless of distance
-      if (velocity > 0.11 || Math.abs(dx) > 80) {
-        if (dx > 0) prev();
-        else next();
-      }
-    }, { passive: true });
+        // Emil: momentum-based dismissal — velocity > 0.11 regardless of distance
+        if (velocity > 0.11 || Math.abs(dx) > 80) {
+          if (dx > 0) prev();
+          else next();
+        }
+      },
+      { passive: true }
+    );
   })();
 </script>
 

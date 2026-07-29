@@ -37,7 +37,8 @@ function getRevealDelay(idx: number): string {
       class="absolute inset-0 bg-cover bg-center blur-lg scale-110 transition-opacity duration-500"
       style={`background-image:url('${coverImage.lqip}');`}
       aria-hidden="true"
-    />
+    >
+    </div>
     <img
       src={coverImage.src}
       srcset={coverImage.srcset}
@@ -50,38 +51,63 @@ function getRevealDelay(idx: number): string {
       decoding="async"
       class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] relative z-10"
       style={`object-position: ${coverImage.focalX * 100}% ${coverImage.focalY * 100}%`}
-      onload="this.previousElementSibling.style.opacity='0'"
+      data-lqip-fade
     />
   </div>
 
   {/* Top Badge: Photo Count Pill */}
   <div class="absolute top-3 right-3 z-30 pointer-events-none">
-    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] md:text-xs font-mono font-bold uppercase tracking-wider text-white bg-black/75 backdrop-blur-md border border-white/20 shadow-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5 text-accent">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+    <span
+      class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] md:text-xs font-mono font-bold uppercase tracking-wider text-white bg-black/75 backdrop-blur-md border border-white/20 shadow-lg"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="2"
+        stroke="currentColor"
+        class="w-3.5 h-3.5 text-accent"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+        ></path>
       </svg>
-      {album.itemCount} {album.itemCount === 1 ? 'foto' : 'fotos'}
+      {album.itemCount}
+      {album.itemCount === 1 ? 'foto' : 'fotos'}
     </span>
   </div>
 
   {/* Persistent Scrim & Project Metadata */}
   <div class="absolute inset-0 z-20 flex flex-col justify-end pointer-events-none">
     {/* Scrim gradient */}
-    <div class="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/70 to-transparent transition-all duration-300 group-hover:from-black" />
+    <div
+      class="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/70 to-transparent transition-all duration-300 group-hover:from-black"
+    >
+    </div>
 
     {/* Content */}
-    <div class="relative z-10 p-4 md:p-5 text-white transition-transform duration-300 ease-out group-hover:-translate-y-1">
-      {album.categoryName && (
-        <span class="inline-block text-[10px] md:text-[11px] text-accent font-bold uppercase tracking-wider font-mono mb-1.5 bg-accent/10 border border-accent/20 px-2 py-0.5">
-          {album.categoryName}
-        </span>
-      )}
-      <h3 class="text-white text-base md:text-lg font-bold font-heading uppercase leading-tight tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+    <div
+      class="relative z-10 p-4 md:p-5 text-white transition-transform duration-300 ease-out group-hover:-translate-y-1"
+    >
+      {
+        album.categoryName && (
+          <span class="inline-block text-[10px] md:text-[11px] text-accent font-bold uppercase tracking-wider font-mono mb-1.5 bg-accent/10 border border-accent/20 px-2 py-0.5">
+            {album.categoryName}
+          </span>
+        )
+      }
+      <h3
+        class="text-white text-base md:text-lg font-bold font-heading uppercase leading-tight tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
+      >
         {album.projectName}
       </h3>
 
       {/* Action Prompt */}
-      <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-white/15 text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider">
+      <div
+        class="flex justify-between items-center mt-3 pt-2.5 border-t border-white/15 text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider"
+      >
         <span>Ver álbum ({album.itemCount})</span>
         <span class="text-accent group-hover:translate-x-1 transition-transform duration-200">
           Explorar →
@@ -94,7 +120,11 @@ function getRevealDelay(idx: number): string {
 <style>
   .project-album-card {
     box-shadow: var(--shadow-sm);
-    transition: opacity 200ms ease-out, transform 200ms ease-out, border-color 150ms ease, box-shadow 150ms ease;
+    transition:
+      opacity 200ms ease-out,
+      transform 200ms ease-out,
+      border-color 150ms ease,
+      box-shadow 150ms ease;
   }
   .project-album-card:hover {
     box-shadow: var(--shadow-md);
@@ -104,3 +134,23 @@ function getRevealDelay(idx: number): string {
     transform: scale(0.98);
   }
 </style>
+
+<script>
+  // JS-10 fix: `load` doesn't bubble, so this listens in the capture phase on
+  // the document (one listener regardless of how many cards render) rather
+  // than an inline onload= handler. Inline handlers fall under script-src,
+  // and CSP L3 ignores 'unsafe-inline' once a script hash is present (see
+  // public/_headers), so onload= was silently dead in production — the LQIP
+  // blur-up placeholder never faded out.
+  document.addEventListener(
+    'load',
+    (e) => {
+      const img = e.target;
+      if (img instanceof HTMLImageElement && img.hasAttribute('data-lqip-fade')) {
+        const placeholder = img.previousElementSibling;
+        if (placeholder instanceof HTMLElement) placeholder.style.opacity = '0';
+      }
+    },
+    true
+  );
+</script>

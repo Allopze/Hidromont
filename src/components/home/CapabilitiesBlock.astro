@@ -20,15 +20,7 @@ interface Props {
   cmsEntry?: string;
 }
 
-const {
-  eyebrow,
-  title,
-  subtitle,
-  items,
-  columns = 4,
-  light = false,
-  cmsEntry,
-} = Astro.props;
+const { eyebrow, title, subtitle, items, columns = 4, light = false, cmsEntry } = Astro.props;
 
 // Whether any item has a metric value (determines layout style)
 const hasValues = items.some((i) => i.value);
@@ -51,11 +43,15 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
 <Container>
   <!-- Section heading — left aligned, not centred -->
   <div class="mb-10 max-w-2xl">
-    {eyebrow && (
-      <Eyebrow light={light}>
-        <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>
-      </Eyebrow>
-    )}
+    {
+      eyebrow && (
+        <Eyebrow light={light}>
+          <EditableText entry={cmsEntry} field="eyebrow">
+            {eyebrow}
+          </EditableText>
+        </Eyebrow>
+      )
+    }
     <EditableText
       as="h2"
       entry={cmsEntry}
@@ -66,79 +62,56 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
     >
       {title}
     </EditableText>
-    {subtitle && (
-      <EditableText
-        as="p"
-        entry={cmsEntry}
-        field="subtitle"
-        type="textarea"
-        class={`${light ? 'text-white/70' : 'text-text-muted'}`}
-        style="font-size: var(--font-size-lead); --reveal-delay: 0.08s;"
-        reveal
-      >
-        {subtitle}
-      </EditableText>
-    )}
+    {
+      subtitle && (
+        <EditableText
+          as="p"
+          entry={cmsEntry}
+          field="subtitle"
+          type="textarea"
+          class={`${light ? 'text-white/70' : 'text-text-muted'}`}
+          style="font-size: var(--font-size-lead); --reveal-delay: 0.08s;"
+          reveal
+        >
+          {subtitle}
+        </EditableText>
+      )
+    }
   </div>
 
-  {hasValues ? (
-    /* Metric items: horizontal rule-divided list — no card boxes */
-    <div class={`grid grid-cols-1 sm:grid-cols-2 ${columns === 5 ? 'lg:grid-cols-5' : (columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')} gap-0`}>
-      {items.map((item, i) => (
-        <div
-          class={`py-6 pr-6 ${i > 0 ? (light ? 'border-t sm:border-t-0 sm:border-l border-white/10' : 'border-t sm:border-t-0 sm:border-l border-border') : ''}`}
-          style={`--reveal-delay: ${i * 0.07}s;`}
-          data-reveal
-        >
-          {item.value && (() => {
-            const parsed = parseMetric(item.value);
-            return parsed ? (
-              <p
-                class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
-                style="font-size: var(--font-size-h3);"
-                data-count={String(parsed.num)}
-                data-suffix={parsed.suffix}
-              >
-                {item.value}
-              </p>
-            ) : (
-              <p
-                class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
-                style="font-size: var(--font-size-h3);"
-              >
-                {item.value}
-              </p>
-            );
-          })()}
-          <h3
-            class={`font-heading font-semibold mb-1 ${light ? 'text-white' : 'text-primary-dark'}`}
-            style="font-size: 1.05rem;"
-          >
-            {item.title}
-          </h3>
-          {item.description && (
-            <p class={`text-sm leading-relaxed ${light ? 'text-white/60' : 'text-text-muted'}`}>
-              {item.description}
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  ) : (
-    /* Non-metric items: compact 2-column zig-zag list with dividers */
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
-      {items.map((item, i) => (
-        <div
-          class={`flex gap-4 py-5 pr-6 ${light ? 'border-b border-white/10' : 'border-b border-border'} ${i % 2 === 1 && 'md:pl-6'}`}
-          style={`--reveal-delay: ${i * 0.06}s;`}
-          data-reveal
-        >
-          <!-- Accent marker -->
+  {
+    hasValues ? (
+      /* Metric items: horizontal rule-divided list — no card boxes */
+      <div
+        class={`grid grid-cols-1 sm:grid-cols-2 ${columns === 5 ? 'lg:grid-cols-5' : columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-0`}
+      >
+        {items.map((item, i) => (
           <div
-            class="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-accent"
-            aria-hidden="true"
-          ></div>
-          <div>
+            class={`py-6 pr-6 ${i > 0 ? (light ? 'border-t sm:border-t-0 sm:border-l border-white/10' : 'border-t sm:border-t-0 sm:border-l border-border') : ''}`}
+            style={`--reveal-delay: ${i * 0.07}s;`}
+            data-reveal
+          >
+            {item.value &&
+              (() => {
+                const parsed = parseMetric(item.value);
+                return parsed ? (
+                  <p
+                    class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
+                    style="font-size: var(--font-size-h3);"
+                    data-count={String(parsed.num)}
+                    data-suffix={parsed.suffix}
+                  >
+                    {item.value}
+                  </p>
+                ) : (
+                  <p
+                    class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
+                    style="font-size: var(--font-size-h3);"
+                  >
+                    {item.value}
+                  </p>
+                );
+              })()}
             <h3
               class={`font-heading font-semibold mb-1 ${light ? 'text-white' : 'text-primary-dark'}`}
               style="font-size: 1.05rem;"
@@ -151,8 +124,35 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
               </p>
             )}
           </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    ) : (
+      /* Non-metric items: compact 2-column zig-zag list with dividers */
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+        {items.map((item, i) => (
+          <div
+            class={`flex gap-4 py-5 pr-6 ${light ? 'border-b border-white/10' : 'border-b border-border'} ${i % 2 === 1 && 'md:pl-6'}`}
+            style={`--reveal-delay: ${i * 0.06}s;`}
+            data-reveal
+          >
+            {/* Accent marker */}
+            <div class="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
+            <div>
+              <h3
+                class={`font-heading font-semibold mb-1 ${light ? 'text-white' : 'text-primary-dark'}`}
+                style="font-size: 1.05rem;"
+              >
+                {item.title}
+              </h3>
+              {item.description && (
+                <p class={`text-sm leading-relaxed ${light ? 'text-white/60' : 'text-text-muted'}`}>
+                  {item.description}
+                </p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
 </Container>

@@ -1,0 +1,22 @@
+dist/
+.astro/
+node_modules/
+cms/data/
+public/uploads/cms/
+public/gallery/derived/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+package-lock.json
+
+# prettier-plugin-astro can't parse this file: a <script is:inline define:vars={{...}}>
+# tag nested inside a {enabled && (<>...</>)} conditional fragment throws
+# "SyntaxError: Unexpected token, expected '}'" on the script body. Reproduced in
+# isolation — removing either the outer conditional/fragment or the define:vars
+# double-brace syntax makes it parse fine, but both are load-bearing here (the
+# overlay must stay conditionally rendered, and define:vars is the documented way
+# to pass server values into an inline script). Astro's own compiler has no issue
+# with this file (astro check / build both pass) — this is purely a
+# prettier-plugin-astro parser gap, not a defect in the source.
+src/components/cms/CmsOverlay.astro

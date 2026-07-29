@@ -10,7 +10,7 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'jsx-a11y'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -25,6 +25,11 @@ module.exports = {
         parser: '@typescript-eslint/parser',
         extraFileExtensions: ['.astro'],
       },
+      // INFRA-3: jsx-a11y estaba declarado como devDependency pero nunca
+      // cableado — astro-eslint-parser expone el template como nodos
+      // JSX-like, así que sus reglas (alt-text, aria-*, roles válidos, etc.)
+      // sí aplican aquí.
+      extends: ['plugin:jsx-a11y/recommended'],
       rules: {
         // En .astro, el frontmatter TS y el template se mezclan; estas reglas
         // producen falsos positivos comunes.

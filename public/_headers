@@ -2,13 +2,25 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
-  # M5: CSP con hashes de los scripts inline estaticos identicos en todas las paginas:
+  # M5/JS-10: CSP con hashes de los scripts inline identicos en todas las paginas:
   #   1. `.js classList` (detector de JS, BaseLayout)
   #   2. JSON-LD Organization (datos estructurados, identico en todas las paginas)
-  # `'unsafe-inline'` se mantiene porque las paginas de detalle (servicios/[slug],
-  # proyectos/[slug], contacto, galeria) generan scripts inline adicionales propios
-  # (ContactForm JSON de mensajes, gallery grid, etc.) cuyos contenidos varian y no son
-  # hasheables sin SSR o un paso post-build por pagina. Migrar a nonces requiere SSR.
+  # El hash #2 es en realidad innecesario: los bloques `type="application/json"`/
+  # `type="application/ld+json"` (JSON-LD, payload del lightbox, mensajes de ContactForm,
+  # etc.) NUNCA se ejecutan como script, asi que no estan sujetos a `script-src` en
+  # absoluto -- no necesitarian hash ni 'unsafe-inline' aunque cambiara su contenido. Se
+  # deja el hash tal cual por ser inofensivo (verificado: coincide byte a byte con el
+  # `<script type="application/ld+json">` real del build).
+  # `'unsafe-inline'` se mantiene solo como red de seguridad para navegadores que no
+  # soportan CSP3 (que ignoran 'unsafe-inline' en cuanto hay un hash-source presente, asi
+  # que en navegadores modernos esta directiva no aporta nada extra hoy). OJO: cuando
+  # PUBLIC_ENABLE_CMS=1, CmsOverlay.astro inyecta dos <script is:inline> adicionales con
+  # contenido dependiente del build (apiBase/isDev + el propio cms-overlay.js) que NO
+  # estan hasheados aqui -- en un navegador CSP3 esos scripts quedarian bloqueados
+  # silenciosamente (con o sin 'unsafe-inline', porque la presencia de hash-sources ya
+  # invalida 'unsafe-inline' para toda la directiva). Pendiente: mover el bootstrap del
+  # overlay a un <script src="..."> externo (permitido por 'self' sin hash) en vez de
+  # inline, o generar su hash dinamicamente en build.
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw=' 'sha256-KzHXOF/rDV03VPBunw3imiCWpJVLi2nvUNu3mxXrVd8='; frame-src https://maps.google.com https://www.google.com; form-action 'self' https://formsubmit.co https://api.web3forms.com; upgrade-insecure-requests
 
 /*.html

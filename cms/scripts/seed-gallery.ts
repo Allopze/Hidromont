@@ -15,37 +15,70 @@ interface CuratedImage {
   alt: string;
 }
 
+// ESTRUCT-3 fix: alineado con las categorías que realmente existen hoy en
+// producción (src/data/gallery.json), no con el set original de este seed.
+// 'otros' nunca tuvo items asignados y había quedado stale frente a
+// 'tanques'/'infraestructuras', agregadas más tarde vía el CMS.
 const categories = [
   { name: 'Taller e Instalaciones', slug: 'taller', position: 0 },
   { name: 'Montaje en Obra', slug: 'montaje', position: 1 },
   { name: 'Tuberías Forzadas', slug: 'tuberias', position: 2 },
   { name: 'Válvulas y Equipos', slug: 'equipos', position: 3 },
-  { name: 'Otros', slug: 'otros', position: 4 },
+  { name: 'Tanques Especiales', slug: 'tanques', position: 4 },
+  { name: 'Infraestructuras', slug: 'infraestructuras', position: 5 },
 ];
 
 const curatedImages: CuratedImage[] = [
-  { filename: 'bifurcacion-primer-taller.webp', categorySlug: 'taller', alt: 'Bifurcación en primer taller' },
+  {
+    filename: 'bifurcacion-primer-taller.webp',
+    categorySlug: 'taller',
+    alt: 'Bifurcación en primer taller',
+  },
   { filename: 'bifurcacion-t-taller.webp', categorySlug: 'taller', alt: 'Bifurcación en taller' },
   { filename: 'empresa-oficina.jpg', categorySlug: 'taller', alt: 'Oficinas de la empresa' },
   { filename: 'empresa-taller.webp', categorySlug: 'taller', alt: 'Taller de la empresa' },
-  { filename: 'fabricacion-tuberias-taller.webp', categorySlug: 'taller', alt: 'Fabricación de tuberías en taller' },
+  {
+    filename: 'fabricacion-tuberias-taller.webp',
+    categorySlug: 'taller',
+    alt: 'Fabricación de tuberías en taller',
+  },
   { filename: 'taller-aereo.webp', categorySlug: 'taller', alt: 'Vista aérea del taller' },
   { filename: 'taller-nave.webp', categorySlug: 'taller', alt: 'Nave del taller' },
-  { filename: 'montaje-vertical-caverna.webp', categorySlug: 'montaje', alt: 'Montaje vertical en caverna' },
+  {
+    filename: 'montaje-vertical-caverna.webp',
+    categorySlug: 'montaje',
+    alt: 'Montaje vertical en caverna',
+  },
   { filename: 'otros-montajes.jpg', categorySlug: 'montaje', alt: 'Otros montajes' },
-  { filename: 'proyecto-bifurcacion-obra.jpg', categorySlug: 'montaje', alt: 'Bifurcación en obra' },
+  {
+    filename: 'proyecto-bifurcacion-obra.jpg',
+    categorySlug: 'montaje',
+    alt: 'Bifurcación en obra',
+  },
   { filename: 'proyecto-montaje-tuberia.jpg', categorySlug: 'montaje', alt: 'Montaje de tubería' },
   { filename: 'proyecto-tuberia-montana.webp', categorySlug: 'montaje', alt: 'Tubería en montaña' },
   { filename: 'proyecto-tuberia-terreno.jpg', categorySlug: 'montaje', alt: 'Tubería en terreno' },
   { filename: 'proyecto-tunel-blindaje.jpg', categorySlug: 'montaje', alt: 'Túnel con blindaje' },
-  { filename: 'tuberia-forzada-tunel.webp', categorySlug: 'tuberias', alt: 'Tubería forzada en túnel' },
+  {
+    filename: 'tuberia-forzada-tunel.webp',
+    categorySlug: 'tuberias',
+    alt: 'Tubería forzada en túnel',
+  },
   { filename: 'tuberias-forzadas.jpg', categorySlug: 'tuberias', alt: 'Tuberías forzadas' },
-  { filename: 'proyecto-bifurcacion-taller.jpg', categorySlug: 'tuberias', alt: 'Bifurcación de tubería en taller' },
+  {
+    filename: 'proyecto-bifurcacion-taller.jpg',
+    categorySlug: 'tuberias',
+    alt: 'Bifurcación de tubería en taller',
+  },
   { filename: 'compuertas.jpg', categorySlug: 'equipos', alt: 'Compuertas industriales' },
   { filename: 'limpiarrejas.jpg', categorySlug: 'equipos', alt: 'Limpiarrejas' },
   { filename: 'proyecto-valvula-tunel.jpg', categorySlug: 'equipos', alt: 'Válvula en túnel' },
   { filename: 'turbinas.jpg', categorySlug: 'equipos', alt: 'Turbinas' },
-  { filename: 'valvula-tuberia-tunel.webp', categorySlug: 'equipos', alt: 'Válvula y tubería en túnel' },
+  {
+    filename: 'valvula-tuberia-tunel.webp',
+    categorySlug: 'equipos',
+    alt: 'Válvula y tubería en túnel',
+  },
   { filename: 'valvulas.jpg', categorySlug: 'equipos', alt: 'Válvulas industriales' },
 ];
 
@@ -61,7 +94,8 @@ try {
   const db = getDb();
 
   // Check if already seeded
-  const count = (db.prepare('SELECT COUNT(*) as n FROM gallery_categories').get() as { n: number }).n;
+  const count = (db.prepare('SELECT COUNT(*) as n FROM gallery_categories').get() as { n: number })
+    .n;
   if (count > 0) {
     process.stdout.write(`Gallery already seeded (${count} categories). Skipping.\n`);
     process.exit(0);
@@ -94,7 +128,8 @@ try {
 
   for (let i = 0; i < curatedImages.length; i++) {
     const img = curatedImages[i];
-    const media = findMediaByFilename.get(img.filename, `%${img.filename}`) as { id: string } | undefined;
+    const media = findMediaByFilename.get(img.filename, `%${img.filename}`) as
+      { id: string } | undefined;
     if (!media) {
       skipped++;
       process.stdout.write(`  ⚠ Media not found: ${img.filename}\n`);
@@ -120,7 +155,9 @@ try {
     inserted++;
   }
 
-  process.stdout.write(`\n✅ Gallery seeded: ${categories.length} categories, ${inserted} items (${skipped} skipped)\n`);
+  process.stdout.write(
+    `\n✅ Gallery seeded: ${categories.length} categories, ${inserted} items (${skipped} skipped)\n`
+  );
 } catch (error) {
   captureException(error, { action: 'seedGallery' });
   process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n`);
