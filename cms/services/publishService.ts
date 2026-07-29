@@ -76,7 +76,12 @@ export class PublishService {
     }
   }
 
-  async publishContent(): Promise<{ job: PublishJob; exported: { files: string[] }; publish: { stdout: string; stderr: string } }> {
+  async publishContent(): Promise<{
+    job: PublishJob;
+    exported: { files: string[] };
+    galleryExported: { file: string; count: number };
+    publish: { stdout: string; stderr: string };
+  }> {
     const startedAt = new Date().toISOString();
     const job = this.publishJobRepository.start({
       action: 'publish',
@@ -86,6 +91,12 @@ export class PublishService {
 
     try {
       const exported = this.exportService.exportContent();
+      // CMS-1 fix: publish previously only re-exported page/collection content
+      // and never regenerated src/data/gallery.json, so publishing after
+      // editing/reordering gallery items shipped the *previous* gallery.
+      // Mirrors exportContentWithGallery(); any failure here fails the whole
+      // publish job below rather than being silently skipped.
+      const galleryExported = await this.exportService.exportGallery();
       const [command, ...args] = config.cms.publishCheckCommand.split(' ');
       const result = await execFileAsync(command, args, {
         cwd: config.rootDir,
@@ -99,6 +110,7 @@ export class PublishService {
         logs: [
           ...job.logs,
           `${completedAt} exported ${exported.files.length} file(s)`,
+          `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
           `publish: ${config.cms.publishCheckCommand}`,
           ...this.nonEmptyLines(result.stdout, 'stdout'),
           ...this.nonEmptyLines(result.stderr, 'stderr'),
@@ -108,6 +120,7 @@ export class PublishService {
       return {
         job: completed,
         exported,
+        galleryExported,
         publish: {
           stdout: result.stdout,
           stderr: result.stderr,
