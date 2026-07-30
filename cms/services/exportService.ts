@@ -7,6 +7,21 @@ import type { GalleryRepository } from '../repositories/GalleryRepository';
 import type { ImageService } from './imageService';
 import type { CmsEntry } from '../types/cms';
 
+// CMS-10: mirrors the enums Zod enforces in src/content.config.ts for the
+// `proyectos` collection. Can't import astro:content here (this runs under
+// plain Node/tsx, not the Astro runtime), so these are kept in sync by hand.
+// A value outside these sets exports a syntactically valid .md that then
+// fails `astro check` at publish time with a confusing, hard-to-trace error —
+// catching it here at export time instead gives a clear, attributable one.
+const CATEGORIA_PROYECTO_VALUES = new Set([
+  'tuberias',
+  'compuertas',
+  'electromecanicos',
+  'limpiarrejas',
+  'estructuras',
+]);
+const TIPO_PROYECTO_VALUES = new Set(['destacado', 'banco']);
+
 /**
  * A1-001 + A1-003: escritura atomica y robusta.
  * - Crea el directorio padre recursivamente (slugs con subdirectorio como
@@ -45,8 +60,16 @@ export class ExportService {
       this.exportPageContent(
         entries.filter((entry) => ['page', 'layout', 'component', 'settings'].includes(entry.kind))
       ),
+      // CMS-3 fix: this used to also require `entry.version > 1` — entries are
+      // created at version 1 and only field-level edits bump it, so a
+      // proyecto/servicio that was bulk-imported (or created and published
+      // without ever individually editing a field afterward) was silently
+      // excluded from export forever: its .md was simply never written, even
+      // though it was legitimately published. Export every published
+      // collection entry regardless of version; re-writing unchanged content
+      // is harmless (idempotent), unlike omitting live content entirely.
       ...this.exportCollection(
-        entries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind) && entry.version > 1)
+        entries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind))
       ),
     ];
 
@@ -96,16 +119,13 @@ export class ExportService {
    * edited — so it reliably tells us the filename this entry was
    * *originally* exported under, without needing extra DB state.
    *
-   * IMPORTANT: whether an entry's CURRENT slug is allowed to have a file is
-   * governed by `status === 'published'` alone — NOT by `version > 1`. That
-   * version gate (used by exportCollection()/exportContent() above, and
-   * originating from CMS-3, a separate known issue) only means "has this
-   * entry ever been field-edited via the CMS overlay"; nearly every
-   * long-standing project/service here was bulk-imported once and never
-   * individually edited since, so it's permanently stuck at version 1 while
-   * still being perfectly live, published content. An earlier version of this
-   * method conflated the two and deleted every such file — caught in manual
-   * testing before shipping, never actually released.
+   * Whether an entry's CURRENT slug is allowed to have a file is governed by
+   * `status === 'published'` alone. Now that CMS-3 removed the `version > 1`
+   * gate from exportCollection()'s own eligibility filter, every published
+   * entry is guaranteed a fresh file under its current slug on every export
+   * pass — so a renamed entry's old slug is always safe to prune the moment
+   * it differs from the current one, with no separate "was it actually
+   * rewritten this pass" tracking needed.
    */
   private pruneStaleCollectionFiles(entries: CmsEntry[]): string[] {
     const removed: string[] = [];
@@ -113,29 +133,19 @@ export class ExportService {
     for (const entry of entries) {
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
       const idPrefix = `${collection}.`;
-      const originalSlug = entry.id.startsWith(idPrefix) ? entry.id.slice(idPrefix.length) : entry.slug;
+      const originalSlug = entry.id.startsWith(idPrefix)
+        ? entry.id.slice(idPrefix.length)
+        : entry.slug;
       const isPublished = entry.status === 'published';
-      // Matches exportCollection()'s own eligibility filter exactly — true
-      // only when we know a fresh file was just (re)written under
-      // entry.slug in this same export pass.
-      const rewrittenThisPass = isPublished && entry.version > 1;
 
       const staleSlugs = new Set<string>();
 
-      // Unpublished: nothing should exist under the current slug anymore.
+      // Unpublished: nothing should exist under any slug anymore.
       if (!isPublished) staleSlugs.add(entry.slug);
 
-      // Renamed: the old filename is stale. Only remove it once we're sure
-      // the new one is covered — either it was just rewritten this pass, or
-      // the entry is unpublished so no file should exist under any slug.
-      // Otherwise (published, but still at version 1 under the new slug —
-      // i.e. renamed without ever being individually edited via the CMS)
-      // exportCollection() won't write the new file either, so deleting the
-      // old one would leave this entry with zero files. Leaving the stale
-      // file in place is a known, narrow gap tied to CMS-3, not this fix.
-      if (originalSlug !== entry.slug && (rewrittenThisPass || !isPublished)) {
-        staleSlugs.add(originalSlug);
-      }
+      // Renamed: the old filename is always stale — the current slug's file
+      // is guaranteed fresh this same pass whenever the entry is published.
+      if (originalSlug !== entry.slug) staleSlugs.add(originalSlug);
 
       for (const slug of staleSlugs) {
         const target = path.join(this.rootDir, 'src', 'content', collection, `${slug}.md`);
@@ -149,8 +159,42 @@ export class ExportService {
     return removed;
   }
 
+  /**
+   * CMS-10: `field.value` reaches here as `unknown` (updateFieldSchema accepts
+   * z.unknown()), so nothing stops an operator from setting `categoria`/`tipo`
+   * to a value outside the enum Astro's content schema enforces. Previously
+   * this wrote a syntactically valid .md that then failed `astro check` at
+   * publish time with an error pointing at Astro's internals, not the actual
+   * bad field. Returns the first violation found, or null if the entry is valid.
+   */
+  private validateCollectionEntry(entry: CmsEntry): string | null {
+    if (entry.kind !== 'proyecto') return null;
+
+    const categoria = entry.fields.categoria?.value;
+    if (categoria !== undefined && !CATEGORIA_PROYECTO_VALUES.has(String(categoria))) {
+      return `categoria "${categoria}" inválida (valores permitidos: ${[...CATEGORIA_PROYECTO_VALUES].join(', ')})`;
+    }
+
+    const tipo = entry.fields.tipo?.value;
+    if (tipo !== undefined && !TIPO_PROYECTO_VALUES.has(String(tipo))) {
+      return `tipo "${tipo}" inválido (valores permitidos: ${[...TIPO_PROYECTO_VALUES].join(', ')})`;
+    }
+
+    return null;
+  }
+
   private exportCollection(entries: CmsEntry[]): string[] {
-    return entries.map((entry) => {
+    const written: string[] = [];
+
+    for (const entry of entries) {
+      const validationError = this.validateCollectionEntry(entry);
+      if (validationError) {
+        process.stderr.write(
+          `  ⚠ Omitiendo ${entry.kind} "${entry.slug}" (${entry.id}): ${validationError}. Corrija el campo en el CMS y vuelva a exportar.\n`
+        );
+        continue;
+      }
+
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
       const target = path.join(this.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
       const frontmatter: Record<string, unknown> = {};
@@ -165,8 +209,10 @@ export class ExportService {
       }
 
       writeFileSyncAtomic(target, matter.stringify(body.trim() + '\n', frontmatter));
-      return path.relative(this.rootDir, target);
-    });
+      written.push(path.relative(this.rootDir, target));
+    }
+
+    return written;
   }
 
   async exportGallery(): Promise<{ file: string; count: number }> {
@@ -210,14 +256,21 @@ export class ExportService {
           focalY: item.mediaFocalY ?? 0.5,
         });
       } catch (err) {
-        process.stderr.write(`  ⚠ Skipping gallery item ${item.id} (${item.mediaPath}): ${err instanceof Error ? err.message : String(err)}\n`);
+        process.stderr.write(
+          `  ⚠ Skipping gallery item ${item.id} (${item.mediaPath}): ${err instanceof Error ? err.message : String(err)}\n`
+        );
       }
     }
 
     const target = path.join(this.rootDir, 'src', 'data', 'gallery.json');
     const payload = {
       updatedAt: new Date().toISOString(),
-      categories: categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug, position: c.position })),
+      categories: categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        position: c.position,
+      })),
       items: processedItems,
     };
 

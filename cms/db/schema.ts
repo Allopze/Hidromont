@@ -151,39 +151,60 @@ export function migrate(): void {
 function migrateGalleryItemsOnDeleteSetNull(db: ReturnType<typeof getDb>): void {
   // Usar PRAGMA (no la forma funcioń pragma_*) para evitar el parser de comillas.
   // pragma_foreign_key_list devuelve una fila por FK con columna "on_delete".
-  const fk = db
-    .prepare('PRAGMA foreign_key_list(gallery_items)')
-    .all() as Array<{ on_delete: string | null; table: string | null }>;
+  const fk = db.prepare('PRAGMA foreign_key_list(gallery_items)').all() as Array<{
+    on_delete: string | null;
+    table: string | null;
+  }>;
 
   // Buscar la FK cuya tabla referenciada sea media_assets. Si ya es SET NULL, nada que hacer.
   const mediaFk = fk.find((row) => row.table === 'media_assets');
   if (!mediaFk) return;
   if (mediaFk.on_delete === 'SET NULL') return;
 
-  db.exec(`
-    BEGIN;
-    CREATE TABLE gallery_items_new (
-      id TEXT PRIMARY KEY,
-      media_id TEXT,
-      category_id TEXT,
-      project_slug TEXT,
-      title TEXT NOT NULL,
-      alt TEXT NOT NULL,
-      caption TEXT,
-      position INTEGER NOT NULL DEFAULT 0,
-      featured INTEGER NOT NULL DEFAULT 0,
-      status TEXT NOT NULL DEFAULT 'published',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
-      FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
-    );
-    INSERT INTO gallery_items_new (id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at)
-      SELECT id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at FROM gallery_items;
-    DROP TABLE gallery_items;
-    ALTER TABLE gallery_items_new RENAME TO gallery_items;
-    COMMIT;
-  `);
+  // CMS-L7: la receta de 12 pasos de SQLite para recrear una tabla exige
+  // desactivar foreign_keys ANTES de abrir la transacción (el pragma es un
+  // no-op si se cambia dentro de una) y reactivarlo después de terminarla —
+  // de lo contrario, el DROP TABLE de una tabla que otras FKs podrían
+  // referenciar se valida con las FKs aún activas a mitad de la operación.
+  // Hoy nada referencia gallery_items, así que el DROP ya era seguro en la
+  // práctica, pero seguir la receta documentada evita que deje de serlo si
+  // alguna migración futura agrega una FK hacia esta tabla.
+  db.pragma('foreign_keys = OFF');
+  try {
+    const rebuild = db.transaction(() => {
+      db.exec(`
+        CREATE TABLE gallery_items_new (
+          id TEXT PRIMARY KEY,
+          media_id TEXT,
+          category_id TEXT,
+          project_slug TEXT,
+          title TEXT NOT NULL,
+          alt TEXT NOT NULL,
+          caption TEXT,
+          position INTEGER NOT NULL DEFAULT 0,
+          featured INTEGER NOT NULL DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'published',
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
+          FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
+        );
+        INSERT INTO gallery_items_new (id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at)
+          SELECT id, media_id, category_id, project_slug, title, alt, caption, position, featured, status, created_at, updated_at FROM gallery_items;
+        DROP TABLE gallery_items;
+        ALTER TABLE gallery_items_new RENAME TO gallery_items;
+      `);
+      const violations = db.pragma('foreign_key_check') as unknown[];
+      if (violations.length > 0) {
+        throw new Error(
+          `foreign_key_check falló tras recrear gallery_items: ${JSON.stringify(violations)}`
+        );
+      }
+    });
+    rebuild();
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
 }
 
 /**
@@ -208,12 +229,19 @@ function migratePublishJobsAction(db: ReturnType<typeof getDb>): void {
   if (cols.some((c) => c.name === 'action')) return;
   db.exec(`ALTER TABLE publish_jobs ADD COLUMN action TEXT NOT NULL DEFAULT 'publish';`);
   // Backfill: intentar leer action del JSON de logs; si falla, queda 'publish' (default).
-  const rows = db.prepare('SELECT id, logs FROM publish_jobs').all() as Array<{ id: string; logs: string }>;
+  const rows = db.prepare('SELECT id, logs FROM publish_jobs').all() as Array<{
+    id: string;
+    logs: string;
+  }>;
   const update = db.prepare('UPDATE publish_jobs SET action = ? WHERE id = ?');
   for (const row of rows) {
     try {
       const parsed = JSON.parse(row.logs) as { action?: string } | string[];
-      const action = Array.isArray(parsed) ? 'publish' : (parsed.action === 'export' ? 'export' : 'publish');
+      const action = Array.isArray(parsed)
+        ? 'publish'
+        : parsed.action === 'export'
+          ? 'export'
+          : 'publish';
       update.run(action, row.id);
     } catch {
       // logs corrupto: deja el default 'publish'.
@@ -222,8 +250,8 @@ function migratePublishJobsAction(db: ReturnType<typeof getDb>): void {
 }
 
 /**
-  * Migración idempotente para añadir la columna project_slug a gallery_items si no existe.
-  */
+ * Migración idempotente para añadir la columna project_slug a gallery_items si no existe.
+ */
 function migrateGalleryItemsProjectSlug(db: ReturnType<typeof getDb>): void {
   const cols = db.prepare('PRAGMA table_info(gallery_items)').all() as Array<{ name: string }>;
   if (cols.some((c) => c.name === 'project_slug')) return;

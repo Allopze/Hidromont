@@ -43,18 +43,51 @@ if (config.admin.password === DEFAULT_PASSWORD && !isLocalOnly) {
   process.exit(1);
 }
 
+// CMS-8: CMS_HOST=127.0.0.1 no garantiza que el servicio sea inalcanzable desde
+// fuera — un túnel SSH (`ssh -L 8787:localhost:8787`) o un `kubectl port-forward`
+// lo exponen igual. No bloqueamos el arranque local (romperia el primer `npm run
+// cms` de un clon nuevo antes de correr cms:reset-password), pero la advertencia
+// debe ser imposible de ignorar.
+if (config.admin.password === DEFAULT_PASSWORD && isLocalOnly) {
+  process.stderr.write(
+    '[CMS] ADVERTENCIA: el CMS arrancó con la contraseña de administrador por defecto.\n' +
+      '[CMS] CMS_HOST=' +
+      config.cms.host +
+      ' solo evita conexiones directas desde la red — un túnel SSH o un\n' +
+      '[CMS] port-forward igual lo expondrían con esta credencial conocida públicamente.\n' +
+      '[CMS] Ejecute `npm run cms:reset-password` antes de exponer este servidor de cualquier forma.\n'
+  );
+}
+
 const app = fastify({
   logger: {
     level: 'info',
   },
   bodyLimit: config.cms.uploadMaxBytes,
+  trustProxy: config.cms.trustProxy,
 });
 
 // Cabeceras de seguridad básicas
-app.addHook('onSend', async (_request, reply) => {
+app.addHook('onSend', async (request, reply) => {
   reply.header('X-Content-Type-Options', 'nosniff');
   reply.header('X-Frame-Options', 'DENY');
   reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // CMS-11: CSP/HSTS solo para la API del CMS (JSON), no para el sitio estático que
+  // este mismo proceso puede servir via registerStaticSite (server.mjs/npm start) —
+  // ese HTML incluye el bootstrap inline del overlay (CmsOverlay.astro) cuando
+  // PUBLIC_ENABLE_CMS=1, y una CSP estricta aqui sin hashear ese script lo rompería.
+  // El sitio estático en producción (Cloudflare Pages) ya trae su propia CSP via
+  // public/_headers.
+  if (request.url.startsWith('/api/')) {
+    reply.header(
+      'Content-Security-Policy',
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
+    );
+    if (config.cms.cookieSecure) {
+      reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+  }
 });
 
 try {

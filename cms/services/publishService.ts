@@ -13,68 +13,106 @@ interface ExecFailure extends Error {
 }
 
 export class PublishService {
+  // CMS-5: exportContent/exportContentWithGallery/publishContent all read the
+  // DB and write the same shared files (src/data/cms-content.json,
+  // src/content/*/*.md, src/data/gallery.json), and publishContent additionally
+  // shells out to `npm run build`/`check` against the same working tree. Two
+  // of these running concurrently (a double-click, or two admins) would race
+  // on those writes and could interleave two builds in the same cwd. A single
+  // in-process boolean is enough here — this is one Node process per server,
+  // not a multi-instance deployment — and rejecting outright (not queueing) is
+  // simpler and gives the caller an immediate, actionable error.
+  private busy = false;
+
+  private acquireLock(): void {
+    if (this.busy) {
+      throw new Error(
+        'Ya hay una exportación o publicación en curso. Intente de nuevo en unos segundos.'
+      );
+    }
+    this.busy = true;
+  }
+
   constructor(
     private readonly exportService: ExportService,
     private readonly publishJobRepository: PublishJobRepository
   ) {}
 
-  exportContent(): { job: PublishJob; exported: { files: string[]; removed: string[] }; galleryExported?: { file: string; count: number } } {
-    const startedAt = new Date().toISOString();
-    const job = this.publishJobRepository.start({
-      action: 'export',
-      now: startedAt,
-      logs: [`${startedAt} export started`],
-    });
-
+  exportContent(): {
+    job: PublishJob;
+    exported: { files: string[]; removed: string[] };
+    galleryExported?: { file: string; count: number };
+  } {
+    this.acquireLock();
     try {
-      const exported = this.exportService.exportContent();
-      const completedAt = new Date().toISOString();
-      const completed = this.publishJobRepository.finish({
-        id: job.id,
-        status: 'succeeded',
-        now: completedAt,
-        logs: [
-          ...job.logs,
-          `${completedAt} exported ${exported.files.length} file(s)`,
-          ...exported.files.map((file) => `file: ${file}`),
-          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
-        ],
+      const startedAt = new Date().toISOString();
+      const job = this.publishJobRepository.start({
+        action: 'export',
+        now: startedAt,
+        logs: [`${startedAt} export started`],
       });
-      return { job: completed, exported };
-    } catch (error) {
-      this.failJob(job, error);
-      throw error;
+
+      try {
+        const exported = this.exportService.exportContent();
+        const completedAt = new Date().toISOString();
+        const completed = this.publishJobRepository.finish({
+          id: job.id,
+          status: 'succeeded',
+          now: completedAt,
+          logs: [
+            ...job.logs,
+            `${completedAt} exported ${exported.files.length} file(s)`,
+            ...exported.files.map((file) => `file: ${file}`),
+            ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+          ],
+        });
+        return { job: completed, exported };
+      } catch (error) {
+        this.failJob(job, error);
+        throw error;
+      }
+    } finally {
+      this.busy = false;
     }
   }
 
-  async exportContentWithGallery(): Promise<{ job: PublishJob; exported: { files: string[]; removed: string[] }; galleryExported: { file: string; count: number } }> {
-    const startedAt = new Date().toISOString();
-    const job = this.publishJobRepository.start({
-      action: 'export',
-      now: startedAt,
-      logs: [`${startedAt} export started (content + gallery)`],
-    });
-
+  async exportContentWithGallery(): Promise<{
+    job: PublishJob;
+    exported: { files: string[]; removed: string[] };
+    galleryExported: { file: string; count: number };
+  }> {
+    this.acquireLock();
     try {
-      const exported = this.exportService.exportContent();
-      const galleryExported = await this.exportService.exportGallery();
-      const completedAt = new Date().toISOString();
-      const completed = this.publishJobRepository.finish({
-        id: job.id,
-        status: 'succeeded',
-        now: completedAt,
-        logs: [
-          ...job.logs,
-          `${completedAt} exported ${exported.files.length} file(s)`,
-          ...exported.files.map((file) => `file: ${file}`),
-          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
-          `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
-        ],
+      const startedAt = new Date().toISOString();
+      const job = this.publishJobRepository.start({
+        action: 'export',
+        now: startedAt,
+        logs: [`${startedAt} export started (content + gallery)`],
       });
-      return { job: completed, exported, galleryExported };
-    } catch (error) {
-      this.failJob(job, error);
-      throw error;
+
+      try {
+        const exported = this.exportService.exportContent();
+        const galleryExported = await this.exportService.exportGallery();
+        const completedAt = new Date().toISOString();
+        const completed = this.publishJobRepository.finish({
+          id: job.id,
+          status: 'succeeded',
+          now: completedAt,
+          logs: [
+            ...job.logs,
+            `${completedAt} exported ${exported.files.length} file(s)`,
+            ...exported.files.map((file) => `file: ${file}`),
+            ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+            `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
+          ],
+        });
+        return { job: completed, exported, galleryExported };
+      } catch (error) {
+        this.failJob(job, error);
+        throw error;
+      }
+    } finally {
+      this.busy = false;
     }
   }
 
@@ -84,55 +122,60 @@ export class PublishService {
     galleryExported: { file: string; count: number };
     publish: { stdout: string; stderr: string };
   }> {
-    const startedAt = new Date().toISOString();
-    const job = this.publishJobRepository.start({
-      action: 'publish',
-      now: startedAt,
-      logs: [`${startedAt} publish started`],
-    });
-
+    this.acquireLock();
     try {
-      const exported = this.exportService.exportContent();
-      // CMS-1 fix: publish previously only re-exported page/collection content
-      // and never regenerated src/data/gallery.json, so publishing after
-      // editing/reordering gallery items shipped the *previous* gallery.
-      // Mirrors exportContentWithGallery(); any failure here fails the whole
-      // publish job below rather than being silently skipped.
-      const galleryExported = await this.exportService.exportGallery();
-      const [command, ...args] = config.cms.publishCheckCommand.split(' ');
-      const result = await execFileAsync(command, args, {
-        cwd: config.rootDir,
-        timeout: 120000,
-      });
-      const completedAt = new Date().toISOString();
-      const completed = this.publishJobRepository.finish({
-        id: job.id,
-        status: 'succeeded',
-        now: completedAt,
-        logs: [
-          ...job.logs,
-          `${completedAt} exported ${exported.files.length} file(s)`,
-          ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
-          `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
-          `publish: ${config.cms.publishCheckCommand}`,
-          ...this.nonEmptyLines(result.stdout, 'stdout'),
-          ...this.nonEmptyLines(result.stderr, 'stderr'),
-        ],
+      const startedAt = new Date().toISOString();
+      const job = this.publishJobRepository.start({
+        action: 'publish',
+        now: startedAt,
+        logs: [`${startedAt} publish started`],
       });
 
-      return {
-        job: completed,
-        exported,
-        galleryExported,
-        publish: {
-          stdout: result.stdout,
-          stderr: result.stderr,
-        },
-      };
-    } catch (error) {
-      const completed = this.failJob(job, error);
-      const message = error instanceof Error ? error.message : 'Publish failed';
-      throw new Error(`Publish job ${completed.id} failed: ${message}`);
+      try {
+        const exported = this.exportService.exportContent();
+        // CMS-1 fix: publish previously only re-exported page/collection content
+        // and never regenerated src/data/gallery.json, so publishing after
+        // editing/reordering gallery items shipped the *previous* gallery.
+        // Mirrors exportContentWithGallery(); any failure here fails the whole
+        // publish job below rather than being silently skipped.
+        const galleryExported = await this.exportService.exportGallery();
+        const [command, ...args] = config.cms.publishCheckCommand.split(' ');
+        const result = await execFileAsync(command, args, {
+          cwd: config.rootDir,
+          timeout: 120000,
+        });
+        const completedAt = new Date().toISOString();
+        const completed = this.publishJobRepository.finish({
+          id: job.id,
+          status: 'succeeded',
+          now: completedAt,
+          logs: [
+            ...job.logs,
+            `${completedAt} exported ${exported.files.length} file(s)`,
+            ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+            `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
+            `publish: ${config.cms.publishCheckCommand}`,
+            ...this.nonEmptyLines(result.stdout, 'stdout'),
+            ...this.nonEmptyLines(result.stderr, 'stderr'),
+          ],
+        });
+
+        return {
+          job: completed,
+          exported,
+          galleryExported,
+          publish: {
+            stdout: result.stdout,
+            stderr: result.stderr,
+          },
+        };
+      } catch (error) {
+        const completed = this.failJob(job, error);
+        const message = error instanceof Error ? error.message : 'Publish failed';
+        throw new Error(`Publish job ${completed.id} failed: ${message}`);
+      }
+    } finally {
+      this.busy = false;
     }
   }
 
@@ -153,11 +196,7 @@ export class PublishService {
       id: job.id,
       status: 'failed',
       now: completedAt,
-      logs: [
-        ...job.logs,
-        `${completedAt} failed: ${message}`,
-        ...this.errorOutput(error),
-      ],
+      logs: [...job.logs, `${completedAt} failed: ${message}`, ...this.errorOutput(error)],
     });
   }
 

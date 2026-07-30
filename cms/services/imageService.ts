@@ -21,6 +21,9 @@ export interface ImageDerivatives {
 const WIDTHS = [640, 1024, 1600];
 const LQIP_WIDTH = 32;
 const LQIP_QUALITY = 40;
+// CMS-L8: see mediaService.ts — explicit bound, defense-in-depth against
+// decompression-bomb-style inputs regardless of sharp's own default.
+const MAX_INPUT_PIXELS = 50_000_000;
 
 export class ImageService {
   private derivedDir: string;
@@ -35,7 +38,11 @@ export class ImageService {
    * Returns srcset string, lqip base64, and metadata for the largest derived.
    */
   async generateDerivatives(sourcePath: string): Promise<ImageDerivatives> {
-    const absoluteSource = path.join(config.rootDir, 'public', sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath);
+    const absoluteSource = path.join(
+      config.rootDir,
+      'public',
+      sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
+    );
 
     if (!fs.existsSync(absoluteSource)) {
       throw new Error(`Source image not found: ${absoluteSource}`);
@@ -43,9 +50,15 @@ export class ImageService {
 
     fs.mkdirSync(this.derivedDir, { recursive: true });
 
-    const hash = crypto.createHash('md5').update(sourcePath).digest('hex').slice(0, 8);
     const buffer = fs.readFileSync(absoluteSource);
-    const metadata = await sharp(buffer).metadata();
+    // CMS-M10 fix: hash the actual bytes, not the public path. Assets synced
+    // from public/fotos|logos-clientes (unlike CMS uploads, which always get a
+    // unique nanoid'd filename) can have their content replaced at the same
+    // path — a path-based hash would keep serving the old derivatives forever
+    // since `fs.existsSync(outPath)` below would find the stale file already
+    // there under the unchanged hash.
+    const hash = crypto.createHash('md5').update(buffer).digest('hex').slice(0, 8);
+    const metadata = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
     const originalWidth = metadata.width ?? 1600;
     const originalHeight = metadata.height ?? 1200;
 
@@ -57,7 +70,7 @@ export class ImageService {
       const outPath = path.join(this.derivedDir, filename);
 
       if (!fs.existsSync(outPath)) {
-        await sharp(buffer)
+        await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS })
           .resize(w, undefined, { withoutEnlargement: true })
           .webp({ quality: 82 })
           .toFile(outPath);
@@ -80,7 +93,7 @@ export class ImageService {
     if (fs.existsSync(lqipPath)) {
       lqipBase64 = fs.readFileSync(lqipPath).toString('base64');
     } else {
-      const lqipBuffer = await sharp(buffer)
+      const lqipBuffer = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS })
         .resize(LQIP_WIDTH, undefined, { withoutEnlargement: true })
         .webp({ quality: LQIP_QUALITY })
         .toBuffer();

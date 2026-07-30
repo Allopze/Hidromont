@@ -12,6 +12,12 @@ const allowedMime = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/svg
 const allowedUploadMime = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const publicMediaRoots = ['fotos', 'logos-clientes', path.join('uploads', 'cms')];
 
+// CMS-L8: sharp already defaults to a bounded limitInputPixels, but pinning it
+// explicitly here documents the intent and doesn't depend on that default
+// staying the same across sharp versions. ~50MP is generous for any real
+// photo while still bounding decompression-bomb-style memory use.
+const MAX_INPUT_PIXELS = 50_000_000;
+
 function mimeFromExt(filePath: string): string | undefined {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
@@ -62,7 +68,15 @@ export class MediaService {
         if (existing) continue;
 
         const buffer = fs.readFileSync(filePath);
-        const metadata = mime === 'image/svg+xml' ? undefined : await sharp(buffer).metadata();
+        let metadata: { width?: number; height?: number } | undefined;
+        if (mime !== 'image/svg+xml') {
+          try {
+            const meta = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+            metadata = { width: meta.width, height: meta.height };
+          } catch {
+            metadata = undefined;
+          }
+        }
         const now = new Date().toISOString();
         this.mediaRepository.upsertByPath({
           id: nanoid(),
@@ -91,7 +105,10 @@ export class MediaService {
     if (orphaned.length > 0) {
       process.stderr.write(
         `[CMS] ADVERTENCIA: ${orphaned.length} media asset(s) referencian archivos que ya no existen en disco:\n` +
-          orphaned.slice(0, 10).map((p) => `  - ${p}`).join('\n') +
+          orphaned
+            .slice(0, 10)
+            .map((p) => `  - ${p}`)
+            .join('\n') +
           (orphaned.length > 10 ? `\n  ... y ${orphaned.length - 10} más` : '') +
           '\n[CMS] Revise la biblioteca de medios y reasigne o elimine según corresponda.\n'
       );
@@ -118,12 +135,29 @@ export class MediaService {
   }
 
   async createMedia(input: { filename: string; mime: string; buffer: Buffer; alt?: string }) {
-    if (!allowedUploadMime.has(input.mime)) throw new Error('Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WebP.');
-    if (input.buffer.byteLength > config.cms.uploadMaxBytes) throw new Error('Archivo demasiado grande');
+    if (!allowedUploadMime.has(input.mime))
+      throw new Error('Tipo de archivo no permitido. Solo se aceptan JPEG, PNG y WebP.');
+    if (input.buffer.byteLength > config.cms.uploadMaxBytes)
+      throw new Error('Archivo demasiado grande');
 
-    // Verify MIME matches actual file extension to catch spoofed uploads
+    // Verify MIME matches actual file extension to catch spoofed uploads.
+    // CMS-6: reject filenames with no recognized extension outright instead of
+    // silently skipping this check — a spoofed upload could otherwise use an
+    // extensionless/unknown-extension filename to bypass it entirely.
     const declaredMime = mimeFromExt(input.filename);
-    if (declaredMime && declaredMime !== input.mime) throw new Error('El tipo MIME no coincide con la extensión del archivo');
+    if (!declaredMime)
+      throw new Error('El archivo debe tener una extensión reconocida (.jpg, .jpeg, .png, .webp)');
+    if (declaredMime !== input.mime)
+      throw new Error('El tipo MIME no coincide con la extensión del archivo');
+
+    // CMS-6: validate the bytes are actually a decodable image BEFORE writing
+    // anything to disk. Previously this wrote the file first and validated
+    // after, leaving an orphaned file (no DB row, never cleaned up) on every
+    // upload of undecodable bytes with a spoofed-but-matching MIME/extension.
+    const metadata =
+      input.mime === 'image/svg+xml'
+        ? undefined
+        : await sharp(input.buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
 
     fs.mkdirSync(config.cms.uploadDir, { recursive: true });
 
@@ -136,24 +170,29 @@ export class MediaService {
     fs.writeFileSync(fullPath, input.buffer);
 
     const checksum = crypto.createHash('sha256').update(input.buffer).digest('hex');
-    const metadata = input.mime === 'image/svg+xml' ? undefined : await sharp(input.buffer).metadata();
     const now = new Date().toISOString();
 
-    return this.mediaRepository.create({
-      id: nanoid(),
-      name,
-      path: publicPath,
-      mime: input.mime,
-      width: metadata?.width,
-      height: metadata?.height,
-      size: input.buffer.byteLength,
-      alt: input.alt,
-      focalX: 0.5,
-      focalY: 0.5,
-      checksum,
-      createdAt: now,
-      updatedAt: now,
-    });
+    try {
+      return this.mediaRepository.create({
+        id: nanoid(),
+        name,
+        path: publicPath,
+        mime: input.mime,
+        width: metadata?.width,
+        height: metadata?.height,
+        size: input.buffer.byteLength,
+        alt: input.alt,
+        focalX: 0.5,
+        focalY: 0.5,
+        checksum,
+        createdAt: now,
+        updatedAt: now,
+      });
+    } catch (error) {
+      // CMS-6: don't leave an orphaned file if the DB insert fails.
+      fs.unlinkSync(fullPath);
+      throw error;
+    }
   }
 
   updateMedia(input: { id: string; alt?: string; focalX?: number; focalY?: number }) {

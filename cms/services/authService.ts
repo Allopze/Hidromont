@@ -3,6 +3,22 @@ import { nanoid } from 'nanoid';
 import { config } from '../config/unifiedConfig';
 import type { UserRepository } from '../repositories/UserRepository';
 
+// CMS-7 fix: when the email doesn't exist, login() previously threw before ever
+// calling bcrypt.compare(), so a request against an unknown email returned much
+// faster than one against a known email with a wrong password — a timing
+// side-channel an attacker can use to enumerate valid admin emails. Comparing
+// against this fixed dummy hash on the "user not found" path costs the same
+// bcrypt work as a real comparison, without depending on any real credential
+// (it's never a valid hash for any account). Computed lazily (bcrypt.hash is
+// slow) and cached for the life of the process.
+let dummyHashPromise: Promise<string> | undefined;
+function getDummyHash(): Promise<string> {
+  if (!dummyHashPromise) {
+    dummyHashPromise = bcrypt.hash(nanoid(32), 12);
+  }
+  return dummyHashPromise;
+}
+
 export class AuthService {
   constructor(private readonly userRepository: UserRepository) {}
 
@@ -33,7 +49,11 @@ export class AuthService {
    * Disparado por el script `npm run cms:reset-password`. No se ejecuta en cada
    * arranque para no pisar cambios de contraseña hechos manualmente.
    */
-  async resetAdminPassword(email: string = config.admin.email, password: string = config.admin.password, costFactor = 12): Promise<{ created: boolean; sessionsRevoked: number }> {
+  async resetAdminPassword(
+    email: string = config.admin.email,
+    password: string = config.admin.password,
+    costFactor = 12
+  ): Promise<{ created: boolean; sessionsRevoked: number }> {
     const now = new Date().toISOString();
     const passwordHash = await bcrypt.hash(password, costFactor);
     const existing = this.userRepository.findByEmail(email);
@@ -44,19 +64,29 @@ export class AuthService {
     }
 
     this.userRepository.updatePassword(existing.id, passwordHash, now);
-    this.userRepository.deleteSessionsByUser(existing.id);
-    return { created: false, sessionsRevoked: -1 };
+    const sessionsRevoked = this.userRepository.deleteSessionsByUser(existing.id);
+    return { created: false, sessionsRevoked };
   }
 
-  async login(email: string, password: string): Promise<{ sessionId: string; csrfToken: string; expiresAt: string }> {
+  async login(
+    email: string,
+    password: string
+  ): Promise<{ sessionId: string; csrfToken: string; expiresAt: string }> {
     const user = this.userRepository.findByEmail(email);
-    if (!user) throw new Error('Credenciales inválidas');
+    if (!user) {
+      // Pay the same bcrypt cost as a real comparison so response timing
+      // doesn't reveal whether this email exists (CMS-7).
+      await bcrypt.compare(password, await getDummyHash());
+      throw new Error('Credenciales inválidas');
+    }
 
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) throw new Error('Credenciales inválidas');
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + config.cms.sessionDays * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(
+      now.getTime() + config.cms.sessionDays * 24 * 60 * 60 * 1000
+    ).toISOString();
     const sessionId = nanoid(48);
     const csrfToken = nanoid(48);
 
@@ -72,7 +102,9 @@ export class AuthService {
     return { sessionId, csrfToken, expiresAt };
   }
 
-  getSession(sessionId: string | undefined): { user: { id: string; email: string }; csrfToken: string } | undefined {
+  getSession(
+    sessionId: string | undefined
+  ): { user: { id: string; email: string }; csrfToken: string } | undefined {
     if (!sessionId) return undefined;
     const session = this.userRepository.findSession(sessionId);
     if (!session) return undefined;

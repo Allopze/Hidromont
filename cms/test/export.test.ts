@@ -66,13 +66,23 @@ describe('ExportService — filtro de status (CMS-002)', () => {
     const repo = new ContentRepository(db);
     const now = new Date().toISOString();
     repo.upsertEntry({
-      id: 'home.hero', kind: 'page', slug: '/', locale: 'es-CL',
-      title: 'Hero publicado', status: 'published', now,
+      id: 'home.hero',
+      kind: 'page',
+      slug: '/',
+      locale: 'es-CL',
+      title: 'Hero publicado',
+      status: 'published',
+      now,
       fields: [{ key: 'title', type: 'text', value: 'Título publicado' }],
     });
     repo.upsertEntry({
-      id: 'home.draft', kind: 'page', slug: '/', locale: 'es-CL',
-      title: 'Hero borrador', status: 'draft', now,
+      id: 'home.draft',
+      kind: 'page',
+      slug: '/',
+      locale: 'es-CL',
+      title: 'Hero borrador',
+      status: 'draft',
+      now,
       fields: [{ key: 'title', type: 'text', value: 'Título borrador' }],
     });
 
@@ -95,6 +105,115 @@ describe('ExportService — filtro de status (CMS-002)', () => {
   });
 });
 
+describe('ExportService — CMS-3: exporta colecciones publicadas nunca editadas', () => {
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-cms3-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'proyectos'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+    // createEntry (not upsertEntry) starts at version 1, matching how a real
+    // proyecto/servicio is bulk-imported (contentSeed.ts) or created via the
+    // CMS and published without ever individually editing a field afterward.
+    repo.createEntry({
+      id: 'proj.never-edited',
+      kind: 'proyecto',
+      slug: 'never-edited',
+      locale: 'es-CL',
+      title: 'Never Edited',
+      status: 'published',
+      fields: [{ key: 'nombre', type: 'text', value: 'Never Edited' }],
+      now,
+    });
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('exporta el .md aunque la entrada siga en version 1', () => {
+    const result = exportService.exportContent();
+    expect(result.files).toContain('src/content/proyectos/never-edited.md');
+    expect(
+      fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'never-edited.md'))
+    ).toBe(true);
+  });
+});
+
+describe('ExportService — CMS-10: omite entradas de proyecto con categoria/tipo inválidos', () => {
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-cms10-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'proyectos'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+    repo.createEntry({
+      id: 'proj.bad-categoria',
+      kind: 'proyecto',
+      slug: 'bad-categoria',
+      locale: 'es-CL',
+      title: 'Bad Categoria',
+      status: 'published',
+      fields: [
+        { key: 'nombre', type: 'text', value: 'Bad Categoria' },
+        { key: 'categoria', type: 'text', value: 'not-a-real-category' },
+      ],
+      now,
+    });
+    repo.createEntry({
+      id: 'proj.good',
+      kind: 'proyecto',
+      slug: 'good',
+      locale: 'es-CL',
+      title: 'Good',
+      status: 'published',
+      fields: [
+        { key: 'nombre', type: 'text', value: 'Good' },
+        { key: 'categoria', type: 'text', value: 'tuberias' },
+      ],
+      now,
+    });
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('omite la entrada con categoria invalida sin afectar a las demas', () => {
+    const result = exportService.exportContent();
+    expect(result.files).not.toContain('src/content/proyectos/bad-categoria.md');
+    expect(
+      fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'bad-categoria.md'))
+    ).toBe(false);
+    expect(result.files).toContain('src/content/proyectos/good.md');
+    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'good.md'))).toBe(true);
+  });
+});
+
 describe('ExportService — slugs con subdirectorio (A1-001)', () => {
   let db: Database.Database;
   let tmpRoot: string;
@@ -114,12 +233,15 @@ describe('ExportService — slugs con subdirectorio (A1-001)', () => {
     // Entrada de proyecto con slug que contiene un subdirectorio (`tanques/316l`).
     // El validador admite `/` en slugs; el export debe crear el directorio padre.
     repo.upsertEntry({
-      id: 'proj.tanques-316l', kind: 'proyecto', slug: 'tanques/316l', locale: 'es-CL',
-      title: 'Tanque 316L', status: 'published', now,
+      id: 'proj.tanques-316l',
+      kind: 'proyecto',
+      slug: 'tanques/316l',
+      locale: 'es-CL',
+      title: 'Tanque 316L',
+      status: 'published',
+      now,
       fields: [{ key: 'nombre', type: 'text', value: 'Tanque 316L' }],
     });
-    // Forzar version > 1 para que entre en el export de colecciones.
-    db.prepare('UPDATE content_entries SET version = 2 WHERE id = ?').run('proj.tanques-316l');
 
     exportService = new ExportService(repo, tmpRoot);
   });
@@ -159,16 +281,25 @@ describe('ExportService — slugs con caracteres especiales (A1-005)', () => {
     const repo = new ContentRepository(db);
     const now = new Date().toISOString();
     repo.upsertEntry({
-      id: 'srv.tanques.glp', kind: 'servicio', slug: 'tanques.glp', locale: 'es-CL',
-      title: 'Tanques GLP', status: 'published', now,
+      id: 'srv.tanques.glp',
+      kind: 'servicio',
+      slug: 'tanques.glp',
+      locale: 'es-CL',
+      title: 'Tanques GLP',
+      status: 'published',
+      now,
       fields: [{ key: 'titulo', type: 'text', value: 'Tanques GLP' }],
     });
     repo.upsertEntry({
-      id: 'srv.valvula_marca', kind: 'servicio', slug: 'valvula_marca', locale: 'es-CL',
-      title: 'Válvula Marca', status: 'published', now,
+      id: 'srv.valvula_marca',
+      kind: 'servicio',
+      slug: 'valvula_marca',
+      locale: 'es-CL',
+      title: 'Válvula Marca',
+      status: 'published',
+      now,
       fields: [{ key: 'titulo', type: 'text', value: 'Válvula Marca' }],
     });
-    db.prepare('UPDATE content_entries SET version = 2 WHERE id IN (?, ?)').run('srv.tanques.glp', 'srv.valvula_marca');
 
     exportService = new ExportService(repo, tmpRoot);
   });
@@ -181,13 +312,16 @@ describe('ExportService — slugs con caracteres especiales (A1-005)', () => {
   it('slug con punto escribe tanques.glp.md literal', () => {
     const result = exportService.exportContent();
     expect(result.files).toContain('src/content/servicios/tanques.glp.md');
-    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'tanques.glp.md'))).toBe(true);
+    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'tanques.glp.md'))).toBe(
+      true
+    );
   });
 
   it('slug con guion bajo escribe valvula_marca.md literal', () => {
     const result = exportService.exportContent();
     expect(result.files).toContain('src/content/servicios/valvula_marca.md');
-    expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'valvula_marca.md'))).toBe(true);
+    expect(
+      fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'valvula_marca.md'))
+    ).toBe(true);
   });
 });
-

@@ -1,6 +1,18 @@
+import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from '../config/unifiedConfig';
 import type { AuthService } from '../services/authService';
+
+// CMS-L1: a plain `!==` short-circuits on the first differing byte, leaking
+// timing information about how much of the token an attacker guessed
+// correctly. Tokens are fixed-length nanoid(48) strings so this is low-risk in
+// practice, but a constant-time comparison costs nothing here.
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -49,7 +61,11 @@ export function requireCsrf() {
     if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return;
 
     const csrf = request.headers['x-csrf-token'];
-    if (!request.cmsSession || csrf !== request.cmsSession.csrfToken) {
+    if (
+      !request.cmsSession ||
+      typeof csrf !== 'string' ||
+      !timingSafeStringEqual(csrf, request.cmsSession.csrfToken)
+    ) {
       reply.status(403).send({ error: 'CSRF inválido' });
       return;
     }

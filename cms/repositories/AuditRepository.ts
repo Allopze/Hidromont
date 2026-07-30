@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import type Database from 'better-sqlite3';
+import { captureException } from '../utils/errorTracking';
 
 export interface AuditEvent {
   id: string;
@@ -26,22 +27,30 @@ interface AuditRow {
 export class AuditRepository {
   constructor(private readonly db: Database.Database) {}
 
+  // CMS-L3: route handlers call this AFTER the response has already been
+  // prepared/sent for a successful mutation. A DB error here must never
+  // propagate — it would surface as a 500 for a request that already
+  // succeeded. Swallow and report to error tracking instead.
   log(event: Omit<AuditEvent, 'id' | 'createdAt'>): void {
-    this.db
-      .prepare(
-        `INSERT INTO audit_events (id, user_id, action, entity_type, entity_id, data_json, ip, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        nanoid(),
-        event.userId ?? null,
-        event.action,
-        event.entityType ?? null,
-        event.entityId ?? null,
-        event.data !== undefined ? JSON.stringify(event.data) : null,
-        event.ip ?? null,
-        new Date().toISOString()
-      );
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (id, user_id, action, entity_type, entity_id, data_json, ip, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .run(
+          nanoid(),
+          event.userId ?? null,
+          event.action,
+          event.entityType ?? null,
+          event.entityId ?? null,
+          event.data !== undefined ? JSON.stringify(event.data) : null,
+          event.ip ?? null,
+          new Date().toISOString()
+        );
+    } catch (error) {
+      captureException(error, { action: 'auditLog', data: { auditAction: event.action } });
+    }
   }
 
   list(limit = 100): AuditEvent[] {
@@ -63,9 +72,7 @@ export class AuditRepository {
 
   listByEntity(entityId: string, limit = 50): AuditEvent[] {
     const rows = this.db
-      .prepare(
-        'SELECT * FROM audit_events WHERE entity_id = ? ORDER BY created_at DESC LIMIT ?'
-      )
+      .prepare('SELECT * FROM audit_events WHERE entity_id = ? ORDER BY created_at DESC LIMIT ?')
       .all(entityId, limit) as AuditRow[];
 
     return rows.map((r) => ({

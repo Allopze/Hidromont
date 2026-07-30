@@ -10,7 +10,6 @@ if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
   process.loadEnvFile(envPath);
 }
 
-
 function intFromEnv(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw) return fallback;
@@ -32,16 +31,25 @@ export const config = {
   cms: {
     host: process.env.CMS_HOST ?? '127.0.0.1',
     port: intFromEnv('CMS_PORT', intFromEnv('PORT', 8787)),
-    databasePath: process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
+    databasePath:
+      process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
     allowedOrigins: csvFromEnv('CMS_ALLOWED_ORIGINS', [
       'http://localhost:4321',
       'http://127.0.0.1:4321',
     ]),
     cookieName: process.env.CMS_COOKIE_NAME ?? 'hidromont_cms_session',
-    cookieSecure: process.env.CMS_COOKIE_SECURE ? process.env.CMS_COOKIE_SECURE === '1' : process.env.NODE_ENV === 'production',
+    cookieSecure: process.env.CMS_COOKIE_SECURE
+      ? process.env.CMS_COOKIE_SECURE === '1'
+      : process.env.NODE_ENV === 'production',
     // Escape hatch for LAN-only setups where the operator explicitly accepts the risk
     // of an insecure (HTTP) session cookie. Must be paired with a non-default password.
     allowInsecureCookie: process.env.CMS_ALLOW_INSECURE_COOKIE === '1',
+    // CMS-L2: false by default — request.ip (used for login rate-limiting and
+    // audit logs) is the direct TCP peer, which can't be spoofed via headers.
+    // Only enable if a trusted reverse proxy sits in front of this server and
+    // sets X-Forwarded-For itself; otherwise any client can forge that header
+    // to bypass the rate limit or pollute the audit log with a fake IP.
+    trustProxy: process.env.CMS_TRUST_PROXY === '1',
     sessionDays: intFromEnv('CMS_SESSION_DAYS', 7),
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
     uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'public', 'uploads', 'cms'),

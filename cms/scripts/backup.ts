@@ -7,32 +7,32 @@
  * El backup se guarda en cms/data/backups/hidromont-cms-YYYY-MM-DDTHH-MM-SS.sqlite
  */
 
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
+import { BackupService } from '../services/backupService';
 import { captureException, initErrorTracking } from '../utils/errorTracking';
 
 initErrorTracking();
 
-try {
+async function main(): Promise<void> {
   migrate();
   const db = getDb();
+  // CMS-9 fix: delegate to BackupService instead of duplicating the backup
+  // logic here. The previous copy called `(db).backup(dest)` without
+  // `await`-ing it (better-sqlite3's backup() is async/incremental), so
+  // `{ok:true}` could print before the copy actually finished — risking a
+  // truncated .sqlite if the process exited right after. It also resolved the
+  // backup directory via `path.resolve('cms/data/backups')` (relative to
+  // whatever the CWD happened to be), unlike BackupService's config.rootDir-based
+  // path used by the equivalent /api/cms/backup route.
+  const backupService = new BackupService(db);
+  const result = await backupService.createBackup();
 
-  const backupDir = path.resolve('cms/data/backups');
-  fs.mkdirSync(backupDir, { recursive: true });
+  process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+}
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const dest = path.join(backupDir, `hidromont-cms-${timestamp}.sqlite`);
-
-  // better-sqlite3 backup() hace una copia online consistente
-  (db as unknown as { backup: (dest: string) => Promise<void> }).backup(dest);
-
-  process.stdout.write(
-    JSON.stringify({ ok: true, file: dest, timestamp: new Date().toISOString() }, null, 2) + '\n'
-  );
-} catch (error) {
+main().catch((error) => {
   captureException(error, { action: 'cmsBackup' });
   process.stderr.write(`Error al crear backup: ${String(error)}\n`);
   process.exit(1);
-}
+});

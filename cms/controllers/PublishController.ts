@@ -1,7 +1,17 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { BackupService } from '../services/backupService';
 import type { PublishService } from '../services/publishService';
+import { captureException } from '../utils/errorTracking';
 import { BaseController } from './BaseController';
+
+// CMS-4: the only failure exportContentWithGallery() should ever gracefully
+// degrade from is a DB that predates the gallery tables (a real, expected
+// state for an older/test database). Any other failure — a corrupt source
+// image, disk full, a real sharp error — must NOT be silently swallowed and
+// reported as a 200 "export succeeded" with stale gallery.json.
+function isMissingGalleryTables(error: unknown): boolean {
+  return error instanceof Error && /no such table/i.test(error.message);
+}
 
 export class PublishController extends BaseController {
   constructor(
@@ -17,7 +27,12 @@ export class PublishController extends BaseController {
       const result = await this.publishService.exportContentWithGallery();
       this.handleSuccess(reply, result);
     } catch (error) {
-      // Fallback: if gallery tables don't exist yet, export content only
+      if (!isMissingGalleryTables(error)) {
+        captureException(error, { action: 'exportContentWithGallery' });
+        this.handleError(error, reply, 'exportContentWithGallery');
+        return;
+      }
+      // Fallback: gallery tables genuinely don't exist yet, export content only
       try {
         this.handleSuccess(reply, this.publishService.exportContent());
       } catch (fallbackError) {

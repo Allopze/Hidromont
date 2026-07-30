@@ -23,9 +23,8 @@ export class UserRepository {
   }
 
   findById(id: string): UserRow | undefined {
-    return this.db
-      .prepare('SELECT id, email, password_hash FROM users WHERE id = ?')
-      .get(id) as UserRow | undefined;
+    return this.db.prepare('SELECT id, email, password_hash FROM users WHERE id = ?').get(id) as
+      UserRow | undefined;
   }
 
   createUser(input: { id: string; email: string; passwordHash: string; now: string }): void {
@@ -72,7 +71,7 @@ export class UserRepository {
   }
 
   /** Invalida todas las sesiones de un usuario (tras reset de contraseña). */
-  deleteSessionsByUser(userId: string): void {
-    this.db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+  deleteSessionsByUser(userId: string): number {
+    return this.db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId).changes;
   }
 }

@@ -21,6 +21,11 @@ interface FieldRow {
   updated_at: string;
 }
 
+// CMS-L5: cap on how many revisions createRevision() keeps per entry, and how
+// many listRevisions() ever displays — kept as one constant so they can't
+// drift apart.
+const MAX_REVISIONS_PER_ENTRY = 50;
+
 export class ContentRepository {
   constructor(private readonly db: Database.Database) {}
 
@@ -128,7 +133,9 @@ export class ContentRepository {
     const newStatus = meta.status ?? existing.status;
 
     this.db
-      .prepare('UPDATE content_entries SET title = ?, slug = ?, status = ?, updated_at = ? WHERE id = ?')
+      .prepare(
+        'UPDATE content_entries SET title = ?, slug = ?, status = ?, updated_at = ? WHERE id = ?'
+      )
       .run(newTitle, newSlug, newStatus, now, id);
 
     const entry = this.findEntry(id);
@@ -200,10 +207,14 @@ export class ContentRepository {
   listEntries(kind?: string): CmsEntry[] {
     const rows = kind
       ? (this.db
-          .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id')
+          .prepare(
+            'SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id'
+          )
           .all(kind) as EntryRow[])
       : (this.db
-          .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id')
+          .prepare(
+            'SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id'
+          )
           .all() as EntryRow[]);
 
     return rows.map((row) => this.hydrateEntry(row));
@@ -214,17 +225,28 @@ export class ContentRepository {
     return row ? this.hydrateEntry(row) : undefined;
   }
 
-  updateField(entryId: string, key: string, value: unknown, now: string, mediaId?: string): CmsEntry {
+  updateField(
+    entryId: string,
+    key: string,
+    value: unknown,
+    now: string,
+    mediaId?: string
+  ): CmsEntry {
     const field = this.findField(entryId, key);
     if (!field) throw new Error(`Field ${entryId}.${key} does not exist`);
 
     const nextVersion =
-      ((this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as { version: number })
-        ?.version ?? 1) + 1;
+      ((
+        this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as {
+          version: number;
+        }
+      )?.version ?? 1) + 1;
 
     const transaction = this.db.transaction(() => {
       this.db
-        .prepare('UPDATE content_fields SET value_json = ?, updated_at = ? WHERE entry_id = ? AND key = ?')
+        .prepare(
+          'UPDATE content_fields SET value_json = ?, updated_at = ? WHERE entry_id = ? AND key = ?'
+        )
         .run(JSON.stringify(value), now, entryId, key);
       this.db
         .prepare('UPDATE content_entries SET version = ?, updated_at = ? WHERE id = ?')
@@ -259,7 +281,9 @@ export class ContentRepository {
         .prepare('UPDATE content_entries SET version = version + 1, updated_at = ? WHERE id = ?')
         .run(now, entryId);
       const version = (
-        this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as { version: number }
+        this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as {
+          version: number;
+        }
       ).version;
       this.createRevision(entryId, version, now);
     });
@@ -270,9 +294,13 @@ export class ContentRepository {
   listRevisions(entryId: string): Array<{ id: string; version: number; createdAt: string }> {
     const rows = this.db
       .prepare(
-        'SELECT id, version, created_at FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT 50'
+        'SELECT id, version, created_at FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT ?'
       )
-      .all(entryId) as Array<{ id: string; version: number; created_at: string }>;
+      .all(entryId, MAX_REVISIONS_PER_ENTRY) as Array<{
+      id: string;
+      version: number;
+      created_at: string;
+    }>;
     return rows.map((r) => ({ id: r.id, version: r.version, createdAt: r.created_at }));
   }
 
@@ -287,7 +315,18 @@ export class ContentRepository {
   restoreRevision(entryId: string, revisionId: string, now: string): CmsEntry {
     const snapshot = this.getRevision(revisionId);
     if (!snapshot) throw new Error(`Revisión ${revisionId} no encontrada`);
-    if (snapshot.id !== entryId) throw new Error(`La revisión no pertenece a la entrada ${entryId}`);
+    if (snapshot.id !== entryId)
+      throw new Error(`La revisión no pertenece a la entrada ${entryId}`);
+
+    // CMS-L5: previously only restored fields — if the entry was renamed or
+    // (un)published after this revision was taken, "restoring" it silently
+    // kept the CURRENT slug/status/title, which isn't what an operator
+    // reaching for a revision to undo a change would expect.
+    this.updateEntryMeta(
+      entryId,
+      { title: snapshot.title, slug: snapshot.slug, status: snapshot.status },
+      now
+    );
 
     const fields: CmsField[] = Object.values(snapshot.fields);
     this.replaceEntryFields(entryId, fields, now);
@@ -326,19 +365,25 @@ export class ContentRepository {
 
   private findEntryRow(id: string): EntryRow | undefined {
     return this.db
-      .prepare('SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE id = ?')
+      .prepare(
+        'SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE id = ?'
+      )
       .get(id) as EntryRow | undefined;
   }
 
   private findField(entryId: string, key: string): FieldRow | undefined {
     return this.db
-      .prepare('SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? AND key = ?')
+      .prepare(
+        'SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? AND key = ?'
+      )
       .get(entryId, key) as FieldRow | undefined;
   }
 
   private hydrateEntry(row: EntryRow): CmsEntry {
     const fields = this.db
-      .prepare('SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? ORDER BY key')
+      .prepare(
+        'SELECT entry_id, key, type, value_json, source_ref_json, updated_at FROM content_fields WHERE entry_id = ? ORDER BY key'
+      )
       .all(row.id) as FieldRow[];
 
     return {
@@ -368,7 +413,24 @@ export class ContentRepository {
     const snapshot = this.findEntry(entryId);
     if (!snapshot) return;
     this.db
-      .prepare('INSERT INTO revisions (id, entry_id, version, snapshot_json, created_at) VALUES (?, ?, ?, ?, ?)')
+      .prepare(
+        'INSERT INTO revisions (id, entry_id, version, snapshot_json, created_at) VALUES (?, ?, ?, ?, ?)'
+      )
       .run(nanoid(), entryId, version, JSON.stringify(snapshot), now);
+
+    // CMS-L5: every updateField()/replaceEntryFields() call stores a full
+    // snapshot of the entry, and nothing ever deleted old ones — an
+    // often-edited entry's revision history grew forever. listRevisions()
+    // only ever displays the most recent MAX_REVISIONS_PER_ENTRY anyway, so
+    // keeping more than that on disk serves no purpose.
+    this.db
+      .prepare(
+        `DELETE FROM revisions
+         WHERE entry_id = ?
+           AND id NOT IN (
+             SELECT id FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT ?
+           )`
+      )
+      .run(entryId, entryId, MAX_REVISIONS_PER_ENTRY);
   }
 }
