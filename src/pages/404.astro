@@ -9,14 +9,24 @@ import Button from '../components/ui/Button.astro';
     <Container size="sm">
       <div class="text-center">
         <p class="font-mono font-bold text-primary text-7xl mb-4">404</p>
-        <h1 class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+        <h1
+          class="font-heading font-bold text-primary-dark mb-4"
+          style="font-size: var(--font-size-h2);"
+        >
           Página no encontrada
         </h1>
         <p class="text-text-muted mb-8">
-          La página que busca no existe o fue movida. Vuelva al inicio para navegar por el sitio.
+          La página que busca no existe o fue movida. Pruebe alguno de estos accesos.
         </p>
+        {
+          /* UIUX-L8 fix: only Inicio/Contactar left a lost visitor with no way
+             back into the site's main sections. */
+        }
         <div class="flex flex-wrap justify-center gap-4">
           <Button href="/" variant="primary">Ir al inicio</Button>
+          <Button href="/servicios" variant="secondary">Servicios</Button>
+          <Button href="/proyectos" variant="secondary">Proyectos</Button>
+          <Button href="/galeria" variant="secondary">Galería</Button>
           <Button href="/contacto" variant="secondary">Contactar</Button>
         </div>
       </div>

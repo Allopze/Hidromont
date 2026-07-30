@@ -1,7 +1,6 @@
 ---
 interface FilterItem {
   label: string;
-  href: string;
   id: string;
 }
 
@@ -10,20 +9,39 @@ interface Props {
   active?: string;
 }
 
-const { items, active } = Astro.props;
+const { items, active = 'todos' } = Astro.props;
 ---
 
-<nav aria-label="Filtrar proyectos por categoría" class="flex flex-wrap gap-2 mb-10">
-  {items.map((item) => (
-    <a
-      href={item.href}
-      class={`px-4 py-2.5 text-sm font-semibold font-body min-h-[44px] inline-flex items-center rounded-none no-underline transition-[background-color,color] duration-fast ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${
-        active === item.id
-          ? 'bg-primary text-white'
-          : 'bg-background-alt text-text hover:bg-primary-light hover:text-primary-dark border border-border/50'
-      }`}
-    >
-      {item.label}
-    </a>
-  ))}
+{
+  /* UIUX-13 fix: these used to be `#anchor` links that only scrolled the page
+     — styled as toggle pills but filtering nothing, with dead links for any
+     category with zero banco projects and no active state. Now real
+     client-side filtering (script in proyectos/index.astro), matching the
+     radiogroup pattern already used by the gallery filters. */
+}
+<nav
+  aria-label="Filtrar proyectos por categoría"
+  class="flex flex-wrap gap-2 mb-10"
+  id="project-filter-container"
+>
+  <div class="flex flex-wrap gap-2" role="radiogroup">
+    {
+      items.map((item) => (
+        <button
+          type="button"
+          role="radio"
+          aria-checked={item.id === active ? 'true' : 'false'}
+          tabindex={item.id === active ? 0 : -1}
+          data-filter={item.id}
+          class={`project-filter-btn px-4 py-2.5 text-sm font-semibold font-body min-h-[44px] inline-flex items-center rounded-none cursor-pointer transition-[background-color,color] duration-fast ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            item.id === active
+              ? 'bg-primary text-white'
+              : 'bg-background-alt text-text hover:bg-primary-light hover:text-primary-dark border border-border/50'
+          }`}
+        >
+          {item.label}
+        </button>
+      ))
+    }
+  </div>
 </nav>

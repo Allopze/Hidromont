@@ -31,15 +31,51 @@ html.js [data-reveal-group] > * {
     transform 0.48s cubic-bezier(0.2, 0, 0, 1);
 }
 
-html.js [data-reveal-group].is-visible > *:nth-child(1)  { opacity: 1; transform: none; transition-delay: 0.00s; }
-html.js [data-reveal-group].is-visible > *:nth-child(2)  { opacity: 1; transform: none; transition-delay: 0.07s; }
-html.js [data-reveal-group].is-visible > *:nth-child(3)  { opacity: 1; transform: none; transition-delay: 0.14s; }
-html.js [data-reveal-group].is-visible > *:nth-child(4)  { opacity: 1; transform: none; transition-delay: 0.21s; }
-html.js [data-reveal-group].is-visible > *:nth-child(5)  { opacity: 1; transform: none; transition-delay: 0.28s; }
-html.js [data-reveal-group].is-visible > *:nth-child(6)  { opacity: 1; transform: none; transition-delay: 0.35s; }
-html.js [data-reveal-group].is-visible > *:nth-child(7)  { opacity: 1; transform: none; transition-delay: 0.40s; }
-html.js [data-reveal-group].is-visible > *:nth-child(8)  { opacity: 1; transform: none; transition-delay: 0.44s; }
-html.js [data-reveal-group].is-visible > *:nth-child(n+9) { opacity: 1; transform: none; transition-delay: 0.47s; }
+html.js [data-reveal-group].is-visible > *:nth-child(1) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(2) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.07s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(3) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.14s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(4) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.21s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(5) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.28s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(6) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.35s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(7) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.4s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(8) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.44s;
+}
+html.js [data-reveal-group].is-visible > *:nth-child(n + 9) {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.47s;
+}
 
 /* ── Cinematic clip-path reveal (image panels) ─────────────── */
 
@@ -64,7 +100,14 @@ html.js [data-reveal-cinematic].is-visible {
 
 /* ── Counter ────────────────────────────────────────────────── */
 
-/* No CSS needed — JS directly sets textContent */
+/* UIUX-L12 fix: the SSR-rendered text is the real final value (so no-JS
+   visitors see the correct number), but that means motion.ts's count-up
+   would otherwise flash the finished value before jumping down to 0 to
+   animate up. Hidden only when JS is confirmed present; motion.ts reveals
+   it right as the count-up's first frame is about to paint. */
+html.js [data-count] {
+  visibility: hidden;
+}
 
 /* ── Respect prefers-reduced-motion ────────────────────────── */
 

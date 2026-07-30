@@ -58,6 +58,27 @@ const allJsonLd = [
     <script is:inline>
       document.documentElement.classList.add('js');
     </script>
+    <!-- UIUX-11 fix: motion.ts is what actually adds `.is-visible` to
+         [data-reveal] elements; if that separate bundle fails to load or
+         throws before running (network hiccup, CSP block, an unrelated
+         bundle error), those elements stay opacity:0 forever. motion.ts
+         marks documentElement[data-motion-ready] the instant it starts — if
+         that never happens within a generous grace period, force everything
+         visible so content isn't silently lost. -->
+    <script is:inline>
+      setTimeout(() => {
+        if (document.documentElement.hasAttribute('data-motion-ready')) return;
+        document
+          .querySelectorAll('[data-reveal], [data-reveal-group], [data-reveal-cinematic]')
+          .forEach((el) => el.classList.add('is-visible'));
+        // [data-count] stats are hidden the same way (html.js [data-count])
+        // until motion.ts's counter animation reveals them — same failure
+        // mode, same fallback: show the plain (unanimated) value.
+        document.querySelectorAll('[data-count]').forEach((el) => {
+          if (el instanceof HTMLElement) el.style.visibility = 'visible';
+        });
+      }, 4000);
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />

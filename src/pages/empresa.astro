@@ -16,9 +16,17 @@ import { company } from '../data/company';
 >
   <PageHero
     title={getCmsText('empresa.hero', 'title', 'Empresa')}
-    subtitle={getCmsText('empresa.hero', 'subtitle', 'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.')}
+    subtitle={getCmsText(
+      'empresa.hero',
+      'subtitle',
+      'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.'
+    )}
     imageSrc={getCmsText('empresa.hero', 'image', '/fotos/curadas/taller-nave.webp')}
-    imageAlt={getCmsText('empresa.hero', 'imageAlt', 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas')}
+    imageAlt={getCmsText(
+      'empresa.hero',
+      'imageAlt',
+      'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas'
+    )}
     imageWidth={1536}
     imageHeight={1024}
     breadcrumbs={[{ label: 'Empresa' }]}
@@ -35,45 +43,119 @@ import { company } from '../data/company';
               {getCmsText('empresa.historia', 'eyebrow', 'Historia')}
             </EditableText>
           </Eyebrow>
-          <EditableText as="h2" entry="empresa.historia" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            {getCmsText('empresa.historia', 'title', 'Más de 40 años en infraestructura hidráulica')}
+          <EditableText
+            as="h2"
+            entry="empresa.historia"
+            field="title"
+            class="font-heading font-bold text-primary-dark mb-6"
+            style="font-size: var(--font-size-h2);"
+          >
+            {
+              getCmsText(
+                'empresa.historia',
+                'title',
+                'Más de 40 años en infraestructura hidráulica'
+              )
+            }
           </EditableText>
-          <div class="space-y-4 text-text-muted" style="font-size: var(--font-size-lead); line-height: 1.7;">
+          <div
+            class="space-y-4 text-text-muted"
+            style="font-size: var(--font-size-lead); line-height: 1.7;"
+          >
             <EditableText as="p" entry="empresa.historia" field="p1" type="textarea">
-              {getCmsText('empresa.historia', 'p1', 'Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.')}
+              {
+                getCmsText(
+                  'empresa.historia',
+                  'p1',
+                  'Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional.'
+                )
+              }
             </EditableText>
             <EditableText as="p" entry="empresa.historia" field="p2" type="textarea">
-              {getCmsText('empresa.historia', 'p2', 'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra.')}
+              {
+                getCmsText(
+                  'empresa.historia',
+                  'p2',
+                  'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra.'
+                )
+              }
             </EditableText>
             <EditableText as="p" entry="empresa.historia" field="p3" type="textarea">
-              {getCmsText('empresa.historia', 'p3', 'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.')}
+              {
+                getCmsText(
+                  'empresa.historia',
+                  'p3',
+                  'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.'
+                )
+              }
             </EditableText>
           </div>
         </div>
 
         <div class="space-y-6">
           <dl class="grid grid-cols-2 gap-4">
-            {([1, 2, 3] as const).map((i) => (
-              <div class="flex flex-col p-5 border border-border rounded-none bg-surface">
-                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Value`} class={`order-1 ${i <= 1 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}>
-                  {getCmsText('empresa.metricas', `card${i}Value`, ['1983', 'EPC', 'ISO 9001'][i - 1])}
-                </EditableText>
-                <EditableText as="dt" entry="empresa.metricas" field={`card${i}Label`} class="order-2 font-semibold text-text text-sm mt-1">
-                  {getCmsText('empresa.metricas', `card${i}Label`, ['Fundación', 'Modalidad', 'Calidad'][i - 1])}
-                </EditableText>
-                <EditableText as="dd" entry="empresa.metricas" field={`card${i}Desc`} class="order-3 text-text-muted text-xs mt-0.5">
-                  {getCmsText('empresa.metricas', `card${i}Desc`, ['Origen español', 'Ingeniería, fabricación y montaje', 'Sistema de gestión'][i - 1])}
-                </EditableText>
-              </div>
-            ))}
+            {
+              ([1, 2, 3] as const).map((i) => (
+                <div class="flex flex-col p-5 border border-border rounded-none bg-surface">
+                  {/* UIUX-15 fix: DOM order now puts <dt> before its <dd>s (a
+                     dl requires the term to precede its definitions); the
+                     existing `order-*` flex classes keep the visual stacking
+                     (value → label → description) unchanged. */}
+                  <EditableText
+                    as="dt"
+                    entry="empresa.metricas"
+                    field={`card${i}Label`}
+                    class="order-2 font-semibold text-text text-sm mt-1"
+                  >
+                    {getCmsText(
+                      'empresa.metricas',
+                      `card${i}Label`,
+                      ['Fundación', 'Modalidad', 'Calidad'][i - 1]
+                    )}
+                  </EditableText>
+                  <EditableText
+                    as="dd"
+                    entry="empresa.metricas"
+                    field={`card${i}Value`}
+                    class={`order-1 ${i <= 1 ? 'font-mono' : 'font-heading'} font-bold text-primary text-2xl`}
+                  >
+                    {getCmsText(
+                      'empresa.metricas',
+                      `card${i}Value`,
+                      ['1983', 'EPC', 'ISO 9001'][i - 1]
+                    )}
+                  </EditableText>
+                  <EditableText
+                    as="dd"
+                    entry="empresa.metricas"
+                    field={`card${i}Desc`}
+                    class="order-3 text-text-muted text-xs mt-0.5"
+                  >
+                    {getCmsText(
+                      'empresa.metricas',
+                      `card${i}Desc`,
+                      ['Origen español', 'Ingeniería, fabricación y montaje', 'Sistema de gestión'][
+                        i - 1
+                      ]
+                    )}
+                  </EditableText>
+                </div>
+              ))
+            }
           </dl>
 
           <div class="p-6 bg-surface border border-border rounded-none">
-            <EditableText as="h3" entry="empresa.metricas" field="ubicacionTitle" class="font-heading font-semibold text-primary-dark mb-3">
+            <EditableText
+              as="h3"
+              entry="empresa.metricas"
+              field="ubicacionTitle"
+              class="font-heading font-semibold text-primary-dark mb-3"
+            >
               {getCmsText('empresa.metricas', 'ubicacionTitle', 'Ubicación')}
             </EditableText>
             <p class="text-sm text-text-muted">
-              <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText><br />
+              <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText
+              ><br />
               <EditableText entry="site.company" field="ciudad">{company.ciudad}</EditableText>
             </p>
           </div>
@@ -91,33 +173,95 @@ import { company } from '../data/company';
             {getCmsText('empresa.instalaciones', 'eyebrow', 'Infraestructura')}
           </EditableText>
         </Eyebrow>
-        <EditableText as="h2" entry="empresa.instalaciones" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+        <EditableText
+          as="h2"
+          entry="empresa.instalaciones"
+          field="title"
+          class="font-heading font-bold text-primary-dark mb-4"
+          style="font-size: var(--font-size-h2);"
+        >
           {getCmsText('empresa.instalaciones', 'title', 'Instalaciones y medios productivos')}
         </EditableText>
-        <EditableText as="p" entry="empresa.instalaciones" field="subtitle" type="textarea" class="text-text-muted max-w-2xl mx-auto" style="font-size: var(--font-size-lead);">
-          {getCmsText('empresa.instalaciones', 'subtitle', 'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.')}
+        <EditableText
+          as="p"
+          entry="empresa.instalaciones"
+          field="subtitle"
+          type="textarea"
+          class="text-text-muted max-w-2xl mx-auto"
+          style="font-size: var(--font-size-lead);"
+        >
+          {
+            getCmsText(
+              'empresa.instalaciones',
+              'subtitle',
+              'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.'
+            )
+          }
         </EditableText>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {[
-          { key: 1, val: '11.000 m²', title: 'Superficie de terreno', desc: 'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.' },
-          { key: 2, val: '2.000 m²', title: 'Taller industrial', desc: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
-          { key: 3, val: '400 m²', title: 'Taller de pintura', desc: 'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.' },
-          { key: 4, val: '320 m²', title: 'Oficinas e ingeniería', desc: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
-          { key: 6, val: '5 unidades', title: 'Puentes grúa', desc: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' }
-        ].map((item) => (
-          <div class="p-6 bg-surface border border-border rounded-none">
-            <EditableText as="p" entry="empresa.instalaciones" field={`item${item.key}Value`} class="font-mono font-bold text-primary text-2xl mb-1">
-              {getCmsText('empresa.instalaciones', `item${item.key}Value`, item.val)}
-            </EditableText>
-            <EditableText as="h3" entry="empresa.instalaciones" field={`item${item.key}Title`} class="font-heading font-semibold text-primary-dark text-sm mb-2">
-              {getCmsText('empresa.instalaciones', `item${item.key}Title`, item.title)}
-            </EditableText>
-            <EditableText as="p" entry="empresa.instalaciones" field={`item${item.key}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
-              {getCmsText('empresa.instalaciones', `item${item.key}Desc`, item.desc)}
-            </EditableText>
-          </div>
-        ))}
+        {
+          [
+            {
+              key: 1,
+              val: '11.000 m²',
+              title: 'Superficie de terreno',
+              desc: 'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
+            },
+            {
+              key: 2,
+              val: '2.000 m²',
+              title: 'Taller industrial',
+              desc: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
+            },
+            {
+              key: 3,
+              val: '400 m²',
+              title: 'Taller de pintura',
+              desc: 'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.',
+            },
+            {
+              key: 4,
+              val: '320 m²',
+              title: 'Oficinas e ingeniería',
+              desc: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
+            },
+            {
+              key: 6,
+              val: '5 unidades',
+              title: 'Puentes grúa',
+              desc: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
+            },
+          ].map((item) => (
+            <div class="p-6 bg-surface border border-border rounded-none">
+              <EditableText
+                as="p"
+                entry="empresa.instalaciones"
+                field={`item${item.key}Value`}
+                class="font-mono font-bold text-primary text-2xl mb-1"
+              >
+                {getCmsText('empresa.instalaciones', `item${item.key}Value`, item.val)}
+              </EditableText>
+              <EditableText
+                as="h3"
+                entry="empresa.instalaciones"
+                field={`item${item.key}Title`}
+                class="font-heading font-semibold text-primary-dark text-sm mb-2"
+              >
+                {getCmsText('empresa.instalaciones', `item${item.key}Title`, item.title)}
+              </EditableText>
+              <EditableText
+                as="p"
+                entry="empresa.instalaciones"
+                field={`item${item.key}Desc`}
+                type="textarea"
+                class="text-xs text-text-muted leading-relaxed"
+              >
+                {getCmsText('empresa.instalaciones', `item${item.key}Desc`, item.desc)}
+              </EditableText>
+            </div>
+          ))
+        }
       </div>
     </Container>
   </Section>
@@ -132,32 +276,60 @@ import { company } from '../data/company';
               {getCmsText('empresa.maquinaria', 'eyebrow', 'Equipamiento')}
             </EditableText>
           </Eyebrow>
-          <EditableText as="h2" entry="empresa.maquinaria" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+          <EditableText
+            as="h2"
+            entry="empresa.maquinaria"
+            field="title"
+            class="font-heading font-bold text-primary-dark mb-6"
+            style="font-size: var(--font-size-h2);"
+          >
             {getCmsText('empresa.maquinaria', 'title', 'Maquinaria especializada')}
           </EditableText>
-          <EditableText as="p" entry="empresa.maquinaria" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">
-            {getCmsText('empresa.maquinaria', 'subtitle', 'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.')}
+          <EditableText
+            as="p"
+            entry="empresa.maquinaria"
+            field="subtitle"
+            type="textarea"
+            class="text-text-muted mb-6"
+            style="font-size: var(--font-size-lead);"
+          >
+            {
+              getCmsText(
+                'empresa.maquinaria',
+                'subtitle',
+                'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.'
+              )
+            }
           </EditableText>
           <ul class="space-y-2.5">
-            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((i) => (
-              <li class="flex items-start gap-2.5 text-sm text-text-muted">
-                <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-                <EditableText entry="empresa.maquinaria" field={`item${i}`}>
-                  {getCmsText('empresa.maquinaria', `item${i}`, [
-                    'Estaciones de soldadura automática de arco sumergido (4 unidades)',
-                    'Fresadora DYE600 de carrera 7 m',
-                    'Tornos paralelos de 2 m y 6 m',
-                    'Torno al aire con volteo 4,5 m',
-                    'Cizalla LOIRE 3 m/16 mm',
-                    'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
-                    'Plegadora MEBUSA 200 Tn × 3 m',
-                    'Oxicorte hasta 100 mm',
-                    'Grúa autopropulsada 50 Tn',
-                    'Grupos electrógenos de 100 a 200 KVA',
-                  ][i - 1])}
-                </EditableText>
-              </li>
-            ))}
+            {
+              ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((i) => (
+                <li class="flex items-start gap-2.5 text-sm text-text-muted">
+                  <span
+                    class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                  <EditableText entry="empresa.maquinaria" field={`item${i}`}>
+                    {getCmsText(
+                      'empresa.maquinaria',
+                      `item${i}`,
+                      [
+                        'Estaciones de soldadura automática de arco sumergido (4 unidades)',
+                        'Fresadora DYE600 de carrera 7 m',
+                        'Tornos paralelos de 2 m y 6 m',
+                        'Torno al aire con volteo 4,5 m',
+                        'Cizalla LOIRE 3 m/16 mm',
+                        'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
+                        'Plegadora MEBUSA 200 Tn × 3 m',
+                        'Oxicorte hasta 100 mm',
+                        'Grúa autopropulsada 50 Tn',
+                        'Grupos electrógenos de 100 a 200 KVA',
+                      ][i - 1]
+                    )}
+                  </EditableText>
+                </li>
+              ))
+            }
           </ul>
         </div>
 
@@ -167,30 +339,58 @@ import { company } from '../data/company';
               {getCmsText('empresa.mediosdeobra', 'eyebrow', 'Capacidad de montaje')}
             </EditableText>
           </Eyebrow>
-          <EditableText as="h2" entry="empresa.mediosdeobra" field="title" class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
+          <EditableText
+            as="h2"
+            entry="empresa.mediosdeobra"
+            field="title"
+            class="font-heading font-bold text-primary-dark mb-6"
+            style="font-size: var(--font-size-h2);"
+          >
             {getCmsText('empresa.mediosdeobra', 'title', 'Medios de obra')}
           </EditableText>
-          <EditableText as="p" entry="empresa.mediosdeobra" field="subtitle" type="textarea" class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">
-            {getCmsText('empresa.mediosdeobra', 'subtitle', 'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.')}
+          <EditableText
+            as="p"
+            entry="empresa.mediosdeobra"
+            field="subtitle"
+            type="textarea"
+            class="text-text-muted mb-6"
+            style="font-size: var(--font-size-lead);"
+          >
+            {
+              getCmsText(
+                'empresa.mediosdeobra',
+                'subtitle',
+                'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.'
+              )
+            }
           </EditableText>
           <ul class="space-y-2.5">
-            {([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
-              <li class="flex items-start gap-2.5 text-sm text-text-muted">
-                <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-                <EditableText entry="empresa.mediosdeobra" field={`item${i}`}>
-                  {getCmsText('empresa.mediosdeobra', `item${i}`, [
-                    'Grúa autopropulsada 50 Tn',
-                    'Camiones pluma de hasta 9.000 kg de capacidad de levante',
-                    'Vehículos Pick-Up 4×4 para acceso a terreno',
-                    'Grupos electrógenos de 100 a 200 KVA',
-                    'Equipos de arenado y pintura industrial',
-                    'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
-                    'Plataformas y teleférico para montajes en pendiente',
-                    'Winches de alto tonelaje',
-                  ][i - 1])}
-                </EditableText>
-              </li>
-            ))}
+            {
+              ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
+                <li class="flex items-start gap-2.5 text-sm text-text-muted">
+                  <span
+                    class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                  <EditableText entry="empresa.mediosdeobra" field={`item${i}`}>
+                    {getCmsText(
+                      'empresa.mediosdeobra',
+                      `item${i}`,
+                      [
+                        'Grúa autopropulsada 50 Tn',
+                        'Camiones pluma de hasta 9.000 kg de capacidad de levante',
+                        'Vehículos Pick-Up 4×4 para acceso a terreno',
+                        'Grupos electrógenos de 100 a 200 KVA',
+                        'Equipos de arenado y pintura industrial',
+                        'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
+                        'Plataformas y teleférico para montajes en pendiente',
+                        'Winches de alto tonelaje',
+                      ][i - 1]
+                    )}
+                  </EditableText>
+                </li>
+              ))
+            }
           </ul>
         </div>
       </div>
@@ -201,7 +401,14 @@ import { company } from '../data/company';
   <CTASection
     cmsEntry="empresa.cta"
     title={getCmsText('empresa.cta', 'title', '¿Quiere conocer nuestras capacidades?')}
-    subtitle={getCmsText('empresa.cta', 'subtitle', 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.')}
-    primary={{ label: getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico'), href: '/contacto' }}
+    subtitle={getCmsText(
+      'empresa.cta',
+      'subtitle',
+      'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.'
+    )}
+    primary={{
+      label: getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico'),
+      href: '/contacto',
+    }}
   />
 </PageLayout>

@@ -32,19 +32,20 @@ const categorias: { id: Categoria; label: string }[] = Object.entries(categoriaL
   }))
   .sort((a, b) => a.label.localeCompare(b.label, 'es'));
 
-const filterItems = [
-  { label: 'Todos', href: '#banco-proyectos', id: 'todos' },
-  ...categorias.map((c) => ({
-    label: c.label,
-    href: `#${c.id}`,
-    id: c.id,
-  })),
-];
+const bancoPorCategoria = categorias
+  .map((c) => ({
+    ...c,
+    proyectos: banco.filter((p) => p.data.categoria === c.id),
+  }))
+  // UIUX-13 fix: a category with zero banco projects has no rendered section
+  // to jump/filter to — dropping it here means the filter chips never offer
+  // a dead option.
+  .filter((c) => c.proyectos.length > 0);
 
-const bancoPorCategoria = categorias.map((c) => ({
-  ...c,
-  proyectos: banco.filter((p) => p.data.categoria === c.id),
-}));
+const filterItems = [
+  { label: 'Todos', id: 'todos' },
+  ...bancoPorCategoria.map((c) => ({ label: c.label, id: c.id })),
+];
 ---
 
 <PageLayout
@@ -53,9 +54,21 @@ const bancoPorCategoria = categorias.map((c) => ({
 >
   <PageHero
     title={getCmsText('proyectos.index.hero', 'title', 'Proyectos')}
-    subtitle={getCmsText('proyectos.index.hero', 'subtitle', 'Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos.')}
-    imageSrc={getCmsText('proyectos.index.hero', 'image', '/fotos/curadas/bifurcacion-t-taller.webp')}
-    imageAlt={getCmsText('proyectos.index.hero', 'imageAlt', 'Bifurcación en T de gran diámetro fabricada en taller')}
+    subtitle={getCmsText(
+      'proyectos.index.hero',
+      'subtitle',
+      'Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos.'
+    )}
+    imageSrc={getCmsText(
+      'proyectos.index.hero',
+      'image',
+      '/fotos/curadas/bifurcacion-t-taller.webp'
+    )}
+    imageAlt={getCmsText(
+      'proyectos.index.hero',
+      'imageAlt',
+      'Bifurcación en T de gran diámetro fabricada en taller'
+    )}
     imageWidth={1536}
     imageHeight={1024}
     breadcrumbs={[{ label: 'Proyectos' }]}
@@ -63,25 +76,33 @@ const bancoPorCategoria = categorias.map((c) => ({
   />
 
   <!-- Proyectos destacados -->
-  {destacados.length > 0 && (
-    <Section variant="default">
-      <Container>
-        <Eyebrow>
-          <EditableText entry="proyectos.index.destacados" field="eyebrow">
-            {getCmsText('proyectos.index.destacados', 'eyebrow', 'Casos de referencia')}
+  {
+    destacados.length > 0 && (
+      <Section variant="default">
+        <Container>
+          <Eyebrow>
+            <EditableText entry="proyectos.index.destacados" field="eyebrow">
+              {getCmsText('proyectos.index.destacados', 'eyebrow', 'Casos de referencia')}
+            </EditableText>
+          </Eyebrow>
+          <EditableText
+            as="h2"
+            entry="proyectos.index.destacados"
+            field="title"
+            class="font-heading font-bold text-primary-dark mb-8"
+            style="font-size: var(--font-size-h2);"
+          >
+            {getCmsText('proyectos.index.destacados', 'title', 'Proyectos de referencia')}
           </EditableText>
-        </Eyebrow>
-        <EditableText as="h2" entry="proyectos.index.destacados" field="title" class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
-          {getCmsText('proyectos.index.destacados', 'title', 'Proyectos de referencia')}
-        </EditableText>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destacados.map((p) => (
-            <ProjectCard proyecto={p} />
-          ))}
-        </div>
-      </Container>
-    </Section>
-  )}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {destacados.map((p) => (
+              <ProjectCard proyecto={p} />
+            ))}
+          </div>
+        </Container>
+      </Section>
+    )
+  }
 
   <!-- Banco de proyectos -->
   <Section variant="alt" id="banco-proyectos">
@@ -91,29 +112,124 @@ const bancoPorCategoria = categorias.map((c) => ({
           {getCmsText('proyectos.index.banco', 'eyebrow', 'Banco de proyectos')}
         </EditableText>
       </Eyebrow>
-      <EditableText as="h2" entry="proyectos.index.banco" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
-        {getCmsText('proyectos.index.banco', 'title', 'Experiencia comprobada en embalses, presas y centrales')}
+      <EditableText
+        as="h2"
+        entry="proyectos.index.banco"
+        field="title"
+        class="font-heading font-bold text-primary-dark mb-4"
+        style="font-size: var(--font-size-h2);"
+      >
+        {
+          getCmsText(
+            'proyectos.index.banco',
+            'title',
+            'Experiencia comprobada en embalses, presas y centrales'
+          )
+        }
       </EditableText>
-      <EditableText as="p" entry="proyectos.index.banco" field="subtitle" type="textarea" class="text-text-muted mb-8 max-w-2xl" style="font-size: var(--font-size-lead);">
-        {getCmsText('proyectos.index.banco', 'subtitle', 'Registro de proyectos ejecutados clasificados por línea de servicio.')}
+      <EditableText
+        as="p"
+        entry="proyectos.index.banco"
+        field="subtitle"
+        type="textarea"
+        class="text-text-muted mb-8 max-w-2xl"
+        style="font-size: var(--font-size-lead);"
+      >
+        {
+          getCmsText(
+            'proyectos.index.banco',
+            'subtitle',
+            'Registro de proyectos ejecutados clasificados por línea de servicio.'
+          )
+        }
       </EditableText>
 
       <ProjectFilters items={filterItems} />
 
-      {bancoPorCategoria.map((cat) => (
-        cat.proyectos.length > 0 && (
-          <div id={cat.id}>
-            <ProjectTable proyectos={cat.proyectos} titulo={cat.label} />
-          </div>
-        )
-      ))}
+      <div id="project-sections">
+        {
+          bancoPorCategoria.map((cat) => (
+            <div id={cat.id} data-category={cat.id}>
+              <ProjectTable proyectos={cat.proyectos} titulo={cat.label} />
+            </div>
+          ))
+        }
+      </div>
     </Container>
   </Section>
 
+  <script>
+    // UIUX-13 fix: real client-side filtering for the category pills — see
+    // ProjectFilters.astro for the markup/a11y side of this change.
+    (() => {
+      const container = document.getElementById('project-filter-container');
+      const buttons = container?.querySelectorAll<HTMLElement>('[data-filter]');
+      const sections = document.querySelectorAll<HTMLElement>('#project-sections [data-category]');
+      if (!buttons || !sections.length) return;
+
+      const btnArray = Array.from(buttons);
+
+      function activateFilter(id: string): void {
+        btnArray.forEach((b) => {
+          const isActive = b.getAttribute('data-filter') === id;
+          b.setAttribute('aria-checked', String(isActive));
+          b.tabIndex = isActive ? 0 : -1;
+          b.classList.toggle('bg-primary', isActive);
+          b.classList.toggle('text-white', isActive);
+          b.classList.toggle('bg-background-alt', !isActive);
+          b.classList.toggle('text-text', !isActive);
+          b.classList.toggle('border', !isActive);
+          b.classList.toggle('border-border/50', !isActive);
+        });
+
+        sections.forEach((section) => {
+          const show = id === 'todos' || section.getAttribute('data-category') === id;
+          section.classList.toggle('hidden', !show);
+        });
+      }
+
+      btnArray.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activateFilter(btn.getAttribute('data-filter') || 'todos');
+        });
+      });
+
+      container?.addEventListener('keydown', (e: KeyboardEvent) => {
+        const current = document.activeElement as HTMLElement;
+        const idx = btnArray.indexOf(current);
+        if (idx === -1) return;
+
+        let next = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          next = (idx + 1) % btnArray.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          next = (idx - 1 + btnArray.length) % btnArray.length;
+        }
+
+        if (next !== -1) {
+          e.preventDefault();
+          btnArray[next].focus();
+          btnArray[next].click();
+        }
+      });
+    })();
+  </script>
+
   <CTASection
     cmsEntry="proyectos.index.cta"
-    title={getCmsText('proyectos.index.cta', 'title', 'Más de 40 años de proyectos en Chile y el exterior')}
-    subtitle={getCmsText('proyectos.index.cta', 'subtitle', 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.')}
-    primary={{ label: getCmsText('proyectos.index.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
+    title={getCmsText(
+      'proyectos.index.cta',
+      'title',
+      'Más de 40 años de proyectos en Chile y el exterior'
+    )}
+    subtitle={getCmsText(
+      'proyectos.index.cta',
+      'subtitle',
+      'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.'
+    )}
+    primary={{
+      label: getCmsText('proyectos.index.cta', 'buttonLabel', 'Contacto'),
+      href: '/contacto',
+    }}
   />
 </PageLayout>

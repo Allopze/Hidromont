@@ -11,6 +11,13 @@
  *   - Touch devices: parallax disabled (performance + UX)
  */
 
+// UIUX-11: a canary for BaseLayout's reveal failsafe — as soon as this module
+// actually executes (regardless of what happens after), mark the document so
+// the inline failsafe script knows not to force-reveal everything.
+if (typeof document !== 'undefined') {
+  document.documentElement.setAttribute('data-motion-ready', '');
+}
+
 const reducedMotionQuery =
   typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : undefined;
 
@@ -137,6 +144,7 @@ function initCounters(): void {
       const target = parseInt(el.dataset.count ?? '0', 10);
       const suffix = el.dataset.suffix ?? '';
       el.textContent = `${target.toLocaleString('es-CL')}${suffix}`;
+      el.style.visibility = 'visible';
     });
     return;
   }
@@ -152,6 +160,12 @@ function initCounters(): void {
         const suffix = el.dataset.suffix ?? '';
         const duration = 1200; // ms
         const start = performance.now();
+
+        // UIUX-L12 fix: reveal right as the count-up's first frame is about
+        // to paint, so the browser never shows the SSR-baked final value
+        // (kept hidden via motion.css's `html.js [data-count]` rule) before
+        // the animation jumps down to 0 to start counting up.
+        el.style.visibility = 'visible';
 
         function tick(now: number): void {
           const elapsed = Math.min(now - start, duration);

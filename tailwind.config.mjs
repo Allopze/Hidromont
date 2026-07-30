@@ -32,6 +32,13 @@ export default {
         body: ['Inter', 'Arial', 'sans-serif'],
         mono: ['"Roboto Mono"', 'monospace'],
       },
+      // UIUX-2 fix: `text-caption` was used across the codebase (Eyebrow,
+      // Badge) but this key never existed, so Tailwind silently dropped the
+      // utility and those elements inherited ~16px instead of the intended
+      // 0.75rem — matches --font-size-caption in tokens.css.
+      fontSize: {
+        caption: '0.75rem',
+      },
       borderRadius: {
         xs: '0px',
         sm: '0px',

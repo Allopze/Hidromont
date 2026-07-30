@@ -96,37 +96,51 @@ function isActive(href: string) {
         {
           navItems.map((item) =>
             item.children ? (
-              <div class="relative group">
-                <a
-                  href={item.href}
+              <div class="relative group" data-dropdown-group>
+                <div
                   class={[
-                    'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                    'flex items-center rounded-none transition-colors duration-fast ease-standard',
                     overlay
-                      ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
-                      : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
+                      ? `nav-link hover:bg-white/10 ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
+                      : `hover:bg-primary-light ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
                   ].join(' ')}
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  data-dropdown-trigger
                 >
-                  <EditableText entry="layout.header" field={item.cmsField}>
-                    {item.label}
-                  </EditableText>
-                  <svg
-                    class="inline-block ml-1 w-3 h-3"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
+                  <a
+                    href={item.href}
+                    class={`pl-4 pr-1 py-2 text-sm font-semibold font-body no-underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${overlay ? 'hover:text-white' : 'hover:text-primary-dark'}`}
                   >
-                    <path d="M2 4l4 4 4-4" />
-                  </svg>
-                </a>
-                <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-dropdown">
+                    <EditableText entry="layout.header" field={item.cmsField}>
+                      {item.label}
+                    </EditableText>
+                  </a>
+                  <button
+                    type="button"
+                    class="dropdown-toggle-btn flex items-center justify-center pl-1 pr-3 py-2 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    aria-expanded="false"
+                    aria-controls={`dropdown-panel-${item.cmsField}`}
+                    aria-label={`Mostrar submenú de ${item.label}`}
+                    data-dropdown-toggle
+                  >
+                    <svg
+                      class="w-3 h-3 dropdown-chevron"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M2 4l4 4 4-4" />
+                    </svg>
+                  </button>
+                </div>
+                <div
+                  id={`dropdown-panel-${item.cmsField}`}
+                  class="dropdown-panel absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md transition-[opacity,visibility] duration-base ease-standard z-dropdown"
+                >
                   {item.children.map((child) => (
                     <a
                       href={child.href}
-                      class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
+                      class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
                     >
                       <EditableText entry="layout.header" field={child.cmsField}>
                         {child.label}
@@ -139,7 +153,7 @@ function isActive(href: string) {
               <a
                 href={item.href}
                 class={[
-                  'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                  'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary',
                   overlay
                     ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
                     : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
@@ -166,7 +180,7 @@ function isActive(href: string) {
         id="menu-toggle"
         type="button"
         class={[
-          'lg:hidden flex items-center justify-center w-11 h-11 rounded-none transition-colors duration-fast focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary',
+          'lg:hidden flex items-center justify-center w-11 h-11 rounded-none transition-colors duration-fast focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary',
           overlay ? 'text-white hover:bg-white/10 toggle-btn' : 'text-text hover:bg-primary-light',
         ].join(' ')}
         aria-expanded="false"
@@ -207,7 +221,7 @@ function isActive(href: string) {
           item.children ? (
             <details class="group">
               <summary
-                class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}
+                class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}
               >
                 <EditableText entry="layout.header" field={item.cmsField}>
                   {item.label}
@@ -226,7 +240,7 @@ function isActive(href: string) {
                 {item.children.map((child) => (
                   <a
                     href={child.href}
-                    class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
+                    class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
                   >
                     <EditableText entry="layout.header" field={child.cmsField}>
                       {child.label}
@@ -238,7 +252,7 @@ function isActive(href: string) {
           ) : (
             <a
               href={item.href}
-              class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
+              class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
             >
               <EditableText entry="layout.header" field={item.cmsField}>
                 {item.label}
@@ -256,22 +270,77 @@ function isActive(href: string) {
   </div>
 </header>
 
+<style>
+  /* UIUX-4 fix: the submenu previously opened purely on CSS `group-hover`,
+     with the label `<a>` doubling as an `aria-haspopup` trigger it couldn't
+     actually operate (Enter just navigated to /servicios) — keyboard-only
+     and non-hover pointer users had no way to open it. Now a dedicated
+     `.dropdown-toggle-btn` drives `.is-open` via click/Escape (script below);
+     hover/focus-within stay as a mouse convenience but no longer are the only
+     way in. */
+  .dropdown-panel {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .group:hover .dropdown-panel,
+  .group:focus-within .dropdown-panel,
+  .dropdown-panel.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .dropdown-toggle-btn:hover {
+    opacity: 0.75;
+  }
+
+  .dropdown-chevron {
+    transition: transform var(--motion-fast) var(--ease-standard);
+  }
+
+  .group:hover .dropdown-chevron,
+  .group:focus-within .dropdown-chevron,
+  .dropdown-toggle-btn[aria-expanded='true'] .dropdown-chevron {
+    transform: rotate(180deg);
+  }
+</style>
+
 <script>
-  /* ── Desktop dropdown aria-expanded (B2-003) ──────────────── */
-  /* El dropdown se abre via CSS group-hover/group-focus-within; aqui sincronizamos
-     el estado aria-expanded del trigger para que los lectores de pantalla anuncien
-     la apertura/cierre. */
-  document.querySelectorAll<HTMLElement>('[data-dropdown-trigger]').forEach((trigger) => {
-    const group = trigger.closest('.group');
-    if (!group) return;
-    const setOpen = (open: boolean) => trigger.setAttribute('aria-expanded', String(open));
-    group.addEventListener('mouseenter', () => setOpen(true));
-    group.addEventListener('mouseleave', () => setOpen(false));
-    trigger.addEventListener('focus', () => setOpen(true));
-    trigger.addEventListener('blur', (event) => {
-      // Cierra solo si el foco sale del grupo entero (no al saltar a un item del dropdown).
-      const next = event.relatedTarget as HTMLElement | null;
+  /* ── Desktop dropdown disclosure (UIUX-4) ────────────────────
+     `.dropdown-toggle-btn` is a real, separate control (not the nav link)
+     so click/Enter/Space toggle the submenu without navigating away.
+     Hover/focus-within opening is handled purely in CSS above; this script
+     only owns the deliberate open/close state that drives aria-expanded. */
+  document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]').forEach((toggleBtn) => {
+    const group = toggleBtn.closest<HTMLElement>('[data-dropdown-group]');
+    const panel = group?.querySelector<HTMLElement>('.dropdown-panel');
+    if (!group || !panel) return;
+
+    function setOpen(open: boolean): void {
+      panel!.classList.toggle('is-open', open);
+      toggleBtn.setAttribute('aria-expanded', String(open));
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      setOpen(!panel!.classList.contains('is-open'));
+    });
+
+    group.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && panel!.classList.contains('is-open')) {
+        setOpen(false);
+        toggleBtn.focus();
+      }
+    });
+
+    group.addEventListener('focusout', (e: FocusEvent) => {
+      const next = e.relatedTarget as HTMLElement | null;
       if (!next || !group.contains(next)) setOpen(false);
+    });
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (panel!.classList.contains('is-open') && !group.contains(e.target as Node)) {
+        setOpen(false);
+      }
     });
   });
 

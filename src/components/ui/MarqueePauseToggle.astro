@@ -1,0 +1,102 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+{
+  /* UIUX-7 fix: WCAG 2.2.2 requires an explicit pause mechanism for the
+     auto-scrolling logo marquees — prefers-reduced-motion (handled in
+     base.css) only covers users with that OS setting on. This button
+     toggles `.is-paused` on the nearest `.marquee-region` ancestor; the
+     matching CSS lives in base.css so both marquee instances share one
+     rule. Hover/focus-within on the region also pauses, so a mouse user
+     can read a logo without needing the button at all. */
+}
+<button
+  type="button"
+  class={`marquee-pause-toggle ${className}`}
+  aria-pressed="false"
+  aria-label="Pausar animación del carrusel de logos"
+>
+  <svg
+    class="marquee-pause-icon"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <rect class="marquee-pause-icon__bar" x="6" y="5" width="4" height="14"></rect>
+    <rect class="marquee-pause-icon__bar" x="14" y="5" width="4" height="14"></rect>
+    <path class="marquee-pause-icon__triangle" d="M8 5v14l11-7z"></path>
+  </svg>
+</button>
+
+<style>
+  .marquee-pause-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: rgba(15, 36, 51, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    transition: background var(--motion-fast) var(--ease-standard);
+  }
+
+  .marquee-pause-toggle:hover {
+    background: rgba(15, 36, 51, 0.8);
+  }
+
+  .marquee-pause-toggle:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .marquee-pause-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .marquee-pause-icon__triangle {
+    display: none;
+  }
+
+  /* aria-pressed="true" = animation is paused → show the play glyph */
+  .marquee-pause-toggle[aria-pressed='true'] .marquee-pause-icon__bar {
+    display: none;
+  }
+
+  .marquee-pause-toggle[aria-pressed='true'] .marquee-pause-icon__triangle {
+    display: block;
+  }
+</style>
+
+<script>
+  // Delegated so a single script handles every `.marquee-pause-toggle`
+  // instance on the page (ClientsStrip, ClientesHero) without per-page wiring.
+  document.querySelectorAll<HTMLButtonElement>('.marquee-pause-toggle').forEach((btn) => {
+    const region = btn.closest<HTMLElement>('.marquee-region');
+    if (!region) return;
+
+    btn.addEventListener('click', () => {
+      const paused = region.classList.toggle('is-paused');
+      btn.setAttribute('aria-pressed', String(paused));
+      btn.setAttribute(
+        'aria-label',
+        paused
+          ? 'Reanudar animación del carrusel de logos'
+          : 'Pausar animación del carrusel de logos'
+      );
+    });
+  });
+</script>

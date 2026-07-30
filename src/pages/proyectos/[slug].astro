@@ -20,7 +20,8 @@ export async function getStaticPaths() {
 }
 
 const { proyecto } = Astro.props;
-const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } = proyecto.data;
+const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } =
+  proyecto.data;
 const { Content } = await render(proyecto);
 const slug = proyecto.id;
 const projectImageEntry = `project-image.${slug}`;
@@ -43,18 +44,18 @@ const jsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://hidromont.cl/' },
-    { '@type': 'ListItem', position: 2, name: 'Proyectos', item: 'https://hidromont.cl/proyectos/' },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Proyectos',
+      item: 'https://hidromont.cl/proyectos/',
+    },
     { '@type': 'ListItem', position: 3, name: nombre },
   ],
 };
 ---
 
-<PageLayout
-  title={nombre}
-  description={alcance}
-  image={heroImg?.src}
-  jsonLd={jsonLd}
->
+<PageLayout title={nombre} description={alcance} image={heroImg?.src} jsonLd={jsonLd}>
   <PageHero
     badge={categoriaLabels[categoria] ?? categoria}
     title={nombre}
@@ -76,122 +77,152 @@ const jsonLd = {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <!-- Contenido principal -->
         <div class="lg:col-span-2">
-          <div class="prose prose-lg max-w-none text-text-muted [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-primary-dark [&_h3]:font-heading [&_h3]:text-primary-dark [&_table]:text-sm [&_th]:bg-primary-light [&_th]:text-primary-dark [&_th]:font-bold [&_th]:px-4 [&_th]:py-3 [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-border">
+          <div
+            class="prose prose-lg max-w-none text-text-muted [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-primary-dark [&_h3]:font-heading [&_h3]:text-primary-dark [&_table]:text-sm [&_th]:bg-primary-light [&_th]:text-primary-dark [&_th]:font-bold [&_th]:px-4 [&_th]:py-3 [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-border"
+          >
             <Content />
           </div>
         </div>
 
         <!-- Sidebar con datos técnicos -->
         <aside class="space-y-5">
-          {(diametro || longitud || ubicacion || peso || acero) && (
-            <div class="p-5 border border-border rounded-none bg-background-alt">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4">Datos técnicos</h3>
-              <dl class="space-y-3">
-                {diametro && (
-                  <div>
-                    <dt class="text-xs text-text-muted uppercase tracking-wide">Diámetro</dt>
-                    <dd class="font-mono font-semibold text-text">{diametro}</dd>
-                  </div>
-                )}
-                {longitud && (
-                  <div>
-                    <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
-                    <dd class="font-mono font-semibold text-text">{longitud}</dd>
-                  </div>
-                )}
-                {acero && (
-                  <div>
-                    <dt class="text-xs text-text-muted uppercase tracking-wide">Acero</dt>
-                    <dd class="font-semibold text-text">{acero}</dd>
-                  </div>
-                )}
-                {peso && (
-                  <div>
-                    <dt class="text-xs text-text-muted uppercase tracking-wide">Peso</dt>
-                    <dd class="font-mono font-semibold text-text">{peso}</dd>
-                  </div>
-                )}
-                {ubicacion && (
-                  <div>
-                    <dt class="text-xs text-text-muted uppercase tracking-wide">Ubicación</dt>
-                    <dd class="font-semibold text-text">{ubicacion}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-          )}
-
-          {cliente && (
-            <div class="p-5 border border-border rounded-none bg-surface">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2">Cliente</h3>
-              <p class="text-sm text-text font-semibold">{cliente}</p>
-            </div>
-          )}
-
-          {normas && normas.length > 0 && (
-            <div class="p-5 border border-border rounded-none bg-surface">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Normas aplicadas</h3>
-              <div class="flex flex-wrap gap-2">
-                {normas.map((n: string) => (
-                  <Badge variant="muted">{n}</Badge>
-                ))}
+          {
+            (diametro || longitud || ubicacion || peso || acero) && (
+              <div class="p-5 border border-border rounded-none bg-background-alt">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4">
+                  Datos técnicos
+                </h3>
+                <dl class="space-y-3">
+                  {diametro && (
+                    <div>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">Diámetro</dt>
+                      <dd class="font-mono font-semibold text-text">{diametro}</dd>
+                    </div>
+                  )}
+                  {longitud && (
+                    <div>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
+                      <dd class="font-mono font-semibold text-text">{longitud}</dd>
+                    </div>
+                  )}
+                  {acero && (
+                    <div>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">Acero</dt>
+                      <dd class="font-semibold text-text">{acero}</dd>
+                    </div>
+                  )}
+                  {peso && (
+                    <div>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">Peso</dt>
+                      <dd class="font-mono font-semibold text-text">{peso}</dd>
+                    </div>
+                  )}
+                  {ubicacion && (
+                    <div>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">Ubicación</dt>
+                      <dd class="font-semibold text-text">{ubicacion}</dd>
+                    </div>
+                  )}
+                </dl>
               </div>
-            </div>
-          )}
+            )
+          }
+
+          {
+            cliente && (
+              <div class="p-5 border border-border rounded-none bg-surface">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2">
+                  Cliente
+                </h3>
+                <p class="text-sm text-text font-semibold">{cliente}</p>
+              </div>
+            )
+          }
+
+          {
+            normas && normas.length > 0 && (
+              <div class="p-5 border border-border rounded-none bg-surface">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
+                  Normas aplicadas
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {normas.map((n: string) => (
+                    <Badge variant="muted">{n}</Badge>
+                  ))}
+                </div>
+              </div>
+            )
+          }
 
           <div class="p-5 bg-primary rounded-none text-white">
             <p class="font-semibold text-sm mb-2">¿Trabaja en proyectos similares?</p>
-            <p class="text-white/80 text-xs mb-4 leading-relaxed">Converse con nuestro equipo sobre las capacidades y trayectoria de Hidromont.</p>
+            <p class="text-white/80 text-xs mb-4 leading-relaxed">
+              Converse con nuestro equipo sobre las capacidades y trayectoria de Hidromont.
+            </p>
             <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
               Contactar
             </Button>
           </div>
 
           <div>
-            <a href={servicioHref[categoria] ?? '/servicios'} class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast">
+            <a
+              href={servicioHref[categoria] ?? '/servicios'}
+              class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast"
+            >
               ← Ver servicio relacionado: {categoriaLabels[categoria]}
             </a>
           </div>
         </aside>
       </div>
 
-      {(gallery?.images.length > 0 || cmsEditingEnabled) && (
-        <div class="mt-16">
-          <h2 class="font-heading font-bold text-primary-dark mb-6" style="font-size: var(--font-size-h2);">
-            Galería de imágenes
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((n) => {
-              const img = gallery?.images[n - 1];
-              return (
-                <div class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border">
-                  {img ? (
-                    <EditableImage
-                      entry={galleryEntryId}
-                      field={`gallery${n}`}
-                      altField={`gallery${n}Alt`}
-                      src={img.src}
-                      alt={img.alt}
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : cmsEditingEnabled ? (
-                    <div
-                      class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
-                      data-cms-entry={galleryEntryId}
-                      data-cms-field={`gallery${n}`}
-                      data-cms-alt-field={`gallery${n}Alt`}
-                      data-cms-type="image"
-                    >
-                      + Agregar imagen {n}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+      {
+        (gallery?.images.length > 0 || cmsEditingEnabled) && (
+          <div class="mt-16">
+            <h2
+              class="font-heading font-bold text-primary-dark mb-6"
+              style="font-size: var(--font-size-h2);"
+            >
+              Galería de imágenes
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* UIUX-12 fix: this iterated a fixed [1,2,3] and always rendered
+                 the bordered wrapper regardless of whether a slot had an image
+                 — a project with 1-2 gallery photos showed the real ones
+                 plus 1-2 empty bordered boxes in production. Now a slot with
+                 no image and no CMS editing renders nothing at all. */}
+              {[1, 2, 3].map((n) => {
+                const img = gallery?.images[n - 1];
+                if (!img && !cmsEditingEnabled) return null;
+                return (
+                  <div class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border">
+                    {img ? (
+                      <EditableImage
+                        entry={galleryEntryId}
+                        field={`gallery${n}`}
+                        altField={`gallery${n}Alt`}
+                        src={img.src}
+                        alt={img.alt}
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div
+                        class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
+                        data-cms-entry={galleryEntryId}
+                        data-cms-field={`gallery${n}`}
+                        data-cms-alt-field={`gallery${n}Alt`}
+                        data-cms-type="image"
+                      >
+                        + Agregar imagen {n}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <div class="mt-12 pt-8 border-t border-border">
         <Button href="/proyectos" variant="secondary">← Volver a proyectos</Button>

@@ -1,5 +1,6 @@
 ---
 import EditableText from '../cms/EditableText.astro';
+import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 
 interface Breadcrumb {
   label: string;
@@ -41,7 +42,6 @@ const row2 = logos.slice(mid);
     class="relative flex flex-col lg:flex-row lg:items-stretch"
     style="min-height: clamp(380px, 50vw, 580px);"
   >
-
     {/* ── Text column (left, 45%) ── */}
     <div
       class="relative z-10 w-full lg:w-[45%] py-16 md:py-20 lg:py-28 pr-6 lg:pr-16 flex flex-col justify-center"
@@ -52,24 +52,37 @@ const row2 = logos.slice(mid);
         class="absolute inset-0 pointer-events-none"
         aria-hidden="true"
         style="background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px); background-size: 48px 48px;"
-      ></div>
+      >
+      </div>
 
-      {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav
-          class="flex items-center gap-1.5 mb-4 text-xs text-white/60 font-body relative"
-          aria-label="Breadcrumb"
-        >
-          {breadcrumbs.map((crumb, i) => (
-            <>
-              {i > 0 && <span aria-hidden="true" class="text-white/30">›</span>}
-              {crumb.href
-                ? <a href={crumb.href} class="hover:text-white/80 transition-colors duration-fast no-underline">{crumb.label}</a>
-                : <span>{crumb.label}</span>
-              }
-            </>
-          ))}
-        </nav>
-      )}
+      {
+        breadcrumbs && breadcrumbs.length > 0 && (
+          <nav
+            class="flex items-center gap-1.5 mb-4 text-xs text-white/60 font-body relative"
+            aria-label="Breadcrumb"
+          >
+            {breadcrumbs.map((crumb, i) => (
+              <>
+                {i > 0 && (
+                  <span aria-hidden="true" class="text-white/30">
+                    ›
+                  </span>
+                )}
+                {crumb.href ? (
+                  <a
+                    href={crumb.href}
+                    class="hover:text-white/80 transition-colors duration-fast no-underline"
+                  >
+                    {crumb.label}
+                  </a>
+                ) : (
+                  <span>{crumb.label}</span>
+                )}
+              </>
+            ))}
+          </nav>
+        )
+      }
 
       {/* Accent line */}
       <div class="w-10 h-0.5 bg-accent mb-5 relative" aria-hidden="true"></div>
@@ -85,76 +98,83 @@ const row2 = logos.slice(mid);
         {title}
       </EditableText>
 
-      {subtitle && (
-        <EditableText
-          as="p"
-          entry={cmsSubtitleField ? cmsEntry : undefined}
-          field={cmsSubtitleField || 'subtitle'}
-          class="text-white/70 max-w-lg relative"
-          style="font-size: var(--font-size-lead); line-height: 1.7; --reveal-delay: 0.1s;"
-          type="textarea"
-          reveal
-        >
-          {subtitle}
-        </EditableText>
-      )}
+      {
+        subtitle && (
+          <EditableText
+            as="p"
+            entry={cmsSubtitleField ? cmsEntry : undefined}
+            field={cmsSubtitleField || 'subtitle'}
+            class="text-white/70 max-w-lg relative"
+            style="font-size: var(--font-size-lead); line-height: 1.7; --reveal-delay: 0.1s;"
+            type="textarea"
+            reveal
+          >
+            {subtitle}
+          </EditableText>
+        )
+      }
 
       <slot />
     </div>
 
     {/* ── Marquee column (right, flex-1) ── */}
     <div
-      class="flex-1 relative overflow-hidden min-h-[240px] lg:min-h-0 flex flex-col justify-center gap-4 py-10 lg:py-0"
-      aria-hidden="true"
+      class="flex-1 relative overflow-hidden min-h-[240px] lg:min-h-0 flex flex-col justify-center gap-4 py-10 lg:py-0 marquee-region"
       style="mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%); -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);"
     >
+      {(row1.length > 0 || row2.length > 0) && <MarqueePauseToggle />}
+
       {/* Row 1 — scrolls left */}
-      {row1.length > 0 && (
-        <div class="flex" style="overflow: hidden;">
-          <div class="flex gap-4 shrink-0 logo-marquee-track">
-            {[...row1, ...row1].map((src) => (
-              <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
-                <img
-                  src={src}
-                  alt={logoAlts[src] ?? ''}
-                  height={40}
-                  class="h-10 w-auto object-contain"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            ))}
+      {
+        row1.length > 0 && (
+          <div class="flex" style="overflow: hidden;" aria-hidden="true">
+            <div class="flex gap-4 shrink-0 logo-marquee-track">
+              {[...row1, ...row1].map((src) => (
+                <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
+                  <img
+                    src={src}
+                    alt={logoAlts[src] ?? ''}
+                    height={40}
+                    class="h-10 w-auto object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Row 2 — scrolls right */}
-      {row2.length > 0 && (
-        <div class="flex" style="overflow: hidden;">
-          <div class="flex gap-4 shrink-0 logo-marquee-track--rev">
-            {[...row2, ...row2].map((src) => (
-              <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
-                <img
-                  src={src}
-                  alt={logoAlts[src] ?? ''}
-                  height={40}
-                  class="h-10 w-auto object-contain"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            ))}
+      {
+        row2.length > 0 && (
+          <div class="flex" style="overflow: hidden;" aria-hidden="true">
+            <div class="flex gap-4 shrink-0 logo-marquee-track--rev">
+              {[...row2, ...row2].map((src) => (
+                <div class="shrink-0 h-16 px-6 bg-white rounded-none flex items-center shadow-sm">
+                  <img
+                    src={src}
+                    alt={logoAlts[src] ?? ''}
+                    height={40}
+                    class="h-10 w-auto object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Left-edge scrim — funde el marquee con la columna de texto */}
       <div
         class="absolute inset-y-0 left-0 w-32 pointer-events-none z-10"
         style="background: linear-gradient(to right, rgb(15,36,51) 0%, transparent 100%);"
-      ></div>
+      >
+      </div>
     </div>
-
   </div>
 
   {/* ── Bottom gradient fade ── */}
@@ -162,5 +182,6 @@ const row2 = logos.slice(mid);
     class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none z-20"
     style="background: linear-gradient(to top, rgba(15,36,51,0.5), transparent);"
     aria-hidden="true"
-  ></div>
+  >
+  </div>
 </section>

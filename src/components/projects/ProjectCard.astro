@@ -20,28 +20,37 @@ const slug = proyecto.id;
 const photo = projectImages[slug];
 ---
 
-<article class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md" data-reveal>
+<article
+  class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md"
+  data-reveal
+>
   <!-- Project photo (only for destacado projects that have a curated image) -->
-  {isDestacado && photo && (
-    <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
-      <img
-        src={photo.src}
-        alt={photo.alt}
-        loading="lazy"
-        decoding="async"
-        class="w-full h-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.02]"
-        width="640"
-        height="360"
-      />
-    </div>
-  )}
+  {
+    isDestacado && photo && (
+      <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          loading="lazy"
+          decoding="async"
+          class="w-full h-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.02]"
+          width="640"
+          height="360"
+        />
+      </div>
+    )
+  }
 
   <!-- Header band for destacado without photo -->
-  {isDestacado && !photo && (
-    <div class="bg-primary-light px-5 py-3 border-b border-border">
-      <Badge variant="accent" class="text-[10px]">Caso Destacado</Badge>
-    </div>
-  )}
+  {
+    isDestacado && !photo && (
+      <div class="bg-primary-light px-5 py-3 border-b border-border">
+        <Badge variant="accent" class="text-[10px]">
+          Caso Destacado
+        </Badge>
+      </div>
+    )
+  }
 
   <div class="p-6 flex flex-col flex-1 gap-4">
     <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -57,23 +66,69 @@ const photo = projectImages[slug];
       {alcance}
     </p>
 
-    {(ubicacion || diametro || longitud) && (
-      <div class="pt-3 border-t border-border flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted font-mono">
-        {ubicacion && <span>📍 {ubicacion}</span>}
-        {diametro && <span>⌀ {diametro}</span>}
-        {longitud && <span>📏 {longitud}</span>}
-      </div>
-    )}
+    {
+      /* UIUX-20 fix: emoji glyphs render inconsistently across platforms and
+         read unpredictable names to screen readers — swapped for the site's
+         existing inline SVG icon set (⌀ is a real technical symbol, not an
+         emoji, so it's unchanged). */
+    }
+    {
+      (ubicacion || diametro || longitud) && (
+        <div class="pt-3 border-t border-border flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted font-mono">
+          {ubicacion && (
+            <span class="inline-flex items-center gap-1">
+              <svg
+                class="w-3.5 h-3.5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              {ubicacion}
+            </span>
+          )}
+          {diametro && <span>⌀ {diametro}</span>}
+          {longitud && (
+            <span class="inline-flex items-center gap-1">
+              <svg
+                class="w-3.5 h-3.5 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12h20M2 12v4M22 12v4M2 12v-4M22 12v-4" />
+              </svg>
+              {longitud}
+            </span>
+          )}
+        </div>
+      )
+    }
 
-    {isDestacado && (
-      <Button
-        href={`/proyectos/${slug}`}
-        variant="link"
-        class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-none"
-      >
-        <span class="relative">Ver detalle</span>
-        <ArrowIcon class="relative transition-transform group-hover:translate-x-0.5" />
-      </Button>
-    )}
+    {
+      isDestacado && (
+        <Button
+          href={`/proyectos/${slug}`}
+          variant="link"
+          ariaLabel={`Ver detalle: ${nombre}`}
+          class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-none"
+        >
+          <span class="relative" aria-hidden="true">
+            Ver detalle
+          </span>
+          <ArrowIcon class="relative transition-transform group-hover:translate-x-0.5" />
+        </Button>
+      )
+    }
   </div>
 </article>

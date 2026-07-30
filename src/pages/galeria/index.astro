@@ -83,6 +83,10 @@ const filters = [
         </Container>
       ) : (
         <div class="w-full px-4 md:px-8 max-w-7xl mx-auto">
+          {/* UIUX-16 fix: the page h1 (PageHero) was followed directly by each
+               album card's h3 — no h2 in between. Visually hidden since the
+               PageHero title already covers this visually. */}
+          <h2 class="sr-only">Proyectos</h2>
           {/* ── Search & Filter Controls Bar ── */}
           <div class="mb-8 md:mb-10 space-y-4" data-reveal>
             {/* Search input */}
@@ -127,7 +131,7 @@ const filters = [
                     aria-checked={filter.slug === 'all' ? 'true' : 'false'}
                     tabindex={filter.slug === 'all' ? 0 : -1}
                     data-filter={filter.slug}
-                    class={`gallery-filter-btn relative px-3.5 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
+                    class={`gallery-filter-btn relative px-3.5 py-2.5 text-xs font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
                       filter.slug === 'all'
                         ? 'bg-primary text-white'
                         : 'bg-background-alt text-text-muted hover:bg-background hover:text-text'

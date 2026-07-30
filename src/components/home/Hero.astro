@@ -24,8 +24,9 @@ const {
 } = Astro.props;
 ---
 
-<section class="relative min-h-[100dvh] flex items-center overflow-hidden bg-background-strong text-white">
-
+<section
+  class="relative min-h-[100dvh] flex items-center overflow-hidden bg-background-strong text-white"
+>
   <!-- Foto de fondo optimizada (Astro genera webp responsivo) -->
   <Image
     src={heroImg}
@@ -43,18 +44,33 @@ const {
   <div
     class="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/65 to-transparent pointer-events-none"
     aria-hidden="true"
-  ></div>
+  >
+  </div>
+
+  {
+    /* UIUX-18 fix: text-shadow alone (.text-on-photo) doesn't guarantee 4.5:1
+       over a real aerial photo — bright sky/concrete areas under the title
+       aren't ruled out. This scrim anchors dark behind the left text column,
+       full height, independent of where the vertically-centered text block
+       actually lands. */
+  }
+  <div
+    class="absolute inset-y-0 left-0 w-full lg:w-3/5 pointer-events-none"
+    style="background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.35) 55%, transparent 100%);"
+    aria-hidden="true"
+  >
+  </div>
 
   <!-- Línea de acento superior -->
   <div
     class="absolute top-0 left-0 right-0 h-[2px] pointer-events-none shimmer-line"
     aria-hidden="true"
-  ></div>
+  >
+  </div>
 
   <!-- Contenido: alineado a la izquierda -->
   <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28">
     <div class="max-w-2xl">
-
       <Eyebrow light class="text-on-photo">
         <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>
       </Eyebrow>
@@ -85,26 +101,30 @@ const {
 
       <div class="flex flex-wrap gap-4" data-reveal style="--reveal-delay: 0.18s;">
         <Button href={ctaPrimary.href} size="lg">{ctaPrimary.label}</Button>
-        {ctaSecondary && (
-          <Button
-            href={ctaSecondary.href}
-            variant="secondary-light"
-            size="lg"
-          >
-            {ctaSecondary.label}
-          </Button>
-        )}
+        {
+          ctaSecondary && (
+            <Button href={ctaSecondary.href} variant="secondary-light" size="lg">
+              {ctaSecondary.label}
+            </Button>
+          )
+        }
       </div>
-
     </div>
   </div>
 
   <!-- Scroll indicator -->
   <div class="scroll-indicator" aria-hidden="true">
     <svg width="24" height="36" viewBox="0 0 24 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="22" height="34" rx="11" stroke="white" stroke-opacity="0.5" stroke-width="1.5"/>
-      <circle cx="12" cy="10" r="2.5" fill="white" fill-opacity="0.7"/>
+      <rect
+        x="1"
+        y="1"
+        width="22"
+        height="34"
+        rx="11"
+        stroke="white"
+        stroke-opacity="0.5"
+        stroke-width="1.5"></rect>
+      <circle cx="12" cy="10" r="2.5" fill="white" fill-opacity="0.7"></circle>
     </svg>
   </div>
-
 </section>

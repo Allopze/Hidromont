@@ -12,11 +12,20 @@ import EditableText from '../components/cms/EditableText.astro';
   description="Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
   hideFooterMap
 >
-  <div class="grid grid-cols-1 lg:grid-cols-2 items-stretch min-h-[calc(100vh-80px)] bg-background">
+  {
+    /* UIUX-L4 fix: this assumed an 80px header at every size, but Header.astro
+       is h-20 (80px) only below `md` — it's h-24 (96px) from `md` up — so the
+       previous single value overflowed by ~16px on desktop. */
+  }
+  <div
+    class="grid grid-cols-1 lg:grid-cols-2 items-stretch min-h-[calc(100vh-80px)] md:min-h-[calc(100vh-96px)] bg-background"
+  >
     <h1 class="sr-only">Contacto</h1>
 
     <!-- Formulario & Info -->
-    <div class="flex justify-center items-start pt-12 lg:pt-24 pb-12 lg:pb-16 px-6 lg:px-12 bg-background">
+    <div
+      class="flex justify-center items-start pt-12 lg:pt-24 pb-12 lg:pb-16 px-6 lg:px-12 bg-background"
+    >
       <div class="w-full max-w-[570px] flex flex-col gap-12">
         <!-- Formulario -->
         <div>
@@ -25,7 +34,13 @@ import EditableText from '../components/cms/EditableText.astro';
               {getCmsText('contacto.sections', 'formEyebrow', 'Formulario de contacto')}
             </EditableText>
           </Eyebrow>
-          <EditableText as="h2" entry="contacto.sections" field="formTitle" class="font-heading font-semibold text-primary-dark mb-6" style="font-size: var(--font-size-h3);">
+          <EditableText
+            as="h2"
+            entry="contacto.sections"
+            field="formTitle"
+            class="font-heading font-semibold text-primary-dark mb-6"
+            style="font-size: var(--font-size-h3);"
+          >
             {getCmsText('contacto.sections', 'formTitle', 'Envíe su consulta')}
           </EditableText>
           <ContactForm />
@@ -53,8 +68,7 @@ import EditableText from '../components/cms/EditableText.astro';
         allowfullscreen=""
         loading="lazy"
         title="Ubicación de Hidromont Chile — Avenida Las Industrias 10950, Los Ángeles, Biobío"
-        class="w-full h-full min-h-[450px] lg:min-h-full"
-      ></iframe>
+        class="w-full h-full min-h-[450px] lg:min-h-full"></iframe>
     </div>
   </div>
 </PageLayout>

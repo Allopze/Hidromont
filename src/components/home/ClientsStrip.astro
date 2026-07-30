@@ -4,6 +4,7 @@ import Eyebrow from '../ui/Eyebrow.astro';
 import Container from '../ui/Container.astro';
 import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
+import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 import { getCmsText } from '../../data/cms';
 
 interface ClienteItem {
@@ -31,76 +32,103 @@ const row2 = conLogo.slice(mid);
 
 <Container>
   <div class="text-center mb-10">
-    <Eyebrow><EditableText entry="clients.strip" field="eyebrow">Clientes y referencias</EditableText></Eyebrow>
-    <EditableText as="h2" entry="clients.strip" field="title" class="font-heading font-bold text-primary-dark" style="font-size: var(--font-size-h2);">
+    <Eyebrow
+      ><EditableText entry="clients.strip" field="eyebrow">Clientes y referencias</EditableText
+      ></Eyebrow
+    >
+    <EditableText
+      as="h2"
+      entry="clients.strip"
+      field="title"
+      class="font-heading font-bold text-primary-dark"
+      style="font-size: var(--font-size-h2);"
+    >
       {getCmsText('clients.strip', 'title', 'Empresas que confían en Hidromont')}
     </EditableText>
   </div>
 
-  {/* ── Marquee logo wall (Floating Clean Style) ── */}
-  <div class="clients-marquee-wrapper">
-    {/* Row 1 — scrolls left */}
-    {row1.length > 0 && (
-      <div class="clients-marquee-row">
-        <div class="clients-marquee-track logo-marquee-track">
-          {[...row1, ...row1].map((c) => (
-            <div class="clients-marquee-item" title={c.nombre}>
-              <img
-                src={c.logo}
-                alt={c.nombre}
-                width="160"
-                height="48"
-                loading="lazy"
-                decoding="async"
-                class="clients-marquee-logo"
-              />
+  {
+    /* UIUX-6 fix: the whole marquee is decorative/duplicated for the visual
+       loop (each row repeats its logos twice) and hidden from assistive tech
+       — previously it wasn't, so screen readers read every client name
+       twice. The "Ver todos los clientes" link below points to /clientes,
+       which lists every client accessibly; same pattern already used by
+       ClientesHero's marquee. */
+  }
+  <div class="clients-marquee-wrapper marquee-region">
+    {(row1.length > 0 || row2.length > 0) && <MarqueePauseToggle />}
+    <div aria-hidden="true">
+      {/* Row 1 — scrolls left */}
+      {
+        row1.length > 0 && (
+          <div class="clients-marquee-row">
+            <div class="clients-marquee-track logo-marquee-track">
+              {[...row1, ...row1].map((c) => (
+                <div class="clients-marquee-item" title={c.nombre}>
+                  <img
+                    src={c.logo}
+                    alt=""
+                    width="160"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                    class="clients-marquee-logo"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-    )}
+          </div>
+        )
+      }
 
-    {/* Row 2 — scrolls right */}
-    {row2.length > 0 && (
-      <div class="clients-marquee-row">
-        <div class="clients-marquee-track logo-marquee-track--rev">
-          {[...row2, ...row2].map((c) => (
-            <div class="clients-marquee-item" title={c.nombre}>
-              <img
-                src={c.logo}
-                alt={c.nombre}
-                width="160"
-                height="48"
-                loading="lazy"
-                decoding="async"
-                class="clients-marquee-logo"
-              />
+      {/* Row 2 — scrolls right */}
+      {
+        row2.length > 0 && (
+          <div class="clients-marquee-row">
+            <div class="clients-marquee-track logo-marquee-track--rev">
+              {[...row2, ...row2].map((c) => (
+                <div class="clients-marquee-item" title={c.nombre}>
+                  <img
+                    src={c.logo}
+                    alt=""
+                    width="160"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                    class="clients-marquee-logo"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-    )}
+          </div>
+        )
+      }
+    </div>
   </div>
 
   {/* Text fallback for clients without logos */}
-  {sinLogo.length > 0 && (
-    <div class="clients-text-fallback">
-      <EditableText as="p" entry="clients.strip" field="fallbackLabel" class="text-xs text-text-muted uppercase tracking-wider mb-3 text-center">
-        {getCmsText('clients.strip', 'fallbackLabel', 'También trabajamos con')}
-      </EditableText>
-      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
-        {sinLogo.map((c: ClienteItem) => (
-          <span class="text-sm text-text-muted font-medium">{c.nombre}</span>
-        ))}
+  {
+    sinLogo.length > 0 && (
+      <div class="clients-text-fallback">
+        <EditableText
+          as="p"
+          entry="clients.strip"
+          field="fallbackLabel"
+          class="text-xs text-text-muted uppercase tracking-wider mb-3 text-center"
+        >
+          {getCmsText('clients.strip', 'fallbackLabel', 'También trabajamos con')}
+        </EditableText>
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {sinLogo.map((c: ClienteItem) => (
+            <span class="text-sm text-text-muted font-medium">{c.nombre}</span>
+          ))}
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
   <div class="text-center mt-8">
-    <a
-      href="/clientes"
-      class="clients-strip-link"
-    >
+    <a href="/clientes" class="clients-strip-link">
       <EditableText entry="clients.strip" field="linkLabel">
         {getCmsText('clients.strip', 'linkLabel', 'Ver todos los clientes')}
       </EditableText>

@@ -47,18 +47,19 @@ const jsonLd = [
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://hidromont.cl/' },
-      { '@type': 'ListItem', position: 2, name: 'Servicios', item: 'https://hidromont.cl/servicios/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Servicios',
+        item: 'https://hidromont.cl/servicios/',
+      },
       { '@type': 'ListItem', position: 3, name: titulo },
     ],
   },
 ];
 ---
 
-<PageLayout
-  title={titulo}
-  description={resumen}
-  jsonLd={jsonLd}
->
+<PageLayout title={titulo} description={resumen} jsonLd={jsonLd}>
   <PageHero
     badge="Servicio"
     title={titulo}
@@ -87,44 +88,62 @@ const jsonLd = [
 
         <!-- Sidebar técnico -->
         <aside class="space-y-6">
-          {tipos && tipos.length > 0 && (
-            <div class="p-5 border border-border rounded-none bg-surface">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Tipos</h3>
-              <ul class="space-y-1.5">
-                {tipos.map((t: string) => (
-                  <li class="flex items-start gap-2 text-sm text-text-muted">
-                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {aplicaciones && aplicaciones.length > 0 && (
-            <div class="p-5 border border-border rounded-none bg-primary-light">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Aplicaciones</h3>
-              <ul class="space-y-1.5">
-                {aplicaciones.map((a: string) => (
-                  <li class="flex items-start gap-2 text-sm text-text-muted">
-                    <span class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
-                    {a}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {normas && normas.length > 0 && (
-            <div class="p-5 border border-border rounded-none bg-background-alt">
-              <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">Normas de referencia</h3>
-              <div class="flex flex-wrap gap-2">
-                {normas.map((n: string) => (
-                  <Badge variant="muted">{n}</Badge>
-                ))}
+          {
+            tipos && tipos.length > 0 && (
+              <div class="p-5 border border-border rounded-none bg-surface">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
+                  Tipos
+                </h3>
+                <ul class="space-y-1.5">
+                  {tipos.map((t: string) => (
+                    <li class="flex items-start gap-2 text-sm text-text-muted">
+                      <span
+                        class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-          )}
+            )
+          }
+
+          {
+            aplicaciones && aplicaciones.length > 0 && (
+              <div class="p-5 border border-border rounded-none bg-primary-light">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
+                  Aplicaciones
+                </h3>
+                <ul class="space-y-1.5">
+                  {aplicaciones.map((a: string) => (
+                    <li class="flex items-start gap-2 text-sm text-text-muted">
+                      <span
+                        class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-accent"
+                        aria-hidden="true"
+                      />
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          {
+            normas && normas.length > 0 && (
+              <div class="p-5 border border-border rounded-none bg-background-alt">
+                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
+                  Normas de referencia
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {normas.map((n: string) => (
+                    <Badge variant="muted">{n}</Badge>
+                  ))}
+                </div>
+              </div>
+            )
+          }
 
           <!-- Contacto (corporate presence — no sales language) -->
           <div class="p-5 bg-primary rounded-none text-white">
@@ -138,50 +157,57 @@ const jsonLd = [
           </div>
         </aside>
       </div>
-
-
     </Container>
   </Section>
 
-  {(gallery?.images.length > 0 || cmsEditingEnabled) && (
-    <Section variant="default">
-      <Container>
-        <h2 class="font-heading font-bold text-primary-dark mb-8" style="font-size: var(--font-size-h2);">
-          Galería de imágenes
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((n) => {
-            const img = gallery?.images[n - 1];
-            return (
-              <div class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border">
-                {img ? (
-                  <EditableImage
-                    entry={galleryEntryId}
-                    field={`gallery${n}`}
-                    altField={`gallery${n}Alt`}
-                    src={img.src}
-                    alt={img.alt}
-                    class="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                ) : cmsEditingEnabled ? (
-                  <div
-                    class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
-                    data-cms-entry={galleryEntryId}
-                    data-cms-field={`gallery${n}`}
-                    data-cms-alt-field={`gallery${n}Alt`}
-                    data-cms-type="image"
-                  >
-                    + Agregar imagen {n}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </Container>
-    </Section>
-  )}
+  {
+    (gallery?.images.length > 0 || cmsEditingEnabled) && (
+      <Section variant="default">
+        <Container>
+          <h2
+            class="font-heading font-bold text-primary-dark mb-8"
+            style="font-size: var(--font-size-h2);"
+          >
+            Galería de imágenes
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* UIUX-12 fix: the wrapper used to render unconditionally for all
+               3 slots, leaving empty bordered boxes in production whenever a
+               service had fewer than 3 gallery photos. */}
+            {[1, 2, 3].map((n) => {
+              const img = gallery?.images[n - 1];
+              if (!img && !cmsEditingEnabled) return null;
+              return (
+                <div class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border">
+                  {img ? (
+                    <EditableImage
+                      entry={galleryEntryId}
+                      field={`gallery${n}`}
+                      altField={`gallery${n}Alt`}
+                      src={img.src}
+                      alt={img.alt}
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div
+                      class="w-full h-full flex items-center justify-center text-text-muted text-sm cursor-crosshair"
+                      data-cms-entry={galleryEntryId}
+                      data-cms-field={`gallery${n}`}
+                      data-cms-alt-field={`gallery${n}Alt`}
+                      data-cms-type="image"
+                    >
+                      + Agregar imagen {n}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Container>
+      </Section>
+    )
+  }
 
   <Section variant="strong">
     <Container size="md">
@@ -191,9 +217,7 @@ const jsonLd = [
         </h2>
         <div class="flex flex-wrap justify-center gap-4">
           <Button href="/proyectos" size="lg">Ver proyectos</Button>
-          <Button href="/contacto" variant="secondary-light" size="lg">
-            Contacto
-          </Button>
+          <Button href="/contacto" variant="secondary-light" size="lg"> Contacto </Button>
         </div>
       </div>
     </Container>

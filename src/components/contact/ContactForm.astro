@@ -7,6 +7,15 @@ import { safeJsonForScript } from '../../utils/safeJson';
 // A2-005: fallback al correo corporativo, no a una cuenta personal.
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'contacto@hidromont.cl';
 
+// UIUX-L5 fix: the form always POSTs via fetch to the `/ajax/` endpoint and
+// never navigates, so `/contacto/gracias` was unreachable. `action`/`_next`
+// now target the non-ajax endpoint so a no-JS submission redirects there
+// natively; the JS-enabled path below reads `data-ajax-action` instead of
+// `form.action` to keep using the JSON endpoint.
+const ajaxAction = `https://formsubmit.co/ajax/${contactEmail}`;
+const nativeAction = `https://formsubmit.co/${contactEmail}`;
+const nextUrl = new URL('/contacto/gracias', Astro.site).href;
+
 const ccEmails = [
   import.meta.env.FORMSUBMIT_CC_1,
   import.meta.env.FORMSUBMIT_CC_2,
@@ -64,9 +73,10 @@ const validationMessages = {
 
 <form
   id="contacto-form"
-  action={`https://formsubmit.co/ajax/${contactEmail}`}
+  action={nativeAction}
   method="POST"
   class="space-y-6"
+  data-ajax-action={ajaxAction}
   novalidate
 >
   <!-- FormSubmit.co config -->
@@ -76,6 +86,7 @@ const validationMessages = {
     value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')}
   />
   <input type="hidden" name="_captcha" value="false" />
+  <input type="hidden" name="_next" value={nextUrl} />
   {ccEmails && <input type="hidden" name="_cc" value={ccEmails} />}
   <!-- Honeypot anti-spam (FORM-002): campo oculto que los bots rellenan y hace descartar el envío. -->
   <input
@@ -259,6 +270,7 @@ const validationMessages = {
       }
     </EditableText>
   </div>
+  <p id="contacto-submit-status" class="sr-only" role="status" aria-live="polite"></p>
 </form>
 
 <div
@@ -266,6 +278,7 @@ const validationMessages = {
   class="hidden py-10 text-center space-y-3"
   role="status"
   aria-live="polite"
+  tabindex="-1"
 >
   <p class="text-lg font-semibold text-text">
     {getCmsText('contact.form', 'successTitle', '¡Mensaje enviado!')}
@@ -425,8 +438,17 @@ const validationMessages = {
       if (submitLoading) submitLoading.classList.remove('invisible');
       if (errorBanner) errorBanner.classList.add('hidden');
 
+      // UIUX-L6 fix: the visible spinner/"Enviando..." span stays aria-hidden
+      // (it's a redundant visual echo), so this sr-only status is what
+      // actually tells screen reader users a submission is in progress.
+      const statusEl = document.getElementById('contacto-submit-status');
+      if (statusEl) statusEl.textContent = 'Enviando su consulta, por favor espere…';
+      submitBtn?.setAttribute('aria-busy', 'true');
+
       try {
-        const res = await fetch((form as HTMLFormElement).action, {
+        const ajaxAction =
+          (form as HTMLFormElement).dataset.ajaxAction ?? (form as HTMLFormElement).action;
+        const res = await fetch(ajaxAction, {
           method: 'POST',
           body: new FormData(form as HTMLFormElement),
           headers: { Accept: 'application/json' },
@@ -434,11 +456,18 @@ const validationMessages = {
         const json = (await res.json()) as { success: string | boolean };
         if (json.success === 'true' || json.success === true) {
           (form as HTMLFormElement).classList.add('hidden');
-          document.getElementById('contacto-success')?.classList.remove('hidden');
+          if (statusEl) statusEl.textContent = '';
+          // UIUX-10 fix: previously focus stayed on the now-hidden submit
+          // button after success — nothing told a keyboard/screen-reader
+          // user the page had changed until they happened to tab past it.
+          const successEl = document.getElementById('contacto-success');
+          successEl?.classList.remove('hidden');
+          successEl?.focus();
         } else {
           throw new Error('rejected');
         }
       } catch {
+        if (statusEl) statusEl.textContent = '';
         if (errorBanner) {
           errorBanner.textContent = defaultErrorText;
           errorBanner.classList.remove('hidden');
@@ -446,6 +475,8 @@ const validationMessages = {
         if (submitBtn) submitBtn.disabled = false;
         if (submitText) submitText.classList.remove('invisible');
         if (submitLoading) submitLoading.classList.add('invisible');
+      } finally {
+        submitBtn?.removeAttribute('aria-busy');
       }
     });
   }
