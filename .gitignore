@@ -39,3 +39,9 @@ blob-report/
 .playwright/
 
 GASCO/
+
+# AI agent tooling (HIG-3: personal/local, not shared project config)
+.claude/
+.commandcode/
+.mimocode/
+.zcode/
