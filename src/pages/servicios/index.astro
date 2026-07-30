@@ -21,9 +21,17 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
 >
   <PageHero
     title={getCmsText('servicios.index.hero', 'title', 'Soluciones hidromecánicas integrales')}
-    subtitle={getCmsText('servicios.index.hero', 'subtitle', 'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.')}
+    subtitle={getCmsText(
+      'servicios.index.hero',
+      'subtitle',
+      'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.'
+    )}
     imageSrc={getCmsText('servicios.index.hero', 'image', '/fotos/curadas/otros-montajes.jpg')}
-    imageAlt={getCmsText('servicios.index.hero', 'imageAlt', 'Fabricación de grandes equipos hidromecánicos en taller')}
+    imageAlt={getCmsText(
+      'servicios.index.hero',
+      'imageAlt',
+      'Fabricación de grandes equipos hidromecánicos en taller'
+    )}
     imageWidth={471}
     imageHeight={629}
     breadcrumbs={[{ label: 'Servicios' }]}
@@ -33,15 +41,22 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   <Section variant="default">
     <Container>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {servicios.map((s) => (
-          <ServiceCard
-            title={s.data.titulo}
-            description={s.data.resumen}
-            href={`/servicios/${s.id}`}
-            icon={s.data.icono}
-            bullets={s.data.tipos?.slice(0, 4)}
-          />
-        ))}
+        {
+          /* UIUX-L10 fix: was slice(0, 4) here vs slice(0, 3) on the home
+             page's ServiceCard grid — same component, same grid layout,
+             inconsistent truncation. Unified to 3. */
+        }
+        {
+          servicios.map((s) => (
+            <ServiceCard
+              title={s.data.titulo}
+              description={s.data.resumen}
+              href={`/servicios/${s.id}`}
+              icon={s.data.icono}
+              bullets={s.data.tipos?.slice(0, 3)}
+            />
+          ))
+        }
       </div>
     </Container>
   </Section>
@@ -56,11 +71,36 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               {getCmsText('servicios.index.banner', 'eyebrow', 'Capacidad Industrial')}
             </EditableText>
           </Eyebrow>
-          <EditableText as="h2" entry="servicios.index.banner" field="title" class="font-heading font-bold text-white mb-4" style="font-size: var(--font-size-h2);">
-            {getCmsText('servicios.index.banner', 'title', 'Fabricación de gran dimensión en instalaciones propias')}
+          <EditableText
+            as="h2"
+            entry="servicios.index.banner"
+            field="title"
+            class="font-heading font-bold text-white mb-4"
+            style="font-size: var(--font-size-h2);"
+          >
+            {
+              getCmsText(
+                'servicios.index.banner',
+                'title',
+                'Fabricación de gran dimensión en instalaciones propias'
+              )
+            }
           </EditableText>
-          <EditableText as="p" entry="servicios.index.banner" field="subtitle" type="textarea" class="text-white/90 mb-6" style="font-size: var(--font-size-lead);">
-            {getCmsText('servicios.index.banner', 'subtitle', 'En nuestras instalaciones de 11.000 m² en Los Ángeles contamos con taller de calderería, mecanizado y pintura industrial, preparados para enfrentar requerimientos urgentes e hitos críticos de obra.')}
+          <EditableText
+            as="p"
+            entry="servicios.index.banner"
+            field="subtitle"
+            type="textarea"
+            class="text-white/90 mb-6"
+            style="font-size: var(--font-size-lead);"
+          >
+            {
+              getCmsText(
+                'servicios.index.banner',
+                'subtitle',
+                'En nuestras instalaciones de 11.000 m² en Los Ángeles contamos con taller de calderería, mecanizado y pintura industrial, preparados para enfrentar requerimientos urgentes e hitos críticos de obra.'
+              )
+            }
           </EditableText>
           <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
             <div>
@@ -82,8 +122,16 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
             entry="servicios.index.banner"
             field="image"
             altField="imageAlt"
-            src={getCmsText('servicios.index.banner', 'image', '/fotos/curadas/fabricacion-tuberias-taller.webp')}
-            alt={getCmsText('servicios.index.banner', 'imageAlt', 'Proceso de fabricacion y caldereria hidromecanica en taller')}
+            src={getCmsText(
+              'servicios.index.banner',
+              'image',
+              '/fotos/curadas/fabricacion-tuberias-taller.webp'
+            )}
+            alt={getCmsText(
+              'servicios.index.banner',
+              'imageAlt',
+              'Proceso de fabricacion y caldereria hidromecanica en taller'
+            )}
             width="1200"
             height="675"
             loading="lazy"
@@ -103,37 +151,77 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
             {getCmsText('servicios.index.metodologia', 'eyebrow', 'Metodología')}
           </EditableText>
         </Eyebrow>
-        <EditableText as="h2" entry="servicios.index.metodologia" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+        <EditableText
+          as="h2"
+          entry="servicios.index.metodologia"
+          field="title"
+          class="font-heading font-bold text-primary-dark mb-4"
+          style="font-size: var(--font-size-h2);"
+        >
           {getCmsText('servicios.index.metodologia', 'title', 'Actividades transversales')}
         </EditableText>
-        <EditableText as="p" entry="servicios.index.metodologia" field="subtitle" type="textarea" class="text-text-muted mb-8" style="font-size: var(--font-size-lead);">
-          {getCmsText('servicios.index.metodologia', 'subtitle', 'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.')}
+        <EditableText
+          as="p"
+          entry="servicios.index.metodologia"
+          field="subtitle"
+          type="textarea"
+          class="text-text-muted mb-8"
+          style="font-size: var(--font-size-lead);"
+        >
+          {
+            getCmsText(
+              'servicios.index.metodologia',
+              'subtitle',
+              'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.'
+            )
+          }
         </EditableText>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
-          {([1, 2, 3, 4, 5, 6] as const).map((i) => (
-            <div class="p-4 bg-surface border border-border rounded-none">
-              <EditableText as="h3" entry="servicios.index.metodologia" field={`item${i}Title`} class="font-semibold text-primary-dark text-sm mb-1">
-                {getCmsText('servicios.index.metodologia', `item${i}Title`, [
-                  'Desmontajes',
-                  'Fabricación',
-                  'Reparaciones',
-                  'Mantenimiento de turbinas',
-                  'Montajes',
-                  'Obturaciones',
-                ][i - 1])}
-              </EditableText>
-              <EditableText as="p" entry="servicios.index.metodologia" field={`item${i}Desc`} type="textarea" class="text-xs text-text-muted leading-relaxed">
-                {getCmsText('servicios.index.metodologia', `item${i}Desc`, [
-                  'Desmontaje controlado de equipos para reparación o sustitución.',
-                  'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.',
-                  'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.',
-                  'Recuperación de rodetes por cavitación, alineaciones y mecanizados.',
-                  'Procedimientos específicos con análisis de medios y tiempos.',
-                  'Diseño, fabricación y montaje de obturaciones especiales.',
-                ][i - 1])}
-              </EditableText>
-            </div>
-          ))}
+          {
+            ([1, 2, 3, 4, 5, 6] as const).map((i) => (
+              <div class="p-4 bg-surface border border-border rounded-none">
+                <EditableText
+                  as="h3"
+                  entry="servicios.index.metodologia"
+                  field={`item${i}Title`}
+                  class="font-semibold text-primary-dark text-sm mb-1"
+                >
+                  {getCmsText(
+                    'servicios.index.metodologia',
+                    `item${i}Title`,
+                    [
+                      'Desmontajes',
+                      'Fabricación',
+                      'Reparaciones',
+                      'Mantenimiento de turbinas',
+                      'Montajes',
+                      'Obturaciones',
+                    ][i - 1]
+                  )}
+                </EditableText>
+                <EditableText
+                  as="p"
+                  entry="servicios.index.metodologia"
+                  field={`item${i}Desc`}
+                  type="textarea"
+                  class="text-xs text-text-muted leading-relaxed"
+                >
+                  {getCmsText(
+                    'servicios.index.metodologia',
+                    `item${i}Desc`,
+                    [
+                      'Desmontaje controlado de equipos para reparación o sustitución.',
+                      'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.',
+                      'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.',
+                      'Recuperación de rodetes por cavitación, alineaciones y mecanizados.',
+                      'Procedimientos específicos con análisis de medios y tiempos.',
+                      'Diseño, fabricación y montaje de obturaciones especiales.',
+                    ][i - 1]
+                  )}
+                </EditableText>
+              </div>
+            ))
+          }
         </div>
       </div>
     </Container>
@@ -142,7 +230,14 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   <CTASection
     cmsEntry="servicios.index.cta"
     title={getCmsText('servicios.index.cta', 'title', '¿Necesita un servicio específico?')}
-    subtitle={getCmsText('servicios.index.cta', 'subtitle', 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.')}
-    primary={{ label: getCmsText('servicios.index.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
+    subtitle={getCmsText(
+      'servicios.index.cta',
+      'subtitle',
+      'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.'
+    )}
+    primary={{
+      label: getCmsText('servicios.index.cta', 'buttonLabel', 'Contacto'),
+      href: '/contacto',
+    }}
   />
 </PageLayout>
