@@ -45,3 +45,6 @@ GASCO/
 .commandcode/
 .mimocode/
 .zcode/
+
+# HIG-2: stray backup files shouldn't be versioned
+*.bak
