@@ -11,22 +11,41 @@
  *   - Touch devices: parallax disabled (performance + UX)
  */
 
-const prefersReduced =
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotionQuery =
+  typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : undefined;
+
+let prefersReduced = reducedMotionQuery?.matches ?? false;
+
+// JS-L8 fix: the preference was previously only read once at load. If the
+// user flips it mid-session, respect the change immediately in the direction
+// that matters for vestibular safety (motion turning ON reduced) — reveal any
+// still-hidden elements and stop the parallax transform. Going the other way
+// (reduced → full motion) doesn't retroactively re-enable effects that were
+// never initialized; that's a missed enhancement, not a safety concern.
+reducedMotionQuery?.addEventListener('change', (e) => {
+  prefersReduced = e.matches;
+  if (!prefersReduced) return;
+  document
+    .querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group], [data-reveal-cinematic]')
+    .forEach((el) => el.classList.add('is-visible'));
+  document.querySelectorAll<HTMLElement>('[data-parallax]').forEach((el) => {
+    el.style.transform = '';
+  });
+});
 
 const isTouch =
-  typeof window !== 'undefined' &&
-  ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
 /* ── 1. Scroll Reveal ─────────────────────────────────────── */
 
 function initReveal(): void {
   if (prefersReduced) {
     // Skip animation — make everything visible immediately
-    document.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group], [data-reveal-cinematic]').forEach((el) => {
-      el.classList.add('is-visible');
-    });
+    document
+      .querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group], [data-reveal-cinematic]')
+      .forEach((el) => {
+        el.classList.add('is-visible');
+      });
     return;
   }
 
@@ -64,14 +83,16 @@ function initReveal(): void {
 function initParallax(): void {
   if (prefersReduced || isTouch) return;
 
-  const elements = Array.from(
-    document.querySelectorAll<HTMLElement>('[data-parallax]')
-  );
+  const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'));
   if (elements.length === 0) return;
 
   let ticking = false;
 
   function updateParallax(): void {
+    // JS-L8: bail if the OS preference flipped to reduced-motion after this
+    // listener was already attached — the 'change' handler above resets the
+    // transform once, but a later scroll event would otherwise reapply it.
+    if (prefersReduced) return;
     elements.forEach((el) => {
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
@@ -89,12 +110,16 @@ function initParallax(): void {
     ticking = false;
   }
 
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(updateParallax);
-      ticking = true;
-    }
-  }, { passive: true });
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
 
   // Initial paint
   updateParallax();
@@ -103,9 +128,7 @@ function initParallax(): void {
 /* ── 3. Counter ───────────────────────────────────────────── */
 
 function initCounters(): void {
-  const counters = Array.from(
-    document.querySelectorAll<HTMLElement>('[data-count]')
-  );
+  const counters = Array.from(document.querySelectorAll<HTMLElement>('[data-count]'));
   if (counters.length === 0) return;
 
   if (prefersReduced) {

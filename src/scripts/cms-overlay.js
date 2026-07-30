@@ -472,7 +472,10 @@
 
   function setGlobalState(stateKey) {
     if (!stateBadge) return;
-    if (!stateKey) { stateBadge.style.display = 'none'; return; }
+    if (!stateKey) {
+      stateBadge.style.display = 'none';
+      return;
+    }
     // Etiquetas honestas: el CMS exporta y valida, pero NO despliega a producción.
     // «Exportado» no significa «visible en hidromont.cl» — eso requiere build+deploy.
     const map = {
@@ -521,7 +524,7 @@
         <label>Password
           <input name="password" type="password" autocomplete="current-password" required />
         </label>
-        ${error ? `<p class="hm-cms-error">${error}</p>` : ''}
+        ${error ? `<p class="hm-cms-error">${escapeHtml(error)}</p>` : ''}
         <button type="submit">Entrar</button>
         <p class="hm-cms-muted">Servidor CMS: ${apiBase}</p>
       </form>
@@ -547,7 +550,9 @@
     const cmsType = element.dataset.cmsType || 'text';
     const current = entry.fields[field]?.value ?? '';
     const altField = element.dataset.cmsAltField;
-    const altValue = altField ? entry.fields[altField]?.value ?? element.getAttribute('alt') ?? '' : '';
+    const altValue = altField
+      ? (entry.fields[altField]?.value ?? element.getAttribute('alt') ?? '')
+      : '';
 
     if (cmsType === 'image') {
       return `
@@ -558,9 +563,13 @@
         <label>Ruta de imagen
           <input name="value" value="${escapeHtml(String(current))}" />
         </label>
-        ${altField ? `<label>Texto alternativo
+        ${
+          altField
+            ? `<label>Texto alternativo
           <input name="alt" value="${escapeHtml(String(altValue))}" />
-        </label>` : ''}
+        </label>`
+            : ''
+        }
         <input name="mediaId" type="hidden" value="" />
         <div class="hm-cms-two">
           <label>Foco X
@@ -591,17 +600,25 @@
     }
 
     if (cmsType === 'list') {
-      const items = Array.isArray(current) ? current : (typeof current === 'string' && current ? [current] : []);
+      const items = Array.isArray(current)
+        ? current
+        : typeof current === 'string' && current
+          ? [current]
+          : [];
       return `
         <div data-list-editor>
           <p class="hm-cms-muted" style="margin:0 0 8px">Items de la lista:</p>
           <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
-            ${items.map((item, i) => `
+            ${items
+              .map(
+                (item, i) => `
               <div style="display:flex;gap:6px;align-items:center">
                 <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
                 <button type="button" data-action="remove-list-item" data-index="${i}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
           <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
           <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(items))}" />
@@ -618,7 +635,10 @@
     }
 
     if (cmsType === 'link') {
-      const link = typeof current === 'object' && current !== null ? current : { label: String(current), href: '' };
+      const link =
+        typeof current === 'object' && current !== null
+          ? current
+          : { label: String(current), href: '' };
       return `
         <label>Texto del enlace
           <input name="link-label" value="${escapeHtml(String(link.label ?? ''))}" />
@@ -650,8 +670,12 @@
     if (hidden) hidden.value = JSON.stringify({ label, href });
   }
 
+  // JS-8: several callers pass API fields straight through (item.id, item.alt,
+  // cat.name, etc.) without knowing whether the API actually returned a
+  // string — a null/number field made this throw and abort the whole panel
+  // render with no visible error. Coerce first so it never does.
   function escapeHtml(value) {
-    return value.replace(/[&<>"']/g, (char) => {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => {
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
       return map[char];
     });
@@ -695,7 +719,9 @@
       return;
     }
 
-    grid.innerHTML = items.map((item) => `
+    grid.innerHTML = items
+      .map(
+        (item) => `
       <button
         type="button"
         class="hm-cms-media-item ${item.path === selectedPath ? 'selected' : ''}"
@@ -706,7 +732,9 @@
         <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
         ${item.usageCount > 0 ? `<span class="hm-cms-badge" style="font-size:10px;align-self:start">Usado: ${item.usageCount}</span>` : ''}
       </button>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   async function loadMediaPicker() {
@@ -752,7 +780,8 @@
     }
 
     const label = panelBody.querySelector('[data-selected-media-label]');
-    if (label) label.textContent = `${asset.name}${asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ''}`;
+    if (label)
+      label.textContent = `${asset.name}${asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ''}`;
 
     renderMediaPicker(state.mediaItems, asset.path);
   }
@@ -781,7 +810,9 @@
         <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:0px;padding:8px 10px">
           ℹ️ Exportar y validar escribe los archivos del sitio y corre <code>astro check</code>. Para que los cambios aparezcan en <strong>hidromont.cl</strong> falta compilar y desplegar (<code>npm run build</code> + deploy del hosting).
         </p>
-        ${items.map((job) => `
+        ${items
+          .map(
+            (job) => `
           <article class="hm-cms-job">
             <div class="hm-cms-job-title">
               <span>${escapeHtml(job.action === 'export' ? 'Exportacion' : 'Publicacion')}</span>
@@ -791,7 +822,9 @@
             <p class="hm-cms-muted">${escapeHtml(job.id)}</p>
             <pre class="hm-cms-log">${escapeHtml((job.logs || []).slice(-8).join('\n'))}</pre>
           </article>
-        `).join('')}
+        `
+          )
+          .join('')}
       </section>
     `);
   }
@@ -821,13 +854,17 @@
           </div>
           <p class="hm-cms-muted">Haga clic en «Restaurar» para volver a esa versión.</p>
           <div class="hm-cms-revisions">
-            ${revisions.map((rev) => `
+            ${revisions
+              .map(
+                (rev) => `
               <div class="hm-cms-revision-item${rev.version === currentVersion ? ' current' : ''}">
                 <div class="hm-cms-revision-info">
                   <span class="hm-cms-revision-version">v${rev.version}${rev.version === currentVersion ? ' · actual' : ''}</span>
                   <span class="hm-cms-revision-date">${escapeHtml(formatDate(rev.createdAt))}</span>
                 </div>
-                ${rev.version !== currentVersion ? `
+                ${
+                  rev.version !== currentVersion
+                    ? `
                   <button
                     type="button"
                     class="secondary"
@@ -837,9 +874,13 @@
                     data-revision-id="${escapeHtml(rev.id)}"
                     data-revision-version="${rev.version}"
                   >Restaurar</button>
-                ` : '<span class="hm-cms-badge" style="font-size:10px">Versión actual</span>'}
+                `
+                    : '<span class="hm-cms-badge" style="font-size:10px">Versión actual</span>'
+                }
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </div>
       `);
@@ -881,7 +922,10 @@
     }
 
     // Hay markup anidado: preservarlo, actualizar solo el texto editable.
-    const textNodes = children.filter((node) => node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim().length > 0);
+    const textNodes = children.filter(
+      (node) =>
+        node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim().length > 0
+    );
     if (textNodes.length > 0) {
       // Actualizar el primer textNode significativo.
       textNodes[0].nodeValue = newValue;
@@ -936,22 +980,28 @@
       });
     }
 
-    const updated = await api(`/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value }),
-    });
+    const updated = await api(
+      `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value }),
+      }
+    );
 
     if (element.dataset.cmsType === 'image') {
       element.setAttribute('src', value);
       const altField = element.dataset.cmsAltField;
       if (altField && form.elements.alt) {
         const altValue = form.elements.alt.value;
-        await api(`/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(altField)}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ value: altValue }),
-        });
+        await api(
+          `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(altField)}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ value: altValue }),
+          }
+        );
         element.setAttribute('alt', altValue);
       }
     } else {
@@ -963,7 +1013,8 @@
       updateEditableText(element, newValue);
     }
 
-    status.textContent = 'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';
+    status.textContent =
+      'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';
     setGlobalState('unsaved');
   }
 
@@ -1020,7 +1071,9 @@
             <button type="button" data-action="gallery-new-cat">+ Nueva categoría</button>
           </div>
           <div style="display:grid;gap:6px">
-            ${cats.map((cat) => `
+            ${cats
+              .map(
+                (cat) => `
               <div class="hm-cms-gallery-cat-btn" data-cat-id="${escapeHtml(cat.id)}">
                 <div>
                   <span class="hm-cms-gallery-cat-name">${escapeHtml(cat.name)}</span>
@@ -1031,7 +1084,9 @@
                   <button type="button" class="secondary" style="font-size:11px;padding:4px 8px;background:#fee2e2;color:#991b1b" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}">×</button>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
           <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
         </div>
@@ -1050,7 +1105,9 @@
       try {
         const data = await api('/api/cms/gallery/categories');
         cat = (data.items || []).find((c) => c.id === catId) || cat;
-      } catch { /* use defaults */ }
+      } catch {
+        /* use defaults */
+      }
     }
 
     openPanel(`
@@ -1077,8 +1134,11 @@
     if (nameInput && slugInput && !catId) {
       nameInput.addEventListener('input', () => {
         slugInput.value = nameInput.value
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
       });
     }
   }
@@ -1098,12 +1158,16 @@
             <button type="button" data-action="gallery-new-item">+ Agregar imagen</button>
           </div>
           <div class="hm-cms-gallery-grid">
-            ${items.map((item) => `
+            ${items
+              .map(
+                (item) => `
               <div class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}">
                 <img src="${escapeHtml(item.mediaPath)}" alt="${escapeHtml(item.alt)}" loading="lazy" />
                 ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
           <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
         </div>
@@ -1117,7 +1181,15 @@
     if (!(await ensureSession())) return;
     setPanelTitle(itemId ? 'Editar imagen' : 'Agregar imagen');
 
-    let item = { mediaId: '', categoryId: null, title: '', alt: '', caption: '', featured: false, status: 'published' };
+    let item = {
+      mediaId: '',
+      categoryId: null,
+      title: '',
+      alt: '',
+      caption: '',
+      featured: false,
+      status: 'published',
+    };
     let catsData = { items: [] };
 
     try {
@@ -1125,7 +1197,9 @@
       if (itemId) {
         item = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`);
       }
-    } catch { /* use defaults */ }
+    } catch {
+      /* use defaults */
+    }
 
     const cats = catsData.items || [];
 
@@ -1184,7 +1258,9 @@
       const mediaData = await api('/api/cms/media');
       state.mediaItems = mediaData.items || [];
       renderGalleryMediaPicker(item.mediaId);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   function renderGalleryMediaPicker(selectedId = '') {
@@ -1194,14 +1270,18 @@
     const query = (searchInput?.value || '').trim().toLowerCase();
     const items = !query
       ? state.mediaItems.slice(0, 60)
-      : state.mediaItems.filter((item) => `${item.name} ${item.alt || ''}`.toLowerCase().includes(query)).slice(0, 60);
+      : state.mediaItems
+          .filter((item) => `${item.name} ${item.alt || ''}`.toLowerCase().includes(query))
+          .slice(0, 60);
 
     if (!items.length) {
       grid.innerHTML = '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
       return;
     }
 
-    grid.innerHTML = items.map((item) => `
+    grid.innerHTML = items
+      .map(
+        (item) => `
       <button
         type="button"
         class="hm-cms-media-item ${item.id === selectedId ? 'selected' : ''}"
@@ -1211,7 +1291,9 @@
         <img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />
         <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
       </button>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   // ─── CRUD de colecciones ─────────────────────────────────────────────────
@@ -1237,8 +1319,9 @@
     try {
       const data = await api(`/api/cms/entries?kind=${encodeURIComponent(kind)}`);
       const entries = data.entries || [];
-      const tabs = COLLECTION_KINDS.map((k) =>
-        `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}">${escapeHtml(k.label)}</button>`
+      const tabs = COLLECTION_KINDS.map(
+        (k) =>
+          `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}">${escapeHtml(k.label)}</button>`
       ).join('');
 
       openPanel(`
@@ -1246,10 +1329,13 @@
         <div class="hm-cms-actions" style="margin-bottom:12px">
           <button type="button" data-action="new-entry" data-kind="${escapeHtml(kind)}">+ Nueva entrada</button>
         </div>
-        ${entries.length === 0
-          ? `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
-          : `<div class="hm-cms-collection-list">
-              ${entries.map((e) => `
+        ${
+          entries.length === 0
+            ? `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
+            : `<div class="hm-cms-collection-list">
+              ${entries
+                .map(
+                  (e) => `
                 <div class="hm-cms-collection-item">
                   <div class="hm-cms-collection-info">
                     <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
@@ -1260,7 +1346,9 @@
                     <button type="button" class="secondary" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}">Borrar</button>
                   </div>
                 </div>
-              `).join('')}
+              `
+                )
+                .join('')}
             </div>`
         }
       `);
@@ -1284,9 +1372,13 @@
     setPanelTitle(entry ? 'Editar entrada' : 'Nueva entrada');
     openPanel(`
       <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-kind="${escapeHtml(kind)}">
-        ${!entryId ? `<label>ID (ej: servicio.bombeo)
+        ${
+          !entryId
+            ? `<label>ID (ej: servicio.bombeo)
           <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
-        </label>` : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`}
+        </label>`
+            : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`
+        }
         <label>Título
           <input name="title" value="${escapeHtml(entry?.title || '')}" required />
         </label>
@@ -1295,21 +1387,36 @@
         </label>
         <label>Estado
           <select name="status">
-            <option value="published" ${(!entry || entry.status === 'published') ? 'selected' : ''}>Publicado</option>
+            <option value="published" ${!entry || entry.status === 'published' ? 'selected' : ''}>Publicado</option>
             <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>Borrador</option>
           </select>
         </label>
-        ${!entryId && (kind === 'servicio' || kind === 'proyecto') ? `
+        ${
+          !entryId && (kind === 'servicio' || kind === 'proyecto')
+            ? `
           <p class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:8px 10px">
             Se crearán campos obligatorios con valores de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Edítalos luego haciendo clic en los elementos de la página antes de exportar.
-          </p>` : ''}
-        ${(entry ? Object.entries(entry.fields || {}).filter(([, f]) => f.type === 'text' || f.type === 'textarea').map(([key, f]) => `
+          </p>`
+            : ''
+        }
+        ${
+          entry
+            ? Object.entries(entry.fields || {})
+                .filter(([, f]) => f.type === 'text' || f.type === 'textarea')
+                .map(
+                  ([key, f]) => `
           <label>${escapeHtml(key)}
-            ${f.type === 'textarea'
-              ? `<textarea name="field:${escapeHtml(key)}">${escapeHtml(String(f.value ?? ''))}</textarea>`
-              : `<input name="field:${escapeHtml(key)}" value="${escapeHtml(String(f.value ?? ''))}" />`}
+            ${
+              f.type === 'textarea'
+                ? `<textarea name="field:${escapeHtml(key)}">${escapeHtml(String(f.value ?? ''))}</textarea>`
+                : `<input name="field:${escapeHtml(key)}" value="${escapeHtml(String(f.value ?? ''))}" />`
+            }
           </label>
-        `).join('') : '')}
+        `
+                )
+                .join('')
+            : ''
+        }
         <div class="hm-cms-actions">
           <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
           <button type="button" class="secondary" data-action="back-to-collections">← Volver</button>
@@ -1350,11 +1457,16 @@
         for (const [name, input] of Object.entries(form.elements)) {
           if (typeof name === 'string' && name.startsWith('field:')) {
             const key = name.slice(6);
-            fieldUpdates.push(api(`/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ value: input.value }),
-            }));
+            fieldUpdates.push(
+              api(
+                `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
+                {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ value: input.value }),
+                }
+              )
+            );
           }
         }
         await Promise.all(fieldUpdates);
@@ -1363,252 +1475,270 @@
       if (status) status.textContent = 'Guardado correctamente.';
       setTimeout(() => loadCollections(kind), 800);
     } catch (error) {
-      if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      if (status)
+        status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
     }
   }
 
   // ─── Fin CRUD colecciones ────────────────────────────────────────────────
 
-  document.addEventListener('click', async (event) => {
-    const target = event.target;
-    const editable = target instanceof Element ? target.closest('[data-cms-entry]') : null;
-    const action = target instanceof Element ? target.closest('[data-action]')?.dataset.action : null;
+  document.addEventListener(
+    'click',
+    async (event) => {
+      const target = event.target;
+      const editable = target instanceof Element ? target.closest('[data-cms-entry]') : null;
+      const action =
+        target instanceof Element ? target.closest('[data-action]')?.dataset.action : null;
 
-    if (action === 'close') closePanel();
-    if (action === 'logout') {
-      await api('/api/cms/logout', { method: 'POST' }).catch(() => {});
-      window.localStorage.removeItem('hidromont:cms');
-      window.location.reload();
-    }
-    if (action === 'export') {
-      const result = await api('/api/cms/export', { method: 'POST' });
-      const status = panelBody.querySelector('[data-status]');
-      if (status) status.textContent = `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
-      setGlobalState('exported');
-    }
-    if (action === 'jobs') {
-      loadPublishJobs();
-    }
-    if (action === 'collections') {
-      loadCollections();
-    }
-    if (action === 'gallery') {
-      loadGallery();
-    }
-    if (action === 'gallery-cats') {
-      loadGalleryCategories();
-    }
-    if (action === 'gallery-items') {
-      loadGalleryItemsList();
-    }
-    if (action === 'gallery-new-cat') {
-      showGalleryCategoryForm();
-    }
-    if (action === 'gallery-edit-cat' && target instanceof Element) {
-      const catId = target.closest('[data-cat-id]')?.dataset.catId;
-      if (catId) showGalleryCategoryForm(catId);
-    }
-    if (action === 'gallery-delete-cat' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const btn = target.closest('[data-cat-id]');
-      if (!btn) return;
-      const catId = btn.dataset.catId;
-      const name = btn.dataset.catName || catId;
-      if (!window.confirm(`¿Eliminar la categoría "${name}"?`)) return;
-      try {
-        await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, { method: 'DELETE' });
+      if (action === 'close') closePanel();
+      if (action === 'logout') {
+        await api('/api/cms/logout', { method: 'POST' }).catch(() => {});
+        window.localStorage.removeItem('hidromont:cms');
+        window.location.reload();
+      }
+      if (action === 'export') {
+        const result = await api('/api/cms/export', { method: 'POST' });
+        const status = panelBody.querySelector('[data-status]');
+        if (status)
+          status.textContent =
+            `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
+        setGlobalState('exported');
+      }
+      if (action === 'jobs') {
+        loadPublishJobs();
+      }
+      if (action === 'collections') {
+        loadCollections();
+      }
+      if (action === 'gallery') {
+        loadGallery();
+      }
+      if (action === 'gallery-cats') {
         loadGalleryCategories();
-      } catch (error) {
-        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
       }
-      return;
-    }
-    if (action === 'gallery-new-item') {
-      showGalleryItemForm();
-    }
-    if (action === 'gallery-edit-item' && target instanceof Element) {
-      const itemId = target.closest('[data-item-id]')?.dataset.itemId;
-      if (itemId) showGalleryItemForm(itemId);
-    }
-    if (action === 'gallery-delete-item' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const btn = target.closest('[data-item-id]');
-      if (!btn) return;
-      const itemId = btn.dataset.itemId;
-      const title = btn.dataset.itemTitle || itemId;
-      if (!window.confirm(`¿Eliminar "${title}" de la galería?`)) return;
-      try {
-        await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+      if (action === 'gallery-items') {
         loadGalleryItemsList();
-      } catch (error) {
-        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
       }
-      return;
-    }
-    if (action === 'gallery-select-media' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
-      const asset = state.mediaItems.find((item) => item.id === mediaId);
-      if (asset) {
-        const form = panelBody.querySelector('[data-gallery-item-form]');
-        if (form) {
-          const mediaIdInput = form.querySelector('[name="mediaId"]');
-          const titleInput = form.querySelector('[name="title"]');
-          const altInput = form.querySelector('[name="alt"]');
-          const preview = form.querySelector('[data-gallery-media-preview]');
-          if (mediaIdInput) mediaIdInput.value = asset.id;
-          if (titleInput && !titleInput.value) titleInput.value = asset.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
-          if (altInput && !altInput.value) altInput.value = asset.alt || '';
-          if (preview) {
-            preview.src = asset.path;
-            preview.style.display = 'block';
-          }
-          renderGalleryMediaPicker(asset.id);
+      if (action === 'gallery-new-cat') {
+        showGalleryCategoryForm();
+      }
+      if (action === 'gallery-edit-cat' && target instanceof Element) {
+        const catId = target.closest('[data-cat-id]')?.dataset.catId;
+        if (catId) showGalleryCategoryForm(catId);
+      }
+      if (action === 'gallery-delete-cat' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const btn = target.closest('[data-cat-id]');
+        if (!btn) return;
+        const catId = btn.dataset.catId;
+        const name = btn.dataset.catName || catId;
+        if (!window.confirm(`¿Eliminar la categoría "${name}"?`)) return;
+        try {
+          await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
+            method: 'DELETE',
+          });
+          loadGalleryCategories();
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         }
+        return;
       }
-      return;
-    }
-    if (action === 'tab-kind' && target instanceof Element) {
-      const kind = target.closest('[data-kind]')?.dataset.kind;
-      if (kind) loadCollections(kind);
-    }
-    if (action === 'new-entry' && target instanceof Element) {
-      const kind = target.closest('[data-kind]')?.dataset.kind || activeCollectionKind;
-      showEntryForm(null, kind);
-    }
-    if (action === 'edit-entry' && target instanceof Element) {
-      const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
-      if (entryId) showEntryForm(entryId);
-    }
-    if (action === 'delete-entry' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const btn = target.closest('[data-entry-id]');
-      if (!btn) return;
-      const entryId = btn.dataset.entryId;
-      const title = btn.dataset.entryTitle || entryId;
-      if (!entryId) return;
-      const confirmed = window.confirm(`¿Eliminar la entrada "${title}"?\nEsta acción no se puede deshacer.`);
-      if (!confirmed) return;
-      try {
-        await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, { method: 'DELETE' });
+      if (action === 'gallery-new-item') {
+        showGalleryItemForm();
+      }
+      if (action === 'gallery-edit-item' && target instanceof Element) {
+        const itemId = target.closest('[data-item-id]')?.dataset.itemId;
+        if (itemId) showGalleryItemForm(itemId);
+      }
+      if (action === 'gallery-delete-item' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const btn = target.closest('[data-item-id]');
+        if (!btn) return;
+        const itemId = btn.dataset.itemId;
+        const title = btn.dataset.itemTitle || itemId;
+        if (!window.confirm(`¿Eliminar "${title}" de la galería?`)) return;
+        try {
+          await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+          loadGalleryItemsList();
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        }
+        return;
+      }
+      if (action === 'gallery-select-media' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
+        const asset = state.mediaItems.find((item) => item.id === mediaId);
+        if (asset) {
+          const form = panelBody.querySelector('[data-gallery-item-form]');
+          if (form) {
+            const mediaIdInput = form.querySelector('[name="mediaId"]');
+            const titleInput = form.querySelector('[name="title"]');
+            const altInput = form.querySelector('[name="alt"]');
+            const preview = form.querySelector('[data-gallery-media-preview]');
+            if (mediaIdInput) mediaIdInput.value = asset.id;
+            if (titleInput && !titleInput.value)
+              titleInput.value = asset.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+            if (altInput && !altInput.value) altInput.value = asset.alt || '';
+            if (preview) {
+              preview.src = asset.path;
+              preview.style.display = 'block';
+            }
+            renderGalleryMediaPicker(asset.id);
+          }
+        }
+        return;
+      }
+      if (action === 'tab-kind' && target instanceof Element) {
+        const kind = target.closest('[data-kind]')?.dataset.kind;
+        if (kind) loadCollections(kind);
+      }
+      if (action === 'new-entry' && target instanceof Element) {
+        const kind = target.closest('[data-kind]')?.dataset.kind || activeCollectionKind;
+        showEntryForm(null, kind);
+      }
+      if (action === 'edit-entry' && target instanceof Element) {
+        const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
+        if (entryId) showEntryForm(entryId);
+      }
+      if (action === 'delete-entry' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const btn = target.closest('[data-entry-id]');
+        if (!btn) return;
+        const entryId = btn.dataset.entryId;
+        const title = btn.dataset.entryTitle || entryId;
+        if (!entryId) return;
+        const confirmed = window.confirm(
+          `¿Eliminar la entrada "${title}"?\nEsta acción no se puede deshacer.`
+        );
+        if (!confirmed) return;
+        try {
+          await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, { method: 'DELETE' });
+          loadCollections(activeCollectionKind);
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        }
+        return;
+      }
+      if (action === 'back-to-collections') {
         loadCollections(activeCollectionKind);
-      } catch (error) {
-        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
       }
-      return;
-    }
-    if (action === 'back-to-collections') {
-      loadCollections(activeCollectionKind);
-    }
-    if (action === 'add-list-item' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const form = target.closest('form');
-      const container = target.closest('[data-list-editor]')?.querySelector('[data-list-items]');
-      if (!container || !form) return;
-      const idx = container.querySelectorAll('[data-list-item]').length;
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;gap:6px;align-items:center';
-      row.innerHTML = `
+      if (action === 'add-list-item' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const form = target.closest('form');
+        const container = target.closest('[data-list-editor]')?.querySelector('[data-list-items]');
+        if (!container || !form) return;
+        const idx = container.querySelectorAll('[data-list-item]').length;
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:6px;align-items:center';
+        row.innerHTML = `
         <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
         <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
       `;
-      container.appendChild(row);
-      row.querySelector('input')?.focus();
-      syncListValue(form);
-      return;
-    }
-    if (action === 'remove-list-item' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const form = target.closest('form');
-      const row = target.closest('div');
-      if (row && form) {
-        row.remove();
-        // Re-index remaining items
-        const container = form.querySelector('[data-list-items]');
-        if (container) {
-          container.querySelectorAll('[data-list-item]').forEach((input, i) => {
-            input.setAttribute('data-list-item', String(i));
-            const btn = input.nextElementSibling;
-            if (btn) btn.setAttribute('data-index', String(i));
-          });
-        }
+        container.appendChild(row);
+        row.querySelector('input')?.focus();
         syncListValue(form);
+        return;
       }
-      return;
-    }
-    if (action === 'revisions' && target instanceof Element) {
-      const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
-      if (entryId) loadRevisions(entryId);
-    }
-    if (action === 'back-to-editor') {
-      if (state.selected && state.entry) {
-        selectElement(state.selected).catch((error) => loginView(error.message));
-      } else {
-        closePanel();
+      if (action === 'remove-list-item' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const form = target.closest('form');
+        const row = target.closest('div');
+        if (row && form) {
+          row.remove();
+          // Re-index remaining items
+          const container = form.querySelector('[data-list-items]');
+          if (container) {
+            container.querySelectorAll('[data-list-item]').forEach((input, i) => {
+              input.setAttribute('data-list-item', String(i));
+              const btn = input.nextElementSibling;
+              if (btn) btn.setAttribute('data-index', String(i));
+            });
+          }
+          syncListValue(form);
+        }
+        return;
       }
-    }
-    if (action === 'restore-revision' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const btn = target.closest('[data-action="restore-revision"]');
-      if (!btn) return;
-      const entryId = btn.dataset.entryId;
-      const revisionId = btn.dataset.revisionId;
-      const version = btn.dataset.revisionVersion;
-      if (!entryId || !revisionId) return;
+      if (action === 'revisions' && target instanceof Element) {
+        const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
+        if (entryId) loadRevisions(entryId);
+      }
+      if (action === 'back-to-editor') {
+        if (state.selected && state.entry) {
+          selectElement(state.selected).catch((error) => loginView(error.message));
+        } else {
+          closePanel();
+        }
+      }
+      if (action === 'restore-revision' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const btn = target.closest('[data-action="restore-revision"]');
+        if (!btn) return;
+        const entryId = btn.dataset.entryId;
+        const revisionId = btn.dataset.revisionId;
+        const version = btn.dataset.revisionVersion;
+        if (!entryId || !revisionId) return;
 
-      const confirmed = window.confirm(
-        `¿Restaurar la entrada "${entryId}" a la versión ${version}?\nEsta acción sobreescribirá los campos actuales en la base de datos.`
-      );
-      if (!confirmed) return;
+        const confirmed = window.confirm(
+          `¿Restaurar la entrada "${entryId}" a la versión ${version}?\nEsta acción sobreescribirá los campos actuales en la base de datos.`
+        );
+        if (!confirmed) return;
 
-      btn.textContent = 'Restaurando...';
-      btn.setAttribute('disabled', '');
-      try {
-        await api(`/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}`, {
-          method: 'POST',
-        });
-        // Reload revisions view to reflect the new current version
-        await loadRevisions(entryId);
-      } catch (error) {
-        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        btn.textContent = 'Restaurando...';
+        btn.setAttribute('disabled', '');
+        try {
+          await api(
+            `/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}`,
+            {
+              method: 'POST',
+            }
+          );
+          // Reload revisions view to reflect the new current version
+          await loadRevisions(entryId);
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        }
+        return;
       }
-      return;
-    }
-    if (action === 'publish') {
-      if (!(await ensureSession())) return;
-      openPanel('<p class="hm-cms-muted">Exportando archivos y ejecutando validación (astro check)...</p>');
-      try {
-        const result = await api('/api/cms/publish', { method: 'POST' });
-        renderPublishJobs(result.job ? [result.job] : []);
-        const jobStatus = result.job?.status;
-        setGlobalState(jobStatus === 'succeeded' ? 'exported' : 'error');
-      } catch (error) {
-        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
-        setGlobalState('error');
+      if (action === 'publish') {
+        if (!(await ensureSession())) return;
+        openPanel(
+          '<p class="hm-cms-muted">Exportando archivos y ejecutando validación (astro check)...</p>'
+        );
+        try {
+          const result = await api('/api/cms/publish', { method: 'POST' });
+          renderPublishJobs(result.job ? [result.job] : []);
+          const jobStatus = result.job?.status;
+          setGlobalState(jobStatus === 'succeeded' ? 'exported' : 'error');
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+          setGlobalState('error');
+        }
       }
-    }
-    if (action === 'select-media' && target instanceof Element) {
-      event.preventDefault();
-      event.stopPropagation();
-      const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
-      const asset = state.mediaItems.find((item) => item.id === mediaId);
-      if (asset) applyMediaSelection(asset);
-      return;
-    }
+      if (action === 'select-media' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
+        const asset = state.mediaItems.find((item) => item.id === mediaId);
+        if (asset) applyMediaSelection(asset);
+        return;
+      }
 
-    if (editable && !panel.contains(editable)) {
-      event.preventDefault();
-      event.stopPropagation();
-      selectElement(editable).catch((error) => loginView(error.message));
-    }
-  }, true);
+      if (editable && !panel.contains(editable)) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectElement(editable).catch((error) => loginView(error.message));
+      }
+    },
+    true
+  );
 
   document.addEventListener('submit', async (event) => {
     const form = event.target;
@@ -1636,7 +1766,8 @@
       event.preventDefault();
       saveEdit(form).catch((error) => {
         const status = form.querySelector('[data-status]');
-        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       });
     }
 
@@ -1644,7 +1775,8 @@
       event.preventDefault();
       saveEntryForm(form).catch((error) => {
         const status = form.querySelector('[data-status]');
-        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       });
     }
 
@@ -1673,7 +1805,8 @@
         }
         loadGalleryCategories();
       } catch (error) {
-        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       }
     }
 
@@ -1706,7 +1839,9 @@
           currentMediaId = uploaded.id;
           form.elements.mediaId.value = uploaded.id;
           if (!form.elements.title.value) {
-            form.elements.title.value = uploaded.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+            form.elements.title.value = uploaded.name
+              .replace(/\.[^.]+$/, '')
+              .replace(/[-_]+/g, ' ');
           }
           if (!form.elements.alt.value) {
             form.elements.alt.value = uploaded.alt || '';
@@ -1738,7 +1873,8 @@
         }
         loadGalleryItemsList();
       } catch (error) {
-        if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       }
     }
   });
@@ -1776,7 +1912,10 @@
     const preview = form.querySelector('[data-gallery-media-preview]');
     if (preview) {
       const reader = new FileReader();
-      reader.onload = () => { preview.src = String(reader.result); preview.style.display = 'block'; };
+      reader.onload = () => {
+        preview.src = String(reader.result);
+        preview.style.display = 'block';
+      };
       reader.readAsDataURL(file);
     }
   });
@@ -1795,7 +1934,11 @@
     }
 
     // Sync list items to hidden input on every keystroke
-    if (target instanceof HTMLInputElement && target.hasAttribute('data-list-item') && target.form) {
+    if (
+      target instanceof HTMLInputElement &&
+      target.hasAttribute('data-list-item') &&
+      target.form
+    ) {
       syncListValue(target.form);
     }
 

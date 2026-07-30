@@ -417,8 +417,21 @@
     function openAlbum(albumElement: HTMLElement) {
       const projectSlug = albumElement.getAttribute('data-project-slug');
       const allImages = collectImages();
-      images = projectSlug ? allImages.filter((img) => img.projectSlug === projectSlug) : allImages;
-      if (!images.length) images = allImages;
+      // JS-L6 fix: getProjectAlbums() (src/data/gallery.ts) buckets items with
+      // no real project under the synthetic slug "general", but those items'
+      // own projectSlug field is null/empty, not the string "general" — a
+      // naive `=== projectSlug` match against that bucket always yielded zero
+      // results and silently fell back to showing the ENTIRE gallery instead
+      // of just that album. Special-case it to match by absence instead.
+      images = !projectSlug
+        ? allImages
+        : projectSlug === 'general'
+          ? allImages.filter((img) => !img.projectSlug)
+          : allImages.filter((img) => img.projectSlug === projectSlug);
+      if (!images.length) {
+        console.error(`No se encontraron imágenes para el álbum "${projectSlug}"`);
+        return;
+      }
       currentIndex = 0;
 
       cancelPendingClose();
@@ -552,10 +565,15 @@
       (e) => {
         const dx = e.changedTouches[0].clientX - touchStartX;
         const dt = Date.now() - touchStartTime;
-        const velocity = Math.abs(dx) / dt;
+        // JS-L5 fix: a very fast flick could make `dt` 0, and `velocity`
+        // would be Infinity — always triggering navigation regardless of
+        // actual distance (including on what was really just a tap). Guard
+        // dt>0 and require a minimum distance before considering it a swipe.
+        const velocity = dt > 0 ? Math.abs(dx) / dt : 0;
+        const MIN_SWIPE_DISTANCE = 30;
 
         // Emil: momentum-based dismissal — velocity > 0.11 regardless of distance
-        if (velocity > 0.11 || Math.abs(dx) > 80) {
+        if (Math.abs(dx) > MIN_SWIPE_DISTANCE && (velocity > 0.11 || Math.abs(dx) > 80)) {
           if (dx > 0) prev();
           else next();
         }

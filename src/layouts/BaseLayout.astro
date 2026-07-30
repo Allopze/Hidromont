@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { company } from '../data/company';
 import CmsOverlay from '../components/cms/CmsOverlay.astro';
+import { safeJsonForScript } from '../utils/safeJson';
 
 interface Props {
   title?: string;
@@ -54,7 +55,9 @@ const allJsonLd = [
 <html lang="es-CL">
   <head>
     <!-- .js flag added first — motion.css gates initial-hidden states on html.js -->
-    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
@@ -92,7 +95,7 @@ const allJsonLd = [
     <!-- JSON-LD -->
     {
       allJsonLd.map((ld) => (
-        <script is:inline type="application/ld+json" set:html={JSON.stringify(ld)} />
+        <script is:inline type="application/ld+json" set:html={safeJsonForScript(ld)} />
       ))
     }
   </head>

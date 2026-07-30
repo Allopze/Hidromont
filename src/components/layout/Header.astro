@@ -18,7 +18,11 @@ interface Props {
 
 const { currentPath = '/', overlay = false } = Astro.props;
 
-const mobileMenuOpenLabel = getCmsText('layout.header', 'mobileMenuOpenLabel', 'Abrir menú de navegación');
+const mobileMenuOpenLabel = getCmsText(
+  'layout.header',
+  'mobileMenuOpenLabel',
+  'Abrir menú de navegación'
+);
 
 function isActive(href: string) {
   if (href === '/') return currentPath === '/';
@@ -41,51 +45,97 @@ function isActive(href: string) {
 >
   <div class="w-full mx-auto px-6 max-w-container">
     <div class="flex items-center justify-between h-20 md:h-24">
-
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-4 shrink-0 no-underline" aria-label={getCmsText('layout.header', 'logoAriaLabel', 'Hidromont Chile — Inicio')}>
-        {cmsLogoSrc ? (
-          <EditableImage
-            entry="layout.header"
-            field="logoSrc"
-            altField="logoAlt"
-            src={cmsLogoSrc}
-            alt={cmsLogoAlt}
-            width={1181}
-            height={708}
-            class={[
-              'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
-              overlay ? 'logo-img' : '',
-            ].join(' ')}
-            loading="eager"
-          />
-        ) : (
-          <Image
-            src={logo}
-            alt={cmsLogoAlt}
-            width={1181}
-            height={708}
-            class={[
-              'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
-              overlay ? 'logo-img' : '',
-            ].join(' ')}
-            loading="eager"
-            {...(cmsEditingEnabled ? {
-              'data-cms-entry': 'layout.header',
-              'data-cms-field': 'logoSrc',
-              'data-cms-alt-field': 'logoAlt',
-              'data-cms-type': 'image',
-            } : {})}
-          />
-        )}
-
+      <a
+        href="/"
+        class="flex items-center gap-4 shrink-0 no-underline"
+        aria-label={getCmsText('layout.header', 'logoAriaLabel', 'Hidromont Chile — Inicio')}
+      >
+        {
+          cmsLogoSrc ? (
+            <EditableImage
+              entry="layout.header"
+              field="logoSrc"
+              altField="logoAlt"
+              src={cmsLogoSrc}
+              alt={cmsLogoAlt}
+              width={1181}
+              height={708}
+              class={[
+                'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+                overlay ? 'logo-img' : '',
+              ].join(' ')}
+              loading="eager"
+            />
+          ) : (
+            <Image
+              src={logo}
+              alt={cmsLogoAlt}
+              width={1181}
+              height={708}
+              class={[
+                'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
+                overlay ? 'logo-img' : '',
+              ].join(' ')}
+              loading="eager"
+              {...(cmsEditingEnabled
+                ? {
+                    'data-cms-entry': 'layout.header',
+                    'data-cms-field': 'logoSrc',
+                    'data-cms-alt-field': 'logoAlt',
+                    'data-cms-type': 'image',
+                  }
+                : {})}
+            />
+          )
+        }
       </a>
 
       <!-- Desktop nav -->
       <nav aria-label="Navegación principal" class="hidden lg:flex items-center gap-1">
-        {navItems.map((item) => (
-          item.children ? (
-            <div class="relative group">
+        {
+          navItems.map((item) =>
+            item.children ? (
+              <div class="relative group">
+                <a
+                  href={item.href}
+                  class={[
+                    'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                    overlay
+                      ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
+                      : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
+                  ].join(' ')}
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  data-dropdown-trigger
+                >
+                  <EditableText entry="layout.header" field={item.cmsField}>
+                    {item.label}
+                  </EditableText>
+                  <svg
+                    class="inline-block ml-1 w-3 h-3"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M2 4l4 4 4-4" />
+                  </svg>
+                </a>
+                <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-dropdown">
+                  {item.children.map((child) => (
+                    <a
+                      href={child.href}
+                      class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
+                    >
+                      <EditableText entry="layout.header" field={child.cmsField}>
+                        {child.label}
+                      </EditableText>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : (
               <a
                 href={item.href}
                 class={[
@@ -94,40 +144,14 @@ function isActive(href: string) {
                     ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
                     : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
                 ].join(' ')}
-                aria-haspopup="true"
-                aria-expanded="false"
-                data-dropdown-trigger
               >
-                <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
-                <svg class="inline-block ml-1 w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 4l4 4 4-4" />
-                </svg>
+                <EditableText entry="layout.header" field={item.cmsField}>
+                  {item.label}
+                </EditableText>
               </a>
-              <div class="absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-[opacity,visibility] duration-base ease-standard z-dropdown">
-                {item.children.map((child) => (
-                  <a
-                    href={child.href}
-                    class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
-                  >
-                    <EditableText entry="layout.header" field={child.cmsField}>{child.label}</EditableText>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <a
-              href={item.href}
-              class={[
-                'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                overlay
-                  ? `nav-link hover:bg-white/10 hover:text-white ${isActive(item.href) ? 'text-white' : 'text-white/90'}`
-                  : `hover:bg-primary-light hover:text-primary-dark ${isActive(item.href) ? 'text-primary nav-active-indicator' : 'text-text'}`,
-              ].join(' ')}
-            >
-              <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
-            </a>
+            )
           )
-        ))}
+        }
       </nav>
 
       <!-- Desktop CTA -->
@@ -149,11 +173,27 @@ function isActive(href: string) {
         aria-controls="mobile-menu"
         aria-label={mobileMenuOpenLabel}
       >
-        <svg id="icon-menu" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M4 6h16M4 12h16M4 18h16" />
+        <svg
+          id="icon-menu"
+          class="w-6 h-6"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
-        <svg id="icon-close" class="w-6 h-6 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M6 6l12 12M6 18L18 6" />
+        <svg
+          id="icon-close"
+          class="w-6 h-6 hidden"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M6 6l12 12M6 18L18 6"></path>
         </svg>
       </button>
     </div>
@@ -162,35 +202,51 @@ function isActive(href: string) {
   <!-- Mobile menu (siempre fondo blanco cuando se abre) -->
   <div id="mobile-menu" class="lg:hidden hidden border-t border-border bg-white">
     <nav aria-label="Navegación móvil" class="px-4 py-4 space-y-1">
-      {navItems.map((item) => (
-        item.children ? (
-          <details class="group">
-            <summary class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}>
-              <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
-              <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 4l4 4 4-4" />
-              </svg>
-            </summary>
-            <div class="mt-1 ml-3 space-y-1 border-l-2 border-primary-light pl-3">
-              {item.children.map((child) => (
-                <a
-                  href={child.href}
-                  class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
+      {
+        navItems.map((item) =>
+          item.children ? (
+            <details class="group">
+              <summary
+                class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}
+              >
+                <EditableText entry="layout.header" field={item.cmsField}>
+                  {item.label}
+                </EditableText>
+                <svg
+                  class="w-4 h-4 transition-transform group-open:rotate-180"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
                 >
-                  <EditableText entry="layout.header" field={child.cmsField}>{child.label}</EditableText>
-                </a>
-              ))}
-            </div>
-          </details>
-        ) : (
-          <a
-            href={item.href}
-            class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
-          >
-            <EditableText entry="layout.header" field={item.cmsField}>{item.label}</EditableText>
-          </a>
+                  <path d="M2 4l4 4 4-4" />
+                </svg>
+              </summary>
+              <div class="mt-1 ml-3 space-y-1 border-l-2 border-primary-light pl-3">
+                {item.children.map((child) => (
+                  <a
+                    href={child.href}
+                    class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
+                  >
+                    <EditableText entry="layout.header" field={child.cmsField}>
+                      {child.label}
+                    </EditableText>
+                  </a>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <a
+              href={item.href}
+              class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
+            >
+              <EditableText entry="layout.header" field={item.cmsField}>
+                {item.label}
+              </EditableText>
+            </a>
+          )
         )
-      ))}
+      }
       <div class="pt-4 border-t border-border">
         <Button href={ctaHref} class="w-full justify-center">
           <EditableText entry="layout.header" field="ctaLabel">{ctaLabel}</EditableText>
@@ -225,14 +281,34 @@ function isActive(href: string) {
   const iconMenu = document.getElementById('icon-menu');
   const iconClose = document.getElementById('icon-close');
 
-  toggle?.addEventListener('click', () => {
-    const isOpen = !menu?.classList.contains('hidden');
-    menu?.classList.toggle('hidden', isOpen);
-    const opening = !isOpen;
-    toggle.setAttribute('aria-expanded', String(opening));
-    toggle.setAttribute('aria-label', opening ? 'Cerrar menú de navegación' : 'Abrir menú de navegación');
+  // JS-L1/UIUX-5 fix: previously only toggled the `hidden` class — no focus
+  // moved into the opened panel, Escape didn't close it, and the body kept
+  // scrolling behind it.
+  function setMobileMenuOpen(opening: boolean): void {
+    menu?.classList.toggle('hidden', !opening);
+    toggle?.setAttribute('aria-expanded', String(opening));
+    toggle?.setAttribute(
+      'aria-label',
+      opening ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
+    );
     iconMenu?.classList.toggle('hidden', opening);
     iconClose?.classList.toggle('hidden', !opening);
+    document.body.classList.toggle('overflow-hidden', opening);
+
+    if (opening) {
+      const firstLink = menu?.querySelector<HTMLElement>('a, summary, button');
+      firstLink?.focus();
+    } else {
+      (toggle as HTMLElement | null)?.focus();
+    }
+  }
+
+  toggle?.addEventListener('click', () => {
+    setMobileMenuOpen(!!menu?.classList.contains('hidden'));
+  });
+
+  menu?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape') setMobileMenuOpen(false);
   });
 
   /* ── Overlay scroll behaviour (home only) ────────────────── */
@@ -241,7 +317,12 @@ function isActive(href: string) {
     const header: HTMLElement = headerEl;
     const THRESHOLD = 80;
     let ticking = false;
-    let scrolled = false;
+    // JS-9 fix: starts `undefined` (not `false`) so the initial applyScrolled()
+    // call below always actually applies a state, even when the page happens
+    // to load already past THRESHOLD (restored scroll position, landing on an
+    // anchor) — previously the header stayed stuck in the transparent/white-
+    // on-white state until the first scroll event fired.
+    let scrolled: boolean | undefined;
 
     // Elements that change colour on scroll
     const navLinks = header.querySelectorAll<HTMLElement>('.nav-link');
@@ -257,7 +338,12 @@ function isActive(href: string) {
         header.classList.add('bg-white/90', 'backdrop-blur-md', 'border-border', 'shadow-sm');
         header.classList.remove('bg-transparent', 'border-transparent');
         navLinks.forEach((el) => {
-          el.classList.remove('text-white/90', 'text-white', 'hover:bg-white/10', 'hover:text-white');
+          el.classList.remove(
+            'text-white/90',
+            'text-white',
+            'hover:bg-white/10',
+            'hover:text-white'
+          );
           el.classList.add('text-text', 'hover:bg-primary-light', 'hover:text-primary-dark');
         });
         if (logoImg) logoImg.style.filter = '';
@@ -271,27 +357,42 @@ function isActive(href: string) {
         header.classList.add('bg-transparent', 'border-transparent');
         navLinks.forEach((el) => {
           el.classList.add('text-white/90', 'hover:bg-white/10', 'hover:text-white');
-          el.classList.remove('text-text', 'text-primary', 'hover:bg-primary-light', 'hover:text-primary-dark');
+          el.classList.remove(
+            'text-text',
+            'text-primary',
+            'hover:bg-primary-light',
+            'hover:text-primary-dark'
+          );
         });
         if (logoImg) logoImg.style.filter = 'brightness(0) invert(1)';
         if (toggleBtn) {
           toggleBtn.classList.add('text-white', 'hover:bg-white/10');
-          toggleBtn.classList.remove('text-text', 'text-primary', 'hover:bg-primary-light', 'hover:text-primary-dark');
+          toggleBtn.classList.remove(
+            'text-text',
+            'text-primary',
+            'hover:bg-primary-light',
+            'hover:text-primary-dark'
+          );
         }
       }
     }
 
-    // Apply initial clean filter on load (transparent state)
-    if (logoImg) logoImg.style.filter = 'brightness(0) invert(1)';
+    // Apply the correct initial state based on actual scroll position, rather
+    // than always assuming transparent (see JS-9 fix above).
+    applyScrolled(window.scrollY > THRESHOLD);
 
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          applyScrolled(window.scrollY > THRESHOLD);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    }, { passive: true });
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            applyScrolled(window.scrollY > THRESHOLD);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
   }
 </script>

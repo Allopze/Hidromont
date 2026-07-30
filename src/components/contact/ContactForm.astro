@@ -2,6 +2,7 @@
 import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
+import { safeJsonForScript } from '../../utils/safeJson';
 
 // A2-005: fallback al correo corporativo, no a una cuenta personal.
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'contacto@hidromont.cl';
@@ -11,7 +12,9 @@ const ccEmails = [
   import.meta.env.FORMSUBMIT_CC_2,
   import.meta.env.FORMSUBMIT_CC_3,
   import.meta.env.FORMSUBMIT_CC_4,
-].filter(Boolean).join(',');
+]
+  .filter(Boolean)
+  .join(',');
 
 const servicios = getCmsValue<string[]>('contact.form', 'services', [
   'Tuberías Forzadas y Blindajes',
@@ -26,14 +29,30 @@ const servicios = getCmsValue<string[]>('contact.form', 'services', [
 const validationMessages = {
   nombre: {
     valueMissing: getCmsText('contact.form', 'nameRequiredError', 'Por favor ingrese su nombre.'),
-    tooShort: getCmsText('contact.form', 'nameTooShortError', 'El nombre debe tener al menos 2 caracteres.'),
+    tooShort: getCmsText(
+      'contact.form',
+      'nameTooShortError',
+      'El nombre debe tener al menos 2 caracteres.'
+    ),
   },
   email: {
-    valueMissing: getCmsText('contact.form', 'emailRequiredError', 'Por favor ingrese su correo electrónico.'),
-    typeMismatch: getCmsText('contact.form', 'emailInvalidError', 'Ingrese un correo válido (ej. correo@empresa.com).'),
+    valueMissing: getCmsText(
+      'contact.form',
+      'emailRequiredError',
+      'Por favor ingrese su correo electrónico.'
+    ),
+    typeMismatch: getCmsText(
+      'contact.form',
+      'emailInvalidError',
+      'Ingrese un correo válido (ej. correo@empresa.com).'
+    ),
   },
   mensaje: {
-    valueMissing: getCmsText('contact.form', 'messageRequiredError', 'Por favor escriba su consulta o mensaje.'),
+    valueMissing: getCmsText(
+      'contact.form',
+      'messageRequiredError',
+      'Por favor escriba su consulta o mensaje.'
+    ),
   },
   generic: {
     valueMissing: getCmsText('contact.form', 'genericRequiredError', 'Campo requerido.'),
@@ -51,17 +70,30 @@ const validationMessages = {
   novalidate
 >
   <!-- FormSubmit.co config -->
-  <input type="hidden" name="_subject" value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')} />
+  <input
+    type="hidden"
+    name="_subject"
+    value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromont.cl')}
+  />
   <input type="hidden" name="_captcha" value="false" />
   {ccEmails && <input type="hidden" name="_cc" value={ccEmails} />}
   <!-- Honeypot anti-spam (FORM-002): campo oculto que los bots rellenan y hace descartar el envío. -->
-  <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  <input
+    type="text"
+    name="_honey"
+    style="display:none"
+    tabindex="-1"
+    autocomplete="off"
+    aria-hidden="true"
+  />
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
     <!-- Nombre -->
     <div>
       <label for="nombre" class="block text-sm font-semibold text-text mb-1.5">
-        <EditableText entry="contact.form" field="nameLabel">{getCmsText('contact.form', 'nameLabel', 'Nombre')}</EditableText>
+        <EditableText entry="contact.form" field="nameLabel"
+          >{getCmsText('contact.form', 'nameLabel', 'Nombre')}</EditableText
+        >
         <span class="text-error" aria-hidden="true">*</span>
       </label>
       <input
@@ -82,7 +114,9 @@ const validationMessages = {
     <!-- Empresa -->
     <div>
       <label for="empresa" class="block text-sm font-semibold text-text mb-1.5">
-        <EditableText entry="contact.form" field="companyLabel">{getCmsText('contact.form', 'companyLabel', 'Empresa')}</EditableText>
+        <EditableText entry="contact.form" field="companyLabel"
+          >{getCmsText('contact.form', 'companyLabel', 'Empresa')}</EditableText
+        >
       </label>
       <input
         id="empresa"
@@ -97,7 +131,9 @@ const validationMessages = {
     <!-- Email -->
     <div>
       <label for="email" class="block text-sm font-semibold text-text mb-1.5">
-        <EditableText entry="contact.form" field="emailLabel">{getCmsText('contact.form', 'emailLabel', 'Correo electrónico')}</EditableText>
+        <EditableText entry="contact.form" field="emailLabel"
+          >{getCmsText('contact.form', 'emailLabel', 'Correo electrónico')}</EditableText
+        >
         <span class="text-error" aria-hidden="true">*</span>
       </label>
       <input
@@ -117,7 +153,9 @@ const validationMessages = {
     <!-- Teléfono -->
     <div>
       <label for="telefono" class="block text-sm font-semibold text-text mb-1.5">
-        <EditableText entry="contact.form" field="phoneLabel">{getCmsText('contact.form', 'phoneLabel', 'Teléfono')}</EditableText>
+        <EditableText entry="contact.form" field="phoneLabel"
+          >{getCmsText('contact.form', 'phoneLabel', 'Teléfono')}</EditableText
+        >
       </label>
       <input
         id="telefono"
@@ -133,14 +171,22 @@ const validationMessages = {
   <!-- Servicio -->
   <div>
     <label for="servicio" class="block text-sm font-semibold text-text mb-1.5">
-      <EditableText entry="contact.form" field="serviceLabel">{getCmsText('contact.form', 'serviceLabel', 'Servicio de interés (opcional)')}</EditableText>
+      <EditableText entry="contact.form" field="serviceLabel"
+        >{
+          getCmsText('contact.form', 'serviceLabel', 'Servicio de interés (opcional)')
+        }</EditableText
+      >
     </label>
     <select
       id="servicio"
       name="servicio"
       class="w-full min-h-[44px] border border-border rounded-none px-3.5 py-3 text-text bg-white text-base md:text-sm transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     >
-      <option value="">{getCmsText('contact.form', 'servicePlaceholder', 'Seleccione un servicio (opcional)')}</option>
+      <option value=""
+        >{
+          getCmsText('contact.form', 'servicePlaceholder', 'Seleccione un servicio (opcional)')
+        }</option
+      >
       {servicios.map((s) => <option value={s}>{s}</option>)}
     </select>
   </div>
@@ -148,7 +194,9 @@ const validationMessages = {
   <!-- Mensaje -->
   <div>
     <label for="mensaje" class="block text-sm font-semibold text-text mb-1.5">
-      <EditableText entry="contact.form" field="messageLabel">{getCmsText('contact.form', 'messageLabel', 'Mensaje')}</EditableText>
+      <EditableText entry="contact.form" field="messageLabel"
+        >{getCmsText('contact.form', 'messageLabel', 'Mensaje')}</EditableText
+      >
       <span class="text-error" aria-hidden="true">*</span>
     </label>
     <textarea
@@ -158,7 +206,11 @@ const validationMessages = {
       aria-required="true"
       rows={5}
       maxlength={2000}
-      placeholder={getCmsText('contact.form', 'messagePlaceholder', 'Describa su proyecto o consulta técnica.')}
+      placeholder={getCmsText(
+        'contact.form',
+        'messagePlaceholder',
+        'Describa su proyecto o consulta técnica.'
+      )}
       aria-describedby="mensaje-error"
       class="w-full border border-border rounded-none px-3.5 py-3 text-text bg-white text-base md:text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     ></textarea>
@@ -178,14 +230,33 @@ const validationMessages = {
           </EditableText>
           <ArrowIcon />
         </span>
-        <span id="contacto-submit-loading" class="col-start-1 row-start-1 flex items-center gap-2 invisible" aria-hidden="true">
-          <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/><path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"/></svg>
+        <span
+          id="contacto-submit-loading"
+          class="col-start-1 row-start-1 flex items-center gap-2 invisible"
+          aria-hidden="true"
+        >
+          <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"
+            ><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"
+            ></circle><path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor"></path></svg
+          >
           Enviando...
         </span>
       </span>
     </button>
-    <EditableText as="p" entry="contact.form" field="requiredNote" type="textarea" class="text-xs text-text-muted">
-      {getCmsText('contact.form', 'requiredNote', 'Los campos marcados con * son obligatorios. Te contactaremos a la brevedad.')}
+    <EditableText
+      as="p"
+      entry="contact.form"
+      field="requiredNote"
+      type="textarea"
+      class="text-xs text-text-muted"
+    >
+      {
+        getCmsText(
+          'contact.form',
+          'requiredNote',
+          'Los campos marcados con * son obligatorios. Te contactaremos a la brevedad.'
+        )
+      }
     </EditableText>
   </div>
 </form>
@@ -200,7 +271,13 @@ const validationMessages = {
     {getCmsText('contact.form', 'successTitle', '¡Mensaje enviado!')}
   </p>
   <p class="text-sm text-text-muted">
-    {getCmsText('contact.form', 'successBody', 'Hemos recibido su consulta. Le contactaremos a la brevedad.')}
+    {
+      getCmsText(
+        'contact.form',
+        'successBody',
+        'Hemos recibido su consulta. Le contactaremos a la brevedad.'
+      )
+    }
   </p>
 </div>
 
@@ -210,127 +287,166 @@ const validationMessages = {
   role="alert"
   aria-live="assertive"
 >
-  {getCmsText('contact.form', 'errorBody', 'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.')}
+  {
+    getCmsText(
+      'contact.form',
+      'errorBody',
+      'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.'
+    )
+  }
 </div>
 
-<script is:inline type="application/json" id="contact-form-messages" set:html={JSON.stringify(validationMessages)} />
+<script
+  is:inline
+  type="application/json"
+  id="contact-form-messages"
+  set:html={safeJsonForScript(validationMessages)}
+/>
 
 <script>
-const form = document.getElementById('contacto-form') as HTMLFormElement | null;
+  const form = document.getElementById('contacto-form') as HTMLFormElement | null;
 
-const messagesEl = document.getElementById('contact-form-messages');
-const MENSAJES = JSON.parse(messagesEl?.textContent ?? '{}') as Record<string, { valueMissing: string; typeMismatch?: string; tooShort?: string }>;
-const GENERIC = MENSAJES.generic ?? { valueMissing: 'Campo requerido.', typeMismatch: 'Valor inválido.', tooShort: 'Valor demasiado corto.' };
-
-function validateField(field: HTMLInputElement | HTMLTextAreaElement): boolean {
-  const errorEl = document.getElementById(`${field.id}-error`);
-  if (!errorEl) return field.validity.valid;
-
-  let msg = '';
-  if (field.validity.valueMissing)  msg = MENSAJES[field.id]?.valueMissing ?? GENERIC.valueMissing;
-  else if (field.validity.typeMismatch) msg = MENSAJES[field.id]?.typeMismatch ?? GENERIC.typeMismatch ?? GENERIC.valueMissing;
-  else if (field.validity.tooShort) msg = MENSAJES[field.id]?.tooShort ?? GENERIC.tooShort ?? GENERIC.valueMissing;
-
-  const invalid = !!msg;
-  field.setAttribute('aria-invalid', String(invalid));
-  errorEl.textContent = msg;
-  errorEl.classList.toggle('hidden', !invalid);
-  if (invalid) {
-    field.classList.add('border-error', 'focus:border-error');
-    field.classList.remove('border-border');
-  } else {
-    field.classList.remove('border-error', 'focus:border-error');
-    field.classList.add('border-border');
+  const messagesEl = document.getElementById('contact-form-messages');
+  // JS-5 fix: this used to parse unguarded at module scope — a single malformed
+  // CMS value here threw before any listener below got attached, silently
+  // disabling client-side validation for the whole form (the submit button
+  // still worked, just fell through to a raw POST with no validation feedback).
+  let MENSAJES: Record<string, { valueMissing: string; typeMismatch?: string; tooShort?: string }> =
+    {};
+  try {
+    MENSAJES = JSON.parse(messagesEl?.textContent ?? '{}');
+  } catch (error) {
+    console.error('Error al parsear los mensajes de validación del formulario', error);
   }
-  return !invalid;
-}
+  const GENERIC = MENSAJES.generic ?? {
+    valueMissing: 'Campo requerido.',
+    typeMismatch: 'Valor inválido.',
+    tooShort: 'Valor demasiado corto.',
+  };
 
-if (form) {
-  const requiredFields = Array.from(
-    form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')
-  );
+  function validateField(field: HTMLInputElement | HTMLTextAreaElement): boolean {
+    const errorEl = document.getElementById(`${field.id}-error`);
+    if (!errorEl) return field.validity.valid;
 
-  requiredFields.forEach((field) => {
-    field.addEventListener('blur', () => validateField(field));
-    field.addEventListener('input', () => {
-      if (field.getAttribute('aria-invalid') === 'true') validateField(field);
-    });
-  });
+    let msg = '';
+    if (field.validity.valueMissing) msg = MENSAJES[field.id]?.valueMissing ?? GENERIC.valueMissing;
+    else if (field.validity.typeMismatch)
+      msg = MENSAJES[field.id]?.typeMismatch ?? GENERIC.typeMismatch ?? GENERIC.valueMissing;
+    else if (field.validity.tooShort)
+      msg = MENSAJES[field.id]?.tooShort ?? GENERIC.tooShort ?? GENERIC.valueMissing;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // A2-004: anti-spam ligero del lado del cliente. Limita a 3 envíos por ventana
-    // de 5 minutos (persistente en sessionStorage para sobrevivir recargas dentro de
-    // la sesión). Es defensa en profundidad junto al honeypot _honey; el rate-limit
-    // server-side real lo provee FormSubmit.co.
-    const RATE_LIMIT_MAX = 3;
-    const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
-    const RATE_KEY = 'hidromont:contact:submits';
-    const errorBanner = document.getElementById('contacto-error');
-    const now = Date.now();
-    let timestamps: number[] = [];
-    try {
-      timestamps = JSON.parse(sessionStorage.getItem(RATE_KEY) ?? '[]').filter(
-        (t: number) => Number.isFinite(t) && now - t < RATE_LIMIT_WINDOW_MS
-      );
-    } catch {
-      timestamps = [];
+    const invalid = !!msg;
+    field.setAttribute('aria-invalid', String(invalid));
+    errorEl.textContent = msg;
+    errorEl.classList.toggle('hidden', !invalid);
+    if (invalid) {
+      field.classList.add('border-error', 'focus:border-error');
+      field.classList.remove('border-border');
+    } else {
+      field.classList.remove('border-error', 'focus:border-error');
+      field.classList.add('border-border');
     }
-    if (timestamps.length >= RATE_LIMIT_MAX) {
-      const retrySec = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - timestamps[0])) / 1000);
-      if (errorBanner) {
-        errorBanner.textContent = `Demasiados envíos. Intente nuevamente en ${retrySec} segundos.`;
-        errorBanner.classList.remove('hidden');
-      }
-      return;
-    }
+    return !invalid;
+  }
 
-    let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
-    let allValid = true;
+  if (form) {
+    const requiredFields = Array.from(
+      form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')
+    );
+
     requiredFields.forEach((field) => {
-      const valid = validateField(field);
-      if (!valid) {
-        allValid = false;
-        if (!firstInvalid) firstInvalid = field;
+      field.addEventListener('blur', () => validateField(field));
+      field.addEventListener('input', () => {
+        if (field.getAttribute('aria-invalid') === 'true') validateField(field);
+      });
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // A2-004: anti-spam ligero del lado del cliente. Limita a 3 envíos por ventana
+      // de 5 minutos (persistente en sessionStorage para sobrevivir recargas dentro de
+      // la sesión). Es defensa en profundidad junto al honeypot _honey; el rate-limit
+      // server-side real lo provee FormSubmit.co.
+      const RATE_LIMIT_MAX = 3;
+      const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
+      const RATE_KEY = 'hidromont:contact:submits';
+      const errorBanner = document.getElementById('contacto-error');
+      // JS-L2 fix: captured once, before any mutation, so the generic-error
+      // path can restore it — previously a rate-limit message overwrote this
+      // banner's text, and a later network failure just re-showed the banner
+      // without resetting it, leaving the stale rate-limit copy on screen.
+      const defaultErrorText = errorBanner?.textContent ?? '';
+      const now = Date.now();
+      let timestamps: number[] = [];
+      try {
+        timestamps = JSON.parse(sessionStorage.getItem(RATE_KEY) ?? '[]').filter(
+          (t: number) => Number.isFinite(t) && now - t < RATE_LIMIT_WINDOW_MS
+        );
+      } catch {
+        timestamps = [];
+      }
+      if (timestamps.length >= RATE_LIMIT_MAX) {
+        const retrySec = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - timestamps[0])) / 1000);
+        if (errorBanner) {
+          errorBanner.textContent = `Demasiados envíos. Intente nuevamente en ${retrySec} segundos.`;
+          errorBanner.classList.remove('hidden');
+        }
+        return;
+      }
+
+      let firstInvalid: HTMLInputElement | HTMLTextAreaElement | null = null;
+      let allValid = true;
+      requiredFields.forEach((field) => {
+        const valid = validateField(field);
+        if (!valid) {
+          allValid = false;
+          if (!firstInvalid) firstInvalid = field;
+        }
+      });
+      if (!allValid) {
+        (firstInvalid as HTMLElement | null)?.focus();
+        return;
+      }
+
+      // Registro del envío dentro de la ventana de rate-limit (sólo si pasó validación).
+      timestamps.push(now);
+      try {
+        sessionStorage.setItem(RATE_KEY, JSON.stringify(timestamps));
+      } catch {
+        /* ignore quota */
+      }
+
+      const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
+      const submitText = document.getElementById('contacto-submit-text');
+      const submitLoading = document.getElementById('contacto-submit-loading');
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitText) submitText.classList.add('invisible');
+      if (submitLoading) submitLoading.classList.remove('invisible');
+      if (errorBanner) errorBanner.classList.add('hidden');
+
+      try {
+        const res = await fetch((form as HTMLFormElement).action, {
+          method: 'POST',
+          body: new FormData(form as HTMLFormElement),
+          headers: { Accept: 'application/json' },
+        });
+        const json = (await res.json()) as { success: string | boolean };
+        if (json.success === 'true' || json.success === true) {
+          (form as HTMLFormElement).classList.add('hidden');
+          document.getElementById('contacto-success')?.classList.remove('hidden');
+        } else {
+          throw new Error('rejected');
+        }
+      } catch {
+        if (errorBanner) {
+          errorBanner.textContent = defaultErrorText;
+          errorBanner.classList.remove('hidden');
+        }
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitText) submitText.classList.remove('invisible');
+        if (submitLoading) submitLoading.classList.add('invisible');
       }
     });
-    if (!allValid) {
-      (firstInvalid as HTMLElement | null)?.focus();
-      return;
-    }
-
-    // Registro del envío dentro de la ventana de rate-limit (sólo si pasó validación).
-    timestamps.push(now);
-    try { sessionStorage.setItem(RATE_KEY, JSON.stringify(timestamps)); } catch { /* ignore quota */ }
-
-    const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
-    const submitText = document.getElementById('contacto-submit-text');
-    const submitLoading = document.getElementById('contacto-submit-loading');
-    if (submitBtn) submitBtn.disabled = true;
-    if (submitText) submitText.classList.add('invisible');
-    if (submitLoading) submitLoading.classList.remove('invisible');
-    if (errorBanner) errorBanner.classList.add('hidden');
-
-    try {
-      const res = await fetch((form as HTMLFormElement).action, {
-        method: 'POST',
-        body: new FormData(form as HTMLFormElement),
-        headers: { Accept: 'application/json' },
-      });
-      const json = await res.json() as { success: string | boolean };
-      if (json.success === 'true' || json.success === true) {
-        (form as HTMLFormElement).classList.add('hidden');
-        document.getElementById('contacto-success')?.classList.remove('hidden');
-      } else {
-        throw new Error('rejected');
-      }
-    } catch {
-      if (errorBanner) errorBanner.classList.remove('hidden');
-      if (submitBtn) submitBtn.disabled = false;
-      if (submitText) submitText.classList.remove('invisible');
-      if (submitLoading) submitLoading.classList.add('invisible');
-    }
-  });
-}
+  }
 </script>

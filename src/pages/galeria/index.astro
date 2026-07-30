@@ -13,6 +13,7 @@ import PageHero from '../../components/ui/PageHero.astro';
 import ProjectAlbumCard from '../../components/gallery/ProjectAlbumCard.astro';
 import Lightbox from '../../components/gallery/Lightbox.astro';
 import { getCmsText } from '../../data/cms';
+import { safeJsonForScript } from '../../utils/safeJson';
 import {
   getGalleryCategories,
   getGalleryItems,
@@ -50,11 +51,19 @@ const filters = [
 
 <PageLayout
   title={getCmsText('page.galeria', 'title', 'Galería de Proyectos') + ' | Hidromont Chile'}
-  description={getCmsText('page.galeria', 'subtitle', 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.')}
+  description={getCmsText(
+    'page.galeria',
+    'subtitle',
+    'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.'
+  )}
 >
   <PageHero
     title={getCmsText('page.galeria', 'title', 'Galería de Proyectos')}
-    subtitle={getCmsText('page.galeria', 'subtitle', 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.')}
+    subtitle={getCmsText(
+      'page.galeria',
+      'subtitle',
+      'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.'
+    )}
     imageSrc={getCmsText('page.galeria', 'image', '') || undefined}
     imageAlt={getCmsText('page.galeria', 'imageAlt', 'Galería de proyectos Hidromont Chile')}
     breadcrumbs={[{ label: 'Galería' }]}
@@ -63,101 +72,120 @@ const filters = [
   />
 
   <Section padding="tight" class="bg-background">
-    {albums.length === 0 ? (
-      <Container>
-        <div class="text-center py-20" data-reveal>
-          <p class="text-text-muted text-lg">
-            Próximamente se añadirán proyectos a esta galería.
-          </p>
-        </div>
-      </Container>
-    ) : (
-      <div class="w-full px-4 md:px-8 max-w-7xl mx-auto">
-        {/* ── Search & Filter Controls Bar ── */}
-        <div class="mb-8 md:mb-10 space-y-4" data-reveal>
-          {/* Search input */}
-          <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-            {/* Real-time Search Field */}
-            <div class="relative w-full sm:w-72 md:w-80">
-              <input
-                type="text"
-                id="gallery-search"
-                placeholder="Buscar proyecto o cliente..."
-                aria-label="Buscar proyecto en galería"
-                class="w-full bg-background-alt text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 border border-border focus:border-accent focus:outline-none transition-colors font-mono"
-              />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+    {
+      albums.length === 0 ? (
+        <Container>
+          <div class="text-center py-20" data-reveal>
+            <p class="text-text-muted text-lg">
+              Próximamente se añadirán proyectos a esta galería.
+            </p>
+          </div>
+        </Container>
+      ) : (
+        <div class="w-full px-4 md:px-8 max-w-7xl mx-auto">
+          {/* ── Search & Filter Controls Bar ── */}
+          <div class="mb-8 md:mb-10 space-y-4" data-reveal>
+            {/* Search input */}
+            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
+              {/* Real-time Search Field */}
+              <div class="relative w-full sm:w-72 md:w-80">
+                <input
+                  type="text"
+                  id="gallery-search"
+                  placeholder="Buscar proyecto..."
+                  aria-label="Buscar proyecto en galería"
+                  class="w-full bg-background-alt text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 border border-border focus:border-accent focus:outline-none transition-colors font-mono"
                 />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              </div>
             </div>
+
+            {/* Category Filter Pills — full width responsive bar */}
+            <nav
+              aria-label="Filtrar por categoría de servicio"
+              class="w-full border border-border overflow-x-auto scrollbar-hide bg-background-alt"
+              id="filter-container"
+            >
+              <div class="flex min-w-max" role="radiogroup">
+                {filters.map((filter) => (
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={filter.slug === 'all' ? 'true' : 'false'}
+                    tabindex={filter.slug === 'all' ? 0 : -1}
+                    data-filter={filter.slug}
+                    class={`gallery-filter-btn relative px-3.5 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
+                      filter.slug === 'all'
+                        ? 'bg-primary text-white'
+                        : 'bg-background-alt text-text-muted hover:bg-background hover:text-text'
+                    }`}
+                  >
+                    {filter.name}
+                    <span class="ml-1 opacity-60">({filter.count})</span>
+                  </button>
+                ))}
+              </div>
+            </nav>
           </div>
 
-          {/* Category Filter Pills — full width responsive bar */}
-          <nav
-            aria-label="Filtrar por categoría de servicio"
-            class="w-full border border-border overflow-x-auto scrollbar-hide bg-background-alt"
-            id="filter-container"
+          {/* ── Project Albums Grid ── */}
+          <div
+            id="album-grid"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
           >
-            <div class="flex min-w-max" role="radiogroup">
-              {filters.map((filter) => (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={filter.slug === 'all' ? 'true' : 'false'}
-                  data-filter={filter.slug}
-                  class={`gallery-filter-btn relative px-3.5 py-2.5 text-[10px] md:text-[11px] font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
-                    filter.slug === 'all'
-                      ? 'bg-primary text-white'
-                      : 'bg-background-alt text-text-muted hover:bg-background hover:text-text'
-                  }`}
-                >
-                  {filter.name}
-                  <span class="ml-1 opacity-60">({filter.count})</span>
-                </button>
-              ))}
-            </div>
-          </nav>
-        </div>
+            {albums.map((album, index) => (
+              <ProjectAlbumCard album={album} index={index} />
+            ))}
+          </div>
 
-        {/* ── Project Albums Grid ── */}
-        <div
-          id="album-grid"
-          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
-        >
-          {albums.map((album, index) => (
-            <ProjectAlbumCard album={album} index={index} />
-          ))}
-        </div>
+          {/* UIUX-8 fix: announce filter/search results to screen readers — the
+             old gallery had this (aria-live counter), the new one didn't. */}
+          <p id="results-count" class="sr-only" aria-live="polite" />
 
-        {/* Empty state message when search yields no results */}
-        <div id="no-results" class="hidden text-center py-16">
-          <p class="text-text-muted text-base font-mono">
-            No se encontraron proyectos coincidentes con tu búsqueda.
-          </p>
-        </div>
+          {/* Empty state message when search yields no results */}
+          <div id="no-results" class="hidden text-center py-16" role="status">
+            <p class="text-text-muted text-base font-mono">
+              No se encontraron proyectos coincidentes con tu búsqueda.
+            </p>
+          </div>
 
-        {/* ── Data payload for Lightbox ── */}
-        <script id="lightbox-data" type="application/json" is:inline set:html={JSON.stringify(allItems)} />
-        {/* ESTRUCT-2 fix: slugs the Lightbox may safely link "Ver Proyecto" to. */}
-        <script id="lightbox-valid-project-slugs" type="application/json" is:inline set:html={JSON.stringify(buildableProjectSlugs)} />
-      </div>
-    )}
+          {/* ── Data payload for Lightbox ── */}
+          <script
+            id="lightbox-data"
+            type="application/json"
+            is:inline
+            set:html={safeJsonForScript(allItems)}
+          />
+          {/* ESTRUCT-2 fix: slugs the Lightbox may safely link "Ver Proyecto" to. */}
+          <script
+            id="lightbox-valid-project-slugs"
+            type="application/json"
+            is:inline
+            set:html={safeJsonForScript(buildableProjectSlugs)}
+          />
+        </div>
+      )
+    }
   </Section>
 
   {/* ── Lightbox (interactive modal viewer) ── */}
-  {/* JS-1 fix: rendered in the "overlay" slot, outside <main>, so <main> can be
-      made inert while the modal is open without disabling the modal itself. */}
+  {
+    /* JS-1 fix: rendered in the "overlay" slot, outside <main>, so <main> can be
+      made inert while the modal is open without disabling the modal itself. */
+  }
   <Lightbox slot="overlay" />
 </PageLayout>
 
@@ -168,13 +196,23 @@ const filters = [
     const buttons = container?.querySelectorAll('[data-filter]');
     const albumCards = document.querySelectorAll('.project-album-card');
     const noResults = document.getElementById('no-results');
+    const resultsCount = document.getElementById('results-count');
 
     if (!albumCards.length) return;
 
+    // JS-L4 fix: restore the hash deep-link the old gallery had
+    // (/galeria#tuberias activates that category filter on load).
+    const initialHash = location.hash.replace('#', '');
     let activeCategory = 'all';
     let searchQuery = '';
 
     const btnArray = Array.from(buttons || []) as HTMLElement[];
+
+    // JS-7 fix: strip diacritics on both sides so "montana"/"coihaique" match
+    // "Montaña"/"Coyhaique" — same pattern already used in cms-overlay.js.
+    function normalizeForSearch(value: string): string {
+      return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
 
     function updateFilter() {
       let visibleCount = 0;
@@ -182,7 +220,7 @@ const filters = [
       albumCards.forEach((card) => {
         const el = card as HTMLElement;
         const cat = el.getAttribute('data-category') ?? '';
-        const name = (el.getAttribute('data-project-name') ?? '').toLowerCase();
+        const name = normalizeForSearch((el.getAttribute('data-project-name') ?? '').toLowerCase());
 
         const matchesCat = activeCategory === 'all' || cat === activeCategory;
         const matchesSearch = !searchQuery || name.includes(searchQuery);
@@ -195,7 +233,13 @@ const filters = [
           el.offsetHeight; // force reflow
           el.style.opacity = '1';
           el.style.transform = 'scale(1)';
-        } else {
+        } else if (el.style.display !== 'none') {
+          // JS-L (listener leak) fix: only fade+hide (and only attach the
+          // one-shot transitionend listener) for a card that's currently
+          // visible. A card already hidden never fires `transitionend` again
+          // when re-set to the same opacity/display, so the old code attached
+          // a listener every keystroke that never fired and never got
+          // removed — unbounded growth while typing in the search box.
           el.style.opacity = '0';
           el.style.transform = 'scale(0.95)';
           const onEnd = (e: Event) => {
@@ -215,33 +259,73 @@ const filters = [
           noResults.classList.add('hidden');
         }
       }
+      // UIUX-8 fix: announce the visible count on every filter/search change.
+      if (resultsCount) {
+        resultsCount.textContent =
+          visibleCount === 0
+            ? 'No se encontraron proyectos.'
+            : `Mostrando ${visibleCount} ${visibleCount === 1 ? 'proyecto' : 'proyectos'}.`;
+      }
+    }
+
+    // JS-L4 fix: shared by clicks and the initial hash deep-link, and now also
+    // sets roving tabindex (only the checked radio should be a tab stop) —
+    // previously every pill kept tabindex=0, so Tab stepped through all of
+    // them instead of just the selected one.
+    function activateFilter(slug: string, updateHash: boolean): void {
+      activeCategory = slug;
+
+      btnArray.forEach((b) => {
+        const isActive = b.getAttribute('data-filter') === slug;
+        b.setAttribute('aria-checked', String(isActive));
+        b.tabIndex = isActive ? 0 : -1;
+        if (isActive) {
+          b.classList.add('bg-primary', 'text-white');
+          b.classList.remove('bg-background-alt', 'text-text-muted');
+        } else {
+          b.classList.remove('bg-primary', 'text-white');
+          b.classList.add('bg-background-alt', 'text-text-muted');
+        }
+      });
+
+      if (updateHash) {
+        const url = new URL(location.href);
+        if (slug === 'all') {
+          history.replaceState(null, '', url.pathname + url.search);
+        } else {
+          history.replaceState(null, '', `#${slug}`);
+        }
+      }
+
+      updateFilter();
     }
 
     // Category button clicks
     btnArray.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const slug = btn.getAttribute('data-filter') || 'all';
-        activeCategory = slug;
-
-        btnArray.forEach((b) => {
-          const isActive = b.getAttribute('data-filter') === slug;
-          b.setAttribute('aria-checked', String(isActive));
-          if (isActive) {
-            b.classList.add('bg-primary', 'text-white');
-            b.classList.remove('bg-background-alt', 'text-text-muted');
-          } else {
-            b.classList.remove('bg-primary', 'text-white');
-            b.classList.add('bg-background-alt', 'text-text-muted');
-          }
-        });
-
-        updateFilter();
+        activateFilter(btn.getAttribute('data-filter') || 'all', true);
       });
+    });
+
+    // Apply the category from the URL hash on load, if it matches a real filter.
+    if (initialHash && btnArray.some((b) => b.getAttribute('data-filter') === initialHash)) {
+      activateFilter(initialHash, false);
+    }
+
+    // Same-document hash changes (e.g. a same-page anchor, or browser back/
+    // forward landing on a different #hash without a full reload) don't
+    // re-run the module script's top-level init above — listen separately so
+    // the filter still reacts to a hash change while already on this page.
+    window.addEventListener('hashchange', () => {
+      const hash = location.hash.replace('#', '');
+      const target =
+        hash && btnArray.some((b) => b.getAttribute('data-filter') === hash) ? hash : 'all';
+      activateFilter(target, false);
     });
 
     // Real-time search input event
     searchInput?.addEventListener('input', (e) => {
-      searchQuery = (e.target as HTMLInputElement).value.trim().toLowerCase();
+      searchQuery = normalizeForSearch((e.target as HTMLInputElement).value.trim().toLowerCase());
       updateFilter();
     });
 
@@ -269,6 +353,8 @@ const filters = [
 
 <style>
   .project-album-card {
-    transition: opacity 200ms ease-out, transform 200ms ease-out;
+    transition:
+      opacity 200ms ease-out,
+      transform 200ms ease-out;
   }
 </style>
