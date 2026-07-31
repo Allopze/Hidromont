@@ -26,6 +26,16 @@ function csvFromEnv(name: string, fallback: string[]): string[] {
     .filter(Boolean);
 }
 
+const cookieBaseName = process.env.CMS_COOKIE_NAME ?? 'hidromont_cms_session';
+const cookieSecure = process.env.CMS_COOKIE_SECURE
+  ? process.env.CMS_COOKIE_SECURE === '1'
+  : process.env.NODE_ENV === 'production';
+
+// H-14: cuando la cookie es segura usamos el prefijo __Host- que el navegador
+// refuerza con: Secure obligatorio, Path=/, sin atributo Domain.
+// En HTTP local/LAN usamos el nombre base para compatibilidad con el overlay.
+const cookieName = cookieSecure ? `__Host-${cookieBaseName}` : cookieBaseName;
+
 export const config = {
   rootDir,
   cms: {
@@ -37,10 +47,11 @@ export const config = {
       'http://localhost:4321',
       'http://127.0.0.1:4321',
     ]),
-    cookieName: process.env.CMS_COOKIE_NAME ?? 'hidromont_cms_session',
-    cookieSecure: process.env.CMS_COOKIE_SECURE
-      ? process.env.CMS_COOKIE_SECURE === '1'
-      : process.env.NODE_ENV === 'production',
+    // H-14: cookieName ya incluye el prefijo __Host- cuando cookieSecure=true.
+    // cookieBaseName se preserva para referencia sin prefijo (ej: logs, pruebas).
+    cookieBaseName,
+    cookieName,
+    cookieSecure,
     // Escape hatch for LAN-only setups where the operator explicitly accepts the risk
     // of an insecure (HTTP) session cookie. Must be paired with a non-default password.
     allowInsecureCookie: process.env.CMS_ALLOW_INSECURE_COOKIE === '1',

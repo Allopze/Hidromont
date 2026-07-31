@@ -60,9 +60,8 @@ describe('A1-004 — borrar media NO elimina items de galería (SET NULL)', () =
   });
 
   it('el item sigue existiendo con media_id NULL (no fue borrado en cascada)', () => {
-    const row = ctx.db
-      .prepare('SELECT media_id FROM gallery_items WHERE id = ?')
-      .get(itemId) as { media_id: string | null } | undefined;
+    const row = ctx.db.prepare('SELECT media_id FROM gallery_items WHERE id = ?').get(itemId) as
+      { media_id: string | null } | undefined;
     expect(row).toBeDefined();
     expect(row!.media_id).toBeNull();
   });
@@ -158,7 +157,7 @@ describe('A1-011 — importMissingEntries es idempotente', () => {
 
   it('no sobrescribe ediciones: un campo editado se preserva tras re-import', () => {
     // Tomar una entrada existente y editar su primer campo.
-    const entries = ctx.contentService.listEntries();
+    const { entries } = ctx.contentService.listEntries();
     const target = entries[0];
     expect(target).toBeDefined();
     const firstFieldKey = Object.keys(target.fields)[0];
@@ -173,4 +172,3 @@ describe('A1-011 — importMissingEntries es idempotente', () => {
     expect(String(fieldAfter?.value)).toBe(editedValue);
   });
 });
-

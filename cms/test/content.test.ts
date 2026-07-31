@@ -18,7 +18,7 @@ describe('Content API', () => {
   const authed = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
     },
   });
@@ -26,7 +26,7 @@ describe('Content API', () => {
   const authedMut = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
       'x-csrf-token': csrfToken,
       'content-type': 'application/json',
@@ -37,7 +37,7 @@ describe('Content API', () => {
   const authedMutNoBody = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
       'x-csrf-token': csrfToken,
     },
@@ -54,21 +54,23 @@ describe('Content API', () => {
 
   describe('POST /api/cms/entries', () => {
     it('creates a new entry', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({
-          id: 'test.new-page',
-          kind: 'page',
-          slug: '/test-page',
-          title: 'Test Page',
-          status: 'draft',
-          fields: {
-            title: { type: 'text', value: 'Hola' },
-            body: { type: 'textarea', value: 'Contenido de prueba' },
-          },
-        }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'test.new-page',
+            kind: 'page',
+            slug: '/test-page',
+            title: 'Test Page',
+            status: 'draft',
+            fields: {
+              title: { type: 'text', value: 'Hola' },
+              body: { type: 'textarea', value: 'Contenido de prueba' },
+            },
+          }),
+        })
+      );
       expect(res.statusCode).toBe(201);
       const entry = res.json<{ id: string; fields: Record<string, { value: unknown }> }>();
       expect(entry.id).toBe('test.new-page');
@@ -77,45 +79,51 @@ describe('Content API', () => {
     });
 
     it('returns 400 on duplicate id', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({
-          id: 'test.new-page', // already created above
-          kind: 'page',
-          slug: '/test-page-2',
-          title: 'Duplicado',
-        }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'test.new-page', // already created above
+            kind: 'page',
+            slug: '/test-page-2',
+            title: 'Duplicado',
+          }),
+        })
+      );
       expect(res.statusCode).toBe(400);
     });
 
     it('returns 400 on invalid id characters', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({
-          id: 'INVALID ID!',
-          kind: 'page',
-          slug: '/x',
-          title: 'X',
-        }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'INVALID ID!',
+            kind: 'page',
+            slug: '/x',
+            title: 'X',
+          }),
+        })
+      );
       expect(res.statusCode).toBe(400);
     });
 
     it('inyecta campos requeridos del schema al crear un servicio (CMS-003)', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({
-          id: 'servicio.nuevo-test',
-          kind: 'servicio',
-          slug: 'nuevo-test',
-          title: 'Servicio de prueba',
-          // No se envían fields: el servidor debe completar la plantilla.
-        }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'servicio.nuevo-test',
+            kind: 'servicio',
+            slug: 'nuevo-test',
+            title: 'Servicio de prueba',
+            // No se envían fields: el servidor debe completar la plantilla.
+          }),
+        })
+      );
       expect(res.statusCode).toBe(201);
       const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
       // El schema Zod de servicios exige titulo, resumen, icono y orden.
@@ -126,16 +134,18 @@ describe('Content API', () => {
     });
 
     it('inyecta campos requeridos del schema al crear un proyecto (CMS-003)', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({
-          id: 'proyecto.nuevo-test',
-          kind: 'proyecto',
-          slug: 'nuevo-test-proyecto',
-          title: 'Proyecto de prueba',
-        }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'proyecto.nuevo-test',
+            kind: 'proyecto',
+            slug: 'nuevo-test-proyecto',
+            title: 'Proyecto de prueba',
+          }),
+        })
+      );
       expect(res.statusCode).toBe(201);
       const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
       expect(entry.fields.nombre.value).toBe('Proyecto de prueba');
@@ -147,46 +157,89 @@ describe('Content API', () => {
 
   describe('GET /api/cms/entries/:id', () => {
     it('returns entry by id', async () => {
-      const res = await ctx.app.inject(authed({ method: 'GET', url: '/api/cms/entries/test.new-page' }));
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries/test.new-page' })
+      );
       expect(res.statusCode).toBe(200);
       expect(res.json<{ id: string }>().id).toBe('test.new-page');
     });
 
     it('returns 404 for unknown entry', async () => {
-      const res = await ctx.app.inject(authed({ method: 'GET', url: '/api/cms/entries/unknown.entry' }));
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries/unknown.entry' })
+      );
       expect(res.statusCode).toBe(404);
     });
   });
 
   describe('PATCH /api/cms/entries/:id/fields/:key', () => {
     it('updates a field value', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'PATCH',
-        url: '/api/cms/entries/test.new-page/fields/title',
-        body: JSON.stringify({ value: 'Actualizado' }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: '/api/cms/entries/test.new-page/fields/title',
+          body: JSON.stringify({ value: 'Actualizado' }),
+        })
+      );
       expect(res.statusCode).toBe(200);
       const entry = res.json<{ fields: Record<string, { value: string }> }>();
       expect(entry.fields.title.value).toBe('Actualizado');
     });
 
-    it('returns 400 when field does not exist', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'PATCH',
-        url: '/api/cms/entries/test.new-page/fields/nonexistent',
-        body: JSON.stringify({ value: 'x' }),
-      }));
+    it('rejects field update when value type does not match field schema (H-09)', async () => {
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: '/api/cms/entries/servicio.nuevo-test/fields/orden',
+          body: JSON.stringify({ value: 'not-a-number' }),
+        })
+      );
       expect(res.statusCode).toBe(400);
+      expect(res.json<{ error: string }>().error).toMatch(/debe ser numérico/i);
+    });
+
+    it('returns 400 when field does not exist', async () => {
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: '/api/cms/entries/test.new-page/fields/nonexistent',
+          body: JSON.stringify({ value: 'x' }),
+        })
+      );
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('GET /api/cms/entries pagination (H-16)', () => {
+    it('returns paginated entries with metadata', async () => {
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?page=1&limit=2' })
+      );
+      expect(res.statusCode).toBe(200);
+      const data = res.json<{
+        entries: unknown[];
+        total: number;
+        page: number;
+        limit: number;
+        pages: number;
+      }>();
+      expect(Array.isArray(data.entries)).toBe(true);
+      expect(typeof data.total).toBe('number');
+      expect(data.page).toBe(1);
+      expect(data.limit).toBe(2);
+      expect(typeof data.pages).toBe('number');
     });
   });
 
   describe('PATCH /api/cms/entries/:id (metadata)', () => {
     it('updates title and status', async () => {
-      const res = await ctx.app.inject(authedMut({
-        method: 'PATCH',
-        url: '/api/cms/entries/test.new-page',
-        body: JSON.stringify({ title: 'Nuevo título', status: 'published' }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: '/api/cms/entries/test.new-page',
+          body: JSON.stringify({ title: 'Nuevo título', status: 'published' }),
+        })
+      );
       expect(res.statusCode).toBe(200);
       const entry = res.json<{ title: string; status: string }>();
       expect(entry.title).toBe('Nuevo título');
@@ -196,10 +249,12 @@ describe('Content API', () => {
 
   describe('Revisions', () => {
     it('GET /api/cms/revisions/:entryId returns revision list', async () => {
-      const res = await ctx.app.inject(authed({
-        method: 'GET',
-        url: '/api/cms/revisions/test.new-page',
-      }));
+      const res = await ctx.app.inject(
+        authed({
+          method: 'GET',
+          url: '/api/cms/revisions/test.new-page',
+        })
+      );
       expect(res.statusCode).toBe(200);
       const body = res.json<{ revisions: Array<{ id: string; version: number }> }>();
       expect(Array.isArray(body.revisions)).toBe(true);
@@ -208,18 +263,24 @@ describe('Content API', () => {
 
     it('POST restore/:revisionId restores entry to that state', async () => {
       // Get current revisions
-      const revisionsRes = await ctx.app.inject(authed({
-        method: 'GET',
-        url: '/api/cms/revisions/test.new-page',
-      }));
-      const { revisions } = revisionsRes.json<{ revisions: Array<{ id: string; version: number }> }>();
+      const revisionsRes = await ctx.app.inject(
+        authed({
+          method: 'GET',
+          url: '/api/cms/revisions/test.new-page',
+        })
+      );
+      const { revisions } = revisionsRes.json<{
+        revisions: Array<{ id: string; version: number }>;
+      }>();
       // Restore to first (oldest) revision
       const oldest = revisions[revisions.length - 1];
 
-      const restoreRes = await ctx.app.inject(authedMutNoBody({
-        method: 'POST',
-        url: `/api/cms/revisions/test.new-page/restore/${oldest.id}`,
-      }));
+      const restoreRes = await ctx.app.inject(
+        authedMutNoBody({
+          method: 'POST',
+          url: `/api/cms/revisions/test.new-page/restore/${oldest.id}`,
+        })
+      );
       expect(restoreRes.statusCode).toBe(200);
       expect(restoreRes.json<{ ok: boolean }>().ok).toBe(true);
     });
@@ -228,38 +289,53 @@ describe('Content API', () => {
   describe('DELETE /api/cms/entries/:id', () => {
     it('deletes an entry and its fields', async () => {
       // Create entry to delete
-      await ctx.app.inject(authedMut({
-        method: 'POST',
-        url: '/api/cms/entries',
-        body: JSON.stringify({ id: 'test.to-delete', kind: 'page', slug: '/delete-me', title: 'Delete me' }),
-      }));
+      await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'test.to-delete',
+            kind: 'page',
+            slug: '/delete-me',
+            title: 'Delete me',
+          }),
+        })
+      );
 
-      const delRes = await ctx.app.inject(authedMutNoBody({
-        method: 'DELETE',
-        url: '/api/cms/entries/test.to-delete',
-      }));
+      const delRes = await ctx.app.inject(
+        authedMutNoBody({
+          method: 'DELETE',
+          url: '/api/cms/entries/test.to-delete',
+        })
+      );
       expect(delRes.statusCode).toBe(200);
 
       // Entry should be gone
-      const getRes = await ctx.app.inject(authed({ method: 'GET', url: '/api/cms/entries/test.to-delete' }));
+      const getRes = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries/test.to-delete' })
+      );
       expect(getRes.statusCode).toBe(404);
     });
 
     it('returns 404 when deleting nonexistent entry', async () => {
-      const res = await ctx.app.inject(authedMutNoBody({
-        method: 'DELETE',
-        url: '/api/cms/entries/does.not.exist',
-      }));
+      const res = await ctx.app.inject(
+        authedMutNoBody({
+          method: 'DELETE',
+          url: '/api/cms/entries/does.not.exist',
+        })
+      );
       expect(res.statusCode).toBe(404);
     });
   });
 
   describe('GET /api/cms/entries?kind=page', () => {
     it('filters entries by kind', async () => {
-      const res = await ctx.app.inject(authed({
-        method: 'GET',
-        url: '/api/cms/entries?kind=page',
-      }));
+      const res = await ctx.app.inject(
+        authed({
+          method: 'GET',
+          url: '/api/cms/entries?kind=page',
+        })
+      );
       expect(res.statusCode).toBe(200);
       const entries = res.json<{ entries: Array<{ kind: string }> }>().entries;
       expect(entries.every((e) => e.kind === 'page')).toBe(true);

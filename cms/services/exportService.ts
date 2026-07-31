@@ -29,12 +29,23 @@ const TIPO_PROYECTO_VALUES = new Set(['destacado', 'banco']);
  * - Escribe a `${target}.tmp` y luego renombra, de modo que un crash a mitad
  *   de escritura nunca deje un archivo truncado/corrupto (rename es atomico
  *   en el mismo sistema de ficheros).
+ * H-17: omite la escritura si el contenido ya es identico (evita disparar
+ *   HMR innecesario en desarrollo y reduce I/O en exportaciones idempotentes).
+ * @returns true si se escribio, false si el contenido era identico.
  */
-function writeFileSyncAtomic(target: string, data: string): void {
+function writeFileSyncAtomic(target: string, data: string): boolean {
+  try {
+    if (fs.existsSync(target) && fs.readFileSync(target, 'utf8') === data) {
+      return false; // contenido identico — no hace falta escribir
+    }
+  } catch {
+    // Si no podemos leer el archivo existente, procedemos con la escritura.
+  }
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const tmp = `${target}.tmp`;
   fs.writeFileSync(tmp, data);
   fs.renameSync(tmp, target);
+  return true;
 }
 
 export class ExportService {
@@ -52,9 +63,9 @@ export class ExportService {
 
   exportContent(): { files: string[]; removed: string[] } {
     // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
-    // llega a los archivos del sitio. Al excluirlo, el frontend recae en los
+    // Carga todas las entradas. Para cada una, exporta su archivo .md con sus
     // valores por defecto (page content) o conserva el .md previo (colecciones).
-    const allEntries = this.contentRepository.listEntries();
+    const { entries: allEntries } = this.contentRepository.listEntries(undefined, 100000, 0);
     const entries = allEntries.filter((entry) => entry.status === 'published');
     const written = [
       this.exportPageContent(

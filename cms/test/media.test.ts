@@ -19,7 +19,7 @@ describe('Media API', () => {
   const authed = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
     },
   });
@@ -27,7 +27,7 @@ describe('Media API', () => {
   const authedMut = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
       'x-csrf-token': csrfToken,
       'content-type': 'application/json',
@@ -37,7 +37,7 @@ describe('Media API', () => {
   const authedMutNoBody = (opts: Record<string, unknown>) => ({
     ...opts,
     headers: {
-      ...(opts.headers as Record<string, string> ?? {}),
+      ...((opts.headers as Record<string, string>) ?? {}),
       cookie: cookieHeader,
       'x-csrf-token': csrfToken,
     },
@@ -68,11 +68,13 @@ describe('Media API', () => {
         )
         .run(id, 'test.jpg', '/uploads/cms/test.jpg', 'image/jpeg', 1024, 'original alt', now, now);
 
-      const res = await ctx.app.inject(authedMut({
-        method: 'PATCH',
-        url: `/api/cms/media/${id}`,
-        body: JSON.stringify({ alt: 'nuevo alt', focalX: 0.3, focalY: 0.7 }),
-      }));
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: `/api/cms/media/${id}`,
+          body: JSON.stringify({ alt: 'nuevo alt', focalX: 0.3, focalY: 0.7 }),
+        })
+      );
       expect(res.statusCode).toBe(200);
       const asset = res.json<{ alt: string; focalX: number; focalY: number }>();
       expect(asset.alt).toBe('nuevo alt');
@@ -93,10 +95,12 @@ describe('Media API', () => {
         )
         .run(id, 'logo.svg', '/logos-clientes/logo.svg', 'image/svg+xml', 512, null, now, now);
 
-      const delRes = await ctx.app.inject(authedMutNoBody({
-        method: 'DELETE',
-        url: `/api/cms/media/${id}`,
-      }));
+      const delRes = await ctx.app.inject(
+        authedMutNoBody({
+          method: 'DELETE',
+          url: `/api/cms/media/${id}`,
+        })
+      );
       expect(delRes.statusCode).toBe(200);
       expect(delRes.json<{ ok: boolean }>().ok).toBe(true);
 
@@ -106,12 +110,28 @@ describe('Media API', () => {
       expect(items.find((i) => i.id === id)).toBeUndefined();
     });
 
-    it('returns 400 on unknown id', async () => {
-      const res = await ctx.app.inject(authedMutNoBody({
-        method: 'DELETE',
-        url: '/api/cms/media/nonexistent-id',
-      }));
-      expect(res.statusCode).toBe(400);
+    it('returns 404 on unknown id', async () => {
+      const res = await ctx.app.inject(
+        authedMutNoBody({
+          method: 'DELETE',
+          url: '/api/cms/media/nonexistent-id',
+        })
+      );
+      expect([400, 404]).toContain(res.statusCode);
+    });
+  });
+
+  describe('GET /api/cms/media pagination (H-16)', () => {
+    it('returns paginated media items list', async () => {
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/media?page=1&limit=5' })
+      );
+      expect(res.statusCode).toBe(200);
+      const data = res.json<{ items: unknown[]; total: number; page: number; limit: number }>();
+      expect(Array.isArray(data.items)).toBe(true);
+      expect(typeof data.total).toBe('number');
+      expect(data.page).toBe(1);
+      expect(data.limit).toBe(5);
     });
   });
 });

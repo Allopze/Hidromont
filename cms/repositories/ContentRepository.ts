@@ -8,7 +8,7 @@ interface EntryRow {
   slug: string;
   locale: string;
   title: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'pending_review' | 'published';
   version: number;
 }
 
@@ -35,7 +35,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'published';
+    status?: 'draft' | 'pending_review' | 'published';
     fields: CmsField[];
     now: string;
   }): void {
@@ -81,7 +81,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'published';
+    status?: 'draft' | 'pending_review' | 'published';
     fields: CmsField[];
     now: string;
   }): CmsEntry {
@@ -122,7 +122,7 @@ export class ContentRepository {
   /** Update entry metadata (title, slug, status). Does not touch fields. */
   updateEntryMeta(
     id: string,
-    meta: { title?: string; slug?: string; status?: 'draft' | 'published' },
+    meta: { title?: string; slug?: string; status?: 'draft' | 'pending_review' | 'published' },
     now: string
   ): CmsEntry {
     const existing = this.findEntryRow(id);
@@ -157,7 +157,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'published';
+    status?: 'draft' | 'pending_review' | 'published';
     fields: CmsField[];
     now: string;
   }): boolean {
@@ -204,20 +204,32 @@ export class ContentRepository {
     return true;
   }
 
-  listEntries(kind?: string): CmsEntry[] {
+  listEntries(kind?: string, limit = 100, offset = 0): { entries: CmsEntry[]; total: number } {
+    const total: number = kind
+      ? (
+          this.db
+            .prepare('SELECT COUNT(*) as count FROM content_entries WHERE kind = ?')
+            .get(kind) as { count: number }
+        ).count
+      : (
+          this.db.prepare('SELECT COUNT(*) as count FROM content_entries').get() as {
+            count: number;
+          }
+        ).count;
+
     const rows = kind
       ? (this.db
           .prepare(
-            'SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id'
+            'SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id LIMIT ? OFFSET ?'
           )
-          .all(kind) as EntryRow[])
+          .all(kind, limit, offset) as EntryRow[])
       : (this.db
           .prepare(
-            'SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id'
+            'SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id LIMIT ? OFFSET ?'
           )
-          .all() as EntryRow[]);
+          .all(limit, offset) as EntryRow[]);
 
-    return rows.map((row) => this.hydrateEntry(row));
+    return { entries: rows.map((row) => this.hydrateEntry(row)), total };
   }
 
   findEntry(id: string): CmsEntry | undefined {
@@ -230,17 +242,26 @@ export class ContentRepository {
     key: string,
     value: unknown,
     now: string,
-    mediaId?: string
+    mediaId?: string,
+    expectedVersion?: number
   ): CmsEntry {
     const field = this.findField(entryId, key);
     if (!field) throw new Error(`Field ${entryId}.${key} does not exist`);
 
-    const nextVersion =
-      ((
+    const currentVersion =
+      (
         this.db.prepare('SELECT version FROM content_entries WHERE id = ?').get(entryId) as {
           version: number;
         }
-      )?.version ?? 1) + 1;
+      )?.version ?? 1;
+
+    if (expectedVersion !== undefined && expectedVersion !== currentVersion) {
+      throw new Error(
+        `Conflicto de edición: la entrada fue modificada por otro proceso (versión actual: ${currentVersion}, esperada: ${expectedVersion})`
+      );
+    }
+
+    const nextVersion = currentVersion + 1;
 
     const transaction = this.db.transaction(() => {
       this.db

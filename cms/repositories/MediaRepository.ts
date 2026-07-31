@@ -66,29 +66,70 @@ export class MediaRepository {
     return this.create(input);
   }
 
-  list(): (MediaAsset & { usageCount: number })[] {
-    const rows = this.db
-      .prepare(
-        `SELECT m.*, COUNT(u.media_id) AS usage_count
-         FROM media_assets m
-         LEFT JOIN media_usages u ON m.id = u.media_id
-         GROUP BY m.id
-         ORDER BY m.created_at DESC`
-      )
-      .all() as (MediaRow & { usage_count: number })[];
-    return rows.map((row) => ({ ...this.fromRow(row), usageCount: row.usage_count }));
+  list(
+    limit = 100,
+    offset = 0,
+    q?: string
+  ): { items: (MediaAsset & { usageCount: number })[]; total: number } {
+    const searchPattern = q ? `%${q}%` : null;
+
+    const total: number = searchPattern
+      ? (
+          this.db
+            .prepare(
+              `SELECT COUNT(*) as count FROM media_assets
+               WHERE name LIKE ? OR alt LIKE ? OR path LIKE ?`
+            )
+            .get(searchPattern, searchPattern, searchPattern) as { count: number }
+        ).count
+      : (this.db.prepare('SELECT COUNT(*) as count FROM media_assets').get() as { count: number })
+          .count;
+
+    const rows = searchPattern
+      ? (this.db
+          .prepare(
+            `SELECT m.*, COUNT(u.media_id) AS usage_count
+             FROM media_assets m
+             LEFT JOIN media_usages u ON m.id = u.media_id
+             WHERE m.name LIKE ? OR m.alt LIKE ? OR m.path LIKE ?
+             GROUP BY m.id
+             ORDER BY m.created_at DESC
+             LIMIT ? OFFSET ?`
+          )
+          .all(searchPattern, searchPattern, searchPattern, limit, offset) as (MediaRow & {
+          usage_count: number;
+        })[])
+      : (this.db
+          .prepare(
+            `SELECT m.*, COUNT(u.media_id) AS usage_count
+             FROM media_assets m
+             LEFT JOIN media_usages u ON m.id = u.media_id
+             GROUP BY m.id
+             ORDER BY m.created_at DESC
+             LIMIT ? OFFSET ?`
+          )
+          .all(limit, offset) as (MediaRow & { usage_count: number })[]);
+
+    return {
+      items: rows.map((row) => ({ ...this.fromRow(row), usageCount: row.usage_count })),
+      total,
+    };
   }
 
   find(id: string): MediaAsset | undefined {
-    const row = this.db.prepare('SELECT * FROM media_assets WHERE id = ?').get(id) as MediaRow | undefined;
+    const row = this.db.prepare('SELECT * FROM media_assets WHERE id = ?').get(id) as
+      MediaRow | undefined;
     return row ? this.fromRow(row) : undefined;
   }
 
   getUsages(mediaId: string): Array<{ entryId: string; fieldKey: string; updatedAt: string }> {
-    return (this.db
-      .prepare('SELECT entry_id, field_key, updated_at FROM media_usages WHERE media_id = ? ORDER BY updated_at DESC')
-      .all(mediaId) as Array<{ entry_id: string; field_key: string; updated_at: string }>)
-      .map((r) => ({ entryId: r.entry_id, fieldKey: r.field_key, updatedAt: r.updated_at }));
+    return (
+      this.db
+        .prepare(
+          'SELECT entry_id, field_key, updated_at FROM media_usages WHERE media_id = ? ORDER BY updated_at DESC'
+        )
+        .all(mediaId) as Array<{ entry_id: string; field_key: string; updated_at: string }>
+    ).map((r) => ({ entryId: r.entry_id, fieldKey: r.field_key, updatedAt: r.updated_at }));
   }
 
   /** A1-004: cuenta cuantos items de galeria referencian un media (para advertir antes de borrar). */
@@ -100,16 +141,25 @@ export class MediaRepository {
   }
 
   findByPath(assetPath: string): MediaAsset | undefined {
-    const row = this.db.prepare('SELECT * FROM media_assets WHERE path = ?').get(assetPath) as MediaRow | undefined;
+    const row = this.db.prepare('SELECT * FROM media_assets WHERE path = ?').get(assetPath) as
+      MediaRow | undefined;
     return row ? this.fromRow(row) : undefined;
   }
 
-  update(input: { id: string; alt?: string; focalX?: number; focalY?: number; now: string }): MediaAsset {
+  update(input: {
+    id: string;
+    alt?: string;
+    focalX?: number;
+    focalY?: number;
+    now: string;
+  }): MediaAsset {
     const existing = this.find(input.id);
     if (!existing) throw new Error(`Media asset ${input.id} not found`);
 
     this.db
-      .prepare('UPDATE media_assets SET alt = ?, focal_x = ?, focal_y = ?, updated_at = ? WHERE id = ?')
+      .prepare(
+        'UPDATE media_assets SET alt = ?, focal_x = ?, focal_y = ?, updated_at = ? WHERE id = ?'
+      )
       .run(
         input.alt ?? existing.alt ?? null,
         input.focalX ?? existing.focalX,

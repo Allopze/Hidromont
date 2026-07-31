@@ -1,12 +1,5 @@
 export type FieldType =
-  | 'text'
-  | 'textarea'
-  | 'richtext'
-  | 'image'
-  | 'link'
-  | 'number'
-  | 'list'
-  | 'object';
+  'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object';
 
 export interface CmsField {
   key: string;
@@ -22,7 +15,7 @@ export interface CmsEntry {
   slug: string;
   locale: string;
   title: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'pending_review' | 'published';
   version: number;
   fields: Record<string, CmsField>;
 }

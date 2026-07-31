@@ -19,7 +19,8 @@ export class ContentController extends BaseController {
   async manifest(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const query = manifestQuerySchema.parse(request.query);
-      const entries = this.contentService.listEntries();
+      // manifest necesita todas las entradas para el path-matching — no paginar.
+      const { entries } = this.contentService.listEntries(undefined, 10000, 0);
       const path = query.path ?? '/';
       this.handleSuccess(reply, {
         path,
@@ -50,7 +51,45 @@ export class ContentController extends BaseController {
     try {
       const params = fieldParamsSchema.parse(request.params);
       const body = updateFieldSchema.parse(request.body);
-      this.handleSuccess(reply, this.contentService.updateField(params.id, params.key, body.value, body.mediaId));
+
+      // H-09: validar que el valor sea compatible con el tipo declarado del campo.
+      // Obtenemos la entrada para conocer el tipo actual antes de persistir.
+      const entry = this.contentService.getEntry(params.id);
+      const fieldMeta = entry.fields[params.key];
+      if (fieldMeta) {
+        const { type } = fieldMeta;
+        const val = body.value;
+        if (type === 'number' && val !== null && val !== undefined && typeof val !== 'number') {
+          reply.status(400).send({ error: `El campo "${params.key}" debe ser numérico` });
+          return;
+        }
+        if (type === 'list' && val !== null && val !== undefined && !Array.isArray(val)) {
+          reply.status(400).send({ error: `El campo "${params.key}" debe ser una lista (array)` });
+          return;
+        }
+        if (
+          (type === 'text' || type === 'textarea' || type === 'richtext' || type === 'image') &&
+          val !== null &&
+          val !== undefined &&
+          typeof val !== 'string'
+        ) {
+          reply
+            .status(400)
+            .send({ error: `El campo "${params.key}" de tipo "${type}" debe ser texto` });
+          return;
+        }
+      }
+
+      this.handleSuccess(
+        reply,
+        this.contentService.updateField(
+          params.id,
+          params.key,
+          body.value,
+          body.mediaId,
+          body.expectedVersion
+        )
+      );
     } catch (error) {
       this.handleError(error, reply, 'updateField');
     }
@@ -59,7 +98,15 @@ export class ContentController extends BaseController {
   async listEntries(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const query = listEntriesQuerySchema.parse(request.query);
-      this.handleSuccess(reply, { entries: this.contentService.listEntries(query.kind) });
+      const offset = (query.page - 1) * query.limit;
+      const { entries, total } = this.contentService.listEntries(query.kind, query.limit, offset);
+      this.handleSuccess(reply, {
+        entries,
+        total,
+        page: query.page,
+        limit: query.limit,
+        pages: Math.ceil(total / query.limit),
+      });
     } catch (error) {
       this.handleError(error, reply, 'listEntries');
     }

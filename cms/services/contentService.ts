@@ -91,7 +91,7 @@ export class ContentService {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'published';
+    status?: 'draft' | 'pending_review' | 'published';
     fields?: Record<string, { type: string; value: unknown }>;
   }) {
     const now = new Date().toISOString();
@@ -104,7 +104,8 @@ export class ContentService {
     };
     const fields = Object.entries(merged).map(([key, f]) => ({
       key,
-      type: f.type as 'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object',
+      type: f.type as
+        'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object',
       value: f.value,
     }));
     return this.contentRepository.createEntry({ ...input, fields, now });
@@ -112,7 +113,7 @@ export class ContentService {
 
   updateEntryMeta(
     id: string,
-    meta: { title?: string; slug?: string; status?: 'draft' | 'published' }
+    meta: { title?: string; slug?: string; status?: 'draft' | 'pending_review' | 'published' }
   ) {
     return this.contentRepository.updateEntryMeta(id, meta, new Date().toISOString());
   }
@@ -149,8 +150,8 @@ export class ContentService {
     return this.contentRepository.restoreRevision(entryId, revisionId, new Date().toISOString());
   }
 
-  listEntries(kind?: string) {
-    return this.contentRepository.listEntries(kind);
+  listEntries(kind?: string, limit = 100, offset = 0) {
+    return this.contentRepository.listEntries(kind, limit, offset);
   }
 
   getEntry(id: string) {
@@ -159,7 +160,20 @@ export class ContentService {
     return entry;
   }
 
-  updateField(entryId: string, key: string, value: unknown, mediaId?: string) {
-    return this.contentRepository.updateField(entryId, key, value, new Date().toISOString(), mediaId);
+  updateField(
+    entryId: string,
+    key: string,
+    value: unknown,
+    mediaId?: string,
+    expectedVersion?: number
+  ) {
+    return this.contentRepository.updateField(
+      entryId,
+      key,
+      value,
+      new Date().toISOString(),
+      mediaId,
+      expectedVersion
+    );
   }
 }

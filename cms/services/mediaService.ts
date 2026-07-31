@@ -42,8 +42,8 @@ function safeFilename(name: string): string {
 export class MediaService {
   constructor(private readonly mediaRepository: MediaRepository) {}
 
-  listMedia() {
-    return this.mediaRepository.list();
+  listMedia(limit = 100, offset = 0, q?: string) {
+    return this.mediaRepository.list(limit, offset, q);
   }
 
   getMediaWithUsages(id: string) {
@@ -122,7 +122,7 @@ export class MediaService {
    * existe en disco. No muta la DB; sólo reporta para que el operador actúe.
    */
   private detectOrphanedMedia(): string[] {
-    const all = this.mediaRepository.list();
+    const { items: all } = this.mediaRepository.list(100000, 0);
     const orphaned: string[] = [];
     for (const asset of all) {
       // Sólo verificar assets de los roots públicos (no uploads huérfanos de otros origenes).

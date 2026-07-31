@@ -72,6 +72,11 @@ app.addHook('onSend', async (request, reply) => {
   reply.header('X-Content-Type-Options', 'nosniff');
   reply.header('X-Frame-Options', 'DENY');
   reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // H-13: Restringir APIs del navegador no necesarias en el CMS.
+  reply.header(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+  );
 
   // CMS-11: CSP/HSTS solo para la API del CMS (JSON), no para el sitio estático que
   // este mismo proceso puede servir via registerStaticSite (server.mjs/npm start) —

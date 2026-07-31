@@ -2,6 +2,8 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
+  # H-13: Permissions-Policy restringe el acceso a APIs del navegador no usadas por este sitio.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
   # M5/JS-10: CSP con hashes de los scripts inline identicos en todas las paginas:
   #   1. `.js classList` (detector de JS, BaseLayout)
   #   2. JSON-LD Organization (datos estructurados, identico en todas las paginas)

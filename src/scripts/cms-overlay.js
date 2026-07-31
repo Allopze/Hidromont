@@ -50,6 +50,8 @@
       border: 0;
       border-radius: 0px;
       padding: 9px 12px;
+      min-height: 44px;
+      min-width: 44px;
       font-weight: 700;
       background: #0065A9;
       color: #fff;
@@ -60,6 +62,12 @@
     .hm-cms-panel button:hover {
       background: #004B7D;
     }
+    /* H-03: estilos :focus-visible para navegacion por teclado (WCAG 2.2 SC 2.4.7) */
+    .hm-cms-bar button:focus-visible,
+    .hm-cms-panel button:focus-visible {
+      outline: 2px solid #00A6D6;
+      outline-offset: 2px;
+    }
     .hm-cms-bar button.secondary,
     .hm-cms-panel button.secondary {
       background: rgba(255,255,255,0.1);
@@ -68,6 +76,16 @@
     .hm-cms-bar button.secondary:hover,
     .hm-cms-panel button.secondary:hover {
       background: rgba(255,255,255,0.2);
+    }
+    /* H-06: estilo destructivo consistente para botones de eliminacion */
+    .hm-cms-bar button.destructive,
+    .hm-cms-panel button.destructive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .hm-cms-bar button.destructive:hover,
+    .hm-cms-panel button.destructive:hover {
+      background: #fecaca;
     }
     .hm-cms-panel {
       pointer-events: auto;
@@ -125,6 +143,14 @@
       color: #1F2933;
       background: white;
     }
+    .hm-cms-panel input:focus-visible,
+    .hm-cms-panel textarea:focus-visible,
+    .hm-cms-panel select:focus-visible {
+      outline: 2px solid #0065A9;
+      outline-offset: 0;
+      border-color: #0065A9;
+      box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
+    }
     .hm-cms-panel textarea {
       min-height: 150px;
       resize: vertical;
@@ -142,6 +168,26 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+    /* H-05: spinner para operaciones asincronas */
+    @keyframes hm-cms-spin {
+      to { transform: rotate(360deg); }
+    }
+    .hm-cms-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: hm-cms-spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    button[data-loading] {
+      opacity: 0.7;
+      cursor: not-allowed;
+      pointer-events: none;
     }
     .hm-cms-job-list {
       display: grid;
@@ -441,6 +487,20 @@
         width: 100vw;
       }
     }
+    /* H-08: indicador de cambios sin guardar */
+    .hm-cms-autosave-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+    .hm-cms-autosave-indicator.visible {
+      opacity: 1;
+    }
   `;
   document.head.appendChild(style);
 
@@ -489,6 +549,39 @@
     stateBadge.style.display = '';
   }
 
+  let lastActiveElement = null;
+  let isFormDirty = false;
+
+  window.addEventListener('beforeunload', (event) => {
+    if (isFormDirty) {
+      event.preventDefault();
+      event.returnValue = 'Tienes cambios sin guardar en el CMS.';
+    }
+  });
+
+  function setButtonLoading(button, isLoading, loadingText = '') {
+    if (!button || !(button instanceof Element)) return;
+    const btn = button.closest('button');
+    if (!btn) return;
+    if (isLoading) {
+      if (!btn.hasAttribute('data-orig-html')) {
+        btn.setAttribute('data-orig-html', btn.innerHTML);
+      }
+      btn.setAttribute('data-loading', 'true');
+      btn.disabled = true;
+      const label = loadingText || btn.textContent.trim();
+      btn.innerHTML = `<span class="hm-cms-spinner"></span>${escapeHtml(label)}`;
+    } else {
+      btn.removeAttribute('data-loading');
+      btn.disabled = false;
+      const orig = btn.getAttribute('data-orig-html');
+      if (orig) {
+        btn.innerHTML = orig;
+        btn.removeAttribute('data-orig-html');
+      }
+    }
+  }
+
   async function api(path, options = {}) {
     const headers = options.headers || {};
     if (state.csrfToken && options.method && options.method !== 'GET') {
@@ -505,14 +598,33 @@
   }
 
   function openPanel(html) {
+    if (document.activeElement && !panel.contains(document.activeElement)) {
+      lastActiveElement = document.activeElement;
+    }
     panelBody.innerHTML = html;
     panel.classList.add('open');
+
+    // H-02: Mover el foco al primer elemento interactivo del panel
+    setTimeout(() => {
+      const firstFocusable = panel.querySelector(
+        'input:not([type="hidden"]), textarea, select, button, [tabindex]:not([tabindex="-1"])'
+      );
+      if (firstFocusable && typeof firstFocusable.focus === 'function') {
+        firstFocusable.focus();
+      }
+    }, 50);
   }
 
   function closePanel() {
     panel.classList.remove('open');
     state.selected = null;
     state.entry = null;
+
+    // H-02: Restaurar el foco al elemento interactivo previo al cerrar
+    if (lastActiveElement && typeof lastActiveElement.focus === 'function') {
+      lastActiveElement.focus();
+      lastActiveElement = null;
+    }
   }
 
   function loginView(error = '') {
@@ -614,7 +726,7 @@
                 (item, i) => `
               <div style="display:flex;gap:6px;align-items:center">
                 <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
-                <button type="button" data-action="remove-list-item" data-index="${i}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+                <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" style="font-weight:700">×</button>
               </div>
             `
               )
@@ -1081,7 +1193,7 @@
                 </div>
                 <div style="display:flex;gap:4px">
                   <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">Editar</button>
-                  <button type="button" class="secondary" style="font-size:11px;padding:4px 8px;background:#fee2e2;color:#991b1b" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}">×</button>
+                  <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}">×</button>
                 </div>
               </div>
             `
@@ -1246,7 +1358,7 @@
         </div>
         <div class="hm-cms-actions">
           <button type="submit">${itemId ? 'Guardar cambios' : 'Agregar a galería'}</button>
-          ${itemId ? `<button type="button" class="secondary" style="background:#fee2e2;color:#991b1b" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.title)}">Eliminar</button>` : ''}
+          ${itemId ? `<button type="button" class="secondary destructive" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.title)}">Eliminar</button>` : ''}
           <button type="button" class="secondary" data-action="gallery-items">Cancelar</button>
         </div>
         <p class="hm-cms-muted" data-status></p>
@@ -1343,7 +1455,7 @@
                   </div>
                   <div class="hm-cms-collection-actions">
                     <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
-                    <button type="button" class="secondary" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}">Borrar</button>
+                    <button type="button" class="secondary destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}">Borrar</button>
                   </div>
                 </div>
               `
@@ -1691,8 +1803,7 @@
         );
         if (!confirmed) return;
 
-        btn.textContent = 'Restaurando...';
-        btn.setAttribute('disabled', '');
+        setButtonLoading(btn, true, 'Restaurando...');
         try {
           await api(
             `/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}`,
@@ -1704,13 +1815,17 @@
           await loadRevisions(entryId);
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        } finally {
+          setButtonLoading(btn, false);
         }
         return;
       }
       if (action === 'publish') {
         if (!(await ensureSession())) return;
+        const btn = target instanceof Element ? target.closest('button') : null;
+        setButtonLoading(btn, true, 'Exportando...');
         openPanel(
-          '<p class="hm-cms-muted">Exportando archivos y ejecutando validación (astro check)...</p>'
+          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Exportando archivos y ejecutando validación (astro check)...</p>'
         );
         try {
           const result = await api('/api/cms/publish', { method: 'POST' });
@@ -1720,6 +1835,8 @@
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
           setGlobalState('error');
+        } finally {
+          setButtonLoading(btn, false);
         }
       }
       if (action === 'select-media' && target instanceof Element) {
@@ -1923,6 +2040,15 @@
   document.addEventListener('input', (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
+
+    if (
+      target.form &&
+      (target.form.matches('[data-edit]') ||
+        target.form.matches('[data-entry-form]') ||
+        target.form.matches('[data-gallery-item-form]'))
+    ) {
+      isFormDirty = true;
+    }
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');

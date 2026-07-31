@@ -39,6 +39,13 @@ blob-report/
 .playwright/
 
 GASCO/
+Canal Chacayes/
+Dron Rio Colorado/
+Pangal/
+
+# Raw/uncurated image dumps
+public/fotos/curadas/whatsapp-image-*
+
 
 # AI agent tooling (HIG-3: personal/local, not shared project config)
 .claude/

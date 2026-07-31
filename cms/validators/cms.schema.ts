@@ -17,6 +17,7 @@ export const fieldParamsSchema = z.object({
 export const updateFieldSchema = z.object({
   value: z.unknown(),
   mediaId: z.string().optional(),
+  expectedVersion: z.number().int().optional(),
 });
 
 export const manifestQuerySchema = z.object({
@@ -30,35 +31,79 @@ export const updateMediaSchema = z.object({
 });
 
 export const createEntrySchema = z.object({
-  id: z.string().min(1).max(160).regex(/^[a-z0-9._-]+$/, 'ID debe contener solo letras minúsculas, números, puntos, guiones y guiones bajos'),
+  id: z
+    .string()
+    .min(1)
+    .max(160)
+    .regex(
+      /^[a-z0-9._-]+$/,
+      'ID debe contener solo letras minúsculas, números, puntos, guiones y guiones bajos'
+    ),
   kind: z.enum(['page', 'layout', 'component', 'settings', 'servicio', 'proyecto']),
-  slug: z.string().min(1).max(240).regex(/^[a-z0-9/._-]+$/, 'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales').refine(val => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)'),
+  slug: z
+    .string()
+    .min(1)
+    .max(240)
+    .regex(
+      /^[a-z0-9/._-]+$/,
+      'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales'
+    )
+    .refine((val) => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)'),
   locale: z.string().optional(),
   title: z.string().min(1).max(240),
-  status: z.enum(['draft', 'published']).optional(),
+  status: z.enum(['draft', 'pending_review', 'published']).optional(),
   fields: z.record(z.string(), z.object({ type: z.string(), value: z.unknown() })).optional(),
 });
 
 export const updateEntryMetaSchema = z.object({
   title: z.string().min(1).max(240).optional(),
-  slug: z.string().min(1).max(240).regex(/^[a-z0-9/._-]+$/, 'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales').refine(val => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)').optional(),
-  status: z.enum(['draft', 'published']).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(240)
+    .regex(
+      /^[a-z0-9/._-]+$/,
+      'Slug debe contener solo letras minúsculas, números, puntos, guiones, guiones bajos y barras diagonales'
+    )
+    .refine((val) => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)')
+    .optional(),
+  status: z.enum(['draft', 'pending_review', 'published']).optional(),
 });
 
+// H-16: parámetros de paginación opcionales. Defecto page=1, limit=100
+// para compatibilidad con clientes existentes que no envían estos parámetros.
 export const listEntriesQuerySchema = z.object({
   kind: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+});
+
+export const listMediaQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  q: z.string().optional(),
 });
 
 // ── Gallery schemas ───────────────────────────────────────────
 
 export const createCategorySchema = z.object({
   name: z.string().min(1).max(120),
-  slug: z.string().min(1).max(120).regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones').optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones')
+    .optional(),
 });
 
 export const updateCategorySchema = z.object({
   name: z.string().min(1).max(120).optional(),
-  slug: z.string().min(1).max(120).regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones').optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones')
+    .optional(),
 });
 
 export const reorderSchema = z.object({

@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { MediaService } from '../services/mediaService';
-import { updateMediaSchema } from '../validators/cms.schema';
+import { listMediaQuerySchema, updateMediaSchema } from '../validators/cms.schema';
 import { BaseController } from './BaseController';
 
 function multipartFieldValue(field: unknown): string | undefined {
@@ -14,9 +14,18 @@ export class MediaController extends BaseController {
     super();
   }
 
-  async list(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  async list(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-      this.handleSuccess(reply, { items: this.mediaService.listMedia() });
+      const query = listMediaQuerySchema.parse(request.query);
+      const offset = (query.page - 1) * query.limit;
+      const { items, total } = this.mediaService.listMedia(query.limit, offset, query.q);
+      this.handleSuccess(reply, {
+        items,
+        total,
+        page: query.page,
+        limit: query.limit,
+        pages: Math.ceil(total / query.limit),
+      });
     } catch (error) {
       this.handleError(error, reply, 'listMedia');
     }
