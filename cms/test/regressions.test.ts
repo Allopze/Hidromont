@@ -38,8 +38,7 @@ describe('A1-004 — borrar media NO elimina items de galería (SET NULL)', () =
     const item = ctx.galleryService.createItem({
       mediaId,
       categoryId,
-      title: 'Item que sobrevive al borrado de media',
-      alt: 'Alt descriptivo',
+      alt: 'Item que sobrevive al borrado de media',
     });
     itemId = item.id;
   });

@@ -378,6 +378,67 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
 
   // ── Gallery routes ────────────────────────────────────────────
 
+  // Albums (GAL-19). Se identifican por slug, no por id.
+  app.get('/api/cms/gallery/albums', { preHandler: [requireAuth(authService)] }, (request, reply) =>
+    galleryController.listAlbums(request, reply)
+  );
+  app.post(
+    '/api/cms/gallery/albums',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      galleryController.createAlbum(request, reply);
+      if (reply.statusCode === 201) {
+        auditRepository.log({
+          action: 'gallery.album.create',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_album',
+          ip: request.ip,
+        });
+      }
+    }
+  );
+  app.patch(
+    '/api/cms/gallery/albums/:slug',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      galleryController.updateAlbum(request, reply);
+      if (reply.statusCode === 200) {
+        const { slug } = request.params as { slug: string };
+        auditRepository.log({
+          action: 'gallery.album.update',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_album',
+          entityId: slug,
+          ip: request.ip,
+        });
+      }
+    }
+  );
+  app.delete(
+    '/api/cms/gallery/albums/:slug',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      galleryController.deleteAlbum(request, reply);
+      if (reply.statusCode === 200) {
+        const { slug } = request.params as { slug: string };
+        auditRepository.log({
+          action: 'gallery.album.delete',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_album',
+          entityId: slug,
+          ip: request.ip,
+        });
+      }
+    }
+  );
+  app.post(
+    '/api/cms/gallery/albums/reorder',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      galleryController.reorderAlbums(request, reply);
+    }
+  );
+
   // Categories
   app.get(
     '/api/cms/gallery/categories',

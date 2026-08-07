@@ -1,6 +1,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { GalleryService } from '../services/galleryService';
 import {
+  albumParamsSchema,
+  createAlbumSchema,
+  updateAlbumSchema,
+  reorderAlbumsSchema,
   createCategorySchema,
   updateCategorySchema,
   reorderSchema,
@@ -12,6 +16,55 @@ import { BaseController } from './BaseController';
 export class GalleryController extends BaseController {
   constructor(private readonly galleryService: GalleryService) {
     super();
+  }
+
+  // ── Albums (GAL-19) ─────────────────────────────────────────
+
+  listAlbums(_request: FastifyRequest, reply: FastifyReply): void {
+    try {
+      this.handleSuccess(reply, { items: this.galleryService.listAlbums() });
+    } catch (error) {
+      this.handleError(error, reply, 'listGalleryAlbums');
+    }
+  }
+
+  createAlbum(request: FastifyRequest, reply: FastifyReply): void {
+    try {
+      const body = createAlbumSchema.parse(request.body);
+      this.handleSuccess(reply, this.galleryService.createAlbum(body), 201);
+    } catch (error) {
+      this.handleError(error, reply, 'createGalleryAlbum');
+    }
+  }
+
+  updateAlbum(request: FastifyRequest, reply: FastifyReply): void {
+    try {
+      const params = albumParamsSchema.parse(request.params);
+      const body = updateAlbumSchema.parse(request.body);
+      this.handleSuccess(reply, this.galleryService.updateAlbum(params.slug, body));
+    } catch (error) {
+      this.handleError(error, reply, 'updateGalleryAlbum');
+    }
+  }
+
+  deleteAlbum(request: FastifyRequest, reply: FastifyReply): void {
+    try {
+      const params = albumParamsSchema.parse(request.params);
+      this.galleryService.deleteAlbum(params.slug);
+      this.handleSuccess(reply, { ok: true });
+    } catch (error) {
+      this.handleError(error, reply, 'deleteGalleryAlbum');
+    }
+  }
+
+  reorderAlbums(request: FastifyRequest, reply: FastifyReply): void {
+    try {
+      const body = reorderAlbumsSchema.parse(request.body);
+      this.galleryService.reorderAlbums(body.slugs);
+      this.handleSuccess(reply, { ok: true });
+    } catch (error) {
+      this.handleError(error, reply, 'reorderGalleryAlbums');
+    }
   }
 
   // ── Categories ──────────────────────────────────────────────

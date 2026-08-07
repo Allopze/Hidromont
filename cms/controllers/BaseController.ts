@@ -8,6 +8,13 @@ const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] 
   { test: /Credenciales|inválidas/i, status: 401, message: 'Credenciales inválidas' },
   { test: /no encontrad[ao]/i, status: 404, message: 'Recurso no encontrado' },
   { test: /ya existe/i, status: 400, message: 'Ya existe un registro con ese identificador' },
+  // GAL-19: borrar un álbum con fotos se rechaza con su motivo intacto — el
+  // operador necesita saber cuántas fotos hay que mover antes de reintentar.
+  {
+    test: /antes de eliminarlo/i,
+    status: 409,
+    message: undefined as unknown as string,
+  },
   {
     test: /no permitido|MIME|extensión|demasiado grande|tipo de archivo/i,
     status: 400,

@@ -110,13 +110,41 @@ export const reorderSchema = z.object({
   ids: z.array(z.string().min(1)).min(1),
 });
 
+// GAL-19: los álbumes se identifican por slug, no por id — es lo que
+// gallery_items.project_slug referencia y lo que el CTA del visor enlaza a
+// /proyectos/<slug>. Por eso el slug no es editable después de crear el álbum.
+const albumSlug = z
+  .string()
+  .min(1)
+  .max(120)
+  .regex(/^[a-z0-9-]+$/, 'Slug debe contener solo letras minúsculas, números y guiones');
+
+export const albumParamsSchema = z.object({
+  slug: albumSlug,
+});
+
+export const createAlbumSchema = z.object({
+  name: z.string().min(1).max(120),
+  slug: albumSlug.optional(),
+});
+
+export const updateAlbumSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  position: z.number().int().min(0).optional(),
+});
+
+export const reorderAlbumsSchema = z.object({
+  slugs: z.array(albumSlug).min(1),
+});
+
+// Las fotos de la galería no llevan título ni descripción: se muestran
+// agrupadas por álbum y nada más. `alt` sigue siendo obligatorio porque es lo
+// que anuncia un lector de pantalla, no texto visible.
 export const createGalleryItemSchema = z.object({
   mediaId: z.string().min(1),
   categoryId: z.string().min(1).nullable().optional(),
   projectSlug: z.string().min(1).nullable().optional(),
-  title: z.string().min(1).max(240),
   alt: z.string().min(1).max(500),
-  caption: z.string().max(1000).nullable().optional(),
   featured: z.boolean().optional(),
   status: z.enum(['published', 'draft']).optional(),
 });
@@ -125,9 +153,7 @@ export const updateGalleryItemSchema = z.object({
   mediaId: z.string().min(1).optional(),
   categoryId: z.string().min(1).nullable().optional(),
   projectSlug: z.string().min(1).nullable().optional(),
-  title: z.string().min(1).max(240).optional(),
   alt: z.string().min(1).max(500).optional(),
-  caption: z.string().max(1000).nullable().optional(),
   featured: z.boolean().optional(),
   status: z.enum(['published', 'draft']).optional(),
 });

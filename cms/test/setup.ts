@@ -131,6 +131,14 @@ const SCHEMA_SQL = `
       updated_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS gallery_albums (
+      slug TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS gallery_items (
       id TEXT PRIMARY KEY,
       media_id TEXT,
@@ -206,48 +214,70 @@ export async function createTestApp(): Promise<TestApp> {
 
   app.get('/api/cms/health', async () => ({ ok: true }));
   app.post('/api/cms/login', async (request, reply) => authController.login(request, reply));
-  app.post('/api/cms/logout', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    authController.logout(req, reply)
+  app.post(
+    '/api/cms/logout',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => authController.logout(req, reply)
   );
   app.get('/api/cms/session', (req, reply) => authController.session(req, reply));
 
   app.get('/api/cms/entries', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     contentController.listEntries(req, reply)
   );
-  app.post('/api/cms/entries', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    contentController.createEntry(req, reply)
+  app.post(
+    '/api/cms/entries',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => contentController.createEntry(req, reply)
   );
   app.get('/api/cms/entries/:id', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     contentController.getEntry(req, reply)
   );
-  app.patch('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    contentController.updateEntryMeta(req, reply)
+  app.patch(
+    '/api/cms/entries/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => contentController.updateEntryMeta(req, reply)
   );
-  app.patch('/api/cms/entries/:id/fields/:key', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    contentController.updateField(req, reply)
+  app.patch(
+    '/api/cms/entries/:id/fields/:key',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => contentController.updateField(req, reply)
   );
-  app.delete('/api/cms/entries/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    contentController.deleteEntry(req, reply)
+  app.delete(
+    '/api/cms/entries/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => contentController.deleteEntry(req, reply)
   );
 
   app.get('/api/cms/media', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     mediaController.list(req, reply)
   );
-  app.patch('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    mediaController.update(req, reply)
+  app.patch(
+    '/api/cms/media/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => mediaController.update(req, reply)
   );
-  app.delete('/api/cms/media/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    mediaController.delete(req, reply)
+  app.delete(
+    '/api/cms/media/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => mediaController.delete(req, reply)
   );
 
-  app.get('/api/cms/revisions/:entryId', { preHandler: [requireAuth(authService)] }, async (request, reply) => {
-    const { entryId } = request.params as { entryId: string };
-    return reply.send({ revisions: contentService.listRevisions(entryId) });
-  });
-  app.post('/api/cms/revisions/:entryId/restore/:revisionId', { preHandler: [requireAuth(authService), requireCsrf()] }, async (request, reply) => {
-    const { entryId, revisionId } = request.params as { entryId: string; revisionId: string };
-    return reply.send({ ok: true, entry: contentService.restoreRevision(entryId, revisionId) });
-  });
+  app.get(
+    '/api/cms/revisions/:entryId',
+    { preHandler: [requireAuth(authService)] },
+    async (request, reply) => {
+      const { entryId } = request.params as { entryId: string };
+      return reply.send({ revisions: contentService.listRevisions(entryId) });
+    }
+  );
+  app.post(
+    '/api/cms/revisions/:entryId/restore/:revisionId',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      const { entryId, revisionId } = request.params as { entryId: string; revisionId: string };
+      return reply.send({ ok: true, entry: contentService.restoreRevision(entryId, revisionId) });
+    }
+  );
 
   app.get('/api/cms/publish/jobs', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     publishController.listJobs(req, reply)
@@ -258,20 +288,51 @@ export async function createTestApp(): Promise<TestApp> {
   });
 
   // Gallery routes
+  app.get('/api/cms/gallery/albums', { preHandler: [requireAuth(authService)] }, (req, reply) =>
+    galleryController.listAlbums(req, reply)
+  );
+  app.post(
+    '/api/cms/gallery/albums',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.createAlbum(req, reply)
+  );
+  app.patch(
+    '/api/cms/gallery/albums/:slug',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.updateAlbum(req, reply)
+  );
+  app.delete(
+    '/api/cms/gallery/albums/:slug',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.deleteAlbum(req, reply)
+  );
+  app.post(
+    '/api/cms/gallery/albums/reorder',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.reorderAlbums(req, reply)
+  );
   app.get('/api/cms/gallery/categories', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     galleryController.listCategories(req, reply)
   );
-  app.post('/api/cms/gallery/categories', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.createCategory(req, reply)
+  app.post(
+    '/api/cms/gallery/categories',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.createCategory(req, reply)
   );
-  app.patch('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.updateCategory(req, reply)
+  app.patch(
+    '/api/cms/gallery/categories/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.updateCategory(req, reply)
   );
-  app.delete('/api/cms/gallery/categories/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.deleteCategory(req, reply)
+  app.delete(
+    '/api/cms/gallery/categories/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.deleteCategory(req, reply)
   );
-  app.post('/api/cms/gallery/categories/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.reorderCategories(req, reply)
+  app.post(
+    '/api/cms/gallery/categories/reorder',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.reorderCategories(req, reply)
   );
   app.get('/api/cms/gallery/items', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     galleryController.listItems(req, reply)
@@ -279,17 +340,25 @@ export async function createTestApp(): Promise<TestApp> {
   app.get('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     galleryController.getItem(req, reply)
   );
-  app.post('/api/cms/gallery/items', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.createItem(req, reply)
+  app.post(
+    '/api/cms/gallery/items',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.createItem(req, reply)
   );
-  app.patch('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.updateItem(req, reply)
+  app.patch(
+    '/api/cms/gallery/items/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.updateItem(req, reply)
   );
-  app.delete('/api/cms/gallery/items/:id', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.deleteItem(req, reply)
+  app.delete(
+    '/api/cms/gallery/items/:id',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.deleteItem(req, reply)
   );
-  app.post('/api/cms/gallery/items/reorder', { preHandler: [requireAuth(authService), requireCsrf()] }, (req, reply) =>
-    galleryController.reorderItems(req, reply)
+  app.post(
+    '/api/cms/gallery/items/reorder',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => galleryController.reorderItems(req, reply)
   );
 
   await app.ready();
@@ -306,5 +375,19 @@ export async function createTestApp(): Promise<TestApp> {
     return { csrfToken: data.csrfToken, cookieHeader };
   };
 
-  return { app, db, authService, contentService, mediaService, galleryService, galleryRepository, publishJobRepository, auditRepository, rateLimitRepository, adminEmail, adminPassword, login };
+  return {
+    app,
+    db,
+    authService,
+    contentService,
+    mediaService,
+    galleryService,
+    galleryRepository,
+    publishJobRepository,
+    auditRepository,
+    rateLimitRepository,
+    adminEmail,
+    adminPassword,
+    login,
+  };
 }

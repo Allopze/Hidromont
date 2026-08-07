@@ -115,6 +115,19 @@ export function migrate(): void {
       updated_at TEXT NOT NULL
     );
 
+    -- GAL-4: los álbumes de la galería (una obra o proyecto, con sus fotos).
+    -- Antes eran un mapa slug→nombre hardcodeado en src/data/gallery.ts, así
+    -- que renombrar un álbum exigía tocar código y rebuild. El slug es la clave
+    -- natural porque es lo que gallery_items.project_slug ya referencia y lo
+    -- que el CTA del visor usa para enlazar a /proyectos/<slug>.
+    CREATE TABLE IF NOT EXISTS gallery_albums (
+      slug TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      position INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS gallery_items (
       id TEXT PRIMARY KEY,
       media_id TEXT,

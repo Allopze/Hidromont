@@ -15,9 +15,14 @@
 // No props needed — data is embedded in gallery cards via data attributes
 ---
 
+{
+  /* GAL-27: z-overlay (100) en vez de z-50. El <header> sticky también está en
+     z-50 y el visor solo ganaba por venir después en el DOM — un empate que se
+     rompía solo con reordenar el markup. */
+}
 <div
   id="lightbox"
-  class="fixed inset-0 z-50 hidden"
+  class="fixed inset-0 z-overlay hidden"
   role="dialog"
   aria-modal="true"
   aria-label="Visor de imágenes de galería"
@@ -85,17 +90,25 @@
       </button>
 
       {/* Image container with loading skeleton */}
-      <div class="w-full h-full flex items-center justify-center" data-lb-img-wrap>
+      <div class="w-full h-full flex items-center justify-center min-h-0" data-lb-img-wrap>
         {/* Loading skeleton */}
         <div data-lb-skeleton class="absolute inset-0 flex items-center justify-center">
           <div class="w-8 h-8 border-2 border-white/20 border-t-accent rounded-full animate-spin">
           </div>
         </div>
+        {
+          /* GAL-17: `max-h` en vh fijos (72/78) no descontaba la barra superior
+             ni el panel de metadatos, así que la suma pasaba de 100vh y el
+             panel quedaba pegado al borde inferior (medido: metaBottom ===
+             innerHeight en 1440×800 y 390×844) con el CTA cortado. Con
+             `max-h-full` la imagen se limita a lo que el contenedor flex le
+             deja tras reservar barra y panel, que es lo que debía hacer. */
+        }
         <img
           data-lb-img
           src=""
           alt=""
-          class="max-w-full max-h-[72vh] md:max-h-[78vh] object-contain shadow-2xl transition-all duration-300 ease-out opacity-0 scale-[0.97]"
+          class="max-w-full max-h-full object-contain shadow-2xl transition-all duration-300 ease-out opacity-0 scale-[0.97]"
           draggable="false"
         />
       </div>
@@ -122,24 +135,18 @@
 
     {/* Bottom metadata panel */}
     <div
-      class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full"
+      class="shrink-0 text-center px-4 md:px-6 py-4 md:py-5 max-w-3xl mx-auto w-full lb-meta"
       data-lb-meta
     >
+      {
+        /* GAL-18: los cambios de foto eran silenciosos para lectores de pantalla
+           — el contador se actualizaba sin anunciarse. */
+      }
+      <p class="sr-only" aria-live="polite" data-lb-announce></p>
       <span
         data-lb-category
-        class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono mb-1.5"
+        class="block text-[10px] md:text-xs text-accent font-semibold tracking-wider uppercase font-mono"
       ></span>
-      {
-        /* eslint-disable jsx-a11y/heading-has-content -- set via showImage() before the dialog is ever revealed. Uses disable/enable, not -next-line: prettier-plugin-astro always wraps a standalone comment expression onto its own line, which breaks next-line's line-adjacency requirement. */
-      }
-      <h3
-        data-lb-title
-        class="text-base md:text-lg font-bold font-heading uppercase tracking-wide text-white"
-      >
-      </h3>
-      {/* eslint-enable jsx-a11y/heading-has-content */}
-      <p data-lb-caption class="text-xs md:text-sm text-neutral-300 mt-2 leading-relaxed hidden">
-      </p>
       {
         /* eslint-disable jsx-a11y/anchor-is-valid -- showImage() sets a real href before this is ever shown (see ESTRUCT-2) */
       }
@@ -175,32 +182,106 @@
     const img = lightbox.querySelector('[data-lb-img]') as HTMLImageElement;
     const skeleton = lightbox.querySelector('[data-lb-skeleton]') as HTMLElement;
     const counter = lightbox.querySelector('[data-lb-counter]') as HTMLElement;
-    const title = lightbox.querySelector('[data-lb-title]') as HTMLElement;
     const category = lightbox.querySelector('[data-lb-category]') as HTMLElement;
-    const caption = lightbox.querySelector('[data-lb-caption]') as HTMLElement;
     const projectLink = lightbox.querySelector('[data-lb-project-link]') as HTMLAnchorElement;
     const closeBtn = lightbox.querySelector('[data-lb-close]') as HTMLButtonElement;
     const prevBtn = lightbox.querySelector('[data-lb-prev]') as HTMLButtonElement;
     const nextBtn = lightbox.querySelector('[data-lb-next]') as HTMLButtonElement;
 
+    const announcer = lightbox.querySelector('[data-lb-announce]') as HTMLElement | null;
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /**
+     * GAL-17: el trap usaba `querySelectorAll('button, [tabindex]')`, que no
+     * matchea el `<a>` del CTA "Ver Proyecto Relacionado". Como el CTA es el
+     * último elemento tabulable del diálogo pero no estaba en la lista, al
+     * llegar al botón "siguiente" —el último que sí estaba— el Tab saltaba de
+     * vuelta al primero y el enlace nunca recibía foco.
+     *
+     * Se filtran además los ocultos: el CTA lleva `hidden` cuando el álbum no
+     * tiene página de proyecto, y un trap que enfoca elementos invisibles deja
+     * al usuario sin saber dónde está el foco.
+     */
+    function getFocusable(): HTMLElement[] {
+      const candidates = lightbox!.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      return Array.from(candidates).filter(
+        (el) => !el.classList.contains('hidden') && el.offsetParent !== null
+      );
+    }
 
     interface LightboxImage {
       id?: string;
       src: string;
       srcset: string;
       alt: string;
-      title: string;
       category: string;
-      caption: string;
       projectSlug: string;
       width: number;
       height: number;
     }
 
+    // Lo que llega en el <script type="application/json"> viene de gallery.json,
+    // pero al parsearlo no hay garantía de tipo: por eso todo es opcional aquí y
+    // cada campo lleva su fallback en collectImages().
+    interface RawLightboxItem {
+      id?: string;
+      src?: string;
+      srcset?: string;
+      alt?: string;
+      categoryName?: string;
+      projectSlug?: string;
+      width?: number;
+      height?: number;
+    }
+
     let images: LightboxImage[] = [];
     let currentIndex = 0;
     let previousFocus: HTMLElement | null = null;
+
+    // ── GAL-16: estado del visor en la URL ──
+    //
+    // Sin esto no se podía compartir una foto ni un álbum, y —lo más visible en
+    // móvil— el botón Atrás salía de la página en vez de cerrar el visor, que
+    // es el gesto que cualquiera intenta primero.
+    //
+    // Se usan query params y no el hash porque el hash ya está tomado por el
+    // deep-link de categoría de la grilla (/galeria#tuberias).
+    //
+    // `pushState` solo al abrir: así Atrás cierra el visor y devuelve a la
+    // grilla. Navegar entre fotos usa `replaceState` para no dejar 15 entradas
+    // de historial que obliguen a pulsar Atrás quince veces para salir.
+    let albumSlug: string | null = null;
+    let ownsHistoryEntry = false;
+    /** Evita que popstate, al deshacer nuestra propia entrada, reabra el visor. */
+    let suppressUrlSync = false;
+
+    function syncUrl() {
+      if (suppressUrlSync || !ownsHistoryEntry) return;
+      const url = new URL(location.href);
+      if (albumSlug) url.searchParams.set('album', albumSlug);
+      else url.searchParams.delete('album');
+      url.searchParams.set('foto', String(currentIndex + 1));
+      history.replaceState(history.state, '', url);
+    }
+
+    function pushOpenState() {
+      const url = new URL(location.href);
+      if (albumSlug) url.searchParams.set('album', albumSlug);
+      url.searchParams.set('foto', String(currentIndex + 1));
+      history.pushState({ lightbox: true }, '', url);
+      ownsHistoryEntry = true;
+    }
+
+    function clearUrlState() {
+      if (!ownsHistoryEntry) return;
+      ownsHistoryEntry = false;
+      suppressUrlSync = true;
+      history.back();
+      // El flag se limpia en el popstate que provoca este history.back().
+    }
 
     // ESTRUCT-2 fix: only link "Ver Proyecto" to slugs that actually have a
     // built page (see the "lightbox-valid-project-slugs" payload). Gallery
@@ -269,15 +350,13 @@
       const dataScript = document.getElementById('lightbox-data');
       if (dataScript && dataScript.textContent) {
         try {
-          const rawItems = JSON.parse(dataScript.textContent);
-          return rawItems.map((item: any) => ({
+          const rawItems: RawLightboxItem[] = JSON.parse(dataScript.textContent);
+          return rawItems.map((item) => ({
             id: item.id || '',
             src: item.src || '',
             srcset: item.srcset || '',
-            alt: item.alt || item.title || '',
-            title: item.title || '',
+            alt: item.alt || '',
             category: item.categoryName || '',
-            caption: item.caption || '',
             projectSlug: item.projectSlug || '',
             width: item.width || 1600,
             height: item.height || 1200,
@@ -298,9 +377,7 @@
           src: imgEl?.src || '',
           srcset: imgEl?.getAttribute('srcset') || '',
           alt: imgEl?.alt || el.getAttribute('aria-label') || '',
-          title: el.querySelector('h3')?.textContent?.trim() || el.getAttribute('aria-label') || '',
           category: el.querySelector('.font-mono')?.textContent?.trim() || '',
-          caption: el.getAttribute('data-caption') || '',
           projectSlug: el.getAttribute('data-project-slug') || '',
           width:
             Number.isFinite(attrWidth) && attrWidth > 0 ? attrWidth : imgEl?.naturalWidth || 1600,
@@ -326,14 +403,13 @@
 
       // Update metadata immediately
       counter.textContent = `${index + 1} / ${images.length}`;
-      title.textContent = data.title;
       category.textContent = data.category;
-      if (data.caption) {
-        caption.textContent = data.caption;
-        caption.classList.remove('hidden');
-      } else {
-        caption.classList.add('hidden');
-      }
+      // GAL-18: el contador cambiaba en silencio para lectores de pantalla.
+      // `aria-live="polite"` no se dispara si el nodo ya contenía ese texto, por
+      // eso se compone una frase que siempre incluye la posición. Ahora que las
+      // fotos no llevan título, el alt es lo único que identifica la imagen.
+      if (announcer) announcer.textContent = `Foto ${index + 1} de ${images.length}: ${data.alt}`;
+      syncUrl();
 
       if (data.projectSlug && validProjectSlugs.has(data.projectSlug) && projectLink) {
         projectLink.href = `/proyectos/${data.projectSlug}`;
@@ -400,14 +476,17 @@
 
       // Save focus to restore on close
       previousFocus = document.activeElement as HTMLElement;
+      albumSlug = null;
 
       setBackgroundInert(true);
 
       lightbox!.classList.remove('hidden');
+      lightbox!.classList.add('is-animating');
       // Force reflow before removing opacity
       lightbox!.offsetHeight;
       lightbox!.style.opacity = '1';
 
+      pushOpenState();
       showImage(currentIndex);
 
       // Move focus into dialog
@@ -433,6 +512,7 @@
         return;
       }
       currentIndex = 0;
+      albumSlug = projectSlug || null;
 
       cancelPendingClose();
 
@@ -441,14 +521,21 @@
       setBackgroundInert(true);
 
       lightbox!.classList.remove('hidden');
+      lightbox!.classList.add('is-animating');
       lightbox!.offsetHeight;
       lightbox!.style.opacity = '1';
 
+      pushOpenState();
       showImage(currentIndex);
       requestAnimationFrame(() => closeBtn.focus());
     }
 
-    function close() {
+    /**
+     * @param fromHistory true cuando el cierre lo originó un popstate (Atrás
+     *   del navegador). En ese caso la entrada de historial ya se consumió y
+     *   llamar a history.back() otra vez sacaría al usuario de la página.
+     */
+    function close(fromHistory = false) {
       // Cancel any close already in flight (double-close) before starting a new one.
       cancelPendingClose();
 
@@ -460,11 +547,17 @@
         previousFocus = null;
       }
 
+      if (fromHistory) ownsHistoryEntry = false;
+      else clearUrlState();
+      albumSlug = null;
+
+      lightbox!.classList.add('is-animating');
       lightbox!.style.opacity = '0';
 
       const finishFade = () => {
         cancelPendingClose();
         lightbox!.classList.add('hidden');
+        lightbox!.classList.remove('is-animating');
       };
 
       if (prefersReducedMotion) {
@@ -505,15 +598,78 @@
     });
 
     // ── Lightbox button handlers ──
-    closeBtn?.addEventListener('click', close);
+    // Envueltos en flechas: pasar `close` directo le entregaría el MouseEvent
+    // como argumento `fromHistory`, que es truthy y saltaría el history.back().
+    closeBtn?.addEventListener('click', () => close());
     prevBtn?.addEventListener('click', prev);
     nextBtn?.addEventListener('click', next);
 
     // Close on backdrop click
-    lightbox.querySelector('[data-lb-backdrop]')?.addEventListener('click', close);
+    lightbox.querySelector('[data-lb-backdrop]')?.addEventListener('click', () => close());
     lightbox.querySelector('[data-lb-stage]')?.addEventListener('click', (e) => {
       if (e.target === e.currentTarget) close();
     });
+
+    // ── GAL-16: historial y deep-link ──
+    window.addEventListener('popstate', () => {
+      if (suppressUrlSync) {
+        // Es el popstate que provocó nuestro propio history.back() al cerrar.
+        suppressUrlSync = false;
+        return;
+      }
+      const isOpen = !lightbox!.classList.contains('hidden');
+      const params = new URLSearchParams(location.search);
+      const wantsOpen = params.has('foto');
+
+      if (isOpen && !wantsOpen) {
+        close(true);
+      } else if (!isOpen && wantsOpen) {
+        openFromUrl(params);
+      } else if (isOpen && wantsOpen) {
+        const index = Number.parseInt(params.get('foto') ?? '1', 10) - 1;
+        if (Number.isFinite(index) && index >= 0 && index < images.length) showImage(index);
+      }
+    });
+
+    function openFromUrl(params: URLSearchParams): boolean {
+      const foto = Number.parseInt(params.get('foto') ?? '', 10);
+      if (!Number.isFinite(foto) || foto < 1) return false;
+
+      const slug = params.get('album');
+      const card = slug
+        ? (document.querySelector(
+            `.project-album-card[data-project-slug="${CSS.escape(slug)}"]`
+          ) as HTMLElement | null)
+        : null;
+
+      if (slug && !card) return false; // álbum inexistente: se ignora el enlace
+      if (card) openAlbum(card);
+      else {
+        const first = document.querySelector('.gallery-card') as HTMLElement | null;
+        if (!first) return false;
+        open(first);
+      }
+
+      const index = foto - 1;
+      if (index < images.length) showImage(index);
+      return true;
+    }
+
+    // Apertura directa desde una URL compartida. Reemplaza la entrada que
+    // openAlbum() empuja, para que Atrás lleve a la página anterior y no a la
+    // misma URL con el visor cerrado.
+    const initialParams = new URLSearchParams(location.search);
+    if (initialParams.has('foto')) {
+      requestAnimationFrame(() => {
+        const opened = openFromUrl(initialParams);
+        if (!opened) {
+          const url = new URL(location.href);
+          url.searchParams.delete('album');
+          url.searchParams.delete('foto');
+          history.replaceState(null, '', url);
+        }
+      });
+    }
 
     // ── Keyboard ──
     document.addEventListener('keydown', (e) => {
@@ -533,9 +689,10 @@
 
       // Focus trap: Tab cycles within lightbox
       if (e.key === 'Tab') {
-        const focusable = lightbox!.querySelectorAll('button, [tabindex]');
-        const first = focusable[0] as HTMLElement;
-        const last = focusable[focusable.length - 1] as HTMLElement;
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
 
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
@@ -587,7 +744,19 @@
   #lightbox {
     opacity: 0;
     transition: opacity 250ms ease-out;
+  }
+
+  /* GAL-27: `will-change: opacity` permanente mantenía viva una capa de
+     composición durante toda la vida de la página, incluso con el visor
+     cerrado. Solo se declara mientras hay una transición en curso. */
+  #lightbox.is-animating {
     will-change: opacity;
+  }
+
+  /* GAL-17: el panel nunca debe quedar contra el borde inferior de la
+     pantalla — en iPhone, además, ahí vive la barra de gestos. */
+  .lb-meta {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
   /* A2-008: el soporte reduced-motion real se maneja en JS (prefersReducedMotion al
      abrir/cerrar). El atributo data-reduced-motion nunca se setea, asi que esta regla
