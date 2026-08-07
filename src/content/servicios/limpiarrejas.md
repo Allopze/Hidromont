@@ -1,26 +1,43 @@
 ---
-titulo: "Limpiarrejas"
-resumen: "Diseño, fabricación, montaje, mantenimiento y reparación de equipos limpiarrejas para canales, presas y centrales hidroeléctricas. Equipos para limpieza de desechos de rejas metálicas y libre admisión de agua."
-icono: "rack"
-tipos:
-  - "De husillos"
-  - "De cremallera"
-  - "Óleo-hidráulicos"
 aplicaciones:
-  - "Bocatomas de canales"
-  - "Torres de toma de presas"
-  - "Cámaras de carga de centrales"
-  - "Desagüe de fondo con rejas"
-procesos:
-  - titulo: "Ingeniería"
-    descripcion: "Diseño según tipo de desecho, dimensión de reja y cargas de diseño. Validación estructural por elementos finitos y modelado 3D."
-  - titulo: "Fabricación"
-    descripcion: "Fabricación del equipo en taller con los sistemas de accionamiento y automatización requeridos."
-  - titulo: "Montaje"
-    descripcion: "Instalación en obra, integración con sistemas eléctricos y pruebas operacionales."
-  - titulo: "Mantenimiento"
-    descripcion: "Revisión periódica de mecanismos, lubricación, ajuste de sistemas hidráulicos y eléctricos."
+  - Bocatomas de canales
+  - Torres de toma de presas
+  - Cámaras de carga de centrales
+  - Desagüe de fondo con rejas
+icono: rack
+normas:
+  - P.G.O.H.
+  - DIN
+  - ASME
+  - USBR
+  - Directiva de Máquinas 2006/42/CE
 orden: 3
+procesos:
+  - titulo: Ingeniería
+    descripcion: >-
+      Diseño según tipo de desecho, dimensión de reja y requerimientos de carga.
+      Comprobación estructural por elementos finitos y modelización.
+  - titulo: Fabricación
+    descripcion: >-
+      Fabricación del equipo en taller con los sistemas de accionamiento y
+      automatización requeridos.
+  - titulo: Montaje
+    descripcion: >-
+      Instalación en obra, integración con sistemas eléctricos y pruebas
+      operacionales.
+  - titulo: Mantenimiento
+    descripcion: >-
+      Revisión periódica de mecanismos, lubricación, ajuste de sistemas
+      hidráulicos y eléctricos.
+resumen: >-
+  Diseño, fabricación, montaje, mantenimiento y reparación de equipos
+  limpiarrejas para canales, presas y centrales hidroeléctricas. Equipos para
+  limpieza de desechos de rejas metálicas y libre admisión de agua.
+tipos:
+  - Limpiarreje de husillos
+  - Limpiarreje de cremallera
+  - Limpiarreje oleo-hidráulico
+titulo: Limpiarrejas
 ---
 
-Los limpiarrejas Hidromont aseguran la entrada continua de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos. Diseñamos cada equipo a la medida del proyecto.
+Los equipos limpiarrejas de Hidromont garantizan la libre admisión de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos arrastrados por la corriente. Cada equipo se diseña a medida según las condiciones del proyecto.

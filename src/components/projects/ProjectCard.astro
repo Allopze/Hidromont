@@ -6,6 +6,7 @@ import ArrowIcon from '../ui/ArrowIcon.astro';
 
 import { projectImages } from '../../data/project-images';
 import { categoriaLabels } from '../../data/categories';
+import { entrySlug } from '../../utils/contentId';
 
 interface Props {
   proyecto: CollectionEntry<'proyectos'>;
@@ -16,7 +17,7 @@ const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion } = p
 
 const isDestacado = proyecto.data.tipo === 'destacado';
 
-const slug = proyecto.id;
+const slug = entrySlug(proyecto.id);
 const photo = projectImages[slug];
 ---
 

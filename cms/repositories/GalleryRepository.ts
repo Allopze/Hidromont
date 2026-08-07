@@ -9,6 +9,15 @@ export interface GalleryCategory {
   updatedAt: string;
 }
 
+/** GAL-19: un álbum de la galería (una obra o proyecto con sus fotos). */
+export interface GalleryAlbum {
+  slug: string;
+  name: string;
+  position: number;
+  /** Fotos publicadas que lo referencian. Calculado, no almacenado. */
+  itemCount: number;
+}
+
 export interface GalleryItem {
   id: string;
   mediaId: string | null;
@@ -45,6 +54,22 @@ interface CategoryRow {
   position: number;
   created_at: string;
   updated_at: string;
+}
+
+interface AlbumRow {
+  slug: string;
+  name: string;
+  position: number;
+  item_count: number;
+}
+
+function fromAlbumRow(row: AlbumRow): GalleryAlbum {
+  return {
+    slug: row.slug,
+    name: row.name,
+    position: row.position,
+    itemCount: row.item_count,
+  };
 }
 
 interface ItemRow {
@@ -114,6 +139,76 @@ function fromItemWithMediaRow(row: ItemWithMediaRow): GalleryItemWithMedia {
 export class GalleryRepository {
   constructor(private readonly db: Database.Database) {}
 
+  // ── Albums (GAL-19) ─────────────────────────────────────────
+  //
+  // El slug es la clave: es lo que gallery_items.project_slug referencia y lo
+  // que el CTA del visor usa para enlazar a /proyectos/<slug>. Por eso no hay
+  // `updateSlug`: renombrar el slug rompería esa relación en silencio. Para
+  // mover fotos de álbum se cambia project_slug en cada foto, no el álbum.
+
+  listAlbums(): GalleryAlbum[] {
+    const rows = this.db
+      .prepare(
+        `SELECT a.slug, a.name, a.position,
+                (SELECT COUNT(*) FROM gallery_items i
+                  WHERE i.project_slug = a.slug AND i.status = 'published') AS item_count
+           FROM gallery_albums a
+          ORDER BY a.position ASC, a.name ASC`
+      )
+      .all() as AlbumRow[];
+    return rows.map(fromAlbumRow);
+  }
+
+  getAlbum(slug: string): GalleryAlbum | undefined {
+    const row = this.db
+      .prepare(
+        `SELECT a.slug, a.name, a.position,
+                (SELECT COUNT(*) FROM gallery_items i
+                  WHERE i.project_slug = a.slug AND i.status = 'published') AS item_count
+           FROM gallery_albums a WHERE a.slug = ?`
+      )
+      .get(slug) as AlbumRow | undefined;
+    return row ? fromAlbumRow(row) : undefined;
+  }
+
+  createAlbum(input: { slug: string; name: string; position: number; now: string }): GalleryAlbum {
+    this.db
+      .prepare(
+        'INSERT INTO gallery_albums (slug, name, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      )
+      .run(input.slug, input.name, input.position, input.now, input.now);
+    return { slug: input.slug, name: input.name, position: input.position, itemCount: 0 };
+  }
+
+  updateAlbum(slug: string, input: { name?: string; position?: number; now: string }): void {
+    const existing = this.getAlbum(slug);
+    if (!existing) throw new Error(`Álbum ${slug} no encontrado`);
+    this.db
+      .prepare('UPDATE gallery_albums SET name = ?, position = ?, updated_at = ? WHERE slug = ?')
+      .run(input.name ?? existing.name, input.position ?? existing.position, input.now, slug);
+  }
+
+  /** Solo borra álbumes vacíos: si tuviera fotos, quedarían sin agrupación. */
+  deleteAlbum(slug: string): void {
+    const album = this.getAlbum(slug);
+    if (!album) throw new Error(`Álbum ${slug} no encontrado`);
+    if (album.itemCount > 0) {
+      throw new Error(
+        `El álbum "${album.name}" tiene ${album.itemCount} foto(s). Muévelas o bórralas antes de eliminarlo.`
+      );
+    }
+    this.db.prepare('DELETE FROM gallery_albums WHERE slug = ?').run(slug);
+  }
+
+  reorderAlbums(slugs: string[], now: string): void {
+    const update = this.db.prepare(
+      'UPDATE gallery_albums SET position = ?, updated_at = ? WHERE slug = ?'
+    );
+    this.db.transaction(() => {
+      slugs.forEach((slug, index) => update.run(index, now, slug));
+    })();
+  }
+
   // ── Categories ──────────────────────────────────────────────
 
   listCategories(): GalleryCategory[] {
@@ -124,20 +219,25 @@ export class GalleryRepository {
   }
 
   getCategory(id: string): GalleryCategory | undefined {
-    const row = this.db
-      .prepare('SELECT * FROM gallery_categories WHERE id = ?')
-      .get(id) as CategoryRow | undefined;
+    const row = this.db.prepare('SELECT * FROM gallery_categories WHERE id = ?').get(id) as
+      CategoryRow | undefined;
     return row ? fromCategoryRow(row) : undefined;
   }
 
   getCategoryBySlug(slug: string): GalleryCategory | undefined {
-    const row = this.db
-      .prepare('SELECT * FROM gallery_categories WHERE slug = ?')
-      .get(slug) as CategoryRow | undefined;
+    const row = this.db.prepare('SELECT * FROM gallery_categories WHERE slug = ?').get(slug) as
+      CategoryRow | undefined;
     return row ? fromCategoryRow(row) : undefined;
   }
 
-  createCategory(input: { id: string; name: string; slug: string; position: number; createdAt: string; updatedAt: string }): GalleryCategory {
+  createCategory(input: {
+    id: string;
+    name: string;
+    slug: string;
+    position: number;
+    createdAt: string;
+    updatedAt: string;
+  }): GalleryCategory {
     this.db
       .prepare(
         'INSERT INTO gallery_categories (id, name, slug, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
@@ -166,7 +266,9 @@ export class GalleryRepository {
   }
 
   reorderCategories(ids: string[]): void {
-    const stmt = this.db.prepare('UPDATE gallery_categories SET position = ?, updated_at = ? WHERE id = ?');
+    const stmt = this.db.prepare(
+      'UPDATE gallery_categories SET position = ?, updated_at = ? WHERE id = ?'
+    );
     const now = new Date().toISOString();
     const txn = this.db.transaction(() => {
       ids.forEach((id, index) => stmt.run(index, now, id));
@@ -175,7 +277,9 @@ export class GalleryRepository {
   }
 
   maxCategoryPosition(): number {
-    const row = this.db.prepare('SELECT MAX(position) as maxPos FROM gallery_categories').get() as { maxPos: number | null };
+    const row = this.db.prepare('SELECT MAX(position) as maxPos FROM gallery_categories').get() as {
+      maxPos: number | null;
+    };
     return row.maxPos ?? -1;
   }
 
@@ -218,7 +322,8 @@ export class GalleryRepository {
 
   getItem(id: string): GalleryItemWithMedia | undefined {
     const row = this.db
-      .prepare(`
+      .prepare(
+        `
         SELECT gi.*,
                m.path AS media_path, m.mime AS media_mime, m.width AS media_width,
                m.height AS media_height, m.alt AS media_alt, m.focal_x AS media_focal_x,
@@ -228,7 +333,8 @@ export class GalleryRepository {
         LEFT JOIN media_assets m ON gi.media_id = m.id
         LEFT JOIN gallery_categories gc ON gi.category_id = gc.id
         WHERE gi.id = ?
-      `)
+      `
+      )
       .get(id) as ItemWithMediaRow | undefined;
     return row ? fromItemWithMediaRow(row) : undefined;
   }
@@ -284,9 +390,8 @@ export class GalleryRepository {
       status?: 'published' | 'draft';
     }
   ): GalleryItemWithMedia {
-    const existing = this.db
-      .prepare('SELECT * FROM gallery_items WHERE id = ?')
-      .get(id) as ItemRow | undefined;
+    const existing = this.db.prepare('SELECT * FROM gallery_items WHERE id = ?').get(id) as
+      ItemRow | undefined;
     if (!existing) throw new Error(`Item ${id} no encontrado`);
 
     const updatedAt = new Date().toISOString();
@@ -320,7 +425,9 @@ export class GalleryRepository {
   }
 
   reorderItems(ids: string[]): void {
-    const stmt = this.db.prepare('UPDATE gallery_items SET position = ?, updated_at = ? WHERE id = ?');
+    const stmt = this.db.prepare(
+      'UPDATE gallery_items SET position = ?, updated_at = ? WHERE id = ?'
+    );
     const now = new Date().toISOString();
     const txn = this.db.transaction(() => {
       ids.forEach((id, index) => stmt.run(index, now, id));
@@ -329,7 +436,9 @@ export class GalleryRepository {
   }
 
   maxItemPosition(): number {
-    const row = this.db.prepare('SELECT MAX(position) as maxPos FROM gallery_items').get() as { maxPos: number | null };
+    const row = this.db.prepare('SELECT MAX(position) as maxPos FROM gallery_items').get() as {
+      maxPos: number | null;
+    };
     return row.maxPos ?? -1;
   }
 

@@ -1,50 +1,39 @@
 ---
-nombre: "Tanques de GLP 30.000 Galones — Coyhaique"
-cliente: "Gasco"
-alcance: "Fabricación y suministro de 3 estanques para gas GLP de 30.000 galones. Proceso integral que incluye acopio de materiales, fabricación, tratamiento de superficies, control de calidad, transporte y descarga en sitio. Incluye suministro de válvulas, actuadores neumáticos, accesorios y dossier de fabricación completo."
-categoria: "estructuras"
-tipo: "banco"
-ubicacion: "Coyhaique, Región de Aysén, Chile"
+alcance: >-
+  Fabricación en taller y montaje de recipientes a presión de gran envergadura
+  para almacenamiento de GLP de 30.000 galones (aprox. 113.500 litros). Proceso
+  integral que incluyó conformación de cuerpos y tapas, soldadura automatizada
+  Arco Sumergido (SAW), inspección NDT 100%, esquemas de pintura técnica e izaje
+  de alta precisión.
 anio: 2024
+categoria: estructuras
+cliente: Gasco
+nombre: Tanques de GLP 30.000 Galones — Coyhaique
 orden: 63
+tipo: banco
+ubicacion: 'Coyhaique, Región de Aysén, Chile'
 ---
 
-Fabricación y suministro de recipientes a presión de gran envergadura para la planta de almacenamiento y distribución de gas GLP de Gasco en Coyhaique, la ciudad más austral de la red de distribución.
+Construcción y maniobras logísticas de recipientes de alta presión a gran escala destinados a la planta de almacenamiento y distribución de gas GLP en la ciudad de Coyhaique.
 
 ## Alcance del proyecto
 
-* **Dimensionamiento:** 3 estanques cilíndricos horizontales de Ø 2.975 mm, longitud de cuerpo 14.400 mm, espesor 20 mm. Longitud total 17.550 mm. Peso estimado por conjunto: 25,1 Ton.
-* **Cabezales:** 2 cabezales semiesféricos por tanque, espesor 10 mm.
-* **Sillas de anclaje:** 2 sillas estructurales por tanque en acero ASTM A36.
-* **Soldadura:** Proceso Arco Sumergido (SAW) y SMAW/GMAW ejecutado por soldadores certificados bajo ASME Sección IX.
-* **Ensayos no destructivos:** Radiografía al 100% de costuras longitudinales y circunferenciales. Alternativa de Ultrasonido Phased Array con registro gráfico.
-* **Prueba hidrostática:** Presión de prueba 22,4 bar.
-* **Válvulas y accesorios:** 9 válvulas internas 2" NPT (250 GPM), 12 válvulas internas 3" NPT (400 GPM), 21 actuadores neumáticos, 4 válvulas de llenado A3400L6. Flanges SA105, cañerías SA106.
-* **Tratamiento superficial:** Granallado SSPC-SP10, 1 capa epóxico autoimprimante (2 mils), 1 capa terminación epóxico poliuretano (2 mils). Espesor total 4 mils.
-* **Certificación:** Protocolos de fabricación, dossier completo y certificación SEC.
-* **Transporte:** 3 etapas de transporte a obra con descarga a suelo en posición de camión.
+- **Fabricación de Calderería Pesada:** Rolado y armado de mantos cilíndricos en plancha de acero especial para recipientes a presión, de dimensiones masivas para alcanzar los 30.000 galones de capacidad por unidad.
+- **Procesos de Soldadura Certificada:** Aplicación de soldadura Arco Sumergido (SAW) y SMAW/GMAW ejecutados por soldadores calificados bajo norma ASME Sección IX.
+- **Inspecciones de Calidad y Ensayos NDT:** Ensayo de radiografía en costuras longitudinales y circunferenciales, prueba hidrostática de estanqueidad y resistencia estructural.
+- **Recubrimiento Especializado:** Aplicación de esquema anticorrosivo en granallado metálico previo a capas de epóxico y poliuretano blanco reflectivo de alta durabilidad operacional en zona austral.
+- **Logística e Izaje:** Coordinación e izaje en planta mediante grúas móviles telescópicas y camiones de transporte especial de carga sobredimensionada para su posterior traslado y montaje final en Coyhaique.
 
 ## Especificaciones técnicas
 
-| Parámetro | Valor |
-|---|---|
-| Cantidad | 3 estanques |
-| Capacidad nominal | 30.000 Galones (aprox. 113.500 Litros) |
-| Diámetro exterior | Ø 2.975 mm |
-| Longitud cuerpo | 14.400 mm |
-| Longitud total | 17.550 mm |
-| Espesor cuerpo | 20 mm |
-| Espesor cabezales | 10 mm |
-| Peso por unidad | 25,1 Ton |
-| Fluido de servicio | Gas Licuado de Petróleo (GLP) |
-| Presión de prueba | 22,4 bar |
-| Acero cuerpo/fondos | ASTM A516 |
-| Acero sillas | ASTM A36 |
-| Proceso de soldadura | SAW / SMAW / GMAW |
-| Código de diseño | ASME Sec. VIII Div. 1 |
-| Ensayos NDT | Radiografía 100% / Phased Array |
-| Pintura | Epóxico + Poliuretano (4 mils) |
-| Certificación | SEC |
+| Parámetro               | Valor                                  |
+| ----------------------- | -------------------------------------- |
+| Capacidad nominal       | 30.000 Galones (aprox. 113.500 Litros) |
+| Fluido de servicio      | Gas Licuado de Petróleo (GLP)          |
+| Proceso de soldadura    | Arco Sumergido (SAW) / SMAW            |
+| Código de diseño        | ASME Sec. VIII Div. 1                  |
+| Ensayos no destructivos | Radiografía 100% / Prueba Hidrostática |
+| Ubicación final         | Coyhaique, Chile                       |
 
 ## Cliente
 

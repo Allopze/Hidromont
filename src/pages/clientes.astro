@@ -18,9 +18,9 @@ const lista = clientesEntry?.data?.items ? [...clientesEntry.data.items] : [];
 lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
 
 // Unique logos for the hero marquee
-const heroLogos = [...new Set(
-  lista.map((c) => getClienteLogoByNombre(c.nombre, c.logo || '')).filter(Boolean)
-)];
+const heroLogos = [
+  ...new Set(lista.map((c) => getClienteLogoByNombre(c.nombre, c.logo || '')).filter(Boolean)),
+];
 
 // Alt text of each logo (client name)
 const logoAlts: Record<string, string> = {};
@@ -36,7 +36,11 @@ for (const c of lista) {
 >
   <ClientesHero
     title={getCmsText('clientes.hero', 'title', 'Clientes')}
-    subtitle={getCmsText('clientes.hero', 'subtitle', 'Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos.')}
+    subtitle={getCmsText(
+      'clientes.hero',
+      'subtitle',
+      'Empresas eléctricas, constructoras, mineras, sanitarias e industriales que han confiado en Hidromont para sus proyectos hidráulicos e hidroeléctricos.'
+    )}
     breadcrumbs={[{ label: 'Clientes' }]}
     cmsEntry="clientes.hero"
     logos={heroLogos}
@@ -51,42 +55,59 @@ for (const c of lista) {
             {getCmsText('clientes.sectores', 'eyebrow', 'Han confiado en nosotros')}
           </EditableText>
         </Eyebrow>
-        {/*
+        {
+          /*
           IMPORTANTE: NO VOLVER A INCLUIR LA FRASE "Empresas que confían en nosotros" O SIMILARES.
           ESTA SECCIÓN DEBE QUEDAR SIN TÍTULO H2 ADICIONAL POR SOLICITUD EXPRESA DEL USUARIO.
-        */}
+        */
+        }
       </div>
 
       <div class="clientes-grid">
-        {lista.map((c) => {
-          const logoSrc = getClienteLogoByNombre(c.nombre, c.logo || '');
-          const logoKey = c.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-          return (
-            <div class="clientes-item" title={c.nombre}>
-              {logoSrc ? (
-                <EditableImage
-                  entry="clientes.logos"
-                  field={`logo-${logoKey}`}
-                  src={logoSrc}
-                  alt={c.nombre}
-                  height={56}
-                  class="clientes-logo-img"
-                  loading="lazy"
-                />
-              ) : (
-                <span class="clientes-fallback-text">{c.nombre}</span>
-              )}
-            </div>
-          );
-        })}
+        {
+          lista.map((c) => {
+            const logoSrc = getClienteLogoByNombre(c.nombre, c.logo || '');
+            const logoKey = c.nombre
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '');
+            return (
+              <div class="clientes-item" title={c.nombre}>
+                {logoSrc ? (
+                  <EditableImage
+                    entry="clientes.logos"
+                    field={`logo-${logoKey}`}
+                    src={logoSrc}
+                    alt={c.nombre}
+                    height={56}
+                    class="clientes-logo-img"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="clientes-fallback-text">{c.nombre}</span>
+                )}
+              </div>
+            );
+          })
+        }
       </div>
     </Container>
   </Section>
 
   <CTASection
     cmsEntry="clientes.cta"
-    title={getCmsText('clientes.cta', 'title', 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica')}
-    subtitle={getCmsText('clientes.cta', 'subtitle', 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.')}
+    title={getCmsText(
+      'clientes.cta',
+      'title',
+      'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica'
+    )}
+    subtitle={getCmsText(
+      'clientes.cta',
+      'subtitle',
+      'Revise nuestros servicios y casos de referencia para proyectos hidráulicos e hidroeléctricos.'
+    )}
     primary={{ label: getCmsText('clientes.cta', 'buttonLabel', 'Contacto'), href: '/contacto' }}
   />
 </PageLayout>
@@ -136,14 +157,10 @@ for (const c of lista) {
     max-width: 100%;
     max-height: 56px; /* Constraints logo height within the flex item safely */
     object-fit: contain;
-    filter: grayscale(100%) opacity(0.6);
-    transition: 
-      filter var(--motion-base) var(--ease-standard),
-      transform var(--motion-base) var(--ease-standard);
+    transition: transform var(--motion-base) var(--ease-standard);
   }
 
   .clientes-item:hover :global(img) {
-    filter: grayscale(0%) opacity(1);
     transform: scale(1.05);
   }
 

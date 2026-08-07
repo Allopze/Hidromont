@@ -1,13 +1,16 @@
 ---
-nombre: "Embalse Chironta"
-cliente: "Consorcio Dragados - Besalco / M.O.P. / D.O.H."
-alcance: "Ingeniería, suministro y montaje de equipamiento hidromecánico completo: tubería DN 1600 de 360 m, válvulas Bureau, mariposa y Howell-Bunger. Fabricación de válvulas de repuesto para el MOP."
-categoria: "compuertas"
-tipo: "destacado"
-ubicacion: "Chile"
-diametro: "DN 1600 / DN 1400 / DN 800"
-longitud: "360 m"
+alcance: >-
+  Ingeniería, suministro y montaje de equipamiento hidromecánico completo:
+  tubería DN 1600 de 360 m, válvulas Bureau, mariposa y Howell-Bunger.
+  Fabricación de válvulas de repuesto para el MOP.
+categoria: compuertas
+cliente: Consorcio Dragados - Besalco / M.O.P. / D.O.H.
+diametro: DN 1600 / DN 1400 / DN 800
+longitud: 360 m
+nombre: Embalse Chironta
 orden: 2
+tipo: destacado
+ubicacion: Chile
 ---
 
 El proyecto Embalse Chironta contempló el suministro e instalación completa del equipamiento hidromecánico para el embalse, incluyendo tuberías, válvulas de control y equipos de repuesto para la operación futura.

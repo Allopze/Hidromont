@@ -4,6 +4,49 @@ import type { GalleryRepository } from '../repositories/GalleryRepository';
 export class GalleryService {
   constructor(private readonly galleryRepository: GalleryRepository) {}
 
+  // ── Albums (GAL-19) ─────────────────────────────────────────
+  //
+  // A diferencia de las categorías, la clave es el slug y no se puede cambiar:
+  // renombrar el slug dejaría huérfanas las fotos que lo referencian en
+  // project_slug. Cambiar el nombre visible sí, que es justo para lo que existe
+  // la tabla — antes vivía en un mapa hardcodeado en src/data/gallery.ts.
+
+  listAlbums() {
+    return this.galleryRepository.listAlbums();
+  }
+
+  createAlbum(input: { name: string; slug?: string }) {
+    const slug = input.slug ?? this.slugify(input.name);
+    if (!slug) throw new Error('El nombre del álbum no produce un slug válido');
+    if (this.galleryRepository.getAlbum(slug)) {
+      throw new Error(`Ya existe un álbum con el slug "${slug}"`);
+    }
+
+    const position = this.galleryRepository
+      .listAlbums()
+      .reduce((max, album) => Math.max(max, album.position), -1);
+
+    return this.galleryRepository.createAlbum({
+      slug,
+      name: input.name,
+      position: position + 1,
+      now: new Date().toISOString(),
+    });
+  }
+
+  updateAlbum(slug: string, input: { name?: string; position?: number }) {
+    this.galleryRepository.updateAlbum(slug, { ...input, now: new Date().toISOString() });
+    return this.galleryRepository.getAlbum(slug);
+  }
+
+  deleteAlbum(slug: string) {
+    this.galleryRepository.deleteAlbum(slug);
+  }
+
+  reorderAlbums(slugs: string[]) {
+    this.galleryRepository.reorderAlbums(slugs, new Date().toISOString());
+  }
+
   // ── Categories ──────────────────────────────────────────────
 
   listCategories() {
@@ -62,9 +105,7 @@ export class GalleryService {
     mediaId: string;
     categoryId?: string | null;
     projectSlug?: string | null;
-    title: string;
     alt: string;
-    caption?: string | null;
     featured?: boolean;
     status?: 'published' | 'draft';
   }) {
@@ -79,9 +120,12 @@ export class GalleryService {
       mediaId: input.mediaId,
       categoryId: input.categoryId ?? null,
       projectSlug: input.projectSlug ?? null,
-      title: input.title,
+      // La galería ya no rotula las fotos, pero `title` sigue siendo NOT NULL en
+      // la tabla. En vez de una migración destructiva sobre la base del
+      // operador, se rellena con el alt y deja de exportarse.
+      title: input.alt,
       alt: input.alt,
-      caption: input.caption ?? null,
+      caption: null,
       position: this.galleryRepository.maxItemPosition() + 1,
       featured: input.featured ?? false,
       status: input.status ?? 'published',
@@ -96,9 +140,7 @@ export class GalleryService {
       mediaId?: string;
       categoryId?: string | null;
       projectSlug?: string | null;
-      title?: string;
       alt?: string;
-      caption?: string | null;
       featured?: boolean;
       status?: 'published' | 'draft';
     }
@@ -107,7 +149,11 @@ export class GalleryService {
       const cat = this.galleryRepository.getCategory(input.categoryId);
       if (!cat) throw new Error(`Categoría ${input.categoryId} no encontrada`);
     }
-    return this.galleryRepository.updateItem(id, input);
+    // `title` acompaña al alt para que la columna legada no quede desfasada.
+    return this.galleryRepository.updateItem(id, {
+      ...input,
+      ...(input.alt !== undefined ? { title: input.alt } : {}),
+    });
   }
 
   deleteItem(id: string) {

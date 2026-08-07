@@ -19,16 +19,37 @@ function getRevealDelay(idx: number): string {
   const delay = Math.min(idx, 7) * 0.06;
   return `${delay}s`;
 }
+
+// GAL-15: rótulo de categoría visible. Cuando el álbum abarca varias, se
+// muestra la de la portada y se indica cuántas más, en vez de apilar rótulos
+// que competirían con el nombre del proyecto.
+const primaryCategory = album.categoryNames[0] ?? album.categoryName;
+const extraCategories = Math.max(0, album.categoryNames.length - 1);
+
+// GAL-14: la búsqueda miraba solo el nombre del álbum, así que "compuerta" no
+// encontraba C.H. San Pedro pese a sus 12 fotos de compuertas. Este índice
+// añade las categorías y el alt de cada foto — el alt es lo único que describe
+// la pieza ahora que las fotos no llevan título ni descripción.
+const searchIndex = [
+  album.projectName,
+  ...album.categoryNames,
+  ...album.items.map((item) => item.alt),
+]
+  .join(' ')
+  .toLowerCase();
 ---
 
 <button
   type="button"
   class="project-album-card group relative overflow-hidden border border-border/20 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 min-h-0 w-full text-left bg-background-alt"
   data-category={album.categorySlug ?? 'otros'}
+  data-categories={(album.categorySlugs.length ? album.categorySlugs : ['otros']).join(' ')}
   data-project-slug={album.projectSlug}
   data-project-name={album.projectName}
-  aria-label={`Álbum ${album.projectName} — ${album.itemCount} fotos`}
+  data-search={searchIndex}
+  aria-label={`Álbum ${album.projectName} — ${album.itemCount} ${album.itemCount === 1 ? 'foto' : 'fotos'}`}
   style={`--reveal-delay:${getRevealDelay(index)}`}
+  data-reveal
 >
   {/* Image container with LQIP */}
   <div class="w-full h-[260px] md:h-[300px] overflow-hidden relative">
@@ -91,26 +112,31 @@ function getRevealDelay(idx: number): string {
     <div
       class="relative z-10 p-4 md:p-5 text-white transition-transform duration-300 ease-out group-hover:-translate-y-1"
     >
-      {
-        album.categoryName && (
-          <span class="inline-block text-[10px] md:text-[11px] text-accent font-bold uppercase tracking-wider font-mono mb-1.5 bg-accent/10 border border-accent/20 px-2 py-0.5">
-            {album.categoryName}
-          </span>
-        )
-      }
       <h3
         class="text-white text-base md:text-lg font-bold font-heading uppercase leading-tight tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
       >
         {album.projectName}
       </h3>
 
-      {/* Action Prompt */}
+      {
+        /* GAL-15: categoría del álbum — sin esto, al filtrar el usuario no
+           entiende por qué desaparecen tarjetas. */
+      }
+      {
+        primaryCategory && (
+          <p class="mt-1.5 text-[10px] md:text-xs font-mono uppercase tracking-wider text-accent [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
+            {primaryCategory}
+            {extraCategories > 0 && <span class="text-white/60"> +{extraCategories}</span>}
+          </p>
+        )
+      }
+
+      {/* Action Prompt — el conteo de fotos ya lo lleva la píldora superior. */}
       <div
-        class="flex justify-between items-center mt-3 pt-2.5 border-t border-white/15 text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider"
+        class="flex justify-end items-center mt-3 pt-2.5 border-t border-white/15 text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider"
       >
-        <span>Ver álbum ({album.itemCount})</span>
         <span class="text-accent group-hover:translate-x-1 transition-transform duration-200">
-          Explorar →
+          Ver álbum →
         </span>
       </div>
     </div>

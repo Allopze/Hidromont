@@ -1,15 +1,17 @@
 ---
-nombre: "C.H. Los Condores"
-cliente: "Ferrovial S.A."
-alcance: "Diseño, fabricación y montaje de tubería forzada DN 2200, bifurcación y ramales DN 2200-1600, blindaje vertical de 500 m en pique subterráneo, acceso vehicular y pieza de conexión. Tubería de aducción DN 3200 de 1.100 m y blindaje DN 3400."
-categoria: "tuberias"
-tipo: "destacado"
-ubicacion: "Chile"
-diametro: "DN 2200 / DN 3200 / DN 3400"
-longitud: "1.600 m tubería forzada + 1.100 m aducción + 500 m vertical"
-acero: "S460ML"
-peso: "[Por definir]"
+alcance: >-
+  Ingeniería, fabricación y montaje de tubería forzada DN 2200, bifurcación y
+  ramales DN 2200-1600, blindaje vertical de 500 m en pique subterráneo, acceso
+  vehicular y pieza de conexión. Tubería de aducción DN 3200 de 1.100 m y
+  blindaje DN 3400.
+categoria: tuberias
+cliente: Ferrovial S.A.
+diametro: DN 2200 / DN 3200 / DN 3400
+longitud: 1.600 m tubería forzada + 1.100 m aducción + 500 m vertical
+nombre: C.H. Los Condores
 orden: 1
+tipo: destacado
+ubicacion: Chile
 ---
 
 El proyecto C.H. Los Condores es uno de los más complejos y de mayor envergadura ejecutados por Hidromont Chile. El trabajo incluyó múltiples contratos con Ferrovial S.A. Para la central hidroeléctrica ubicada en la región de Talca.
@@ -26,17 +28,16 @@ El proyecto C.H. Los Condores es uno de los más complejos y de mayor envergadur
 
 ## Datos técnicos
 
-| Parámetro | Valor |
-|---|---|
-| Diámetro tubería forzada | DN 2.200 mm |
-| Longitud tubería forzada | 1.600 m |
+| Parámetro                  | Valor       |
+| -------------------------- | ----------- |
+| Diámetro tubería forzada   | DN 2.200 mm |
+| Longitud tubería forzada   | 1.600 m     |
 | Diámetro blindaje vertical | DN 2.200 mm |
-| Longitud blindaje vertical | 500 m |
-| Presión diseño máxima | 89 kg/cm² |
-| Acero | S460ML |
-| Peso | [Por definir] |
-| Caudal nominal | 25 m³/s |
-| Espesores | 38 mm |
+| Longitud blindaje vertical | 500 m       |
+| Presión diseño máxima      | 89 kg/cm²   |
+| Material                   | S460ML      |
+| Caudal nominal             | 25 m³/s     |
+| Espesores máximos          | 38 mm       |
 
 ## Cliente
 

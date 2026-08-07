@@ -1,14 +1,17 @@
 ---
-nombre: "C.H. Besaya"
-cliente: "HC Energía"
-alcance: "Ingeniería, suministro y montaje de tramo superior de tubería forzada. Transporte mediante teleférico, junta de dilatación, unión de tramo nuevo con tubería antigua mediante cono, apoyo de hormigón y punto fijo."
-categoria: "tuberias"
-tipo: "destacado"
-ubicacion: "España"
+alcance: >-
+  Ingeniería, suministro y montaje de tramo superior de tubería forzada.
+  Transporte mediante teleférico, junta de dilatación, unión de tramo nuevo con
+  tubería antigua mediante cono, apoyo de hormigón y punto fijo.
+categoria: tuberias
+cliente: HC Energía
+nombre: C.H. Besaya
 orden: 5
+tipo: destacado
+ubicacion: España
 ---
 
-C.H. Besaya fue un proyecto de renovación y montaje en España que requirió el uso de teleférico para el transporte de la tubería hacia el emplazamiento de montaje, una condición especial que exigió planificación y logística precisas.
+C.H. Besaya fue un proyecto de rehabilitación en España que requirió el uso de teleférico para el transporte de la tubería hacia el emplazamiento de montaje, una condición especial que exigió planificación y logística precisas.
 
 ## Alcance del proyecto
 

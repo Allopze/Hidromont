@@ -14,6 +14,7 @@ import ProjectAlbumCard from '../../components/gallery/ProjectAlbumCard.astro';
 import Lightbox from '../../components/gallery/Lightbox.astro';
 import { getCmsText } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
+import { entrySlug } from '../../utils/contentId';
 import {
   getGalleryCategories,
   getGalleryItems,
@@ -25,7 +26,14 @@ const categories = getGalleryCategories();
 const allItems = getGalleryItems();
 const albums = getProjectAlbums();
 const categoryCounts = getCategoryCounts();
-const totalCount = allItems.length;
+
+// GAL-25: el payload que consume el Lightbox se embebe en el HTML de todos los
+// visitantes, abran o no un álbum. `lqip` (un data URI base64 por foto, 17 KB
+// en total) solo lo usa la tarjeta como placeholder de carga; el visor tiene su
+// propio esqueleto y nunca lo lee. Lo mismo con focalX/focalY, que solo afectan
+// al recorte de la portada. Se recortan aquí en vez de en el export para no
+// perderlos en gallery.json, donde sí hacen falta.
+const lightboxItems = allItems.map(({ lqip: _lqip, focalX: _fx, focalY: _fy, ...rest }) => rest);
 
 // ESTRUCT-2 fix: only project detail pages for `tipo: destacado` entries are
 // actually built (see proyectos/[slug].astro's getStaticPaths). Gallery items
@@ -34,11 +42,11 @@ const totalCount = allItems.length;
 // This set lets the client hide that CTA unless the slug is provably buildable.
 const buildableProjectSlugs = (
   await getCollection('proyectos', ({ data }) => data.tipo === 'destacado')
-).map((p) => p.id);
+).map((p) => entrySlug(p.id));
 
 // Filter list by category
 const filters = [
-  { slug: 'all', name: 'Todas las Categorías', count: totalCount },
+  { slug: 'all', name: 'Todas las Categorías', count: albums.length },
   ...categories
     .map((cat) => ({
       slug: cat.slug,
@@ -77,7 +85,11 @@ const filters = [
         <Container>
           <div class="text-center py-20" data-reveal>
             <p class="text-text-muted text-lg">
-              Próximamente se añadirán proyectos a esta galería.
+              {getCmsText(
+                'page.galeria',
+                'emptyState',
+                'Próximamente se añadirán proyectos a esta galería.'
+              )}
             </p>
           </div>
         </Container>
@@ -87,62 +99,107 @@ const filters = [
                album card's h3 — no h2 in between. Visually hidden since the
                PageHero title already covers this visually. */}
           <h2 class="sr-only">Proyectos</h2>
-          {/* ── Search & Filter Controls Bar ── */}
-          <div class="mb-8 md:mb-10 space-y-4" data-reveal>
-            {/* Search input */}
-            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-              {/* Real-time Search Field */}
-              <div class="relative w-full sm:w-72 md:w-80">
-                <input
-                  type="text"
-                  id="gallery-search"
-                  placeholder="Buscar proyecto..."
-                  aria-label="Buscar proyecto en galería"
-                  class="w-full bg-background-alt text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 border border-border focus:border-accent focus:outline-none transition-colors font-mono"
+          {/* ── Search & Filter Toolbar — one bordered container so both
+               controls read as a single filtering system instead of two
+               stacked, unrelated bars. ── */}
+          <div
+            class="relative z-40 mb-8 md:mb-10 flex flex-col md:inline-flex md:flex-row md:items-stretch border border-border bg-background-alt"
+            data-reveal
+          >
+            {/* Real-time Search Field */}
+            <div class="relative shrink-0 border-b md:border-b-0 md:border-r border-border md:w-64 lg:w-72">
+              <input
+                type="text"
+                id="gallery-search"
+                placeholder={getCmsText('page.galeria', 'searchPlaceholder', 'Buscar proyecto...')}
+                aria-label="Buscar proyecto en galería"
+                class="w-full bg-transparent text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 pr-9 focus:outline-none focus:bg-background transition-colors font-mono"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                 />
+              </svg>
+              {/* GAL-27: limpiar la búsqueda sin tener que borrar a mano. */}
+              <button
+                type="button"
+                id="gallery-search-clear"
+                aria-label="Limpiar búsqueda"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke-width="2"
                   stroke="currentColor"
-                  class="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  class="w-4 h-4"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </div>
+              </button>
             </div>
 
-            {/* Category Filter Pills — full width responsive bar */}
-            <nav
-              aria-label="Filtrar por categoría de servicio"
-              class="w-full border border-border overflow-x-auto scrollbar-hide bg-background-alt"
-              id="filter-container"
-            >
-              <div class="flex min-w-max" role="radiogroup">
+            {/* Category Filter — custom dropdown (no native <select>). Fixed
+                 width (matches the search field's scale) instead of flex-1,
+                 so the closed trigger is exactly as wide as the open menu. */}
+            <div class="relative w-full md:w-64 lg:w-72" id="filter-dropdown">
+              <button
+                type="button"
+                id="filter-trigger"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="filter-menu"
+                class="w-full h-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-text hover:bg-background transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+              >
+                <span id="filter-trigger-label" class="truncate">
+                  Todas las Categorías
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="filter-trigger-chevron w-4 h-4 text-text-muted shrink-0 transition-transform duration-150"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div
+                role="listbox"
+                aria-label="Filtrar por categoría de servicio"
+                id="filter-menu"
+                class="hidden absolute z-20 top-full left-0 right-0 mt-1 max-h-72 overflow-y-auto bg-background border border-border shadow-lg"
+              >
                 {filters.map((filter) => (
                   <button
                     type="button"
-                    role="radio"
-                    aria-checked={filter.slug === 'all' ? 'true' : 'false'}
-                    tabindex={filter.slug === 'all' ? 0 : -1}
+                    role="option"
+                    aria-selected={filter.slug === 'all' ? 'true' : 'false'}
                     data-filter={filter.slug}
-                    class={`gallery-filter-btn relative px-3.5 py-2.5 text-xs font-mono font-semibold uppercase tracking-wider transition-all duration-150 ease-out cursor-pointer border-r border-border last:border-r-0 whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset text-center ${
+                    class={`gallery-filter-option w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-left cursor-pointer border-b border-border last:border-b-0 transition-colors ${
                       filter.slug === 'all'
                         ? 'bg-primary text-white'
-                        : 'bg-background-alt text-text-muted hover:bg-background hover:text-text'
+                        : 'text-text-muted hover:bg-background-alt hover:text-text'
                     }`}
                   >
-                    {filter.name}
-                    <span class="ml-1 opacity-60">({filter.count})</span>
+                    <span>{filter.name}</span>
+                    <span class="opacity-60">({filter.count})</span>
                   </button>
                 ))}
               </div>
-            </nav>
+            </div>
           </div>
 
           {/* ── Project Albums Grid ── */}
@@ -162,7 +219,11 @@ const filters = [
           {/* Empty state message when search yields no results */}
           <div id="no-results" class="hidden text-center py-16" role="status">
             <p class="text-text-muted text-base font-mono">
-              No se encontraron proyectos coincidentes con tu búsqueda.
+              {getCmsText(
+                'page.galeria',
+                'noResults',
+                'No se encontraron proyectos coincidentes con tu búsqueda.'
+              )}
             </p>
           </div>
 
@@ -171,7 +232,7 @@ const filters = [
             id="lightbox-data"
             type="application/json"
             is:inline
-            set:html={safeJsonForScript(allItems)}
+            set:html={safeJsonForScript(lightboxItems)}
           />
           {/* ESTRUCT-2 fix: slugs the Lightbox may safely link "Ver Proyecto" to. */}
           <script
@@ -196,8 +257,12 @@ const filters = [
 <script>
   (() => {
     const searchInput = document.getElementById('gallery-search') as HTMLInputElement | null;
-    const container = document.getElementById('filter-container');
-    const buttons = container?.querySelectorAll('[data-filter]');
+    const clearBtn = document.getElementById('gallery-search-clear');
+    const dropdown = document.getElementById('filter-dropdown');
+    const trigger = document.getElementById('filter-trigger') as HTMLButtonElement | null;
+    const triggerLabel = document.getElementById('filter-trigger-label');
+    const menu = document.getElementById('filter-menu');
+    const buttons = menu?.querySelectorAll('[data-filter]');
     const albumCards = document.querySelectorAll('.project-album-card');
     const noResults = document.getElementById('no-results');
     const resultsCount = document.getElementById('results-count');
@@ -223,11 +288,20 @@ const filters = [
 
       albumCards.forEach((card) => {
         const el = card as HTMLElement;
-        const cat = el.getAttribute('data-category') ?? '';
-        const name = normalizeForSearch((el.getAttribute('data-project-name') ?? '').toLowerCase());
+        // GAL-13: el álbum pertenece a TODAS las categorías de sus fotos, no
+        // solo a la de la portada.
+        const cats = (el.getAttribute('data-categories') ?? '').split(' ').filter(Boolean);
+        // GAL-14: nombre del álbum + categorías + títulos y descripciones.
+        const haystack = normalizeForSearch(
+          (
+            el.getAttribute('data-search') ??
+            el.getAttribute('data-project-name') ??
+            ''
+          ).toLowerCase()
+        );
 
-        const matchesCat = activeCategory === 'all' || cat === activeCategory;
-        const matchesSearch = !searchQuery || name.includes(searchQuery);
+        const matchesCat = activeCategory === 'all' || cats.includes(activeCategory);
+        const matchesSearch = !searchQuery || haystack.includes(searchQuery);
 
         const show = matchesCat && matchesSearch;
 
@@ -272,25 +346,28 @@ const filters = [
       }
     }
 
-    // JS-L4 fix: shared by clicks and the initial hash deep-link, and now also
-    // sets roving tabindex (only the checked radio should be a tab stop) —
-    // previously every pill kept tabindex=0, so Tab stepped through all of
-    // them instead of just the selected one.
+    // Shared by option clicks and the initial hash deep-link. Updates the
+    // trigger label (so the closed dropdown shows the active category),
+    // the option list's aria-selected/highlight state, the URL hash, and
+    // re-runs the card filter.
     function activateFilter(slug: string, updateHash: boolean): void {
       activeCategory = slug;
 
+      let activeLabel = '';
       btnArray.forEach((b) => {
         const isActive = b.getAttribute('data-filter') === slug;
-        b.setAttribute('aria-checked', String(isActive));
-        b.tabIndex = isActive ? 0 : -1;
+        b.setAttribute('aria-selected', String(isActive));
         if (isActive) {
+          activeLabel = b.querySelector('span')?.textContent || '';
           b.classList.add('bg-primary', 'text-white');
-          b.classList.remove('bg-background-alt', 'text-text-muted');
+          b.classList.remove('text-text-muted');
         } else {
           b.classList.remove('bg-primary', 'text-white');
-          b.classList.add('bg-background-alt', 'text-text-muted');
+          b.classList.add('text-text-muted');
         }
       });
+
+      if (triggerLabel && activeLabel) triggerLabel.textContent = activeLabel;
 
       if (updateHash) {
         const url = new URL(location.href);
@@ -304,10 +381,43 @@ const filters = [
       updateFilter();
     }
 
-    // Category button clicks
+    // ── Custom dropdown open/close ──
+    function openMenu() {
+      if (!menu || !trigger) return;
+      menu.classList.remove('hidden');
+      trigger.setAttribute('aria-expanded', 'true');
+      trigger.classList.add('filter-trigger-open');
+      const current = menu.querySelector(`[data-filter="${activeCategory}"]`) as HTMLElement | null;
+      (current || btnArray[0])?.focus();
+    }
+
+    function closeMenu(refocusTrigger: boolean) {
+      if (!menu || !trigger) return;
+      menu.classList.add('hidden');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.classList.remove('filter-trigger-open');
+      if (refocusTrigger) trigger.focus();
+    }
+
+    function isMenuOpen(): boolean {
+      return !menu?.classList.contains('hidden');
+    }
+
+    trigger?.addEventListener('click', () => {
+      if (isMenuOpen()) closeMenu(false);
+      else openMenu();
+    });
+
+    // Click outside closes the menu.
+    document.addEventListener('click', (e) => {
+      if (isMenuOpen() && dropdown && !dropdown.contains(e.target as Node)) closeMenu(false);
+    });
+
+    // Category option clicks
     btnArray.forEach((btn) => {
       btn.addEventListener('click', () => {
         activateFilter(btn.getAttribute('data-filter') || 'all', true);
+        closeMenu(true);
       });
     });
 
@@ -328,28 +438,64 @@ const filters = [
     });
 
     // Real-time search input event
-    searchInput?.addEventListener('input', (e) => {
-      searchQuery = normalizeForSearch((e.target as HTMLInputElement).value.trim().toLowerCase());
+    function applySearch(rawValue: string) {
+      searchQuery = normalizeForSearch(rawValue.trim().toLowerCase());
+      clearBtn?.classList.toggle('hidden', rawValue.length === 0);
       updateFilter();
+    }
+
+    searchInput?.addEventListener('input', (e) => {
+      applySearch((e.target as HTMLInputElement).value);
     });
 
-    // ARIA Radio group arrow navigation
-    container?.addEventListener('keydown', (e: KeyboardEvent) => {
+    // GAL-27: limpiar la búsqueda y devolver el foco al campo, para que se
+    // pueda seguir escribiendo sin volver a apuntar con el ratón.
+    clearBtn?.addEventListener('click', () => {
+      if (!searchInput) return;
+      searchInput.value = '';
+      applySearch('');
+      searchInput.focus();
+    });
+
+    searchInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && searchInput.value) {
+        e.preventDefault();
+        searchInput.value = '';
+        applySearch('');
+      }
+    });
+
+    // Keyboard: Escape closes and returns focus to the trigger; arrow keys
+    // move focus between options while the menu is open.
+    menu?.addEventListener('keydown', (e: KeyboardEvent) => {
       const current = document.activeElement as HTMLElement;
       const idx = btnArray.indexOf(current);
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu(true);
+        return;
+      }
+
       if (idx === -1) return;
 
       let next = -1;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         next = (idx + 1) % btnArray.length;
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      } else if (e.key === 'ArrowUp') {
         next = (idx - 1 + btnArray.length) % btnArray.length;
       }
 
       if (next !== -1) {
         e.preventDefault();
         btnArray[next].focus();
-        btnArray[next].click();
+      }
+    });
+
+    trigger?.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' && !isMenuOpen()) {
+        e.preventDefault();
+        openMenu();
       }
     });
   })();
@@ -360,5 +506,34 @@ const filters = [
     transition:
       opacity 200ms ease-out,
       transform 200ms ease-out;
+  }
+
+  /* Custom category dropdown: chevron flips when the menu is open, and the
+     option list gets a visible thin scrollbar since it can hold many
+     categories (max-h-72 + overflow-y-auto on #filter-menu). */
+  .filter-trigger-open .filter-trigger-chevron {
+    transform: rotate(180deg);
+  }
+
+  #filter-menu {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  #filter-menu::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #filter-menu::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #filter-menu::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 3px;
+  }
+
+  #filter-menu::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text-muted);
   }
 </style>

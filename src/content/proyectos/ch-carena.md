@@ -1,8 +1,8 @@
 ---
-nombre: "C.H. Carena"
-cliente: "Colbún S.A."
-alcance: "Equipamiento hidromecánico completo, bocatoma Río Mapocho."
-categoria: "compuertas"
-tipo: "banco"
+alcance: 'Equipamiento hidromecánico completo, bocatoma Río Mapocho.'
+categoria: compuertas
+cliente: Colbún S.A.
+nombre: C.H. Carena
 orden: 32
+tipo: banco
 ---

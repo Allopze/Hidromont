@@ -1,8 +1,8 @@
 ---
-nombre: "C.H. Las Vertientes"
-cliente: "Eléctrica Puntilla S.A."
-alcance: "Montaje electromecánico completo."
-categoria: "electromecanicos"
-tipo: "banco"
+alcance: Montaje electromecánico completo.
+categoria: electromecanicos
+cliente: Eléctrica Puntilla S.A.
+nombre: C.H. Las Vertientes
 orden: 40
+tipo: banco
 ---

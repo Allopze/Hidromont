@@ -1,8 +1,8 @@
 ---
-nombre: "C.H. El Llano"
-cliente: "Eléctrica Puntilla S.A."
-alcance: "Montaje electromecánico completo."
-categoria: "electromecanicos"
-tipo: "banco"
+alcance: Montaje electromecánico completo.
+categoria: electromecanicos
+cliente: Eléctrica Puntilla S.A.
+nombre: C.H. El Llano
 orden: 41
+tipo: banco
 ---

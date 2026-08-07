@@ -9,11 +9,13 @@ import { getCollection, render } from 'astro:content';
 import { serviceImages } from '../../data/service-images';
 import { serviceGalleries } from '../../data/service-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
+import { entrySlug } from '../../utils/contentId';
+import limpiarrejasVideo from '../../assets/limpiarrejas-hero.mp4';
 
 export async function getStaticPaths() {
   const servicios = await getCollection('servicios');
   return servicios.map((s) => ({
-    params: { slug: s.id },
+    params: { slug: entrySlug(s.id) },
     props: { servicio: s },
   }));
 }
@@ -21,12 +23,13 @@ export async function getStaticPaths() {
 const { servicio } = Astro.props;
 const { titulo, resumen, tipos, aplicaciones, normas } = servicio.data;
 const { Content } = await render(servicio);
-const slug = servicio.id;
+const slug = entrySlug(servicio.id);
 const serviceImageEntry = `service-image.${slug}`;
 const heroImg = serviceImages[slug];
 const gallery = serviceGalleries[slug];
 const galleryEntryId = `service-gallery.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const isLimpiarrejas = slug === 'limpiarrejas';
 
 const jsonLd = [
   {
@@ -68,6 +71,10 @@ const jsonLd = [
     imageAlt={heroImg?.alt}
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
+    videoSrc={isLimpiarrejas ? limpiarrejasVideo : undefined}
+    videoAlt={isLimpiarrejas
+      ? 'Limpiarrejas Hidromont en operación en una obra hidroeléctrica'
+      : undefined}
     breadcrumbs={[{ label: 'Servicios', href: '/servicios' }, { label: titulo }]}
     cmsEntry={`servicios.${slug}`}
     cmsEyebrowField={false}
@@ -149,7 +156,8 @@ const jsonLd = [
           <div class="p-5 bg-primary rounded-none text-white">
             <p class="font-semibold text-sm mb-3">¿Trabaja en proyectos de este tipo?</p>
             <p class="text-white/80 text-xs mb-4 leading-relaxed">
-              Converse con nuestro equipo técnico sobre las capacidades y experiencia de Hidromont.
+              Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
+              montaje.
             </p>
             <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
               Contactar
@@ -161,7 +169,7 @@ const jsonLd = [
   </Section>
 
   {
-    (gallery?.images.length > 0 || cmsEditingEnabled) && (
+    !isLimpiarrejas && (gallery?.images.length > 0 || cmsEditingEnabled) && (
       <Section variant="default">
         <Container>
           <h2

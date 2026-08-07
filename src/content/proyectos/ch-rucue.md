@@ -1,8 +1,8 @@
 ---
-nombre: "C.H. Rucue"
-cliente: "Colbún S.A."
-alcance: "2 ataguías de aislamiento."
-categoria: "compuertas"
-tipo: "banco"
+alcance: 2 ataguías de aislamiento.
+categoria: compuertas
+cliente: Colbún S.A.
+nombre: C.H. Rucue
 orden: 31
+tipo: banco
 ---

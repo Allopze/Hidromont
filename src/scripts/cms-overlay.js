@@ -1140,19 +1140,25 @@
     setPanelTitle('Galería');
     openPanel('<p class="hm-cms-muted">Cargando galería...</p>');
     try {
-      const [catsData, itemsData] = await Promise.all([
+      const [catsData, albumsData, itemsData] = await Promise.all([
         api('/api/cms/gallery/categories'),
+        api('/api/cms/gallery/albums'),
         api('/api/cms/gallery/items'),
       ]);
       const cats = catsData.items || [];
+      const albums = albumsData.items || [];
       const items = itemsData.items || [];
       openPanel(`
         <div style="display:grid;gap:12px">
           <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
             <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
               <strong style="display:block;font-size:24px;color:#0065A9">${cats.length}</strong>
               <span style="font-size:12px;color:#475569">Categorías</span>
+            </button>
+            <button type="button" data-action="gallery-albums" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:#0065A9">${albums.length}</strong>
+              <span style="font-size:12px;color:#475569">Álbumes</span>
             </button>
             <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
               <strong style="display:block;font-size:24px;color:#0065A9">${items.length}</strong>
@@ -1160,6 +1166,7 @@
             </button>
           </div>
           <button type="button" data-action="gallery-cats">Gestionar categorías</button>
+          <button type="button" data-action="gallery-albums">Gestionar álbumes</button>
           <button type="button" data-action="gallery-items">Gestionar imágenes</button>
         </div>
       `);
@@ -1255,6 +1262,98 @@
     }
   }
 
+  async function loadGalleryAlbums() {
+    if (!(await ensureSession())) return;
+    galleryView = 'albums';
+    setPanelTitle('Álbumes de galería');
+    openPanel('<p class="hm-cms-muted">Cargando álbumes...</p>');
+    try {
+      const data = await api('/api/cms/gallery/albums');
+      const albums = data.items || [];
+      openPanel(`
+        <div style="display:grid;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:13px;color:#64748b">${albums.length} álbumes</span>
+            <button type="button" data-action="gallery-new-album">+ Nuevo álbum</button>
+          </div>
+          <div style="display:grid;gap:6px">
+            ${albums
+              .map(
+                (album) => `
+              <div class="hm-cms-gallery-cat-btn" data-album-slug="${escapeHtml(album.slug)}">
+                <div>
+                  <span class="hm-cms-gallery-cat-name">${escapeHtml(album.name)}</span>
+                  <span class="hm-cms-gallery-cat-slug">${escapeHtml(album.slug)} · ${album.itemCount} foto${album.itemCount === 1 ? '' : 's'}</span>
+                </div>
+                <div style="display:flex;gap:4px">
+                  <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-album" data-album-slug="${escapeHtml(album.slug)}">Editar</button>
+                  <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}">×</button>
+                </div>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <p class="hm-cms-muted">El álbum agrupa las fotos de una obra y su nombre es el que ve el visitante. Las fotos se asignan desde "Gestionar imágenes".</p>
+          <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+        </div>
+      `);
+    } catch (error) {
+      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    }
+  }
+
+  async function showGalleryAlbumForm(albumSlug = null) {
+    if (!(await ensureSession())) return;
+    setPanelTitle(albumSlug ? 'Editar álbum' : 'Nuevo álbum');
+
+    let album = { name: '', slug: '', itemCount: 0 };
+    if (albumSlug) {
+      try {
+        const data = await api('/api/cms/gallery/albums');
+        album = (data.items || []).find((a) => a.slug === albumSlug) || album;
+      } catch {
+        /* use defaults */
+      }
+    }
+
+    openPanel(`
+      <form data-gallery-album-form data-album-slug="${albumSlug ? escapeHtml(albumSlug) : ''}">
+        <label>Nombre
+          <input name="name" value="${escapeHtml(album.name)}" required />
+        </label>
+        <label>Slug (URL del proyecto)
+          <input name="slug" value="${escapeHtml(album.slug)}" pattern="[a-z0-9-]+" placeholder="auto-generado" ${albumSlug ? 'readonly' : ''} />
+        </label>
+        <p class="hm-cms-muted">${
+          albumSlug
+            ? 'El slug no se puede cambiar: es lo que enlaza las fotos del álbum con /proyectos/&lt;slug&gt;. El nombre sí, y es el que ve el visitante.'
+            : 'El slug enlaza el álbum con la página del proyecto (/proyectos/&lt;slug&gt;). Solo letras minúsculas, números y guiones.'
+        }</p>
+        <div class="hm-cms-actions">
+          <button type="submit">${albumSlug ? 'Guardar cambios' : 'Crear álbum'}</button>
+          <button type="button" class="secondary" data-action="gallery-albums">Cancelar</button>
+        </div>
+        <p class="hm-cms-muted" data-status></p>
+      </form>
+    `);
+
+    // Auto-generate slug from name
+    const form = panelBody.querySelector('[data-gallery-album-form]');
+    const nameInput = form?.querySelector('[name="name"]');
+    const slugInput = form?.querySelector('[name="slug"]');
+    if (nameInput && slugInput && !albumSlug) {
+      nameInput.addEventListener('input', () => {
+        slugInput.value = nameInput.value
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+      });
+    }
+  }
+
   async function loadGalleryItemsList() {
     if (!(await ensureSession())) return;
     galleryView = 'items';
@@ -1296,16 +1395,18 @@
     let item = {
       mediaId: '',
       categoryId: null,
-      title: '',
       alt: '',
-      caption: '',
       featured: false,
       status: 'published',
     };
     let catsData = { items: [] };
+    let albumsData = { items: [] };
 
     try {
-      catsData = await api('/api/cms/gallery/categories');
+      [catsData, albumsData] = await Promise.all([
+        api('/api/cms/gallery/categories'),
+        api('/api/cms/gallery/albums'),
+      ]);
       if (itemId) {
         item = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`);
       }
@@ -1314,6 +1415,7 @@
     }
 
     const cats = catsData.items || [];
+    const albums = albumsData.items || [];
 
     openPanel(`
       <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
@@ -1329,20 +1431,21 @@
         <div data-gallery-media-grid class="hm-cms-media-grid" style="max-height:200px">
           <p class="hm-cms-muted">Cargando medios...</p>
         </div>
-        <label>Título
-          <input name="title" value="${escapeHtml(item.title)}" required />
-        </label>
         <label>Texto alternativo (accesibilidad)
           <input name="alt" value="${escapeHtml(item.alt)}" required />
         </label>
+        <p class="hm-cms-muted">La galería muestra las fotos agrupadas por álbum, sin título ni descripción. El texto alternativo no se ve en pantalla: es lo que leen los lectores de pantalla y lo que busca el filtro de la galería.</p>
         <label>Categoría
           <select name="categoryId">
             <option value="">Sin categoría</option>
             ${cats.map((cat) => `<option value="${escapeHtml(cat.id)}" ${cat.id === item.categoryId ? 'selected' : ''}>${escapeHtml(cat.name)}</option>`).join('')}
           </select>
         </label>
-        <label>Descripción (opcional)
-          <textarea name="caption" style="min-height:80px">${escapeHtml(item.caption || '')}</textarea>
+        <label>Álbum (obra)
+          <select name="projectSlug">
+            <option value="">Sin álbum</option>
+            ${albums.map((album) => `<option value="${escapeHtml(album.slug)}" ${album.slug === item.projectSlug ? 'selected' : ''}>${escapeHtml(album.name)}</option>`).join('')}
+          </select>
         </label>
         <div class="hm-cms-two">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -1358,7 +1461,7 @@
         </div>
         <div class="hm-cms-actions">
           <button type="submit">${itemId ? 'Guardar cambios' : 'Agregar a galería'}</button>
-          ${itemId ? `<button type="button" class="secondary destructive" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.title)}">Eliminar</button>` : ''}
+          ${itemId ? `<button type="button" class="secondary destructive" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.alt)}">Eliminar</button>` : ''}
           <button type="button" class="secondary" data-action="gallery-items">Cancelar</button>
         </div>
         <p class="hm-cms-muted" data-status></p>
@@ -1656,6 +1759,34 @@
         }
         return;
       }
+      if (action === 'gallery-albums') {
+        loadGalleryAlbums();
+      }
+      if (action === 'gallery-new-album') {
+        showGalleryAlbumForm();
+      }
+      if (action === 'gallery-edit-album' && target instanceof Element) {
+        const albumSlug = target.closest('[data-album-slug]')?.dataset.albumSlug;
+        if (albumSlug) showGalleryAlbumForm(albumSlug);
+      }
+      if (action === 'gallery-delete-album' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const btn = target.closest('[data-album-slug]');
+        if (!btn) return;
+        const albumSlug = btn.dataset.albumSlug;
+        const name = btn.dataset.albumName || albumSlug;
+        if (!window.confirm(`¿Eliminar el álbum "${name}"?`)) return;
+        try {
+          await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
+            method: 'DELETE',
+          });
+          loadGalleryAlbums();
+        } catch (error) {
+          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        }
+        return;
+      }
       if (action === 'gallery-new-item') {
         showGalleryItemForm();
       }
@@ -1927,6 +2058,36 @@
       }
     }
 
+    if (form.matches('[data-gallery-album-form]')) {
+      event.preventDefault();
+      const status = form.querySelector('[data-status]');
+      const albumSlug = form.dataset.albumSlug;
+      try {
+        if (status) status.textContent = 'Guardando...';
+        if (albumSlug) {
+          // El slug es inmutable: solo viaja el nombre.
+          await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: form.elements.name.value }),
+          });
+        } else {
+          await api('/api/cms/gallery/albums', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: form.elements.name.value,
+              slug: form.elements.slug.value || undefined,
+            }),
+          });
+        }
+        loadGalleryAlbums();
+      } catch (error) {
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      }
+    }
+
     if (form.matches('[data-gallery-item-form]')) {
       event.preventDefault();
       const status = form.querySelector('[data-status]');
@@ -1955,23 +2116,20 @@
           });
           currentMediaId = uploaded.id;
           form.elements.mediaId.value = uploaded.id;
-          if (!form.elements.title.value) {
-            form.elements.title.value = uploaded.name
-              .replace(/\.[^.]+$/, '')
-              .replace(/[-_]+/g, ' ');
-          }
           if (!form.elements.alt.value) {
-            form.elements.alt.value = uploaded.alt || '';
+            // El alt del media si lo trae; si no, el nombre del archivo, que al
+            // menos es mejor que dejar la foto sin texto alternativo.
+            form.elements.alt.value =
+              uploaded.alt || uploaded.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
           }
         }
 
         if (!currentMediaId) throw new Error('Selecciona o sube una imagen primero');
         const body = {
           mediaId: currentMediaId,
-          title: form.elements.title.value,
           alt: form.elements.alt.value,
           categoryId: form.elements.categoryId.value || null,
-          caption: form.elements.caption.value || null,
+          projectSlug: form.elements.projectSlug.value || null,
           featured: form.elements.featured.checked,
           status: form.elements.status.value,
         };

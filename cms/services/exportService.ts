@@ -48,6 +48,46 @@ function writeFileSyncAtomic(target: string, data: string): boolean {
   return true;
 }
 
+/**
+ * GAL-1: guarda contra el borrado silencioso de la galería.
+ *
+ * `exportGallery()` regenera src/data/gallery.json **completo** desde SQLite.
+ * Si la DB tiene menos items publicados que el JSON ya existente en disco, eso
+ * casi siempre significa que el JSON se pobló por fuera del CMS (un script que
+ * escribió el archivo directo) y que exportar destruiría contenido que la DB
+ * nunca tuvo. Es exactamente lo que pasó al importar los álbumes de proyecto:
+ * 168 fotos en el JSON contra 23 en la DB, y un solo clic en "Exportar" las
+ * habría borrado sin un error ni una confirmación.
+ *
+ * Un borrado genuino (el admin borra fotos de verdad en el CMS) también reduce
+ * la cuenta, así que la guarda es saltable — pero de forma explícita y dejando
+ * rastro, en vez de ser el comportamiento por defecto.
+ */
+function assertNoSilentGalleryShrink(target: string, nextCount: number): void {
+  if (process.env.CMS_ALLOW_GALLERY_SHRINK === '1') return;
+  if (!fs.existsSync(target)) return;
+
+  let previousCount: number;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(target, 'utf8')) as { items?: unknown[] };
+    if (!Array.isArray(parsed.items)) return; // formato inesperado — no bloqueamos
+    previousCount = parsed.items.length;
+  } catch {
+    return; // JSON ilegible: no hay nada que proteger
+  }
+
+  if (nextCount >= previousCount) return;
+
+  throw new Error(
+    `Export de galería abortado: la base de datos tiene ${nextCount} foto(s) publicada(s) ` +
+      `pero ${path.basename(target)} ya contiene ${previousCount}. Exportar borraría ` +
+      `${previousCount - nextCount} foto(s) que el CMS no conoce.\n` +
+      `  • Si faltan fotos en el CMS, impórtalas antes: npx tsx cms/scripts/import-gallery-json.ts\n` +
+      `  • Si la reducción es intencional (borraste fotos a propósito), repite con ` +
+      `CMS_ALLOW_GALLERY_SHRINK=1.`
+  );
+}
+
 export class ExportService {
   /**
    * @param rootDir raíz del repo donde escribir los archivos exportados.
@@ -250,9 +290,10 @@ export class ExportService {
         const derivatives = await this.imageService.generateDerivatives(item.mediaPath);
         processedItems.push({
           id: item.id,
-          title: item.title,
+          // La galería no muestra título ni descripción por foto: solo fotos
+          // agrupadas en álbumes. `alt` se mantiene porque es lo que anuncian
+          // los lectores de pantalla, no texto visible.
           alt: item.alt,
-          caption: item.caption,
           categorySlug: item.categorySlug,
           categoryName: item.categoryName,
           projectSlug: item.projectSlug ?? null,
@@ -282,8 +323,18 @@ export class ExportService {
         slug: c.slug,
         position: c.position,
       })),
+      // GAL-19: los nombres y el orden de los álbumes vienen de la base. Antes
+      // vivían en un mapa hardcodeado en src/data/gallery.ts, así que
+      // renombrar un álbum exigía tocar código y rebuild.
+      albums: this.galleryRepository.listAlbums().map((a) => ({
+        slug: a.slug,
+        name: a.name,
+        position: a.position,
+      })),
       items: processedItems,
     };
+
+    assertNoSilentGalleryShrink(target, processedItems.length);
 
     writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
     if (skippedOrphan > 0) {

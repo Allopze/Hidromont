@@ -21,7 +21,16 @@ describe('Gallery API', () => {
         `INSERT INTO media_assets (id, name, path, mime, size, alt, focal_x, focal_y, checksum, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, 0.5, 0.5, 'test123', ?, ?)`
       )
-      .run(mediaId, 'test-gallery.jpg', '/uploads/cms/test-gallery.jpg', 'image/jpeg', 2048, 'Test gallery image', now, now);
+      .run(
+        mediaId,
+        'test-gallery.jpg',
+        '/uploads/cms/test-gallery.jpg',
+        'image/jpeg',
+        2048,
+        'Test gallery image',
+        now,
+        now
+      );
   });
 
   afterAll(async () => {
@@ -88,29 +97,115 @@ describe('Gallery API', () => {
     });
 
     it('GET /api/cms/gallery/categories lists categories', async () => {
-      const res = await ctx.app.inject(authed({ method: 'GET', url: '/api/cms/gallery/categories' }));
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/gallery/categories' })
+      );
       expect(res.statusCode).toBe(200);
       const data = res.json<{ items: Array<{ id: string }> }>();
       expect(data.items.length).toBeGreaterThanOrEqual(1);
     });
 
     it('PATCH /api/cms/gallery/categories/:id updates name', async () => {
-      const res = await ctx.app.inject(authedMutWith({
-        method: 'PATCH',
-        url: `/api/cms/gallery/categories/${catId}`,
-        body: JSON.stringify({ name: 'Montaje Industrial' }),
-      }));
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'PATCH',
+          url: `/api/cms/gallery/categories/${catId}`,
+          body: JSON.stringify({ name: 'Montaje Industrial' }),
+        })
+      );
       expect(res.statusCode).toBe(200);
       expect(res.json<{ name: string }>().name).toBe('Montaje Industrial');
     });
 
     it('DELETE /api/cms/gallery/categories/:id removes it', async () => {
-      const res = await ctx.app.inject(authedMutWith({
-        method: 'DELETE',
-        url: `/api/cms/gallery/categories/${catId}`,
-      }));
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'DELETE',
+          url: `/api/cms/gallery/categories/${catId}`,
+        })
+      );
       expect(res.statusCode).toBe(200);
       expect(res.json<{ ok: boolean }>().ok).toBe(true);
+    });
+  });
+
+  // ── Albums (GAL-19) ─────────────────────────────────────────
+
+  describe('Albums', () => {
+    it('GET /api/cms/gallery/albums requires auth', async () => {
+      const res = await ctx.app.inject({ method: 'GET', url: '/api/cms/gallery/albums' });
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('POST /api/cms/gallery/albums creates an album', async () => {
+      const res = await ctx.app.inject({
+        ...authedMut({ name: 'C.H. Pangal' }),
+        url: '/api/cms/gallery/albums',
+      });
+      expect(res.statusCode).toBe(201);
+      const album = res.json<{ slug: string; name: string; itemCount: number }>();
+      expect(album.slug).toBe('c-h-pangal');
+      expect(album.itemCount).toBe(0);
+    });
+
+    it('POST rejects duplicate slug', async () => {
+      const res = await ctx.app.inject({
+        ...authedMut({ name: 'Otro nombre', slug: 'c-h-pangal' }),
+        url: '/api/cms/gallery/albums',
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('PATCH renombra el álbum sin tocar el slug', async () => {
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'PATCH',
+          url: '/api/cms/gallery/albums/c-h-pangal',
+          body: JSON.stringify({ name: 'Central Hidroeléctrica Pangal' }),
+        })
+      );
+      expect(res.statusCode).toBe(200);
+      const album = res.json<{ slug: string; name: string }>();
+      expect(album).toMatchObject({ slug: 'c-h-pangal', name: 'Central Hidroeléctrica Pangal' });
+    });
+
+    it('PATCH sobre un álbum inexistente responde 404', async () => {
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'PATCH',
+          url: '/api/cms/gallery/albums/no-existe',
+          body: JSON.stringify({ name: 'Fantasma' }),
+        })
+      );
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('DELETE se niega mientras el álbum tenga fotos', async () => {
+      const created = await ctx.app.inject({
+        ...authedMut({
+          mediaId,
+          alt: 'Foto del álbum',
+          projectSlug: 'c-h-pangal',
+        }),
+        url: '/api/cms/gallery/items',
+      });
+      expect(created.statusCode).toBe(201);
+      const itemId = created.json<{ id: string }>().id;
+
+      const blocked = await ctx.app.inject(
+        authedMutWith({ method: 'DELETE', url: '/api/cms/gallery/albums/c-h-pangal' })
+      );
+      expect(blocked.statusCode).toBe(409);
+      expect(blocked.json<{ error: string }>().error).toMatch(/1 foto/);
+
+      // Con el álbum vacío, el borrado procede.
+      await ctx.app.inject(
+        authedMutWith({ method: 'DELETE', url: `/api/cms/gallery/items/${itemId}` })
+      );
+      const res = await ctx.app.inject(
+        authedMutWith({ method: 'DELETE', url: '/api/cms/gallery/albums/c-h-pangal' })
+      );
+      expect(res.statusCode).toBe(200);
     });
   });
 
@@ -133,7 +228,6 @@ describe('Gallery API', () => {
       const res = await ctx.app.inject({
         ...authedMut({
           mediaId,
-          title: 'Tubería en taller',
           alt: 'Tubería forzada en proceso de fabricación',
           categoryId: catId,
           featured: true,
@@ -141,8 +235,8 @@ describe('Gallery API', () => {
         url: '/api/cms/gallery/items',
       });
       expect(res.statusCode).toBe(201);
-      const item = res.json<{ id: string; title: string; featured: boolean; categoryName: string }>();
-      expect(item.title).toBe('Tubería en taller');
+      const item = res.json<{ id: string; alt: string; featured: boolean; categoryName: string }>();
+      expect(item.alt).toBe('Tubería forzada en proceso de fabricación');
       expect(item.featured).toBe(true);
       expect(item.categoryName).toBe('Tuberías Forzadas');
       itemId = item.id;
@@ -150,7 +244,7 @@ describe('Gallery API', () => {
 
     it('POST rejects missing mediaId', async () => {
       const res = await ctx.app.inject({
-        ...authedMut({ title: 'No media', alt: 'Test' }),
+        ...authedMut({ alt: 'Test' }),
         url: '/api/cms/gallery/items',
       });
       expect(res.statusCode).toBe(400);
@@ -165,10 +259,12 @@ describe('Gallery API', () => {
     });
 
     it('GET /api/cms/gallery/items?categoryId= filters by category', async () => {
-      const res = await ctx.app.inject(authed({
-        method: 'GET',
-        url: `/api/cms/gallery/items?categoryId=${catId}`,
-      }));
+      const res = await ctx.app.inject(
+        authed({
+          method: 'GET',
+          url: `/api/cms/gallery/items?categoryId=${catId}`,
+        })
+      );
       expect(res.statusCode).toBe(200);
       const data = res.json<{ items: Array<{ categoryId: string | null }> }>();
       data.items.forEach((item) => {
@@ -177,40 +273,48 @@ describe('Gallery API', () => {
     });
 
     it('GET /api/cms/gallery/items/:id returns single item', async () => {
-      const res = await ctx.app.inject(authed({ method: 'GET', url: `/api/cms/gallery/items/${itemId}` }));
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: `/api/cms/gallery/items/${itemId}` })
+      );
       expect(res.statusCode).toBe(200);
       expect(res.json<{ id: string }>().id).toBe(itemId);
     });
 
     it('PATCH /api/cms/gallery/items/:id updates fields', async () => {
-      const res = await ctx.app.inject(authedMutWith({
-        method: 'PATCH',
-        url: `/api/cms/gallery/items/${itemId}`,
-        body: JSON.stringify({ title: 'Tubería actualizada', featured: false }),
-      }));
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'PATCH',
+          url: `/api/cms/gallery/items/${itemId}`,
+          body: JSON.stringify({ alt: 'Tubería actualizada en obra', featured: false }),
+        })
+      );
       expect(res.statusCode).toBe(200);
-      const item = res.json<{ title: string; featured: boolean }>();
-      expect(item.title).toBe('Tubería actualizada');
+      const item = res.json<{ alt: string; featured: boolean }>();
+      expect(item.alt).toBe('Tubería actualizada en obra');
       expect(item.featured).toBe(false);
     });
 
     it('POST /api/cms/gallery/items/reorder reorders items', async () => {
       // Create a second item
       const res2 = await ctx.app.inject({
-        ...authedMut({ mediaId, title: 'Segunda imagen', alt: 'Alt test' }),
+        ...authedMut({ mediaId, alt: 'Alt test' }),
         url: '/api/cms/gallery/items',
       });
       const itemId2 = res2.json<{ id: string }>().id;
 
-      const reorderRes = await ctx.app.inject(authedMutWith({
-        method: 'POST',
-        url: '/api/cms/gallery/items/reorder',
-        body: JSON.stringify({ ids: [itemId2, itemId] }),
-      }));
+      const reorderRes = await ctx.app.inject(
+        authedMutWith({
+          method: 'POST',
+          url: '/api/cms/gallery/items/reorder',
+          body: JSON.stringify({ ids: [itemId2, itemId] }),
+        })
+      );
       expect(reorderRes.statusCode).toBe(200);
 
       // Verify order
-      const listRes = await ctx.app.inject(authed({ method: 'GET', url: '/api/cms/gallery/items' }));
+      const listRes = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/gallery/items' })
+      );
       const items = listRes.json<{ items: Array<{ id: string }> }>().items;
       const idx1 = items.findIndex((i) => i.id === itemId2);
       const idx2 = items.findIndex((i) => i.id === itemId);
@@ -218,14 +322,18 @@ describe('Gallery API', () => {
     });
 
     it('DELETE /api/cms/gallery/items/:id removes item', async () => {
-      const res = await ctx.app.inject(authedMutWith({
-        method: 'DELETE',
-        url: `/api/cms/gallery/items/${itemId}`,
-      }));
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'DELETE',
+          url: `/api/cms/gallery/items/${itemId}`,
+        })
+      );
       expect(res.statusCode).toBe(200);
 
       // Verify gone
-      const getRes = await ctx.app.inject(authed({ method: 'GET', url: `/api/cms/gallery/items/${itemId}` }));
+      const getRes = await ctx.app.inject(
+        authed({ method: 'GET', url: `/api/cms/gallery/items/${itemId}` })
+      );
       expect(getRes.statusCode).toBe(404);
     });
   });
@@ -242,11 +350,13 @@ describe('Gallery API', () => {
     });
 
     it('rejects reorder with empty ids', async () => {
-      const res = await ctx.app.inject(authedMutWith({
-        method: 'POST',
-        url: '/api/cms/gallery/items/reorder',
-        body: JSON.stringify({ ids: [] }),
-      }));
+      const res = await ctx.app.inject(
+        authedMutWith({
+          method: 'POST',
+          url: '/api/cms/gallery/items/reorder',
+          body: JSON.stringify({ ids: [] }),
+        })
+      );
       expect(res.statusCode).toBe(400);
     });
   });

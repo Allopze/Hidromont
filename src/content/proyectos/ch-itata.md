@@ -1,9 +1,11 @@
 ---
-nombre: "C.H. Itata"
-cliente: "EPSA S.A."
-alcance: "Suministro, fabricación y montaje de blindaje de aducción DN 3000 y blindaje de devolución DN 5500."
-categoria: "tuberias"
-tipo: "banco"
-diametro: "DN 3000 / DN 5500"
+alcance: >-
+  Suministro, fabricación y montaje de blindaje de aducción DN 3000 y blindaje
+  de devolución DN 5500.
+categoria: tuberias
+cliente: EPSA S.A.
+diametro: DN 3000 / DN 5500
+nombre: C.H. Itata
 orden: 20
+tipo: banco
 ---
