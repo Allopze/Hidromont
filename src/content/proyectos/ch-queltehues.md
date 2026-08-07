@@ -1,16 +1,19 @@
 ---
-nombre: "C.H. Queltehues"
-cliente: "AES Andes S.A."
-alcance: "Ingeniería, fabricación, desmontaje de tubería existente, demolición de apoyos y machones, fabricación y montaje de nueva tubería de 550 m con diámetros 1500-1800 mm."
-categoria: "tuberias"
-tipo: "destacado"
-ubicacion: "Chile"
-diametro: "DN 1500 / DN 1800"
-longitud: "550 m"
+alcance: >-
+  Ingeniería, fabricación, desmontaje de tubería existente, demolición de apoyos
+  y machones, fabricación y montaje de nueva tubería de 550 m con diámetros
+  1500-1800 mm.
+categoria: tuberias
+cliente: AES Andes S.A.
+diametro: DN 1500 / DN 1800
+longitud: 550 m
+nombre: C.H. Queltehues
 orden: 3
+tipo: destacado
+ubicacion: Chile
 ---
 
-El proyecto de C.H. Queltehues implicó la renovación completa de la tubería forzada de la central, incluyendo el desmontaje de la instalación existente y la reconstrucción de los apoyos y machones de hormigón.
+La rehabilitación de C.H. Queltehues implicó la renovación completa de la tubería forzada de la central, incluyendo el desmontaje de la instalación existente y la reconstrucción de los apoyos y machones de hormigón.
 
 ## Alcance del proyecto
 

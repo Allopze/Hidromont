@@ -1,9 +1,11 @@
 ---
-nombre: "C.H. Renaico"
-cliente: "Mainco S.A."
-alcance: "Suministro, fabricación y montaje de tubería forzada DN 2100. Equipamiento hidromecánico completo de bocatoma, cámara de carga y casa de máquinas."
-categoria: "tuberias"
-tipo: "banco"
-diametro: "DN 2100"
+alcance: >-
+  Suministro, fabricación y montaje de tubería forzada DN 2100. Equipamiento
+  hidromecánico completo de bocatoma, cámara de carga y casa de máquinas.
+categoria: tuberias
+cliente: Mainco S.A.
+diametro: DN 2100
+nombre: C.H. Renaico
 orden: 24
+tipo: banco
 ---

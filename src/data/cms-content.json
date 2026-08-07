@@ -1,6 +1,128 @@
 {
-  "updatedAt": "2026-07-18T19:40:38.950Z",
+  "updatedAt": "2026-08-07T03:34:15.577Z",
   "entries": {
+    "calidad.badge": {
+      "title": "Badge ISO calidad",
+      "slug": "/calidad",
+      "fields": {
+        "caption": {
+          "type": "text",
+          "value": "Sistema de gestión de calidad"
+        },
+        "line1": {
+          "type": "text",
+          "value": "ISO"
+        },
+        "line2": {
+          "type": "text",
+          "value": "9001"
+        }
+      }
+    },
+    "calidad.contenido": {
+      "title": "Contenido calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Sistema de gestión"
+        },
+        "p1": {
+          "type": "textarea",
+          "value": "Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica."
+        },
+        "p2": {
+          "type": "textarea",
+          "value": "El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "ISO 9001"
+        }
+      }
+    },
+    "calidad.cta": {
+      "title": "CTA calidad",
+      "slug": "/calidad",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar equipo técnico"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico."
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos que exigen calidad certificada"
+        }
+      }
+    },
+    "calidad.hero": {
+      "title": "Hero calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Gestión de Calidad"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "Calidad y Medioambiente"
+        }
+      }
+    },
+    "calidad.principios": {
+      "title": "Principios calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Principios"
+        },
+        "p1Desc": {
+          "type": "textarea",
+          "value": "Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto."
+        },
+        "p1Title": {
+          "type": "text",
+          "value": "Satisfacción del cliente"
+        },
+        "p2Desc": {
+          "type": "textarea",
+          "value": "Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega."
+        },
+        "p2Title": {
+          "type": "text",
+          "value": "Mejora continua"
+        },
+        "p3Desc": {
+          "type": "textarea",
+          "value": "Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto."
+        },
+        "p3Title": {
+          "type": "text",
+          "value": "Cumplimiento normativo"
+        },
+        "p4Desc": {
+          "type": "textarea",
+          "value": "El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios."
+        },
+        "p4Title": {
+          "type": "text",
+          "value": "Planificación y organización"
+        },
+        "title": {
+          "type": "text",
+          "value": "Nuestros compromisos de calidad"
+        }
+      }
+    },
     "clientes.cta": {
       "title": "CTA clientes",
       "slug": "/clientes",
@@ -121,7 +243,11 @@
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Han confiado en nosotros"
+          "value": "Sectores"
+        },
+        "title": {
+          "type": "text",
+          "value": "Referencias por sector"
         }
       }
     },
@@ -521,6 +647,14 @@
           "type": "text",
           "value": "Grupos electrógenos de 100 a 200 KVA"
         },
+        "item11": {
+          "type": "text",
+          "value": "Grúa autopropulsada 50 Tn"
+        },
+        "item12": {
+          "type": "text",
+          "value": "Grupos electrógenos de 100 a 200 KVA"
+        },
         "item2": {
           "type": "text",
           "value": "Fresadora DYE600 de carrera 7 m"
@@ -668,6 +802,1067 @@
         "ubicacionTitle": {
           "type": "text",
           "value": "Ubicación"
+        }
+      }
+    },
+    "galeria.config": {
+      "title": "Config galería",
+      "slug": "/galeria",
+      "fields": {
+        "allItemsLabel": {
+          "type": "text",
+          "value": "Todas"
+        },
+        "emptyLabel": {
+          "type": "text",
+          "value": "No hay imágenes en esta categoría."
+        },
+        "lightboxCloseLabel": {
+          "type": "text",
+          "value": "Cerrar"
+        },
+        "lightboxNextLabel": {
+          "type": "text",
+          "value": "Siguiente"
+        },
+        "lightboxPrevLabel": {
+          "type": "text",
+          "value": "Anterior"
+        },
+        "resultsLabel": {
+          "type": "text",
+          "value": "Mostrando {n} imágenes"
+        },
+        "showFilters": {
+          "type": "text",
+          "value": "true"
+        }
+      }
+    },
+    "galeria.hero": {
+      "title": "Hero galería",
+      "slug": "/galeria",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Portafolio visual"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/montaje-vertical-caverna.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Montaje vertical de tubería forzada en caverna subterránea"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Más de 40 años de proyectos hidromecánicos documentados en imágenes: tuberías forzadas, compuertas, válvulas, turbinas y montajes en terreno."
+        },
+        "title": {
+          "type": "text",
+          "value": "Galería de obras y montajes"
+        }
+      }
+    },
+    "galeria.items": {
+      "title": "Imágenes de la galería",
+      "slug": "galeria-items",
+      "fields": {
+        "images": {
+          "type": "list",
+          "value": [
+            {
+              "src": "/fotos/curadas/montaje-vertical-caverna.webp",
+              "alt": "Montaje vertical de tubería forzada en caverna subterránea",
+              "width": 1086,
+              "height": 1448,
+              "titulo": "Montaje vertical en caverna",
+              "proyecto": "ch-los-condores",
+              "categoria": "tuberias",
+              "destacada": true
+            },
+            {
+              "src": "/fotos/curadas/tuberia-forzada-tunel.webp",
+              "alt": "Tubería forzada de gran diámetro instalada en túnel subterráneo",
+              "width": 1849,
+              "height": 851,
+              "titulo": "Tubería forzada en túnel",
+              "proyecto": "",
+              "categoria": "tuberias",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/proyecto-tuberia-montana.webp",
+              "alt": "Tubería forzada en ladera de montaña",
+              "width": 467,
+              "height": 697,
+              "titulo": "Tubería en ladera",
+              "proyecto": "ch-rio-frio",
+              "categoria": "tuberias",
+              "destacada": true
+            },
+            {
+              "src": "/fotos/curadas/compuertas.jpg",
+              "alt": "Compuerta hidráulica instalada en presa",
+              "width": 446,
+              "height": 621,
+              "titulo": "Compuerta hidráulica",
+              "proyecto": "",
+              "categoria": "compuertas",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/valvula-tuberia-tunel.webp",
+              "alt": "Válvula instalada sobre tubería forzada en túnel",
+              "width": 1448,
+              "height": 1086,
+              "titulo": "Válvula en túnel",
+              "proyecto": "embalse-chironta",
+              "categoria": "valvulas",
+              "destacada": true
+            },
+            {
+              "src": "/fotos/curadas/valvulas.jpg",
+              "alt": "Conjunto de válvulas hidráulicas de gran diámetro",
+              "width": 800,
+              "height": 600,
+              "titulo": "Válvulas de gran diámetro",
+              "proyecto": "",
+              "categoria": "valvulas",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/turbinas.jpg",
+              "alt": "Sala de máquinas con turbinas hidráulicas",
+              "width": 474,
+              "height": 271,
+              "titulo": "Sala de turbinas",
+              "proyecto": "",
+              "categoria": "turbinas",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/limpiarrejas.jpg",
+              "alt": "Limpiarreja instalada en obra hidroeléctrica",
+              "width": 471,
+              "height": 314,
+              "titulo": "Limpiarreja en obra",
+              "proyecto": "",
+              "categoria": "limpiarrejas",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/bifurcacion-primer-taller.webp",
+              "alt": "Bifurcación de gran diámetro en fabricación en taller",
+              "width": 1425,
+              "height": 1104,
+              "titulo": "Bifurcación en taller",
+              "proyecto": "embalse-chacrillas",
+              "categoria": "tuberias",
+              "destacada": true
+            },
+            {
+              "src": "/fotos/curadas/fabricacion-tuberias-taller.webp",
+              "alt": "Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont",
+              "width": 1600,
+              "height": 1067,
+              "titulo": "Fabricación en taller",
+              "proyecto": "",
+              "categoria": "tuberias",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.45-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.45 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.45-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.45 (2)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.45-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.45 (3)",
+              "width": 1600,
+              "height": 900,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.45.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.45",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.46-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.46 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.46-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.46 (2)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.46-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.46 (3)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.46-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.46 (4)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.46.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.46",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.47-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.47 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.47-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.47 (2)",
+              "width": 1600,
+              "height": 900,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.47-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.47 (3)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.47.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.47",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.48-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.48 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.48-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.48 (2)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.48-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.48 (3)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.48-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.48 (4)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.48.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.48",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.49-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.49 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.49-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.49 (2)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.49-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.49 (3)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.49-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.49 (4)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.49.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.49",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.50-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.50 (1)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.50-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.50 (2)",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.25.50.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.25.50",
+              "width": 1600,
+              "height": 720,
+              "titulo": "",
+              "proyecto": "",
+              "categoria": "estructuras",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.53-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.53 (1)",
+              "width": 4160,
+              "height": 3120,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.53-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.53 (2)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.53.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.53",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.54-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.54 (1)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.54-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.54 (2)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.54-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.54 (3)",
+              "width": 4032,
+              "height": 3024,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.54-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.54 (4)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.54.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.54",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.55-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.55 (1)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.55-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.55 (2)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.55-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.55 (3)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.55.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.55",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56 (1)",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56 (2)",
+              "width": 4160,
+              "height": 3120,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56 (3)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56 (4)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56-5-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56 (5)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.44.56.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.44.56",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.06-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.06 (1)",
+              "width": 4160,
+              "height": 3120,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.06-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.06 (2)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.06-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.06 (3)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.06-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.06 (4)",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.06.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.06",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.07-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.07 (1)",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.07-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.07 (2)",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.07-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.07 (3)",
+              "width": 4032,
+              "height": 2268,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.07-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.07 (4)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.07.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.07",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08 (1)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08 (2)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08 (3)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08 (4)",
+              "width": 2340,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08-5-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08 (5)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.08.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.08",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.09-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.09 (1)",
+              "width": 3840,
+              "height": 2160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.45.09.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.45.09",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-coyhaique",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.37-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.37 (1)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.37.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.37",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.40.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.40",
+              "width": 4032,
+              "height": 3024,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-1-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (1)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-10-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (10)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-11-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (11)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-12-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (12)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-13-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (13)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-14-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (14)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-15-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (15)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-16-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (16)",
+              "width": 1179,
+              "height": 2096,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-17-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (17)",
+              "width": 4160,
+              "height": 3120,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-18-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (18)",
+              "width": 4032,
+              "height": 2268,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-19-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (19)",
+              "width": 4032,
+              "height": 2268,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-2-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (2)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-20-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (20)",
+              "width": 2268,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-21-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (21)",
+              "width": 4032,
+              "height": 2268,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-22-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (22)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-23-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (23)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-3-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (3)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-4-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (4)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-5-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (5)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-6-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (6)",
+              "width": 3024,
+              "height": 4032,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-7-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (7)",
+              "width": 3120,
+              "height": 4160,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-8-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (8)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41-9-.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41 (9)",
+              "width": 4160,
+              "height": 2340,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            },
+            {
+              "src": "/fotos/curadas/whatsapp-image-2026-07-03-at-15.48.41.jpeg",
+              "alt": "WhatsApp Image 2026 07 03 at 15.48.41",
+              "width": 4032,
+              "height": 3024,
+              "titulo": "",
+              "proyecto": "tanques-glp-puerto-williams",
+              "categoria": "tanques",
+              "destacada": false
+            }
+          ]
         }
       }
     },
@@ -833,6 +2028,10 @@
           "type": "text",
           "value": "Contáctenos"
         },
+        "hrefCalidad": {
+          "type": "text",
+          "value": "/calidad"
+        },
         "hrefClientes": {
           "type": "text",
           "value": "/clientes"
@@ -908,6 +2107,10 @@
         "mobileMenuOpenLabel": {
           "type": "text",
           "value": "Abrir menú de navegación"
+        },
+        "navCalidad": {
+          "type": "text",
+          "value": "Calidad"
         },
         "navClientes": {
           "type": "text",
@@ -1032,6 +2235,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1062,6 +2269,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1092,6 +2303,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1122,6 +2337,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1152,6 +2371,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1182,6 +2405,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1212,6 +2439,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1472,6 +2703,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1481,27 +2716,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
+          "value": ""
         },
         "gallery1Alt": {
           "type": "text",
-          "value": "Cúpulas modulares y estructura metálica para pasarelas peatonales en Ruta Nahuelbuta"
+          "value": ""
         },
         "gallery2": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-nahuelbuta-instalacion.webp"
+          "value": ""
         },
         "gallery2Alt": {
           "type": "text",
-          "value": "Montaje de cúpulas de policarbonato y arcos de acero galvanizado en pasarela vial"
+          "value": ""
         },
         "gallery3": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-nahuelbuta-estructura.webp"
+          "value": ""
         },
         "gallery3Alt": {
           "type": "text",
-          "value": "Estructura metálica modular de 6 metros para pasarela peatonal"
+          "value": ""
         }
       }
     },
@@ -1532,6 +2767,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1562,6 +2801,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1571,27 +2814,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanques-pintados-despacho.jpg"
+          "value": ""
         },
         "gallery1Alt": {
           "type": "text",
-          "value": "Tanques de GLP pintados y listos para despacho a obra"
+          "value": ""
         },
         "gallery2": {
           "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-taller.jpg"
+          "value": ""
         },
         "gallery2Alt": {
           "type": "text",
-          "value": "Tanque de GLP de 30.000 galones en fabricación"
+          "value": ""
         },
         "gallery3": {
           "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-puerto-williams/grua-hidromont-tanque.jpg"
+          "value": ""
         },
         "gallery3Alt": {
           "type": "text",
-          "value": "Maniobra de izaje con grúa Hidromont en exterior del taller"
+          "value": ""
         }
       }
     },
@@ -1622,6 +2865,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1652,6 +2899,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1682,6 +2933,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1713,19 +2968,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
+          "value": "/fotos/curadas/otros-montajes.jpg"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta"
+          "value": "Estructuras metálicas y obras civiles de infraestructura"
         },
         "imageHeight": {
           "type": "number",
-          "value": 720
+          "value": 629
         },
         "imageWidth": {
           "type": "number",
-          "value": 1600
+          "value": 471
         }
       }
     },
@@ -1779,19 +3034,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/tanques-glp-coyhaique.jpg"
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Tanques especiales de almacenamiento de GLP de gran capacidad fabricados por Hidromont"
+          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
         },
         "imageHeight": {
           "type": "number",
-          "value": 2000
+          "value": 800
         },
         "imageWidth": {
           "type": "number",
-          "value": 1500
+          "value": 1200
         }
       }
     },
@@ -2030,66 +3285,6 @@
         "telefono": {
           "type": "text",
           "value": "+56 43 32 84 14"
-        }
-      }
-    },
-    "project-gallery.tanques-glp-coyhaique": {
-      "title": "Galería proyecto tanques-glp-coyhaique",
-      "slug": "project-gallery/tanques-glp-coyhaique",
-      "fields": {
-        "gallery1": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-taller.jpg"
-        },
-        "gallery1Alt": {
-          "type": "text",
-          "value": "Tanque de GLP 30.000 galones completo en taller"
-        },
-        "gallery2": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-grua-exterior.jpg"
-        },
-        "gallery2Alt": {
-          "type": "text",
-          "value": "Cabezal semiesférico con grúa amarilla en exterior de taller"
-        },
-        "gallery3": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-cabezal.jpg"
-        },
-        "gallery3Alt": {
-          "type": "text",
-          "value": "Tanque GLP completo con cabezal semiesférico soldado"
-        }
-      }
-    },
-    "project-gallery.tanques-glp-puerto-williams": {
-      "title": "Galería proyecto tanques-glp-puerto-williams",
-      "slug": "project-gallery/tanques-glp-puerto-williams",
-      "fields": {
-        "gallery1": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-semiesferico-taller.jpg"
-        },
-        "gallery1Alt": {
-          "type": "text",
-          "value": "Cabezal semiesférico de tanque GLP en fabricación en taller"
-        },
-        "gallery2": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanque-saliendo-taller-grua.jpg"
-        },
-        "gallery2Alt": {
-          "type": "text",
-          "value": "Tanque GLP saliendo del taller con grúa Hidromont"
-        },
-        "gallery3": {
-          "type": "image",
-          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanques-pintados-despacho.jpg"
-        },
-        "gallery3Alt": {
-          "type": "text",
-          "value": "Tanques de GLP pintados de blanco listos para despacho"
         }
       }
     }
