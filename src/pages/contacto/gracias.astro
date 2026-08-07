@@ -8,22 +8,55 @@ import { getCmsText } from '../../data/cms';
 
 <PageLayout
   title={getCmsText('contacto.gracias', 'pageTitle', 'Mensaje enviado')}
-  description={getCmsText('contacto.gracias', 'description', 'Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad.')}
+  description={getCmsText(
+    'contacto.gracias',
+    'description',
+    'Su mensaje fue enviado correctamente. El equipo de Hidromont Chile le contactará después de revisarlo.'
+  )}
   noindex
 >
   <section class="bg-background py-24 md:py-32">
     <Container size="sm">
       <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-light mb-6">
-          <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
+        <div
+          class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-light mb-6"
+        >
+          <svg
+            class="w-8 h-8 text-primary"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
-        <EditableText as="h1" entry="contacto.gracias" field="title" class="font-heading font-bold text-primary-dark mb-4" style="font-size: var(--font-size-h2);">
+        <EditableText
+          as="h1"
+          entry="contacto.gracias"
+          field="title"
+          class="font-heading font-bold text-primary-dark mb-4"
+          style="font-size: var(--font-size-h2);"
+        >
           {getCmsText('contacto.gracias', 'title', 'Mensaje enviado correctamente')}
         </EditableText>
-        <EditableText as="p" entry="contacto.gracias" field="subtitle" type="textarea" class="text-text-muted mb-8" style="font-size: var(--font-size-lead);">
-          {getCmsText('contacto.gracias', 'subtitle', 'Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad.')}
+        <EditableText
+          as="p"
+          entry="contacto.gracias"
+          field="subtitle"
+          type="textarea"
+          class="text-text-muted mb-8"
+          style="font-size: var(--font-size-lead);"
+        >
+          {
+            getCmsText(
+              'contacto.gracias',
+              'subtitle',
+              'Su mensaje fue enviado correctamente. Le contactaremos después de revisarlo.'
+            )
+          }
         </EditableText>
         <div class="flex flex-wrap justify-center gap-4">
           <Button href="/" variant="primary">

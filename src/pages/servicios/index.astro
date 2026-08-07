@@ -10,6 +10,7 @@ import EditableText from '../../components/cms/EditableText.astro';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
+import { entrySlug } from '../../utils/contentId';
 
 const servicios = await getCollection('servicios');
 servicios.sort((a, b) => a.data.orden - b.data.orden);
@@ -20,11 +21,11 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
   description="Servicios hidromecánicos de Hidromont Chile: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC."
 >
   <PageHero
-    title={getCmsText('servicios.index.hero', 'title', 'Soluciones hidromecánicas integrales')}
+    title={getCmsText('servicios.index.hero', 'title', 'Servicios hidromecánicos')}
     subtitle={getCmsText(
       'servicios.index.hero',
       'subtitle',
-      'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.'
+      'Ingeniería, fabricación y montaje de tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y equipos especiales.'
     )}
     imageSrc={getCmsText('servicios.index.hero', 'image', '/fotos/curadas/otros-montajes.jpg')}
     imageAlt={getCmsText(
@@ -51,7 +52,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
             <ServiceCard
               title={s.data.titulo}
               description={s.data.resumen}
-              href={`/servicios/${s.id}`}
+              href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
               bullets={s.data.tipos?.slice(0, 3)}
             />
@@ -78,13 +79,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
             class="font-heading font-bold text-white mb-4"
             style="font-size: var(--font-size-h2);"
           >
-            {
-              getCmsText(
-                'servicios.index.banner',
-                'title',
-                'Fabricación de gran dimensión en instalaciones propias'
-              )
-            }
+            {getCmsText('servicios.index.banner', 'title', 'Taller y medios de fabricación')}
           </EditableText>
           <EditableText
             as="p"
@@ -98,7 +93,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               getCmsText(
                 'servicios.index.banner',
                 'subtitle',
-                'En nuestras instalaciones de 11.000 m² en Los Ángeles contamos con taller de calderería, mecanizado y pintura industrial, preparados para enfrentar requerimientos urgentes e hitos críticos de obra.'
+                'En Los Ángeles contamos con terreno para acopio y premontaje, además de talleres de calderería, mecanizado y pintura industrial.'
               )
             }
           </EditableText>
@@ -112,8 +107,8 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               <p class="text-xs text-white/70">Grúa 10–20 Tn</p>
             </div>
             <div>
-              <p class="font-mono font-bold text-accent text-xl">AWS D1.1</p>
-              <p class="text-xs text-white/70">Soldadura Certificada</p>
+              <p class="font-mono font-bold text-accent text-xl">Soldadura</p>
+              <p class="text-xs text-white/70">Procesos en taller</p>
             </div>
           </div>
         </div>
@@ -172,7 +167,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
             getCmsText(
               'servicios.index.metodologia',
               'subtitle',
-              'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.'
+              'El alcance de cada servicio puede incluir desmontaje, fabricación, reparación, montaje u obturación, según las necesidades de la obra.'
             )
           }
         </EditableText>
@@ -233,7 +228,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
     subtitle={getCmsText(
       'servicios.index.cta',
       'subtitle',
-      'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.'
+      'Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje.'
     )}
     primary={{
       label: getCmsText('servicios.index.cta', 'buttonLabel', 'Contacto'),

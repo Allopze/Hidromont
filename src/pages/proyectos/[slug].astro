@@ -10,11 +10,12 @@ import { projectImages } from '../../data/project-images';
 import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import { categoriaLabels } from '../../data/categories';
+import { entrySlug } from '../../utils/contentId';
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
   return proyectos.map((p) => ({
-    params: { slug: p.id },
+    params: { slug: entrySlug(p.id) },
     props: { proyecto: p },
   }));
 }
@@ -23,7 +24,7 @@ const { proyecto } = Astro.props;
 const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } =
   proyecto.data;
 const { Content } = await render(proyecto);
-const slug = proyecto.id;
+const slug = entrySlug(proyecto.id);
 const projectImageEntry = `project-image.${slug}`;
 const heroImg = projectImages[slug];
 const gallery = projectGalleries[slug];
@@ -157,7 +158,8 @@ const jsonLd = {
           <div class="p-5 bg-primary rounded-none text-white">
             <p class="font-semibold text-sm mb-2">¿Trabaja en proyectos similares?</p>
             <p class="text-white/80 text-xs mb-4 leading-relaxed">
-              Converse con nuestro equipo sobre las capacidades y trayectoria de Hidromont.
+              Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
+              montaje.
             </p>
             <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
               Contactar

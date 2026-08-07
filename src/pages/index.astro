@@ -14,6 +14,7 @@ import EditableImage from '../components/cms/EditableImage.astro';
 import EditableText from '../components/cms/EditableText.astro';
 import { getCollection, getEntry } from 'astro:content';
 import { getCmsText } from '../data/cms';
+import { entrySlug } from '../utils/contentId';
 
 const servicios = await getCollection('servicios');
 // ESTRUCT-5 fix: usar `orden` (misma fuente que /servicios) en vez de orden
@@ -30,45 +31,34 @@ const clientesEntry = await getEntry('clientes', 'clientes');
 
 const instalaciones = [
   {
-    title: 'Superficie total',
-    description: '11.000 m² de terreno para almacenamiento, maniobras y logística',
-    value: '11.000 m²',
+    title: 'Trayectoria',
+    description: 'Origen de la empresa en España',
+    value: '40+ años',
   },
   {
     title: 'Taller industrial',
-    description: '2.000 m² equipado para fabricación de equipos de gran dimensión',
+    description: 'Calderería, mecanizado y pintura industrial bajo un mismo techo, en Los Ángeles',
     value: '2.000 m²',
   },
   {
-    title: 'Taller de pintura',
-    description:
-      '400 m² para preparación de superficies y aplicación de esquemas de pintura industrial',
-    value: '400 m²',
-  },
-  {
-    title: 'Oficinas e ingeniería',
-    description: '320 m² con equipo técnico especializado en proyectos hidromecánicos',
-    value: '320 m²',
-  },
-  {
-    title: 'Capacidad de izaje',
-    description: 'De 10 a 20 toneladas para maniobras de gran peso',
-    value: '5 puentes grúa',
+    title: 'Presencia internacional',
+    description: 'Proyectos en Chile, España, Honduras y Costa Rica',
+    value: '4 países',
   },
 ];
 
 const propuestaValor = [
   {
     title: 'Especialización sectorial',
-    description: 'Empresa enfocada en el ámbito hidromecánico e hidroeléctrico.',
+    description: 'Equipos para embalses y centrales hidroeléctricas.',
   },
   {
-    title: 'Servicio integral',
+    title: 'Alcance de trabajo',
     description: 'Diseño, ingeniería, fabricación, suministro, montaje y mantenimiento.',
   },
   {
     title: 'Experiencia internacional',
-    description: 'Proyectos ejecutados en Chile, España, Honduras y Costa Rica.',
+    description: 'Experiencia en Chile, España, Honduras y Costa Rica.',
   },
 ];
 ---
@@ -89,7 +79,7 @@ const propuestaValor = [
     subtitle={getCmsText(
       'home.hero',
       'subtitle',
-      'Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983.'
+      'Desde 1983 trabajamos en proyectos hidráulicos e hidroeléctricos en Chile y el extranjero.'
     )}
     ctaPrimary={{
       label: getCmsText('home.hero', 'primaryLabel', 'Conocer nuestros servicios'),
@@ -116,7 +106,7 @@ const propuestaValor = [
           class="font-heading font-bold text-primary-dark mb-4"
           style="font-size: var(--font-size-h2);"
         >
-          {getCmsText('home.services', 'title', 'Soluciones hidromecánicas integrales')}
+          {getCmsText('home.services', 'title', 'Servicios para proyectos hidromecánicos')}
         </EditableText>
         <EditableText
           as="p"
@@ -130,7 +120,7 @@ const propuestaValor = [
             getCmsText(
               'home.services',
               'subtitle',
-              'Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje y mantenimiento.'
+              'Realizamos ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos.'
             )
           }
         </EditableText>
@@ -141,7 +131,7 @@ const propuestaValor = [
             <ServiceCard
               title={s.data.titulo}
               description={s.data.resumen}
-              href={`/servicios/${s.id}`}
+              href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
               bullets={s.data.tipos?.slice(0, 3)}
             />
@@ -155,11 +145,15 @@ const propuestaValor = [
   <Section variant="alt" divider>
     <CapabilitiesBlock
       eyebrow={getCmsText('home.capabilities', 'eyebrow', 'Por qué elegirnos')}
-      title={getCmsText('home.capabilities', 'title', 'Capacidad técnica y experiencia comprobada')}
+      title={getCmsText(
+        'home.capabilities',
+        'title',
+        'Experiencia y medios para proyectos hidromecánicos'
+      )}
       subtitle={getCmsText(
         'home.capabilities',
         'subtitle',
-        'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.'
+        'Trayectoria en proyectos hidráulicos en Chile y otros países.'
       )}
       items={propuestaValor}
       columns={3}
@@ -202,14 +196,18 @@ const propuestaValor = [
     </Container>
     <CapabilitiesBlock
       eyebrow={getCmsText('home.installations', 'eyebrow', 'Instalaciones y medios productivos')}
-      title={getCmsText('home.installations', 'title', 'Instalaciones en Los Ángeles, Biobío')}
+      title={getCmsText(
+        'home.installations',
+        'title',
+        'Taller y medios para fabricación y montaje'
+      )}
       subtitle={getCmsText(
         'home.installations',
         'subtitle',
-        'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.'
+        'Desde 1983 diseñamos, fabricamos y montamos equipos hidromecánicos.'
       )}
       items={instalaciones}
-      columns={5}
+      columns={3}
       light
       cmsEntry="home.installations"
     />
@@ -291,7 +289,7 @@ const propuestaValor = [
     subtitle={getCmsText(
       'home.cta',
       'subtitle',
-      'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.'
+      'Cuéntenos el alcance de su proyecto. Revisaremos las alternativas de fabricación y montaje que correspondan.'
     )}
     primary={{ label: getCmsText('home.cta', 'primaryLabel', 'Contacto'), href: '/contacto' }}
     secondary={{

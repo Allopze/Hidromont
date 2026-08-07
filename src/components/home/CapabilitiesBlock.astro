@@ -38,6 +38,17 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
   if (isNaN(num)) return null;
   return { num, suffix: match[2] ? ` ${match[2]}` : '' };
 }
+
+/**
+ * Split a value like "40+ años" into { digits: "40", rest: "+ años" } so only
+ * the digits render in the monospace face — mixing letters into font-mono
+ * throws off spacing around symbols like "+".
+ */
+function splitValueDisplay(val: string): { digits: string; rest: string } {
+  const match = val.match(/^([\d.,]+)(.*)$/);
+  if (!match) return { digits: val, rest: '' };
+  return { digits: match[1], rest: match[2] };
+}
 ---
 
 <Container>
@@ -94,21 +105,16 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
             {item.value &&
               (() => {
                 const parsed = parseMetric(item.value);
-                return parsed ? (
+                const { digits, rest } = splitValueDisplay(item.value);
+                return (
                   <p
-                    class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
+                    class={`font-heading font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
                     style="font-size: var(--font-size-h3);"
-                    data-count={String(parsed.num)}
-                    data-suffix={parsed.suffix}
+                    data-count={parsed ? String(parsed.num) : undefined}
+                    data-suffix={parsed ? parsed.suffix : undefined}
                   >
-                    {item.value}
-                  </p>
-                ) : (
-                  <p
-                    class={`font-mono font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
-                    style="font-size: var(--font-size-h3);"
-                  >
-                    {item.value}
+                    <span class="font-mono">{digits}</span>
+                    {rest}
                   </p>
                 );
               })()}
@@ -119,7 +125,7 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
               {item.title}
             </h3>
             {item.description && (
-              <p class={`text-sm leading-relaxed ${light ? 'text-white/60' : 'text-text-muted'}`}>
+              <p class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}>
                 {item.description}
               </p>
             )}
@@ -145,7 +151,7 @@ function parseMetric(val: string): { num: number; suffix: string } | null {
                 {item.title}
               </h3>
               {item.description && (
-                <p class={`text-sm leading-relaxed ${light ? 'text-white/60' : 'text-text-muted'}`}>
+                <p class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}>
                   {item.description}
                 </p>
               )}

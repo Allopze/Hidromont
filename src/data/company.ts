@@ -5,7 +5,11 @@ export const company = {
   razonSocial: getCmsText('site.company', 'razonSocial', 'Hidromont Chile'),
   domicilio: getCmsText('site.company', 'domicilio', 'Av. Las Industrias N° 10.950'),
   ciudad: getCmsText('site.company', 'ciudad', 'Los Ángeles, Región del Biobío, Chile'),
-  casillaPostal: getCmsText('site.company', 'casillaPostal', 'Casilla 48 — Los Ángeles, Región del Biobío'),
+  casillaPostal: getCmsText(
+    'site.company',
+    'casillaPostal',
+    'Casilla 48 — Los Ángeles, Región del Biobío'
+  ),
   telefono: getCmsText('site.company', 'telefono', '+56 43 32 84 14'),
   email: getCmsText('site.company', 'email', 'hidromont@hidromont.cl'),
   sitioWeb: getCmsText('site.company', 'sitioWeb', 'https://hidromont.cl'),
@@ -19,7 +23,7 @@ export const company = {
   descripcionLarga: getCmsText(
     'site.company',
     'descripcionLarga',
-    'Especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.'
+    'Ingeniería, fabricación y montaje de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para proyectos hidráulicos e hidroeléctricos.'
   ),
   especialidad: getCmsText(
     'site.company',
