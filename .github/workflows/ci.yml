@@ -21,14 +21,13 @@ jobs:
       # H1: el build de producción DEBE generarse con PUBLIC_ENABLE_CMS=0 para que el
       # dist/ no incluya el overlay del CMS. El gate e2e lo verifica.
       PUBLIC_ENABLE_CMS: '0'
-      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -37,8 +36,14 @@ jobs:
       - name: Lint (ESLint)
         run: npm run lint
 
+      # NODE_ENV=production va solo acá y no a nivel de job: en el job, `npm ci`
+      # lo lee y omite las devDependencies, así que husky (el script `prepare`)
+      # no se instalaba y el install moría con "husky: not found" (exit 127).
+      # Astro, vitest y eslint también son devDependencies.
       - name: Type-check + Build (astro check && astro build)
         run: npm run build
+        env:
+          NODE_ENV: production
 
       - name: Unit tests (vitest)
         run: npm test
@@ -72,7 +77,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -84,23 +89,24 @@ jobs:
       - name: Build (with overlay, for preview)
         run: npm run build
 
-      - name: Start CMS server
-        run: npm run cms &
-        # El CMS arranca en 127.0.0.1:8787 (cookie insegura permitida solo en local).
-
-      - name: Start preview server
-        run: npm run preview &
-        # Astro preview en localhost:4321 por defecto.
-
-      - name: Wait for servers
+      # Arranque y espera van en un solo paso: el runner mata el grupo de
+      # procesos al terminar cada `run:`, así que los servidores lanzados con
+      # `&` en un paso propio morían antes de que el siguiente los consultara.
+      # El CMS no alcanzaba a imprimir ni una línea.
+      - name: Start servers and wait
         run: |
+          npm run cms > cms.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
           for i in $(seq 1 60); do
             if curl -sf http://127.0.0.1:4321/ >/dev/null 2>&1 && curl -sf http://127.0.0.1:8787/api/cms/health >/dev/null 2>&1; then
               echo "Both servers up"; exit 0
             fi
             sleep 2
           done
-          echo "Servers did not come up in time"; exit 1
+          echo "Servers did not come up in time"
+          echo "--- cms.log ---";     cat cms.log     || true
+          echo "--- preview.log ---"; cat preview.log || true
+          exit 1
 
       - name: Run E2E tests
         run: npx playwright test --project=chromium e2e/cms-overlay.spec.ts
