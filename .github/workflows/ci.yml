@@ -68,12 +68,14 @@ jobs:
       PUBLIC_ENABLE_CMS: '1'
       CMS_HOST: '127.0.0.1'
       CMS_PORT: '8787'
-      # El overlay deriva la URL del CMS de `location.hostname` (:8787). Si el
-      # navegador entra por `localhost`, pide a localhost:8787 — que en el
-      # runner resuelve a ::1 y el CMS solo escucha en 127.0.0.1 (IPv4): el
-      # fetch muere antes de salir y ninguna petición del navegador llega.
-      # Las llamadas de la API sí funcionaban porque Node reintenta en IPv4,
-      # lo que dejaba fallas donde el overlay parecía no reaccionar.
+      # CmsOverlay.astro inlina esta variable en tiempo de build. Sin ella, en
+      # un sitio construido (isDev=false) el overlay cae en `location.origin` y
+      # le pide el login al servidor de preview en vez de al CMS: todas sus
+      # llamadas mueren en un 404 y el CMS no ve una sola petición del
+      # navegador. En local no se notaba porque .env sí la define.
+      PUBLIC_CMS_API_BASE: 'http://127.0.0.1:8787'
+      # Las tres piezas por la misma dirección, para que el navegador, el
+      # preview y el CMS no queden repartidos entre localhost y 127.0.0.1.
       E2E_BASE_URL: 'http://127.0.0.1:4321'
       CMS_URL: 'http://127.0.0.1:8787'
       CMS_ADMIN_EMAIL: admin@hidromont.local
