@@ -628,6 +628,16 @@
   }
 
   function loginView(error = '') {
+    // Si el formulario ya está en pantalla y no hay un error nuevo que mostrar,
+    // no se vuelve a renderizar: recrear el <form> descarta lo que el operador
+    // ya escribió. `ensureSession()` corre al cargar la página y otra vez en
+    // cada acción, así que dos llamadas seguidas borraban la contraseña a medio
+    // tipear y dejaban huérfano el botón que se estaba por pulsar.
+    if (!error && panelBody.querySelector('form[data-login]')) {
+      panel.classList.add('open');
+      return;
+    }
+
     openPanel(`
       <form data-login>
         <label>Email
