@@ -110,3 +110,16 @@ jobs:
 
       - name: Run E2E tests
         run: npx playwright test --project=chromium e2e/cms-overlay.spec.ts
+
+      # Sin esto, un e2e rojo solo deja el assert: no se ve qué respondió el CMS
+      # ni qué había en pantalla, y el fallo se vuelve irreproducible en local.
+      - name: Upload e2e diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diagnostics
+          path: |
+            cms.log
+            preview.log
+            test-results/
+          retention-days: 7
