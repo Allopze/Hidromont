@@ -38,11 +38,11 @@ export class PublishService {
     private readonly publishJobRepository: PublishJobRepository
   ) {}
 
-  exportContent(): {
+  async exportContent(): Promise<{
     job: PublishJob;
     exported: { files: string[]; removed: string[] };
     galleryExported?: { file: string; count: number };
-  } {
+  }> {
     this.acquireLock();
     try {
       const startedAt = new Date().toISOString();
@@ -53,7 +53,7 @@ export class PublishService {
       });
 
       try {
-        const exported = this.exportService.exportContent();
+        const exported = await this.exportService.exportContent();
         const completedAt = new Date().toISOString();
         const completed = this.publishJobRepository.finish({
           id: job.id,
@@ -91,7 +91,7 @@ export class PublishService {
       });
 
       try {
-        const exported = this.exportService.exportContent();
+        const exported = await this.exportService.exportContent();
         const galleryExported = await this.exportService.exportGallery();
         const completedAt = new Date().toISOString();
         const completed = this.publishJobRepository.finish({
@@ -132,7 +132,7 @@ export class PublishService {
       });
 
       try {
-        const exported = this.exportService.exportContent();
+        const exported = await this.exportService.exportContent();
         // CMS-1 fix: publish previously only re-exported page/collection content
         // and never regenerated src/data/gallery.json, so publishing after
         // editing/reordering gallery items shipped the *previous* gallery.

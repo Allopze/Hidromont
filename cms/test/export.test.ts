@@ -94,8 +94,8 @@ describe('ExportService — filtro de status (CMS-002)', () => {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('incluye entradas publicadas y excluye borradores del cms-content.json', () => {
-    exportService.exportContent();
+  it('incluye entradas publicadas y excluye borradores del cms-content.json', async () => {
+    await exportService.exportContent();
     const json = JSON.parse(
       fs.readFileSync(path.join(tmpRoot, 'src', 'data', 'cms-content.json'), 'utf-8')
     ) as { entries: Record<string, unknown> };
@@ -143,8 +143,8 @@ describe('ExportService — CMS-3: exporta colecciones publicadas nunca editadas
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('exporta el .md aunque la entrada siga en version 1', () => {
-    const result = exportService.exportContent();
+  it('exporta el .md aunque la entrada siga en version 1', async () => {
+    const result = await exportService.exportContent();
     expect(result.files).toContain('src/content/proyectos/never-edited.md');
     expect(
       fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'never-edited.md'))
@@ -203,8 +203,8 @@ describe('ExportService — CMS-10: omite entradas de proyecto con categoria/tip
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('omite la entrada con categoria invalida sin afectar a las demas', () => {
-    const result = exportService.exportContent();
+  it('omite la entrada con categoria invalida sin afectar a las demas', async () => {
+    const result = await exportService.exportContent();
     expect(result.files).not.toContain('src/content/proyectos/bad-categoria.md');
     expect(
       fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'bad-categoria.md'))
@@ -251,8 +251,8 @@ describe('ExportService — slugs con subdirectorio (A1-001)', () => {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('crea el subdirectorio del slug y escribe el .md sin lanzar ENOENT', () => {
-    const result = exportService.exportContent();
+  it('crea el subdirectorio del slug y escribe el .md sin lanzar ENOENT', async () => {
+    const result = await exportService.exportContent();
     const expectedFile = path.join(tmpRoot, 'src', 'content', 'proyectos', 'tanques', '316l.md');
     expect(result.files).toContain('src/content/proyectos/tanques/316l.md');
     expect(fs.existsSync(expectedFile)).toBe(true);
@@ -309,16 +309,16 @@ describe('ExportService — slugs con caracteres especiales (A1-005)', () => {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('slug con punto escribe tanques.glp.md literal', () => {
-    const result = exportService.exportContent();
+  it('slug con punto escribe tanques.glp.md literal', async () => {
+    const result = await exportService.exportContent();
     expect(result.files).toContain('src/content/servicios/tanques.glp.md');
     expect(fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'tanques.glp.md'))).toBe(
       true
     );
   });
 
-  it('slug con guion bajo escribe valvula_marca.md literal', () => {
-    const result = exportService.exportContent();
+  it('slug con guion bajo escribe valvula_marca.md literal', async () => {
+    const result = await exportService.exportContent();
     expect(result.files).toContain('src/content/servicios/valvula_marca.md');
     expect(
       fs.existsSync(path.join(tmpRoot, 'src', 'content', 'servicios', 'valvula_marca.md'))

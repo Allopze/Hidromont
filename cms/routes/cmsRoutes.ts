@@ -571,6 +571,6 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
   const { inserted } = contentService.importMissingEntries();
   if (inserted > 0) {
-    exportService.exportContent();
+    await exportService.exportContent();
   }
 }

@@ -34,7 +34,7 @@ export class PublishController extends BaseController {
       }
       // Fallback: gallery tables genuinely don't exist yet, export content only
       try {
-        this.handleSuccess(reply, this.publishService.exportContent());
+        this.handleSuccess(reply, await this.publishService.exportContent());
       } catch (fallbackError) {
         this.handleError(fallbackError, reply, 'exportContent');
       }

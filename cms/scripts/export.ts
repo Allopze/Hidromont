@@ -18,7 +18,7 @@ async function main() {
 
     const exportService = new ExportService(contentRepo, undefined, galleryRepo, imageService);
 
-    const contentResult = exportService.exportContent();
+    const contentResult = await exportService.exportContent();
     process.stdout.write(`Content export: ${JSON.stringify(contentResult)}\n`);
 
     const galleryResult = await exportService.exportGallery();

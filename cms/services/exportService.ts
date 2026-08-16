@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
+import prettier from 'prettier';
 import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import type { GalleryRepository } from '../repositories/GalleryRepository';
@@ -101,7 +102,7 @@ export class ExportService {
     private readonly imageService?: ImageService
   ) {}
 
-  exportContent(): { files: string[]; removed: string[] } {
+  async exportContent(): Promise<{ files: string[]; removed: string[] }> {
     // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
     // Carga todas las entradas. Para cada una, exporta su archivo .md con sus
     // valores por defecto (page content) o conserva el .md previo (colecciones).
@@ -119,9 +120,9 @@ export class ExportService {
       // though it was legitimately published. Export every published
       // collection entry regardless of version; re-writing unchanged content
       // is harmless (idempotent), unlike omitting live content entirely.
-      ...this.exportCollection(
+      ...(await this.exportCollection(
         entries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind))
-      ),
+      )),
     ];
 
     // CMS-2 fix: a renamed or unpublished collection entry previously left its
@@ -234,7 +235,7 @@ export class ExportService {
     return null;
   }
 
-  private exportCollection(entries: CmsEntry[]): string[] {
+  private async exportCollection(entries: CmsEntry[]): Promise<string[]> {
     const written: string[] = [];
 
     for (const entry of entries) {
@@ -259,11 +260,38 @@ export class ExportService {
         }
       }
 
-      writeFileSyncAtomic(target, matter.stringify(body.trim() + '\n', frontmatter));
+      writeFileSyncAtomic(
+        target,
+        await this.formatMarkdown(matter.stringify(body.trim() + '\n', frontmatter), target)
+      );
       written.push(path.relative(this.rootDir, target));
     }
 
     return written;
+  }
+
+  /**
+   * Los .md del repo siguen la convención de prettier (viñetas `-`, tablas
+   * alineadas, printWidth 100); la salida cruda de `matter.stringify` no.
+   * Sin este paso, cada export reescribía los 48 archivos con diffs de puro
+   * formato aunque el contenido no hubiera cambiado. Formatear aquí con la
+   * config del propio repo hace el round-trip DB→.md byte-idéntico.
+   *
+   * El formato es cosmético: si prettier fallara con algún contenido, se
+   * escribe la versión sin formatear antes que hacer fallar el export.
+   */
+  private async formatMarkdown(raw: string, target: string): Promise<string> {
+    try {
+      const options = await prettier.resolveConfig(target);
+      return await prettier.format(raw, { ...options, filepath: target });
+    } catch (error) {
+      process.stderr.write(
+        `  ⚠ prettier falló en ${path.relative(this.rootDir, target)}; se escribe sin formatear: ${
+          error instanceof Error ? error.message : String(error)
+        }\n`
+      );
+      return raw;
+    }
   }
 
   async exportGallery(): Promise<{ file: string; count: number }> {
