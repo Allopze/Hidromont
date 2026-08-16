@@ -20,12 +20,6 @@ function getRevealDelay(idx: number): string {
   return `${delay}s`;
 }
 
-// GAL-15: rótulo de categoría visible. Cuando el álbum abarca varias, se
-// muestra la de la portada y se indica cuántas más, en vez de apilar rótulos
-// que competirían con el nombre del proyecto.
-const primaryCategory = album.categoryNames[0] ?? album.categoryName;
-const extraCategories = Math.max(0, album.categoryNames.length - 1);
-
 // GAL-14: la búsqueda miraba solo el nombre del álbum, así que "compuerta" no
 // encontraba C.H. San Pedro pese a sus 12 fotos de compuertas. Este índice
 // añade las categorías y el alt de cada foto — el alt es lo único que describe
@@ -104,36 +98,22 @@ const searchIndex = [
   <div class="absolute inset-0 z-20 flex flex-col justify-end pointer-events-none">
     {/* Scrim gradient */}
     <div
-      class="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/70 to-transparent transition-all duration-300 group-hover:from-black"
+      class="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/85 via-black/45 to-transparent transition-all duration-300 group-hover:from-black"
     >
     </div>
 
-    {/* Content */}
+    {
+      /* IMPORTANTE: NO VOLVER A MOSTRAR el nombre del proyecto ni el rótulo de
+         categoría sobre la tarjeta (revirtió GAL-15). Solicitud expresa del
+         usuario: la tarjeta va solo con la foto. Nombre y categorías siguen en
+         data-* / aria-label para filtros, búsqueda y accesibilidad. */
+    }
     <div
       class="relative z-10 p-4 md:p-5 text-white transition-transform duration-300 ease-out group-hover:-translate-y-1"
     >
-      <h3
-        class="text-white text-base md:text-lg font-bold font-heading uppercase leading-tight tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
-      >
-        {album.projectName}
-      </h3>
-
-      {
-        /* GAL-15: categoría del álbum — sin esto, al filtrar el usuario no
-           entiende por qué desaparecen tarjetas. */
-      }
-      {
-        primaryCategory && (
-          <p class="mt-1.5 text-[10px] md:text-xs font-mono uppercase tracking-wider text-accent [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
-            {primaryCategory}
-            {extraCategories > 0 && <span class="text-white/60"> +{extraCategories}</span>}
-          </p>
-        )
-      }
-
       {/* Action Prompt — el conteo de fotos ya lo lleva la píldora superior. */}
       <div
-        class="flex justify-end items-center mt-3 pt-2.5 border-t border-white/15 text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider"
+        class="flex justify-end items-center text-[10px] md:text-xs text-white/80 font-mono uppercase tracking-wider"
       >
         <span class="text-accent group-hover:translate-x-1 transition-transform duration-200">
           Ver álbum →
