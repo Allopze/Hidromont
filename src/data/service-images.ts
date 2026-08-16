@@ -32,10 +32,10 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     height: 674,
   },
   'otros-montajes': {
-    src: '/fotos/curadas/otros-montajes-hero.webp',
-    alt: 'Montaje de tuberías de gran diámetro en una obra hidroeléctrica invernal',
-    width: 1674,
-    height: 940,
+    src: '/fotos/curadas/cuerpo-vapor-taller.webp',
+    alt: 'Cuerpo de vapor de gran diámetro fabricado por Hidromont sobre cama baja en el taller',
+    width: 1600,
+    height: 1200,
   },
   infraestructuras: {
     src: '/fotos/curadas/pasarela-ruta-nahuelbuta.webp',
@@ -44,10 +44,10 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     height: 720,
   },
   'tanques-especiales': {
-    src: '/fotos/curadas/tanques-glp-coyhaique.jpg',
-    alt: 'Tanques especiales de almacenamiento de GLP de gran capacidad fabricados por Hidromont',
-    width: 1500,
-    height: 2000,
+    src: '/fotos/curadas/tanque-glp-izaje-despacho.webp',
+    alt: 'Tanque de GLP pintado izado con pórtico grúa durante su despacho desde el taller de Hidromont',
+    width: 1600,
+    height: 900,
   },
 };
 

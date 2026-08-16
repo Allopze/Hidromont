@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-07T03:34:15.577Z",
+  "updatedAt": "2026-08-16T02:05:52.972Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -243,7 +243,7 @@
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Sectores"
+          "value": "Nuestros clientes"
         },
         "title": {
           "type": "text",
@@ -2460,11 +2460,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 640
+          "value": 491
         },
         "imageWidth": {
           "type": "number",
-          "value": 481
+          "value": 429
         }
       }
     },
@@ -2482,11 +2482,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 354
+          "value": 259
         },
         "imageWidth": {
           "type": "number",
-          "value": 473
+          "value": 441
         }
       }
     },
@@ -2518,7 +2518,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-tuberia-terreno.jpg"
+          "value": "/fotos/curadas/tuberia-terreno-queltehues.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -2526,11 +2526,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 480
+          "value": 310
         },
         "imageWidth": {
           "type": "number",
-          "value": 639
+          "value": 605
         }
       }
     },
@@ -2548,11 +2548,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 697
+          "value": 1280
         },
         "imageWidth": {
           "type": "number",
-          "value": 467
+          "value": 960
         }
       }
     },
@@ -2584,7 +2584,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-valvula-tunel.jpg"
+          "value": "/fotos/curadas/valvula-tunel-chironta.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -2592,11 +2592,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 768
+          "value": 740
         },
         "imageWidth": {
           "type": "number",
-          "value": 1024
+          "value": 1600
         }
       }
     },
@@ -2640,10 +2640,6 @@
       "title": "Destacados proyectos",
       "slug": "/proyectos",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": ""
-        },
         "title": {
           "type": "text",
           "value": "Proyectos de referencia"
@@ -3012,19 +3008,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/cuerpo-vapor-taller.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Montaje de gran componente hidromecánico"
+          "value": "Cuerpo de vapor de gran diámetro fabricado por Hidromont sobre cama baja en el taller"
         },
         "imageHeight": {
           "type": "number",
-          "value": 629
+          "value": 1200
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1600
         }
       }
     },
@@ -3034,19 +3030,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+          "value": "/fotos/curadas/tanque-glp-izaje-despacho.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
+          "value": "Tanque de GLP pintado izado con pórtico grúa durante su despacho desde el taller de Hidromont"
         },
         "imageHeight": {
           "type": "number",
-          "value": 800
+          "value": 900
         },
         "imageWidth": {
           "type": "number",
-          "value": 1200
+          "value": 1600
         }
       }
     },

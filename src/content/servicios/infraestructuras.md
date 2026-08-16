@@ -1,22 +1,43 @@
 ---
 aplicaciones:
-  - Lorem ipsum
-  - Dolor sit amet
+  - Obras viales y de mejoramiento de rutas
+  - Canales de riego y conducción
+  - Infraestructura de embalses
+  - Obras públicas MOP / DOH
+  - Reparaciones post-siniestro
 icono: infrastructure
 orden: 2
 procesos:
-  - titulo: Lorem
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-  - titulo: Ipsum
-    descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+  - titulo: Ingeniería
+    descripcion: >-
+      Ingeniería de detalle y modulación de la estructura en secciones
+      transportables.
+  - titulo: Fabricación
+    descripcion: 'Calderería y armado en taller, con control dimensional antes del despacho.'
+  - titulo: Montaje
+    descripcion: >-
+      Transporte, posicionamiento e izaje en obra con grúas y andamios mecano
+      tubulares.
+  - titulo: Reparación
+    descripcion: >-
+      Reparación y reforzamiento de infraestructura existente, incluidas
+      intervenciones post-terremoto.
 resumen: >-
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-  incididunt ut labore.
+  Fabricación y montaje de estructuras metálicas para obras viales e
+  hidráulicas. Hemos construido cúpulas para pasarelas peatonales, reparado
+  sifones de gran diámetro y reforzado canales.
 tipos:
-  - Lorem ipsum
-  - Dolor sit
-  - Consectetur
+  - Pasarelas peatonales y cúpulas de protección
+  - Sifones de gran diámetro
+  - Canales metálicos y reforzamientos
+  - Estructuras galvanizadas modulares
 titulo: Infraestructuras
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Fabricamos y montamos estructuras metálicas para obras viales e hidráulicas.
+
+## Proyectos destacados en infraestructuras
+
+Para el mejoramiento de la **Ruta Nahuelbuta** fabricamos y montamos las cúpulas de protección de 8 pasarelas peatonales. Las estructuras se construyeron en módulos de 6 metros, con arcos de tubo galvanizado de 2", malla electrosoldada, barandas de acero A240ES y cubierta de policarbonato, y se montaron sobre las pasarelas con andamios mecano tubulares y equipos de elevación.
+
+En obras hidráulicas ejecutamos la reparación post-terremoto de los **sifones Mulchén y Bureo DN 3200** para los canalistas del Biobío Sur, además de reforzamientos de canales de hormigón y estructuras vinculadas a embalses.
