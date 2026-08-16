@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { config } from '../config/unifiedConfig';
+import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
 
 export interface DerivedImage {
   src: string;
@@ -38,11 +38,7 @@ export class ImageService {
    * Returns srcset string, lqip base64, and metadata for the largest derived.
    */
   async generateDerivatives(sourcePath: string): Promise<ImageDerivatives> {
-    const absoluteSource = path.join(
-      config.rootDir,
-      'public',
-      sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
-    );
+    const absoluteSource = resolvePublicAssetPath(sourcePath);
 
     if (!fs.existsSync(absoluteSource)) {
       throw new Error(`Source image not found: ${absoluteSource}`);
@@ -106,11 +102,7 @@ export class ImageService {
     const largestSrc = largestDerived.split(' ')[0];
 
     // Get actual dimensions of the largest derived
-    const largestPath = path.join(
-      config.rootDir,
-      'public',
-      largestSrc.startsWith('/') ? largestSrc.slice(1) : largestSrc
-    );
+    const largestPath = resolvePublicAssetPath(largestSrc);
     const largestMeta = fs.existsSync(largestPath)
       ? await sharp(largestPath).metadata()
       : { width: originalWidth, height: originalHeight };

@@ -145,30 +145,47 @@ const projectImageSeeds: Array<{
 ];
 
 const serviceGallerySlugs = [
-  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes', 'infraestructuras', 'tanques-especiales',
+  'tuberias-forzadas',
+  'compuertas',
+  'valvulas',
+  'turbinas',
+  'limpiarrejas',
+  'otros-montajes',
+  'infraestructuras',
+  'tanques-especiales',
 ];
 
 const projectGallerySlugs = [
-  'ch-los-condores', 'embalse-chironta', 'ch-besaya', 'ch-dorias', 'ch-queltehues', 'ch-rio-frio', 'embalse-chacrillas',
+  'ch-los-condores',
+  'embalse-chironta',
+  'ch-besaya',
+  'ch-dorias',
+  'ch-queltehues',
+  'ch-rio-frio',
+  'embalse-chacrillas',
 ];
 
 const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
-  { key: 'acciona',            nombre: 'Acciona',             logo: '/logos-clientes/acciona.svg' },
-  { key: 'aes-andes',          nombre: 'AES Andes',           logo: '/logos-clientes/aes-andes.png' },
-  { key: 'arauco',             nombre: 'Arauco',              logo: '/logos-clientes/arauco.svg' },
-  { key: 'besalco',            nombre: 'Besalco',             logo: '/logos-clientes/besalco.webp' },
-  { key: 'colbun',             nombre: 'Colbún',              logo: '/logos-clientes/colbun.svg' },
-  { key: 'conpax',             nombre: 'Conpax',              logo: '/logos-clientes/conpax.png' },
-  { key: 'edp',                nombre: 'EDP',                 logo: '/logos-clientes/edp.svg' },
-  { key: 'elecnor',            nombre: 'Elecnor',             logo: '/logos-clientes/elecnor.svg' },
-  { key: 'electrica-puntilla', nombre: 'Eléctrica Puntilla',  logo: '/logos-clientes/electrica-puntilla.png' },
-  { key: 'endesa',             nombre: 'Endesa',              logo: '/logos-clientes/endesa.png' },
-  { key: 'engie',              nombre: 'Engie',               logo: '/logos-clientes/engie.png' },
-  { key: 'ferrovial',          nombre: 'Ferrovial',           logo: '/logos-clientes/ferrovial.png' },
-  { key: 'gpe',                nombre: 'GPE',                 logo: '/logos-clientes/gpe.png' },
-  { key: 'iberdrola',          nombre: 'Iberdrola',           logo: '/logos-clientes/iberdrola.png' },
-  { key: 'mop-doh',            nombre: 'M.O.P. / D.O.H.',    logo: '/logos-clientes/mop-doh.jpeg' },
-  { key: 'pacific-hydro',      nombre: 'Pacific Hydro',       logo: '/logos-clientes/pacific-hydro.png' },
+  { key: 'acciona', nombre: 'Acciona', logo: '/logos-clientes/acciona.svg' },
+  { key: 'aes-andes', nombre: 'AES Andes', logo: '/logos-clientes/aes-andes.png' },
+  { key: 'arauco', nombre: 'Arauco', logo: '/logos-clientes/arauco.svg' },
+  { key: 'besalco', nombre: 'Besalco', logo: '/logos-clientes/besalco.webp' },
+  { key: 'colbun', nombre: 'Colbún', logo: '/logos-clientes/colbun.svg' },
+  { key: 'conpax', nombre: 'Conpax', logo: '/logos-clientes/conpax.png' },
+  { key: 'edp', nombre: 'EDP', logo: '/logos-clientes/edp.svg' },
+  { key: 'elecnor', nombre: 'Elecnor', logo: '/logos-clientes/elecnor.svg' },
+  {
+    key: 'electrica-puntilla',
+    nombre: 'Eléctrica Puntilla',
+    logo: '/logos-clientes/electrica-puntilla.png',
+  },
+  { key: 'endesa', nombre: 'Endesa', logo: '/logos-clientes/endesa.png' },
+  { key: 'engie', nombre: 'Engie', logo: '/logos-clientes/engie.png' },
+  { key: 'ferrovial', nombre: 'Ferrovial', logo: '/logos-clientes/ferrovial.png' },
+  { key: 'gpe', nombre: 'GPE', logo: '/logos-clientes/gpe.png' },
+  { key: 'iberdrola', nombre: 'Iberdrola', logo: '/logos-clientes/iberdrola.png' },
+  { key: 'mop-doh', nombre: 'M.O.P. / D.O.H.', logo: '/logos-clientes/mop-doh.jpeg' },
+  { key: 'pacific-hydro', nombre: 'Pacific Hydro', logo: '/logos-clientes/pacific-hydro.png' },
 ];
 
 const imageEntries: EntrySeed[] = [
@@ -370,7 +387,8 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: 'Capacidad técnica y experiencia comprobada' },
       subtitle: {
         type: 'textarea',
-        value: 'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.',
+        value:
+          'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.',
       },
     },
   },
@@ -391,7 +409,8 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: 'Instalaciones en Los Ángeles, Biobío' },
       subtitle: {
         type: 'textarea',
-        value: 'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.',
+        value:
+          'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.',
       },
     },
   },
@@ -439,11 +458,13 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: 'Empresa' },
       subtitle: {
         type: 'textarea',
-        value:
-          'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.',
+        value: 'Trayectoria desde 1983. Especialización en ingeniería hidromecánica.',
       },
       image: { type: 'image', value: '/fotos/curadas/taller-nave.webp' },
-      imageAlt: { type: 'text', value: 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas' },
+      imageAlt: {
+        type: 'text',
+        value: 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas',
+      },
     },
   },
   {
@@ -494,7 +515,10 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       eyebrow: { type: 'text', value: 'Nuestro trabajo' },
       title: { type: 'text', value: 'Galería' },
-      subtitle: { type: 'textarea', value: 'Imágenes de nuestros proyectos, instalaciones y equipo.' },
+      subtitle: {
+        type: 'textarea',
+        value: 'Imágenes de nuestros proyectos, instalaciones y equipo.',
+      },
       image: { type: 'image', value: '' },
       imageAlt: { type: 'text', value: 'Galería de proyectos Hidromont Chile' },
     },
@@ -572,7 +596,10 @@ export const defaultContentEntries: EntrySeed[] = [
       nameRequiredError: { type: 'text', value: 'Por favor ingrese su nombre.' },
       nameTooShortError: { type: 'text', value: 'El nombre debe tener al menos 2 caracteres.' },
       emailRequiredError: { type: 'text', value: 'Por favor ingrese su correo electrónico.' },
-      emailInvalidError: { type: 'text', value: 'Ingrese un correo válido (ej. correo@empresa.com).' },
+      emailInvalidError: {
+        type: 'text',
+        value: 'Ingrese un correo válido (ej. correo@empresa.com).',
+      },
       messageRequiredError: { type: 'text', value: 'Por favor escriba su consulta o mensaje.' },
       genericRequiredError: { type: 'text', value: 'Campo requerido.' },
       genericInvalidError: { type: 'text', value: 'Valor inválido.' },
@@ -609,10 +636,14 @@ export const defaultContentEntries: EntrySeed[] = [
       pageTitle: { type: 'text', value: 'Mensaje enviado' },
       description: {
         type: 'textarea',
-        value: 'Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad.',
+        value:
+          'Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad.',
       },
       title: { type: 'text', value: 'Mensaje enviado correctamente' },
-      subtitle: { type: 'textarea', value: 'Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad.' },
+      subtitle: {
+        type: 'textarea',
+        value: 'Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad.',
+      },
       primaryLabel: { type: 'text', value: 'Volver al inicio' },
       secondaryLabel: { type: 'text', value: 'Ver nuestros proyectos' },
     },
@@ -715,19 +746,37 @@ export const defaultContentEntries: EntrySeed[] = [
       },
       item1Title: { type: 'text', value: 'Superficie de terreno' },
       item1Value: { type: 'text', value: '11.000 m²' },
-      item1Desc: { type: 'textarea', value: 'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.' },
+      item1Desc: {
+        type: 'textarea',
+        value:
+          'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
+      },
       item2Title: { type: 'text', value: 'Taller industrial' },
       item2Value: { type: 'text', value: '2.000 m²' },
-      item2Desc: { type: 'textarea', value: 'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.' },
+      item2Desc: {
+        type: 'textarea',
+        value:
+          'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
+      },
       item3Title: { type: 'text', value: 'Taller de pintura' },
       item3Value: { type: 'text', value: '400 m²' },
-      item3Desc: { type: 'textarea', value: 'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.' },
+      item3Desc: {
+        type: 'textarea',
+        value:
+          'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.',
+      },
       item4Title: { type: 'text', value: 'Oficinas e ingeniería' },
       item4Value: { type: 'text', value: '320 m²' },
-      item4Desc: { type: 'textarea', value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.' },
+      item4Desc: {
+        type: 'textarea',
+        value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
+      },
       item6Title: { type: 'text', value: 'Puentes grúa' },
       item6Value: { type: 'text', value: '5 unidades' },
-      item6Desc: { type: 'textarea', value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.' },
+      item6Desc: {
+        type: 'textarea',
+        value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
+      },
     },
   },
   {
@@ -745,7 +794,10 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.',
       },
-      item1: { type: 'text', value: 'Estaciones de soldadura automática de arco sumergido (4 unidades)' },
+      item1: {
+        type: 'text',
+        value: 'Estaciones de soldadura automática de arco sumergido (4 unidades)',
+      },
       item2: { type: 'text', value: 'Fresadora DYE600 de carrera 7 m' },
       item3: { type: 'text', value: 'Tornos paralelos de 2 m y 6 m' },
       item4: { type: 'text', value: 'Torno al aire con volteo 4,5 m' },
@@ -777,7 +829,10 @@ export const defaultContentEntries: EntrySeed[] = [
       item3: { type: 'text', value: 'Vehículos Pick-Up 4×4 para acceso a terreno' },
       item4: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
       item5: { type: 'text', value: 'Equipos de arenado y pintura industrial' },
-      item6: { type: 'text', value: 'Bastidores y equipos de armado para tuberías de mediano y gran diámetro' },
+      item6: {
+        type: 'text',
+        value: 'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
+      },
       item7: { type: 'text', value: 'Plataformas y teleférico para montajes en pendiente' },
       item8: { type: 'text', value: 'Winches de alto tonelaje' },
     },
@@ -791,7 +846,10 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       title: { type: 'text', value: '¿Quiere conocer nuestras capacidades?' },
-      subtitle: { type: 'textarea', value: 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.' },
+      subtitle: {
+        type: 'textarea',
+        value: 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.',
+      },
       buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
     },
   },
@@ -819,17 +877,35 @@ export const defaultContentEntries: EntrySeed[] = [
           'Todas nuestras líneas de servicio comparten un mismo enfoque metodológico que garantiza calidad, trazabilidad y seguridad en cada etapa del proyecto.',
       },
       item1Title: { type: 'text', value: 'Desmontajes' },
-      item1Desc: { type: 'textarea', value: 'Desmontaje controlado de equipos para reparación o sustitución.' },
+      item1Desc: {
+        type: 'textarea',
+        value: 'Desmontaje controlado de equipos para reparación o sustitución.',
+      },
       item2Title: { type: 'text', value: 'Fabricación' },
-      item2Desc: { type: 'textarea', value: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.' },
+      item2Desc: {
+        type: 'textarea',
+        value: 'Oxicorte, plegado, armado, soldadura, mecanizado y ensamblado.',
+      },
       item3Title: { type: 'text', value: 'Reparaciones' },
-      item3Desc: { type: 'textarea', value: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.' },
+      item3Desc: {
+        type: 'textarea',
+        value: 'Limpieza, tratamiento superficial, juntas y sistemas de accionamiento.',
+      },
       item4Title: { type: 'text', value: 'Mantenimiento de turbinas' },
-      item4Desc: { type: 'textarea', value: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.' },
+      item4Desc: {
+        type: 'textarea',
+        value: 'Recuperación de rodetes por cavitación, alineaciones y mecanizados.',
+      },
       item5Title: { type: 'text', value: 'Montajes' },
-      item5Desc: { type: 'textarea', value: 'Procedimientos específicos con análisis de medios y tiempos.' },
+      item5Desc: {
+        type: 'textarea',
+        value: 'Procedimientos específicos con análisis de medios y tiempos.',
+      },
       item6Title: { type: 'text', value: 'Obturaciones' },
-      item6Desc: { type: 'textarea', value: 'Diseño, fabricación y montaje de obturaciones especiales.' },
+      item6Desc: {
+        type: 'textarea',
+        value: 'Diseño, fabricación y montaje de obturaciones especiales.',
+      },
     },
   },
   {
@@ -841,7 +917,11 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       title: { type: 'text', value: '¿Necesita un servicio específico?' },
-      subtitle: { type: 'textarea', value: 'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.',
+      },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
@@ -856,7 +936,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Destacados proyectos',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: '' },
+      // IMPORTANTE: NO VOLVER A INCLUIR el campo 'eyebrow' (que contenía "Casos de referencia"). Solicitud expresa del usuario.
       title: { type: 'text', value: 'Proyectos de referencia' },
     },
   },
@@ -870,7 +950,10 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       eyebrow: { type: 'text', value: 'Banco de proyectos' },
       title: { type: 'text', value: 'Experiencia comprobada en embalses, presas y centrales' },
-      subtitle: { type: 'textarea', value: 'Registro de proyectos ejecutados clasificados por línea de servicio.' },
+      subtitle: {
+        type: 'textarea',
+        value: 'Registro de proyectos ejecutados clasificados por línea de servicio.',
+      },
     },
   },
   {
@@ -882,7 +965,11 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       title: { type: 'text', value: 'Más de 40 años de proyectos en Chile y el exterior' },
-      subtitle: { type: 'textarea', value: 'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.',
+      },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
@@ -914,7 +1001,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Referencias clientes',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Nuestros Clientes' },
+      eyebrow: { type: 'text', value: 'Nuestros clientes' },
       // IMPORTANTE: NO VOLVER A INCLUIR el campo 'title' (que contenía "Empresas que confían en nosotros" o similares). Solicitud expresa del usuario.
     },
   },
@@ -926,8 +1013,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'CTA clientes',
     status: 'published',
     fields: {
-      title: { type: 'text', value: 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica' },
-      subtitle: { type: 'textarea', value: 'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.' },
+      title: {
+        type: 'text',
+        value: 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica',
+      },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.',
+      },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
@@ -939,10 +1033,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Logos de clientes',
     status: 'published',
     fields: Object.fromEntries(
-      clienteLogos.map(({ key, logo }) => [
-        `logo-${key}`,
-        { type: 'image' as const, value: logo },
-      ])
+      clienteLogos.map(({ key, logo }) => [`logo-${key}`, { type: 'image' as const, value: logo }])
     ),
   },
 ];

@@ -20,7 +20,7 @@ npm-debug.log*
 
 # Local CMS
 cms/data/
-public/uploads/cms/
+uploads/cms/
 
 # Editor
 .vscode/settings.json

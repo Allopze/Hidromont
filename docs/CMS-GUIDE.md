@@ -22,7 +22,7 @@ Al arrancar, el CMS:
 
 1. Ejecuta migraciones idempotentes (no daña una DB existente).
 2. Crea el usuario admin si no existe (con la contraseña de `.env`).
-3. Sincroniza imágenes nuevas de `public/fotos`, `public/logos-clientes`, `public/uploads/cms` a la biblioteca de medios.
+3. Sincroniza imágenes nuevas de `public/fotos`, `public/logos-clientes`, `uploads/cms` a la biblioteca de medios.
 4. Reap jobs de publicación trabados en `'running'` (crash recovery).
 5. Limpia entradas expiradas de rate-limit.
 

@@ -3,14 +3,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
-import { config } from '../config/unifiedConfig';
+import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
 import type { MediaRepository } from '../repositories/MediaRepository';
 
 const allowedMime = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']);
 // SVG is allowed for catalog sync of existing assets but blocked for user uploads
 // to avoid stored-XSS via embedded <script> or event handlers without a sanitizer.
 const allowedUploadMime = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const publicMediaRoots = ['fotos', 'logos-clientes', path.join('uploads', 'cms')];
+// Cada root de sincronización declara su directorio físico y el prefijo público
+// con el que se sirve. Los uploads del CMS viven fuera de public/ (ver
+// unifiedConfig.uploadDir) pero se siguen sirviendo bajo /uploads/cms.
+const publicMediaRoots = (): Array<{ directory: string; publicBase: string }> => [
+  { directory: path.join(config.rootDir, 'public', 'fotos'), publicBase: '/fotos' },
+  {
+    directory: path.join(config.rootDir, 'public', 'logos-clientes'),
+    publicBase: '/logos-clientes',
+  },
+  { directory: config.cms.uploadDir, publicBase: config.cms.publicUploadBase },
+];
 
 // CMS-L8: sharp already defaults to a bounded limitInputPixels, but pinning it
 // explicitly here documents the intent and doesn't depend on that default
@@ -55,15 +65,14 @@ export class MediaService {
 
   async syncPublicMedia(): Promise<{ imported: number; orphaned: string[] }> {
     let imported = 0;
-    for (const root of publicMediaRoots) {
-      const directory = path.join(config.rootDir, 'public', root);
+    for (const { directory, publicBase } of publicMediaRoots()) {
       if (!fs.existsSync(directory)) continue;
       const files = this.walkFiles(directory);
       for (const filePath of files) {
         const mime = mimeFromExt(filePath);
         if (!mime || !allowedMime.has(mime)) continue;
 
-        const publicPath = `/${path.relative(path.join(config.rootDir, 'public'), filePath).split(path.sep).join('/')}`;
+        const publicPath = `${publicBase}/${path.relative(directory, filePath).split(path.sep).join('/')}`;
         const existing = this.mediaRepository.findByPath(publicPath);
         if (existing) continue;
 
@@ -126,7 +135,7 @@ export class MediaService {
     const orphaned: string[] = [];
     for (const asset of all) {
       // Sólo verificar assets de los roots públicos (no uploads huérfanos de otros origenes).
-      const localPath = path.join(config.rootDir, 'public', asset.path);
+      const localPath = resolvePublicAssetPath(asset.path);
       if (!fs.existsSync(localPath)) {
         orphaned.push(`${asset.path} (${asset.name})`);
       }
@@ -217,7 +226,7 @@ export class MediaService {
 
     // Sólo eliminar del disco si fue subido a través del CMS (uploads/cms)
     if (asset.path.startsWith(config.cms.publicUploadBase)) {
-      const fullPath = path.join(config.rootDir, 'public', asset.path);
+      const fullPath = resolvePublicAssetPath(asset.path);
       const canonPath = path.resolve(fullPath);
       const uploadDir = path.resolve(config.cms.uploadDir);
       if (canonPath.startsWith(uploadDir) && fs.existsSync(canonPath)) {

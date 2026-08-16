@@ -1,6 +1,6 @@
 /**
  * GAL-2 — Registra en `media_assets` los archivos de public/fotos,
- * public/logos-clientes y public/uploads/cms que aún no estén en la base.
+ * public/logos-clientes y uploads/cms que aún no estén en la base.
  *
  * La lógica ya existía en MediaService.syncPublicMedia() pero solo corría al
  * arrancar el servidor del CMS (cms/routes/cmsRoutes.ts), así que las fotos

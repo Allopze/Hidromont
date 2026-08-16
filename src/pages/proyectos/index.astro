@@ -80,11 +80,10 @@ const filterItems = [
     destacados.length > 0 && (
       <Section variant="default">
         <Container>
-          <Eyebrow>
-            <EditableText entry="proyectos.index.destacados" field="eyebrow">
-              {getCmsText('proyectos.index.destacados', 'eyebrow', 'Casos de referencia')}
-            </EditableText>
-          </Eyebrow>
+          {/*
+            IMPORTANTE: NO VOLVER A INCLUIR EL EYEBROW "Casos de referencia" O SIMILARES.
+            ESTA SECCIÓN VA DIRECTO AL H2 POR SOLICITUD EXPRESA DEL USUARIO.
+          */}
           <EditableText
             as="h2"
             entry="proyectos.index.destacados"

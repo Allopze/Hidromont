@@ -63,7 +63,9 @@ export const config = {
     trustProxy: process.env.CMS_TRUST_PROXY === '1',
     sessionDays: intFromEnv('CMS_SESSION_DAYS', 7),
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
-    uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'public', 'uploads', 'cms'),
+    // Fuera de public/ para que Astro no copie los originales (2+ GB) a dist/
+    // en cada build; el servidor CMS los sirve directamente en /uploads/cms.
+    uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'uploads', 'cms'),
     publicUploadBase: '/uploads/cms',
     publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build',
   },
@@ -76,3 +78,16 @@ export const config = {
     environment: process.env.SENTRY_ENVIRONMENT ?? 'local',
   },
 } as const;
+
+/**
+ * Traduce un path público de asset (el que guarda la DB, ej. "/uploads/cms/x.jpg"
+ * o "/fotos/curadas/y.webp") a su ruta física en disco. Los uploads del CMS
+ * viven en config.cms.uploadDir (fuera de public/); todo lo demás en public/.
+ */
+export function resolvePublicAssetPath(publicPath: string): string {
+  const clean = publicPath.startsWith('/') ? publicPath : `/${publicPath}`;
+  if (clean.startsWith(`${config.cms.publicUploadBase}/`)) {
+    return path.join(config.cms.uploadDir, clean.slice(config.cms.publicUploadBase.length + 1));
+  }
+  return path.join(config.rootDir, 'public', clean.slice(1));
+}

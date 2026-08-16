@@ -4,10 +4,24 @@ interface Props {
   light?: boolean;
 }
 const { class: className = '', light = false } = Astro.props;
+
+// El CMS permite vaciar el texto de un rótulo (getCmsText respeta la cadena vacía
+// desde que se corrigió el fallback). Si no queda texto visible, no renderizamos
+// el <span>: un inline-block vacío con mb-3 dejaría un hueco donde antes iba el
+// rótulo, y el borrado se vería a medias.
+//
+// No sirve Astro.slots.has('default'): el slot casi siempre trae un <EditableText>,
+// que renderiza su wrapper aunque el texto de dentro esté vacío. Por eso hay que
+// renderizar el slot y mirar si queda texto tras quitar las etiquetas.
+const rendered = await Astro.slots.render('default');
+const hasText = rendered.replace(/<[^>]*>/g, '').trim().length > 0;
 ---
 
-<span
-  class={`inline-block mb-3 text-caption font-bold tracking-[0.08em] uppercase ${light ? 'text-accent' : 'text-primary'} ${className}`}
->
-  <slot />
-</span>
+{
+  hasText && (
+    <span
+      class={`inline-block mb-3 text-caption font-bold tracking-[0.08em] uppercase ${light ? 'text-accent' : 'text-primary'} ${className}`}
+      set:html={rendered}
+    />
+  )
+}
