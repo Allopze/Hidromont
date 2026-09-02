@@ -8,6 +8,12 @@ export function initCollectionsModule({
   COLLECTION_KINDS,
 }) {
   let activeCollectionKind = 'servicio';
+  const statusLabels = {
+    draft: 'Borrador',
+    pending_review: 'Pendiente de revisión',
+    published: 'Publicado',
+  };
+  const statusLabel = (status) => statusLabels[status] || status;
 
   function renderPublishJobs(items) {
     if (!items.length) {
@@ -139,7 +145,7 @@ export function initCollectionsModule({
                 <div class="hm-cms-collection-item">
                   <div class="hm-cms-collection-info">
                     <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
-                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(e.status)}</span></span>
+                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(statusLabel(e.status))}</span></span>
                   </div>
                   <div class="hm-cms-collection-actions">
                     <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>

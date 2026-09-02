@@ -160,7 +160,7 @@ test.describe('CMS overlay flow', () => {
     await page.goto('/?cms=1');
     // Click on any editable element to trigger login
     const editable = page.locator('[data-cms-entry]').first();
-    if (await editable.count() > 0) {
+    if ((await editable.count()) > 0) {
       await editable.click({ force: true });
       await expect(page.locator('form[data-login]')).toBeVisible();
     }
@@ -170,12 +170,12 @@ test.describe('CMS overlay flow', () => {
     await page.goto('/?cms=1');
     // Open panel with any editable element
     const editable = page.locator('[data-cms-entry]').first();
-    if (await editable.count() === 0) return;
+    if ((await editable.count()) === 0) return;
     await editable.click({ force: true });
 
     // Fill login form
     const loginForm = page.locator('form[data-login]');
-    if (await loginForm.count() === 0) return; // Already logged in
+    if ((await loginForm.count()) === 0) return; // Already logged in
     await loginForm.locator('[name="email"]').fill(ADMIN_EMAIL);
     await loginForm.locator('[name="password"]').fill(ADMIN_PASSWORD);
     await loginForm.locator('button[type="submit"]').click();
@@ -195,5 +195,31 @@ test.describe('CMS overlay flow', () => {
     await page.goto('/?cms=1');
     await page.locator('[data-action="collections"]').click();
     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
+  });
+});
+
+test.describe('CMS mobile navigation', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('launcher opens the action sheet and Escape returns focus', async ({ page }) => {
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+
+    const launcher = page.getByRole('button', { name: 'Abrir menú CMS' });
+    const menu = page.getByRole('dialog', { name: 'Acciones del CMS' });
+
+    await expect(launcher).toBeVisible();
+    await expect(page.locator('.hm-cms-bar')).toBeHidden();
+    await expect(launcher).toHaveAttribute('aria-expanded', 'false');
+
+    await launcher.click();
+    await expect(menu).toBeVisible();
+    await expect(launcher).toHaveAttribute('aria-expanded', 'true');
+    await expect(menu.getByRole('button')).toHaveCount(6);
+
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(launcher).toHaveAttribute('aria-expanded', 'false');
+    await expect(launcher).toBeFocused();
   });
 });

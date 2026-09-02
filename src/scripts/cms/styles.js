@@ -97,9 +97,10 @@ export const overlayStyles = `
     justify-content: space-between;
     gap: 16px;
   }
-  .hm-cms-panel h2 {
+  .hm-cms-panel header h2 {
     font-size: 16px;
     margin: 0;
+    color: #fff;
   }
   .hm-cms-panel main {
     padding: 18px;
@@ -238,12 +239,6 @@ export const overlayStyles = `
   }
   .hm-cms-gallery-thumb:hover { border-color: #0065A9; }
   @media (max-width: 640px) {
-    .hm-cms-bar {
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
-      justify-content: space-between;
-    }
     .hm-cms-panel {
       width: 100vw;
     }

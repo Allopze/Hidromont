@@ -1,9 +1,11 @@
 ---
 import overlayScript from '../../scripts/cms-overlay.js?raw';
+import { getMobileMenuRuntime } from '../../scripts/cms/mobile-menu';
 
 const enabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 const apiBase = import.meta.env.PUBLIC_CMS_API_BASE;
 const isDev = import.meta.env.DEV;
+const mobileMenuScript = getMobileMenuRuntime();
 ---
 
 {enabled && (
@@ -14,5 +16,6 @@ const isDev = import.meta.env.DEV;
       };
     </script>
     <script is:inline set:html={overlayScript}></script>
+    <script is:inline set:html={mobileMenuScript}></script>
   </>
 )}

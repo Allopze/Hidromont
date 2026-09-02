@@ -115,9 +115,10 @@
       justify-content: space-between;
       gap: 16px;
     }
-    .hm-cms-panel h2 {
+    .hm-cms-panel header h2 {
       font-size: 16px;
       margin: 0;
+      color: #fff;
     }
     .hm-cms-panel main {
       padding: 18px;
@@ -640,10 +641,10 @@
 
     openPanel(`
       <form data-login>
-        <label>Email
+        <label>Correo electrónico
           <input name="email" type="email" autocomplete="username" value="admin@hidromont.local" required />
         </label>
-        <label>Password
+        <label>Contraseña
           <input name="password" type="password" autocomplete="current-password" required />
         </label>
         ${error ? `<p class="hm-cms-error">${escapeHtml(error)}</p>` : ''}
@@ -1564,7 +1565,7 @@
                 <div class="hm-cms-collection-item">
                   <div class="hm-cms-collection-info">
                     <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
-                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(e.status)}</span></span>
+                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml({ draft: 'Borrador', pending_review: 'Pendiente de revisión', published: 'Publicado' }[e.status] || e.status)}</span></span>
                   </div>
                   <div class="hm-cms-collection-actions">
                     <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
