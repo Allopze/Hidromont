@@ -8,9 +8,10 @@ interface Props {
   href: string;
   icon?: string;
   bullets?: string[];
+  compact?: boolean;
 }
 
-const { title, description, href, icon, bullets } = Astro.props;
+const { title, description, href, icon, bullets, compact = false } = Astro.props;
 
 const icons: Record<string, string> = {
   pipe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -58,7 +59,6 @@ const icons: Record<string, string> = {
     <path d="M12 11V7M12 7L9 4" />
   </svg>`,
 
-
   crane: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M 6 5 C 6 2, 9.5 2, 12 2 C 14.5 2, 18 2, 18 5 V 14 C 18 16.5, 16 18, 14 18 H 10 C 8 18, 6 16.5, 6 14 Z" />
     <rect x="9" y="7" width="6" height="4" rx="0.5" />
@@ -88,31 +88,37 @@ const icons: Record<string, string> = {
 const iconSvg = icon ? (icons[icon] ?? icons.pipe) : icons.pipe;
 ---
 
-<article class="card-lift bg-surface border border-border rounded-none p-8 flex flex-col gap-5 hover:border-primary hover:bg-primary-light hover:shadow-md group">
+<article
+  class:list={[
+    'card-lift bg-surface border border-border rounded-none flex flex-col hover:border-primary hover:bg-primary-light hover:shadow-md group',
+    compact ? 'p-6 gap-4' : 'p-8 gap-5',
+  ]}
+>
   <!-- Icon -->
-  <div
-    class="w-12 h-12 text-primary"
-    aria-hidden="true"
-    set:html={iconSvg}
-  />
+  <div class="w-12 h-12 text-primary" aria-hidden="true" set:html={iconSvg} />
 
   <!-- Content -->
   <div class="flex-1">
-    <h3 class="font-heading font-semibold text-primary-dark mb-2" style="font-size: var(--font-size-h4);">
+    <h3
+      class="font-heading font-semibold text-primary-dark mb-2"
+      style="font-size: var(--font-size-h4);"
+    >
       {title}
     </h3>
     <p class="text-text-muted text-sm leading-relaxed">{description}</p>
 
-    {bullets && bullets.length > 0 && (
-      <ul class="mt-4 space-y-1.5">
-        {bullets.slice(0, 4).map((b) => (
-          <li class="flex items-start gap-2 text-sm text-text-muted">
-            <span class="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
-            {b}
-          </li>
-        ))}
-      </ul>
-    )}
+    {
+      !compact && bullets && bullets.length > 0 && (
+        <ul class="mt-4 space-y-1.5">
+          {bullets.slice(0, 4).map((b) => (
+            <li class="flex items-start gap-2 text-sm text-text-muted">
+              <span class="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
+              {b}
+            </li>
+          ))}
+        </ul>
+      )
+    }
   </div>
 
   <Button href={href} variant="link" class="self-start mt-auto group-hover:text-primary-dark">

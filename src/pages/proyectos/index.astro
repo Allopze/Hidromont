@@ -93,7 +93,7 @@ const filterItems = [
           >
             {getCmsText('proyectos.index.destacados', 'title', 'Proyectos de referencia')}
           </EditableText>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {destacados.map((p) => (
               <ProjectCard proyecto={p} />
             ))}
@@ -143,6 +143,19 @@ const filterItems = [
         }
       </EditableText>
 
+      <label
+        class="mb-5 grid max-w-md gap-2 text-sm font-semibold text-primary-dark"
+        for="project-search"
+      >
+        Buscar en el banco de proyectos
+        <input
+          id="project-search"
+          type="search"
+          placeholder="Proyecto, cliente, ubicación o alcance"
+          class="min-h-[44px] border border-border bg-white px-3 py-2 font-normal text-text focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+        />
+      </label>
+
       <ProjectFilters items={filterItems} />
 
       <div id="project-sections">
@@ -154,21 +167,84 @@ const filterItems = [
           ))
         }
       </div>
+      <p id="project-results-count" class="sr-only" aria-live="polite"></p>
+      <div id="project-load-more-wrap" class="mt-2 flex justify-center">
+        <button
+          type="button"
+          id="project-load-more"
+          class="min-h-[44px] border border-primary px-5 py-3 font-semibold text-primary-dark hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Ver 12 proyectos más
+        </button>
+      </div>
     </Container>
   </Section>
 
   <script>
+    import { paginateMatches } from '../../utils/progressiveList';
+
     // UIUX-13 fix: real client-side filtering for the category pills — see
     // ProjectFilters.astro for the markup/a11y side of this change.
     (() => {
       const container = document.getElementById('project-filter-container');
       const buttons = container?.querySelectorAll<HTMLElement>('[data-filter]');
       const sections = document.querySelectorAll<HTMLElement>('#project-sections [data-category]');
-      if (!buttons || !sections.length) return;
+      const desktopItems = Array.from(
+        document.querySelectorAll<HTMLElement>('tr[data-project-item]')
+      );
+      const allRenderedItems = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-project-item]')
+      );
+      const search = document.getElementById('project-search') as HTMLInputElement | null;
+      const loadMore = document.getElementById('project-load-more');
+      const loadMoreWrap = document.getElementById('project-load-more-wrap');
+      const resultsCount = document.getElementById('project-results-count');
+      if (!buttons || !sections.length || !desktopItems.length) return;
 
       const btnArray = Array.from(buttons);
+      let activeFilter = 'todos';
+      let searchQuery = '';
+      let visibleLimit = 12;
+
+      const normalize = (value: string) =>
+        value
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase();
+
+      function updateProjects(): void {
+        const result = paginateMatches(
+          desktopItems,
+          (item) => {
+            const category = item.dataset.projectCategory || '';
+            const text = normalize(item.dataset.projectSearch || '');
+            return (
+              (activeFilter === 'todos' || category === activeFilter) &&
+              (!searchQuery || text.includes(searchQuery))
+            );
+          },
+          visibleLimit
+        );
+        const visibleKeys = new Set(result.visible.map((item) => item.dataset.projectKey));
+
+        allRenderedItems.forEach((item) => {
+          item.hidden = !visibleKeys.has(item.dataset.projectKey);
+        });
+        sections.forEach((section) => {
+          section.classList.toggle(
+            'hidden',
+            !section.querySelector('[data-project-item]:not([hidden])')
+          );
+        });
+        loadMoreWrap?.classList.toggle('hidden', !result.hasMore);
+        if (resultsCount) {
+          resultsCount.textContent = `Mostrando ${result.visible.length} de ${result.total} proyectos.`;
+        }
+      }
 
       function activateFilter(id: string): void {
+        activeFilter = id;
+        visibleLimit = 12;
         btnArray.forEach((b) => {
           const isActive = b.getAttribute('data-filter') === id;
           b.setAttribute('aria-checked', String(isActive));
@@ -181,10 +257,7 @@ const filterItems = [
           b.classList.toggle('border-border/50', !isActive);
         });
 
-        sections.forEach((section) => {
-          const show = id === 'todos' || section.getAttribute('data-category') === id;
-          section.classList.toggle('hidden', !show);
-        });
+        updateProjects();
       }
 
       btnArray.forEach((btn) => {
@@ -211,6 +284,19 @@ const filterItems = [
           btnArray[next].click();
         }
       });
+
+      search?.addEventListener('input', () => {
+        searchQuery = normalize(search.value.trim());
+        visibleLimit = 12;
+        updateProjects();
+      });
+
+      loadMore?.addEventListener('click', () => {
+        visibleLimit += 12;
+        updateProjects();
+      });
+
+      updateProjects();
     })();
   </script>
 

@@ -7,6 +7,18 @@ interface Props {
 }
 
 const { proyectos, titulo } = Astro.props;
+const searchText = (project: CollectionEntry<'proyectos'>) =>
+  [
+    project.data.nombre,
+    project.data.alcance,
+    project.data.cliente,
+    project.data.ubicacion,
+    project.data.diametro,
+    project.data.acero,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 ---
 
 {
@@ -43,6 +55,10 @@ const { proyectos, titulo } = Astro.props;
             {proyectos.map((p, i) => (
               <tr
                 class="bg-white hover:bg-primary-light transition-colors duration-fast"
+                data-project-item
+                data-project-key={p.id}
+                data-project-category={p.data.categoria}
+                data-project-search={searchText(p)}
                 style={
                   i < proyectos.length - 1
                     ? 'border-bottom: 1px solid var(--color-border);'
@@ -91,7 +107,13 @@ const { proyectos, titulo } = Astro.props;
       {/* Mobile list */}
       <div class="block md:hidden border-t border-border">
         {proyectos.map((p) => (
-          <div class="border-b border-border py-5">
+          <div
+            class="border-b border-border py-5"
+            data-project-item
+            data-project-key={p.id}
+            data-project-category={p.data.categoria}
+            data-project-search={searchText(p)}
+          >
             <div class="flex items-start justify-between gap-3 mb-2">
               <h4
                 class="font-heading font-semibold text-primary-dark leading-snug"

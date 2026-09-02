@@ -108,9 +108,14 @@
       "position": 9
     },
     {
-      "slug": "ch-queltehues",
+      "slug": "ch-chacayes",
       "name": "C.H. Canal Chacayes",
       "position": 10
+    },
+    {
+      "slug": "ch-queltehues",
+      "name": "C.H. Queltehues",
+      "position": 11
     },
     {
       "slug": "ch-los-condores",
@@ -798,7 +803,7 @@
       "alt": "Montaje de compuerta en bocatoma de C.H. Canal Chacayes",
       "categorySlug": "compuertas",
       "categoryName": "Compuertas",
-      "projectSlug": "ch-queltehues",
+      "projectSlug": "ch-chacayes",
       "featured": true,
       "position": 39,
       "src": "/gallery/derived/95695346-1600.webp",
@@ -811,10 +816,10 @@
     },
     {
       "id": "top-44fe4d49",
-      "alt": "Estructura de captación con rejas y compuertas en canal",
+      "alt": "Estructura de captación con rejas y compuertas en C.H. Canal Chacayes",
       "categorySlug": "compuertas",
       "categoryName": "Compuertas",
-      "projectSlug": "ch-queltehues",
+      "projectSlug": "ch-chacayes",
       "featured": false,
       "position": 40,
       "src": "/gallery/derived/22b28690-1600.webp",
@@ -830,7 +835,7 @@
       "alt": "Obra de montaje en desembocadura de canal Chacayes",
       "categorySlug": "compuertas",
       "categoryName": "Compuertas",
-      "projectSlug": "ch-queltehues",
+      "projectSlug": "ch-chacayes",
       "featured": false,
       "position": 41,
       "src": "/gallery/derived/5d344407-1600.webp",
@@ -843,10 +848,10 @@
     },
     {
       "id": "top-1370e037",
-      "alt": "Maniobra de instalación de compuerta con equipo pesado",
+      "alt": "Maniobra de instalación de compuerta en C.H. Canal Chacayes",
       "categorySlug": "compuertas",
       "categoryName": "Compuertas",
-      "projectSlug": "ch-queltehues",
+      "projectSlug": "ch-chacayes",
       "featured": false,
       "position": 42,
       "src": "/gallery/derived/71a07502-1600.webp",
@@ -859,10 +864,10 @@
     },
     {
       "id": "top-05932be9",
-      "alt": "Vista del canal con compuertas reguladoras instaladas",
+      "alt": "Vista de C.H. Canal Chacayes con compuertas reguladoras instaladas",
       "categorySlug": "compuertas",
       "categoryName": "Compuertas",
-      "projectSlug": "ch-queltehues",
+      "projectSlug": "ch-chacayes",
       "featured": false,
       "position": 43,
       "src": "/gallery/derived/3a5b5258-1600.webp",

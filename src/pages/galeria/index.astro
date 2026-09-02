@@ -27,13 +27,48 @@ const allItems = getGalleryItems();
 const albums = getProjectAlbums();
 const categoryCounts = getCategoryCounts();
 
+// Con "Todas las Categorías" la galería no se divide en álbumes: muestra un
+// muro con TODAS las fotos mezcladas (solicitud expresa del usuario). La
+// mezcla es un round-robin determinista entre álbumes — una foto de cada uno
+// por turno — para que fotos consecutivas vengan de proyectos distintos sin
+// depender de aleatoriedad (el build queda reproducible). El round-robin
+// conserva el orden relativo dentro de cada álbum, así que el Lightbox puede
+// usar esta MISMA secuencia como payload: al abrir un álbum, su filtro por
+// projectSlug reconstruye el orden original del álbum.
+const itemsByAlbum = new Map<string, typeof allItems>();
+for (const item of allItems) {
+  const key = item.projectSlug || 'general';
+  const bucket = itemsByAlbum.get(key);
+  if (bucket) bucket.push(item);
+  else itemsByAlbum.set(key, [item]);
+}
+const albumBuckets = [...itemsByAlbum.values()];
+const mixedItems: typeof allItems = [];
+for (let i = 0; albumBuckets.some((bucket) => i < bucket.length); i++) {
+  for (const bucket of albumBuckets) {
+    if (i < bucket.length) mixedItems.push(bucket[i]);
+  }
+}
+
+// Nombre del proyecto por slug, para el índice de búsqueda de cada foto.
+const projectNameBySlug = new Map(albums.map((a) => [a.projectSlug, a.projectName]));
+const gallerySearchText = (item: (typeof allItems)[number]) =>
+  [
+    projectNameBySlug.get(item.projectSlug ?? '') ?? '',
+    (item.projectSlug ?? '').replaceAll('-', ' '),
+    item.categoryName ?? '',
+    item.alt,
+  ]
+    .join(' ')
+    .toLowerCase();
+
 // GAL-25: el payload que consume el Lightbox se embebe en el HTML de todos los
 // visitantes, abran o no un álbum. `lqip` (un data URI base64 por foto, 17 KB
 // en total) solo lo usa la tarjeta como placeholder de carga; el visor tiene su
 // propio esqueleto y nunca lo lee. Lo mismo con focalX/focalY, que solo afectan
 // al recorte de la portada. Se recortan aquí en vez de en el export para no
 // perderlos en gallery.json, donde sí hacen falta.
-const lightboxItems = allItems.map(({ lqip: _lqip, focalX: _fx, focalY: _fy, ...rest }) => rest);
+const lightboxItems = mixedItems.map(({ lqip: _lqip, focalX: _fx, focalY: _fy, ...rest }) => rest);
 
 // ESTRUCT-2 fix: only project detail pages for `tipo: destacado` entries are
 // actually built (see proyectos/[slug].astro's getStaticPaths). Gallery items
@@ -46,7 +81,7 @@ const buildableProjectSlugs = (
 
 // Filter list by category
 const filters = [
-  { slug: 'all', name: 'Todas las Categorías', count: albums.length },
+  { slug: 'all', name: 'Todas las Categorías', count: mixedItems.length },
   ...categories
     .map((cat) => ({
       slug: cat.slug,
@@ -202,10 +237,48 @@ const filters = [
             </div>
           </div>
 
-          {/* ── Project Albums Grid ── */}
+          {/* ── Muro de fotos mezcladas — vista de "Todas las Categorías".
+               Cada tile es un `.gallery-card`: el Lightbox ya delega clicks en
+               esa clase y abre la foto exacta por data-item-id, navegando la
+               secuencia completa en este mismo orden. ── */}
+          <div id="photo-wall" class="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
+            {mixedItems.slice(0, 24).map((item) => (
+              <button
+                type="button"
+                class="gallery-card group relative block w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                data-item-id={item.id}
+                data-search={gallerySearchText(item)}
+                aria-label={item.alt}
+              >
+                <img
+                  src={item.src}
+                  srcset={item.srcset}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  alt=""
+                  width={item.width}
+                  height={item.height}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-full h-auto block transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+                />
+              </button>
+            ))}
+          </div>
+
+          <div id="gallery-load-more-wrap" class="mt-8 flex justify-center">
+            <button
+              type="button"
+              id="gallery-load-more"
+              class="min-h-[44px] px-5 py-3 border border-primary text-primary-dark font-semibold hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Ver 24 fotos más
+            </button>
+          </div>
+
+          {/* ── Project Albums Grid — vista al filtrar por una categoría ── */}
           <div
             id="album-grid"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
+            class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
           >
             {albums.map((album, index) => (
               <ProjectAlbumCard album={album} index={index} />
@@ -228,6 +301,14 @@ const filters = [
           </div>
 
           {/* ── Data payload for Lightbox ── */}
+          <script
+            id="gallery-wall-data"
+            type="application/json"
+            is:inline
+            set:html={safeJsonForScript(
+              mixedItems.map((item) => ({ ...item, searchText: gallerySearchText(item) }))
+            )}
+          />
           <script
             id="lightbox-data"
             type="application/json"
@@ -255,6 +336,8 @@ const filters = [
 </PageLayout>
 
 <script>
+  import { paginateMatches } from '../../utils/progressiveList';
+
   (() => {
     const searchInput = document.getElementById('gallery-search') as HTMLInputElement | null;
     const clearBtn = document.getElementById('gallery-search-clear');
@@ -264,6 +347,11 @@ const filters = [
     const menu = document.getElementById('filter-menu');
     const buttons = menu?.querySelectorAll('[data-filter]');
     const albumCards = document.querySelectorAll('.project-album-card');
+    const albumGrid = document.getElementById('album-grid');
+    const photoWall = document.getElementById('photo-wall');
+    const loadMore = document.getElementById('gallery-load-more') as HTMLButtonElement | null;
+    const loadMoreWrap = document.getElementById('gallery-load-more-wrap');
+    const wallData = document.getElementById('gallery-wall-data');
     const noResults = document.getElementById('no-results');
     const resultsCount = document.getElementById('results-count');
 
@@ -274,6 +362,18 @@ const filters = [
     const initialHash = location.hash.replace('#', '');
     let activeCategory = 'all';
     let searchQuery = '';
+    let visiblePhotoLimit = 24;
+
+    type WallItem = {
+      id: string;
+      src: string;
+      srcset?: string;
+      width: number;
+      height: number;
+      alt: string;
+      searchText: string;
+    };
+    const wallItems: WallItem[] = wallData?.textContent ? JSON.parse(wallData.textContent) : [];
 
     const btnArray = Array.from(buttons || []) as HTMLElement[];
 
@@ -283,8 +383,65 @@ const filters = [
       return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
+    function renderWall(items: WallItem[]) {
+      if (!photoWall) return;
+      photoWall.replaceChildren(
+        ...items.map((item) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className =
+            'gallery-card group relative block w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
+          button.dataset.itemId = item.id;
+          button.dataset.search = item.searchText;
+          button.setAttribute('aria-label', item.alt);
+
+          const image = document.createElement('img');
+          image.src = item.src;
+          if (item.srcset) image.srcset = item.srcset;
+          image.sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw';
+          image.alt = '';
+          image.width = item.width;
+          image.height = item.height;
+          image.loading = 'lazy';
+          image.decoding = 'async';
+          image.className =
+            'w-full h-auto block transition-transform duration-300 ease-out group-hover:scale-[1.03]';
+          button.appendChild(image);
+          return button;
+        })
+      );
+    }
+
     function updateFilter() {
       let visibleCount = 0;
+
+      // "Todas las Categorías" = muro de fotos mezcladas; una categoría
+      // concreta = tarjetas de álbum. El buscador filtra la vista activa.
+      const wallMode = activeCategory === 'all';
+      photoWall?.classList.toggle('hidden', !wallMode);
+      albumGrid?.classList.toggle('hidden', wallMode);
+
+      if (wallMode) {
+        const result = paginateMatches(
+          wallItems,
+          (item) => !searchQuery || normalizeForSearch(item.searchText).includes(searchQuery),
+          visiblePhotoLimit
+        );
+        renderWall(result.visible);
+        visibleCount = result.total;
+        loadMoreWrap?.classList.toggle('hidden', !result.hasMore);
+
+        if (noResults) noResults.classList.toggle('hidden', visibleCount > 0);
+        if (resultsCount) {
+          resultsCount.textContent =
+            visibleCount === 0
+              ? 'No se encontraron fotos.'
+              : `Mostrando ${result.visible.length} de ${visibleCount} ${visibleCount === 1 ? 'foto' : 'fotos'}.`;
+        }
+        return;
+      }
+
+      loadMoreWrap?.classList.add('hidden');
 
       albumCards.forEach((card) => {
         const el = card as HTMLElement;
@@ -305,28 +462,17 @@ const filters = [
 
         const show = matchesCat && matchesSearch;
 
+        // Mostrar/ocultar directo, sin fade por tarjeta: la transición de
+        // opacity dependía de transitionend, que nunca dispara cuando el grid
+        // completo estaba display:none (al llegar desde el muro de fotos) y
+        // dejaba tarjetas invisibles ocupando celda en el grid.
         if (show) {
           visibleCount++;
           el.style.removeProperty('display');
-          el.offsetHeight; // force reflow
           el.style.opacity = '1';
           el.style.transform = 'scale(1)';
-        } else if (el.style.display !== 'none') {
-          // JS-L (listener leak) fix: only fade+hide (and only attach the
-          // one-shot transitionend listener) for a card that's currently
-          // visible. A card already hidden never fires `transitionend` again
-          // when re-set to the same opacity/display, so the old code attached
-          // a listener every keystroke that never fired and never got
-          // removed — unbounded growth while typing in the search box.
-          el.style.opacity = '0';
-          el.style.transform = 'scale(0.95)';
-          const onEnd = (e: Event) => {
-            if ((e as TransitionEvent).propertyName === 'opacity') {
-              el.style.display = 'none';
-              el.removeEventListener('transitionend', onEnd);
-            }
-          };
-          el.addEventListener('transitionend', onEnd);
+        } else {
+          el.style.display = 'none';
         }
       });
 
@@ -352,6 +498,7 @@ const filters = [
     // re-runs the card filter.
     function activateFilter(slug: string, updateHash: boolean): void {
       activeCategory = slug;
+      visiblePhotoLimit = 24;
 
       let activeLabel = '';
       btnArray.forEach((b) => {
@@ -440,6 +587,7 @@ const filters = [
     // Real-time search input event
     function applySearch(rawValue: string) {
       searchQuery = normalizeForSearch(rawValue.trim().toLowerCase());
+      visiblePhotoLimit = 24;
       clearBtn?.classList.toggle('hidden', rawValue.length === 0);
       updateFilter();
     }
@@ -498,6 +646,13 @@ const filters = [
         openMenu();
       }
     });
+
+    loadMore?.addEventListener('click', () => {
+      visiblePhotoLimit += 24;
+      updateFilter();
+    });
+
+    updateFilter();
   })();
 </script>
 
