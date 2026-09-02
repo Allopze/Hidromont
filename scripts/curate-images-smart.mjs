@@ -13,14 +13,14 @@ const PROJECTS_CONFIG = [
     slug: 'ch-pangal-helicoptero',
     prefix: 'pangal-helico',
     maxOutput: 12,
-    sources: [path.join(PROJECT_ROOT, 'Pangal', 'Helicóptero')]
+    sources: [path.join(PROJECT_ROOT, 'Pangal', 'Helicóptero')],
   },
   {
     name: 'C.H. Pangal — Tuberías, Caverna y Terreno',
     slug: 'ch-pangal-terreno',
     prefix: 'pangal-obra',
     maxOutput: 16,
-    sources: [path.join(PROJECT_ROOT, 'Pangal')]
+    sources: [path.join(PROJECT_ROOT, 'Pangal')],
   },
   {
     name: 'C.H. Canal Chacayes — Obras y Montaje Hidromecánico',
@@ -31,9 +31,9 @@ const PROJECTS_CONFIG = [
       path.join(PROJECT_ROOT, 'Canal Chacayes', '1'),
       path.join(PROJECT_ROOT, 'Canal Chacayes', '2'),
       path.join(PROJECT_ROOT, 'Canal Chacayes', '3'),
-      path.join(PROJECT_ROOT, 'Canal Chacayes', '4')
-    ]
-  }
+      path.join(PROJECT_ROOT, 'Canal Chacayes', '4'),
+    ],
+  },
 ];
 
 /**
@@ -82,7 +82,12 @@ async function analyzeImage(filePath) {
     for (let y = 1; y < h - 1; y++) {
       for (let x = 1; x < w - 1; x++) {
         const idx = y * w + x;
-        const val = 4 * grayData[idx] - grayData[idx - 1] - grayData[idx + 1] - grayData[idx - w] - grayData[idx + w];
+        const val =
+          4 * grayData[idx] -
+          grayData[idx - 1] -
+          grayData[idx + 1] -
+          grayData[idx - w] -
+          grayData[idx + w];
         lapSum += val * val;
         lapCount++;
       }
@@ -95,20 +100,12 @@ async function analyzeImage(filePath) {
       .toFormat('raw')
       .toBuffer({ resolveWithObject: true });
 
-    let rSum = 0, gSum = 0, bSum = 0;
     const numRgbPixels = rgbData.length / 3;
-    for (let i = 0; i < rgbData.length; i += 3) {
-      rSum += rgbData[i];
-      gSum += rgbData[i + 1];
-      bSum += rgbData[i + 2];
-    }
-    const rMean = rSum / numRgbPixels;
-    const gMean = gSum / numRgbPixels;
-    const bMean = bSum / numRgbPixels;
-
     let colorVar = 0;
     for (let i = 0; i < rgbData.length; i += 3) {
-      const r = rgbData[i], g = rgbData[i + 1], b = rgbData[i + 2];
+      const r = rgbData[i],
+        g = rgbData[i + 1],
+        b = rgbData[i + 2];
       colorVar += Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r);
     }
     const colorScore = colorVar / numRgbPixels;
@@ -118,7 +115,8 @@ async function analyzeImage(filePath) {
     // 2. Contrast must be >= 45 (filters washed out foggy photos)
     // 3. Mean brightness between 45 and 215 (filters black or overexposed)
     // 4. Color score >= 12 (filters white paper document scans/spreadsheets)
-    const isQualityPass = sharpness >= 110 && contrast >= 45 && mean >= 45 && mean <= 215 && colorScore >= 12;
+    const isQualityPass =
+      sharpness >= 110 && contrast >= 45 && mean >= 45 && mean <= 215 && colorScore >= 12;
 
     // Overall quality composite score (higher is better)
     const qualityScore = sharpness * 0.4 + contrast * 0.4 + colorScore * 0.2;
@@ -135,7 +133,7 @@ async function analyzeImage(filePath) {
       colorScore,
       qualityScore,
       isQualityPass,
-      origSize: fs.statSync(filePath).size
+      origSize: fs.statSync(filePath).size,
     };
   } catch (err) {
     return null;
@@ -175,13 +173,11 @@ async function convertToWebP(srcPath, destPath) {
       width: 1920,
       height: 1200,
       fit: 'inside',
-      withoutEnlargement: true
+      withoutEnlargement: true,
     });
   }
 
-  await pipeline
-    .webp({ quality: 84, effort: 4 })
-    .toFile(destPath);
+  await pipeline.webp({ quality: 84, effort: 4 }).toFile(destPath);
 
   return fs.statSync(destPath).size;
 }
@@ -205,7 +201,9 @@ async function run() {
     for (const srcDir of proj.sources) {
       if (!fs.existsSync(srcDir)) continue;
       const files = fs.readdirSync(srcDir).filter((f) => /\.(jpg|jpeg|png)$/i.test(f));
-      console.log(`   - Evaluando ${files.length} imágenes en ${path.relative(PROJECT_ROOT, srcDir)}...`);
+      console.log(
+        `   - Evaluando ${files.length} imágenes en ${path.relative(PROJECT_ROOT, srcDir)}...`
+      );
 
       for (const file of files) {
         const fp = path.join(srcDir, file);
@@ -216,7 +214,9 @@ async function run() {
       }
     }
 
-    console.log(`   - Encontradas ${rawCandidates.length} imágenes que superan el umbral de nitidez y contraste.`);
+    console.log(
+      `   - Encontradas ${rawCandidates.length} imágenes que superan el umbral de nitidez y contraste.`
+    );
 
     // Deduplicate similar shots and pick top distinct photos
     const deduplicated = deduplicateBurstCandidates(rawCandidates);
@@ -258,7 +258,9 @@ async function run() {
       `;
     }
 
-    console.log(`   ✅ Proyecto ${proj.slug} completado (${finalSelected.length} fotos curadas).\n`);
+    console.log(
+      `   ✅ Proyecto ${proj.slug} completado (${finalSelected.length} fotos curadas).\n`
+    );
   }
 
   // Generate preview HTML file

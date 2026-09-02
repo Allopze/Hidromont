@@ -25,10 +25,6 @@ const CURADAS_DIR = path.join(ROOT, 'public', 'fotos', 'curadas');
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
-function shortHash(filePath) {
-  return createHash('md5').update(filePath).digest('hex').slice(0, 8);
-}
-
 /** Parse score from top/ filename format: RANK_SCORE_name.ext */
 function parseScore(filename) {
   const m = filename.match(/^(\d+)_([\d.]+)_(.+)$/);
@@ -39,12 +35,13 @@ function parseScore(filename) {
 /** Get top N photos from a folder, sorted by rank (lower = better). */
 function getTopPhotos(folder, maxN) {
   if (!fs.existsSync(folder)) return [];
-  const files = fs.readdirSync(folder)
-    .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f) && !f.startsWith('.'))
-    .map(f => ({ file: f, ...parseScore(f) }))
+  const files = fs
+    .readdirSync(folder)
+    .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f) && !f.startsWith('.'))
+    .map((f) => ({ file: f, ...parseScore(f) }))
     .sort((a, b) => a.rank - b.rank)
     .slice(0, maxN);
-  return files.map(f => ({ path: path.join(folder, f.file), name: f.name, score: f.score }));
+  return files.map((f) => ({ path: path.join(folder, f.file), name: f.name, score: f.score }));
 }
 
 /** Optimize image to WebP with max width, return metadata. */
@@ -52,10 +49,7 @@ async function optimizeToWebp(srcPath, destPath, maxWidth = 1600) {
   const img = sharp(srcPath);
   const meta = await img.metadata();
   const w = Math.min(meta.width || 1600, maxWidth);
-  await img
-    .resize({ width: w, withoutEnlargement: true })
-    .webp({ quality: 82 })
-    .toFile(destPath);
+  await img.resize({ width: w, withoutEnlargement: true }).webp({ quality: 82 }).toFile(destPath);
   const outMeta = await sharp(destPath).metadata();
   return { width: outMeta.width, height: outMeta.height };
 }
@@ -73,9 +67,18 @@ async function processServiceGalleryPhotos() {
 
   // Tuberías Forzadas — use existing curadas photos (different from hero)
   servicePhotos['tuberias-forzadas'] = [
-    { src: '/fotos/curadas/bifurcacion-primer-taller.webp', alt: 'Fabricación de bifurcación en Y con refuerzos estructurales en taller Hidromont' },
-    { src: '/fotos/curadas/fabricacion-tuberias-taller.webp', alt: 'Proceso de conformado y rolado de virolas de acero para tubería forzada' },
-    { src: '/fotos/curadas/proyecto-tuberia-montana.webp', alt: 'Tubería forzada instalada en ladera de montaña para central hidroeléctrica' },
+    {
+      src: '/fotos/curadas/bifurcacion-primer-taller.webp',
+      alt: 'Fabricación de bifurcación en Y con refuerzos estructurales en taller Hidromont',
+    },
+    {
+      src: '/fotos/curadas/fabricacion-tuberias-taller.webp',
+      alt: 'Proceso de conformado y rolado de virolas de acero para tubería forzada',
+    },
+    {
+      src: '/fotos/curadas/proyecto-tuberia-montana.webp',
+      alt: 'Tubería forzada instalada en ladera de montaña para central hidroeléctrica',
+    },
   ];
 
   // Compuertas — process from CH_Canal_Chacayes (bocatoma/compuerta) and Sifones
@@ -111,9 +114,18 @@ async function processServiceGalleryPhotos() {
     }
   }
   servicePhotos['valvulas'] = [
-    { src: '/fotos/curadas/valvulas.jpg', alt: 'Válvulas mariposa de gran diámetro para central hidroeléctrica' },
-    { src: '/fotos/curadas/proyecto-valvula-tunel.jpg', alt: 'Válvula esférica instalada en galería subterránea de central' },
-    { src: '/fotos/curadas/valvulas-montaje-condores.webp', alt: 'Montaje de válvula de guardia en caverna de C.H. Los Condores' },
+    {
+      src: '/fotos/curadas/valvulas.jpg',
+      alt: 'Válvulas mariposa de gran diámetro para central hidroeléctrica',
+    },
+    {
+      src: '/fotos/curadas/proyecto-valvula-tunel.jpg',
+      alt: 'Válvula esférica instalada en galería subterránea de central',
+    },
+    {
+      src: '/fotos/curadas/valvulas-montaje-condores.webp',
+      alt: 'Montaje de válvula de guardia en caverna de C.H. Los Condores',
+    },
   ];
 
   // Turbinas — process from Los Hierros (tiene soldadura en turbinas y virolas)
@@ -159,9 +171,18 @@ async function processServiceGalleryPhotos() {
 
   // Otros Montajes — use existing curadas photos
   servicePhotos['otros-montajes'] = [
-    { src: '/fotos/curadas/montaje-vertical-caverna.webp', alt: 'Montaje vertical de tubería forzada en caverna subterránea de gran profundidad' },
-    { src: '/fotos/curadas/proyecto-montaje-tuberia.jpg', alt: 'Montaje de secciones de tubería de gran diámetro con grúa en obra' },
-    { src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg', alt: 'Bifurcación de tubería forzada instalada en obra de central hidroeléctrica' },
+    {
+      src: '/fotos/curadas/montaje-vertical-caverna.webp',
+      alt: 'Montaje vertical de tubería forzada en caverna subterránea de gran profundidad',
+    },
+    {
+      src: '/fotos/curadas/proyecto-montaje-tuberia.jpg',
+      alt: 'Montaje de secciones de tubería de gran diámetro con grúa en obra',
+    },
+    {
+      src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',
+      alt: 'Bifurcación de tubería forzada instalada en obra de central hidroeléctrica',
+    },
   ];
 
   console.log('\n  Service gallery photos ready:');
@@ -218,7 +239,7 @@ async function main() {
   console.log('\n🎉 Done! Run `npm run build` to verify.\n');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error:', err);
   process.exit(1);
 });

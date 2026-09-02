@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cmsDir = path.join(rootDir, 'src', 'scripts', 'cms');
-const outputFile = path.join(rootDir, 'src', 'scripts', 'cms-overlay.js');
 
 console.log('Verifying modular CMS scripts in', cmsDir);
 const files = ['styles.js', 'state-api.js', 'ui.js', 'editor.js', 'collections.js'];

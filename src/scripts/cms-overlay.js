@@ -556,7 +556,6 @@
   window.addEventListener('beforeunload', (event) => {
     if (isFormDirty) {
       event.preventDefault();
-      event.returnValue = 'Tienes cambios sin guardar en el CMS.';
     }
   });
 
