@@ -182,10 +182,7 @@ async function settlePage(page, { mediaTimeoutMs = 20000 } = {}) {
         }
       })
     );
-    await Promise.race([
-      decodeAll,
-      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
-    ]);
+    await Promise.race([decodeAll, new Promise((resolve) => setTimeout(resolve, timeoutMs))]);
   }, mediaTimeoutMs);
 
   // networkidle aquí (y no en el goto) es lo que cubre el iframe del mapa:
@@ -456,11 +453,15 @@ async function main() {
       const pageM = await mobileContext.newPage();
 
       try {
-        for (const p of [pageD, pageM]) {
-          await p.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
-          await p.waitForSelector('.hm-cms-bar', { timeout: 5000 });
-          await p.waitForTimeout(500);
-        }
+        await pageD.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
+        await pageD.waitForSelector('.hm-cms-bar', { timeout: 5000 });
+
+        await pageM.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
+        const mobileLauncher = pageM.getByRole('button', { name: 'Abrir menú CMS' });
+        await mobileLauncher.waitFor({ state: 'visible', timeout: 5000 });
+        await mobileLauncher.click();
+        await pageM.getByRole('dialog', { name: 'Acciones del CMS' }).waitFor({ state: 'visible' });
+        await Promise.all([pageD.waitForTimeout(500), pageM.waitForTimeout(500)]);
 
         await pageD.screenshot({
           path: path.join(DIRS.desktopCms, '02-cms-toolbar-home.png'),
@@ -487,15 +488,18 @@ async function main() {
       const pageM = await mobileContext.newPage();
 
       try {
-        for (const p of [pageD, pageM]) {
-          await p.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
-          const collectionsBtn = p.locator('[data-action="collections"]');
-          if ((await collectionsBtn.count()) > 0) {
-            await collectionsBtn.click();
-            await p.waitForSelector('.hm-cms-panel.open', { timeout: 5000 });
-            await p.waitForTimeout(600);
-          }
-        }
+        await pageD.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
+        await pageD.locator('.hm-cms-bar [data-action="collections"]').click();
+        await pageD.waitForSelector('.hm-cms-panel.open', { timeout: 5000 });
+
+        await pageM.goto(`${CMS_BASE_URL}/?cms=1`, { waitUntil: 'domcontentloaded' });
+        await pageM.getByRole('button', { name: 'Abrir menú CMS' }).click();
+        await pageM
+          .getByRole('dialog', { name: 'Acciones del CMS' })
+          .getByRole('button', { name: 'Colecciones' })
+          .click();
+        await pageM.waitForSelector('.hm-cms-panel.open', { timeout: 5000 });
+        await Promise.all([pageD.waitForTimeout(600), pageM.waitForTimeout(600)]);
 
         await pageD.screenshot({
           path: path.join(DIRS.desktopCms, '03-cms-collections-panel.png'),

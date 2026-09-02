@@ -76,6 +76,9 @@ export const mobileMenuStyles = `
       font: 800 14px/1 Inter, system-ui, sans-serif;
       cursor: pointer;
     }
+    .hm-cms-panel.open ~ .hm-cms-mobile-launcher {
+      display: none;
+    }
     .hm-cms-mobile-launcher:focus-visible,
     .hm-cms-mobile-sheet button:focus-visible {
       outline: 3px solid #00a6d6;

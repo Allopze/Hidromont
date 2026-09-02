@@ -50,7 +50,7 @@ test.describe('Public site', () => {
 
   test('proyectos index loads', async ({ page }) => {
     await page.goto('/proyectos');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.locator('main h1').first()).toBeVisible();
   });
 
   test('clientes page shows logos', async ({ page }) => {
@@ -193,7 +193,7 @@ test.describe('CMS overlay flow', () => {
     expect(res.ok()).toBeTruthy();
 
     await page.goto('/?cms=1');
-    await page.locator('[data-action="collections"]').click();
+    await page.locator('.hm-cms-bar [data-action="collections"]').click();
     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
   });
 });
