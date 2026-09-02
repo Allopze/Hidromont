@@ -39,10 +39,10 @@ const serviceImageSeeds: Array<{
   {
     slug: 'turbinas',
     title: 'Turbinas',
-    src: '/fotos/curadas/turbinas.jpg',
-    alt: 'Sala de máquinas con turbinas hidráulicas',
-    width: 474,
-    height: 271,
+    src: '/fotos/curadas/turbinas-obra-1.webp',
+    alt: 'Mantenimiento de componente de turbina hidráulica en taller',
+    width: 1200,
+    height: 900,
   },
   {
     slug: 'limpiarrejas',
@@ -172,7 +172,6 @@ const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
   { key: 'besalco', nombre: 'Besalco', logo: '/logos-clientes/besalco.webp' },
   { key: 'colbun', nombre: 'Colbún', logo: '/logos-clientes/colbun.svg' },
   { key: 'conpax', nombre: 'Conpax', logo: '/logos-clientes/conpax.png' },
-  { key: 'edp', nombre: 'EDP', logo: '/logos-clientes/edp.svg' },
   { key: 'elecnor', nombre: 'Elecnor', logo: '/logos-clientes/elecnor.svg' },
   {
     key: 'electrica-puntilla',
@@ -280,7 +279,7 @@ export const defaultContentEntries: EntrySeed[] = [
       descripcionLarga: {
         type: 'textarea',
         value:
-          'Especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.',
+          'Realizamos ingeniería, fabricación y montaje de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para obras hidráulicas e hidroeléctricas.',
       },
       especialidad: {
         type: 'textarea',
@@ -367,7 +366,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Servicios' },
-      title: { type: 'text', value: 'Soluciones hidromecánicas integrales' },
+      title: { type: 'text', value: 'Servicios hidromecánicos' },
       subtitle: {
         type: 'textarea',
         value:
@@ -384,7 +383,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Por qué elegirnos' },
-      title: { type: 'text', value: 'Capacidad técnica y experiencia comprobada' },
+      title: { type: 'text', value: 'Ingeniería, fabricación y montaje' },
       subtitle: {
         type: 'textarea',
         value:
@@ -440,7 +439,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales.',
+          'Podemos revisar los antecedentes técnicos y el alcance de su proyecto hidromecánico.',
       },
       primaryLabel: { type: 'text', value: 'Contacto' },
       secondaryLabel: { type: 'text', value: 'Conocer la empresa' },
@@ -476,7 +475,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Servicios' },
-      title: { type: 'text', value: 'Soluciones hidromecánicas integrales' },
+      title: { type: 'text', value: 'Servicios hidromecánicos' },
       subtitle: {
         type: 'textarea',
         value:
@@ -591,7 +590,8 @@ export const defaultContentEntries: EntrySeed[] = [
       submitLabel: { type: 'text', value: 'Enviar consulta' },
       requiredNote: {
         type: 'textarea',
-        value: 'Los campos marcados con * son obligatorios. Te contactaremos a la brevedad.',
+        value:
+          'Los campos marcados con * son obligatorios. Le contactaremos después de revisar su consulta.',
       },
       nameRequiredError: { type: 'text', value: 'Por favor ingrese su nombre.' },
       nameTooShortError: { type: 'text', value: 'El nombre debe tener al menos 2 caracteres.' },
@@ -637,12 +637,12 @@ export const defaultContentEntries: EntrySeed[] = [
       description: {
         type: 'textarea',
         value:
-          'Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad.',
+          'Su mensaje fue enviado correctamente. El equipo de Hidromont Chile le contactará después de revisarlo.',
       },
       title: { type: 'text', value: 'Mensaje enviado correctamente' },
       subtitle: {
         type: 'textarea',
-        value: 'Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad.',
+        value: 'Su mensaje fue enviado correctamente. Le contactaremos después de revisarlo.',
       },
       primaryLabel: { type: 'text', value: 'Volver al inicio' },
       secondaryLabel: { type: 'text', value: 'Ver nuestros proyectos' },
@@ -700,12 +700,12 @@ export const defaultContentEntries: EntrySeed[] = [
       p2: {
         type: 'textarea',
         value:
-          'La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos, entregando soluciones adaptadas a las necesidades de cada obra.',
+          'La compañía realiza ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas.',
       },
       p3: {
         type: 'textarea',
         value:
-          'Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico.',
+          'Realizamos montajes hidráulicos e industriales de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas.',
       },
     },
   },
@@ -792,7 +792,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión.',
+          'El taller dispone de equipos para fabricación, mecanizado, soldadura, corte y montaje de componentes hidromecánicos.',
       },
       item1: {
         type: 'text',
@@ -825,7 +825,7 @@ export const defaultContentEntries: EntrySeed[] = [
           'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.',
       },
       item1: { type: 'text', value: 'Grúa autopropulsada 50 Tn' },
-      item2: { type: 'text', value: 'Camiones pluma de hasta 9.000 kg de capacidad de levante' },
+      item2: { type: 'text', value: 'Camiones pluma para maniobras de montaje en terreno' },
       item3: { type: 'text', value: 'Vehículos Pick-Up 4×4 para acceso a terreno' },
       item4: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
       item5: { type: 'text', value: 'Equipos de arenado y pintura industrial' },
@@ -845,7 +845,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'CTA empresa',
     status: 'published',
     fields: {
-      title: { type: 'text', value: '¿Quiere conocer nuestras capacidades?' },
+      title: { type: 'text', value: '¿Necesita revisar un alcance técnico?' },
       subtitle: {
         type: 'textarea',
         value: 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.',
@@ -919,8 +919,7 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: '¿Necesita un servicio específico?' },
       subtitle: {
         type: 'textarea',
-        value:
-          'Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont.',
+        value: 'Converse con nuestro equipo técnico sobre los requisitos de su proyecto.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
@@ -949,7 +948,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Banco de proyectos' },
-      title: { type: 'text', value: 'Experiencia comprobada en embalses, presas y centrales' },
+      title: { type: 'text', value: 'Registro de obras hidráulicas e hidroeléctricas' },
       subtitle: {
         type: 'textarea',
         value: 'Registro de proyectos ejecutados clasificados por línea de servicio.',
@@ -1020,7 +1019,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura.',
+          'Conozca los procesos de ingeniería, fabricación y montaje que aplica Hidromont en sus proyectos.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },

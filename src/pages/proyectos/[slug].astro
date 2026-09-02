@@ -21,8 +21,20 @@ export async function getStaticPaths() {
 }
 
 const { proyecto } = Astro.props;
-const { nombre, cliente, alcance, categoria, diametro, longitud, ubicacion, normas, peso, acero } =
-  proyecto.data;
+const {
+  nombre,
+  cliente,
+  mandante,
+  contratista,
+  alcance,
+  categoria,
+  diametro,
+  longitud,
+  ubicacion,
+  normas,
+  peso,
+  acero,
+} = proyecto.data;
 const { Content } = await render(proyecto);
 const slug = entrySlug(proyecto.id);
 const projectImageEntry = `project-image.${slug}`;
@@ -30,6 +42,12 @@ const heroImg = projectImages[slug];
 const gallery = projectGalleries[slug];
 const galleryEntryId = `project-gallery.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const containedHero = ['ch-besaya', 'ch-dorias', 'ch-queltehues'].includes(slug);
+const participantSummary = contratista
+  ? `Contratista: ${contratista}${mandante ? ` · Mandante: ${mandante}` : ''}`
+  : cliente
+    ? `Cliente: ${cliente}`
+    : undefined;
 
 const servicioHref: Record<string, string> = {
   tuberias: '/servicios/tuberias-forzadas',
@@ -60,7 +78,7 @@ const jsonLd = {
   <PageHero
     badge={categoriaLabels[categoria] ?? categoria}
     title={nombre}
-    subtitle={cliente ? `Cliente: ${cliente}` : undefined}
+    subtitle={participantSummary}
     imageSrc={heroImg?.src}
     imageAlt={heroImg?.alt}
     imageWidth={heroImg?.width}
@@ -71,6 +89,7 @@ const jsonLd = {
     cmsTitleField="nombre"
     cmsSubtitleField={false}
     cmsImageEntry={projectImageEntry}
+    imagePresentation={containedHero ? 'contained' : 'cover'}
   />
 
   <Section variant="default">
@@ -96,7 +115,9 @@ const jsonLd = {
                 <dl class="space-y-3">
                   {diametro && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">Diámetro</dt>
+                      <dt class="text-xs text-text-muted uppercase tracking-wide">
+                        {diametro.includes('/') ? 'Diámetros principales' : 'Diámetro'}
+                      </dt>
                       <dd class="font-mono font-semibold text-text">{diametro}</dd>
                     </div>
                   )}
@@ -130,12 +151,31 @@ const jsonLd = {
           }
 
           {
-            cliente && (
+            (cliente || contratista || mandante) && (
               <div class="p-5 border border-border rounded-none bg-surface">
                 <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2">
-                  Cliente
+                  Participantes
                 </h3>
-                <p class="text-sm text-text font-semibold">{cliente}</p>
+                <dl class="space-y-2 text-sm">
+                  {contratista && (
+                    <div>
+                      <dt class="text-text-muted">Contratista</dt>
+                      <dd class="font-semibold text-text">{contratista}</dd>
+                    </div>
+                  )}
+                  {mandante && (
+                    <div>
+                      <dt class="text-text-muted">Mandante</dt>
+                      <dd class="font-semibold text-text">{mandante}</dd>
+                    </div>
+                  )}
+                  {!contratista && !mandante && cliente && (
+                    <div>
+                      <dt class="text-text-muted">Cliente</dt>
+                      <dd class="font-semibold text-text">{cliente}</dd>
+                    </div>
+                  )}
+                </dl>
               </div>
             )
           }

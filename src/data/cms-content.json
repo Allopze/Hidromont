@@ -133,7 +133,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Conozca cómo trabaja Hidromont y qué soluciones técnicas ofrecemos para proyectos de mediana y gran envergadura."
+          "value": "Conozca los procesos de ingeniería, fabricación y montaje que aplica Hidromont en sus proyectos."
         },
         "title": {
           "type": "text",
@@ -178,10 +178,6 @@
         "logo-conpax": {
           "type": "image",
           "value": "/logos-clientes/conpax.png"
-        },
-        "logo-edp": {
-          "type": "image",
-          "value": "/logos-clientes/edp-hc-energia.png"
         },
         "logo-elecnor": {
           "type": "image",
@@ -355,7 +351,7 @@
         },
         "requiredNote": {
           "type": "textarea",
-          "value": "Los campos marcados con * son obligatorios. Te contactaremos a la brevedad."
+          "value": "Los campos marcados con * son obligatorios. Le contactaremos después de revisar su consulta."
         },
         "serviceLabel": {
           "type": "text",
@@ -419,7 +415,7 @@
       "fields": {
         "description": {
           "type": "textarea",
-          "value": "Tu mensaje ha sido enviado correctamente. El equipo de Hidromont Chile te contactará a la brevedad."
+          "value": "Su mensaje fue enviado correctamente. El equipo de Hidromont Chile le contactará después de revisarlo."
         },
         "pageTitle": {
           "type": "text",
@@ -435,7 +431,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Tu mensaje fue enviado correctamente. Te contactaremos a la brevedad."
+          "value": "Su mensaje fue enviado correctamente. Le contactaremos después de revisarlo."
         },
         "title": {
           "type": "text",
@@ -497,7 +493,7 @@
         },
         "title": {
           "type": "text",
-          "value": "¿Quiere conocer nuestras capacidades?"
+          "value": "¿Necesita revisar un alcance técnico?"
         }
       }
     },
@@ -541,11 +537,11 @@
         },
         "p2": {
           "type": "textarea",
-          "value": "La compañía se especializa en la ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Su foco técnico permite abordar proyectos complejos bajo modalidad llave en mano, entregando soluciones adaptadas a las necesidades de cada obra."
+          "value": "La compañía realiza ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas."
         },
         "p3": {
           "type": "textarea",
-          "value": "Somos especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico."
+          "value": "Realizamos montajes hidráulicos e industriales de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas."
         },
         "title": {
           "type": "text",
@@ -689,7 +685,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Contamos con maquinaria industrial de alto rendimiento para fabricación, mecanizado, soldadura, corte y montaje de equipos hidromecánicos de cualquier dimensión."
+          "value": "El taller dispone de equipos para fabricación, mecanizado, soldadura, corte y montaje de componentes hidromecánicos."
         },
         "title": {
           "type": "text",
@@ -711,7 +707,7 @@
         },
         "item2": {
           "type": "text",
-          "value": "Camiones pluma de hasta 9.000 kg de capacidad de levante"
+          "value": "Camiones pluma para maniobras de montaje en terreno"
         },
         "item3": {
           "type": "text",
@@ -933,10 +929,10 @@
               "destacada": false
             },
             {
-              "src": "/fotos/curadas/turbinas.jpg",
-              "alt": "Sala de máquinas con turbinas hidráulicas",
-              "width": 474,
-              "height": 271,
+              "src": "/fotos/curadas/turbinas-obra-1.webp",
+              "alt": "Mantenimiento de componente de turbina hidráulica en taller",
+              "width": 1200,
+              "height": 900,
               "titulo": "Sala de turbinas",
               "proyecto": "",
               "categoria": "turbinas",
@@ -1880,7 +1876,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Capacidad técnica y experiencia comprobada"
+          "value": "Ingeniería, fabricación y montaje"
         }
       }
     },
@@ -1902,7 +1898,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Estamos disponibles para presentar nuestra trayectoria, capacidades técnicas y experiencia en proyectos hidromecánicos nacionales e internacionales."
+          "value": "Podemos revisar los antecedentes técnicos y el alcance de su proyecto hidromecánico."
         },
         "title": {
           "type": "text",
@@ -1994,7 +1990,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Soluciones hidromecánicas llave en mano"
+          "value": "Servicios hidromecánicos"
         }
       }
     },
@@ -2614,7 +2610,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Experiencia comprobada en embalses, presas y centrales"
+          "value": "Registro de obras hidráulicas e hidroeléctricas"
         }
       }
     },
@@ -2964,19 +2960,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Estructuras metálicas y obras civiles de infraestructura"
+          "value": "Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta"
         },
         "imageHeight": {
           "type": "number",
-          "value": 629
+          "value": 720
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1600
         }
       }
     },
@@ -3074,19 +3070,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/turbinas.jpg"
+          "value": "/fotos/curadas/turbinas-obra-1.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Sala de máquinas con turbinas hidráulicas"
+          "value": "Mantenimiento de componente de turbina hidráulica en taller"
         },
         "imageHeight": {
           "type": "number",
-          "value": 271
+          "value": 900
         },
         "imageWidth": {
           "type": "number",
-          "value": 474
+          "value": 1200
         }
       }
     },
@@ -3122,7 +3118,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Converse con nuestro equipo técnico sobre su proyecto y las capacidades de Hidromont."
+          "value": "Converse con nuestro equipo técnico sobre los requisitos de su proyecto."
         },
         "title": {
           "type": "text",
@@ -3152,7 +3148,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Soluciones hidromecánicas llave en mano"
+          "value": "Servicios hidromecánicos"
         }
       }
     },
@@ -3244,7 +3240,7 @@
         },
         "descripcionLarga": {
           "type": "textarea",
-          "value": "Especialistas en montajes hidráulicos e industriales, con experiencia en tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas. Integramos ingeniería, fabricación y montaje para entregar soluciones seguras, robustas y adaptadas a cada proyecto hidroeléctrico o hidráulico."
+          "value": "Realizamos ingeniería, fabricación y montaje de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para obras hidráulicas e hidroeléctricas."
         },
         "domicilio": {
           "type": "text",

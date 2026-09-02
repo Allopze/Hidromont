@@ -5,11 +5,11 @@
 Extraccion, limpieza y estructuracion de informacion corporativa,
 servicios, capacidades, proyectos, clientes y contacto.
 
-*Fuente principal: dossier corporativo Hidromont Chile S.A., publicado
-en marzo de 2024.*
+_Fuente principal: dossier corporativo Hidromont Chile S.A., publicado
+en marzo de 2024._
 
 | **Campo**             | **Dato clave para web**                                                                                                                                         |
-|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Nombre comercial      | Hidromont Chile S.A.                                                                                                                                            |
 | Especialidad          | Ingenieria, fabricacion y montaje de equipos hidromecanicos para embalses y centrales hidroelectricas.                                                          |
 | Trayectoria           | Empresa espanola, activa desde 1983; con sede en la Region del Biobio, Chile, desde 1997; mas de 30 anos en proyectos hidraulicos nacionales e internacionales. |
@@ -233,14 +233,13 @@ compuerta.
 
 - **Normas de diseno:** DIN 19704-1, DIN 19704-2, DIN 19705, ASME,
   Directiva de Maquinas 2006/42/CE y Directiva de Equipos a Presion
-  2014/68/EN PED.
+  2014/68/EU (PED).
 
 ## Turbinas
 
 Trabajos mecanicos en turbinas hidraulicas: montaje de nuevas
 instalaciones, mantenimientos, reparaciones y rehabilitaciones de
-turbinas Pelton, Francis, Kaplan y Bulbo, desde minicentrales hasta
-potencias de 106 MVA.
+turbinas Pelton, Francis, Kaplan y Bulbo.
 
 - Desmontaje, rehabilitacion, recuperacion, fabricacion y montaje de
   componentes.
@@ -248,7 +247,7 @@ potencias de 106 MVA.
 - Recuperacion de rodetes deteriorados por cavitacion, alineaciones,
   equilibrados y mecanizados.
 
-- Experiencia en trabajos para Besalco, Iberdrola, Acciona, EDP, Endesa
+- Experiencia en trabajos para Besalco, Iberdrola, Acciona, Endesa
   y minicentrales.
 
 ## Limpiarrejas
@@ -311,7 +310,7 @@ logos autorizados y complementar con un listado textual para SEO y
 accesibilidad.
 
 | **Cliente**        | **Cliente**        | **Cliente**         | **Cliente**        |
-|--------------------|--------------------|---------------------|--------------------|
+| ------------------ | ------------------ | ------------------- | ------------------ |
 | Acciona            | Besalco            | Colbun              | Conpax             |
 | EDP                | HC Energia         | Elecnor             | Electrica Puntilla |
 | Engie              | Endesa             | FCC                 | Ferrovial          |
@@ -331,12 +330,9 @@ categoria.
 
 ## 8.1 Fichas sugeridas de casos destacados
 
-**C.H. Los Condores:** Proyecto de gran alcance con tuberia forzada DN
-2200, bifurcacion y ramales DN 2200-1600, blindaje vertical de 500 m,
-acceso vehicular y pieza de conexion. Se reportan materiales S460ML,
-presiones maximas de diseno de hasta 89 kg/cm2 en tuberia forzada y 65
-bar en blindaje vertical, caudal nominal de 25 m3/s y espesores de hasta
-38 mm en tuberia principal. Cliente: Ferrovial S.A.
+**C.H. Los Condores:** Fabricacion y montaje de 1.200 m de blindaje DN
+2200 y ramales DN 1600, incluidos 132 m instalados en pique. Peso total
+documentado: 2.448 t. Cliente: Ferrovial S.A.
 
 **Embalse Chironta:** Ingenieria, suministro y montaje de equipos con
 tuberia DN 1600 de 360 m, valvulas Bureau, mariposa DN 1600/DN 1400/DN
@@ -367,7 +363,7 @@ con 425 m y diametro 1800 mm.
 ## 8.2 Banco de proyectos - Tuberias, blindajes y piezas especiales
 
 | **Proyecto**                   | **Alcance / datos relevantes**                                                                                                                                                                   | **Cliente**                  |
-|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
 | C.H. Nacaome (Honduras)        | Ingenieria, fabricacion y montaje de tuberia forzada DN 4000.                                                                                                                                    | Elecnor S.A.                 |
 | C.H. Mampil                    | Ingenieria, suministro, fabricacion y montaje de tuberia forzada DN 3500.                                                                                                                        | NECSO                        |
 | C.H. Peuchen                   | Ingenieria, suministro, fabricacion y montaje de tuberia forzada DN 2800.                                                                                                                        | NECSO                        |
@@ -398,7 +394,7 @@ con 425 m y diametro 1800 mm.
 | C.H. Rio Colorado              | Suministro, fabricacion y montaje de tuberia forzada DN 2100.                                                                                                                                    | GPE                          |
 | Embalse Valle Hermoso          | Suministro, fabricacion y montaje de blindajes y piezas especiales DN 1000 y DN 800.                                                                                                             | Conpax - Valco               |
 | C.H. Pangal                    | Reparacion y sustitucion de tuberias forzadas DN 1000 y DN 700.                                                                                                                                  | Pacific Hydro S.A.           |
-| C.H. Los Condores              | Ingenieria, fabricacion y montaje de tuberia forzada DN 2200; bifurcacion y ramales DN 2200-1600; longitud 1600 m.                                                                               | Ferrovial S.A.               |
+| C.H. Los Condores              | Fabricacion y montaje de 1.200 m de blindaje DN 2200 y ramales DN 1600; 132 m instalados en pique; peso total 2.448 t.                                                                           | Ferrovial S.A.               |
 | C.H. Hornitos                  | Ingenieria, suministro y fabricacion de junta de expansion.                                                                                                                                      | Colbun S.A.                  |
 | C.H. Blanco                    | Ingenieria, suministro, fabricacion y montaje de junta de expansion.                                                                                                                             | Colbun S.A.                  |
 | C.H. Ralco                     | Ingenieria, suministro, fabricacion y montaje de blindaje de chimenea de equilibrio.                                                                                                             | Acciona                      |
@@ -412,18 +408,13 @@ con 425 m y diametro 1800 mm.
 | C.H. Chacayes                  | Ingenieria, suministro, fabricacion y montaje de seccion de canal metalico para aislamiento de interseccion con Spillway.                                                                        | No indicado                  |
 | C.H. Pangal                    | Ingenieria, suministro, fabricacion y montaje de tuberias forzadas para reparacion de tramos existentes.                                                                                         | Pacific Hydro                |
 | Embalse Chironta               | Suministro y montaje de tuberia forzada DN 1600 con bifurcacion y ramales de salida a riego.                                                                                                     | Consorcio Dragados - Besalco |
-| C.H. Los Condores              | Ingenieria, suministro, fabricacion y montaje de tuberia vertical en presion, diametro 2200 mm, para pique subterraneo de 500 m de altura.                                                       | Ferrovial S.A.               |
 | C.H. Aillin                    | Suministro, fabricacion y montaje de tuberia en presion DN 1100.                                                                                                                                 | Constructora Obechile        |
-| C.H. Los Condores              | Ingenieria, suministro, fabricacion y montaje de tuberia en presion, diametro 3200 mm, longitud 1100 m, para tunel de aduccion.                                                                  | Ferrovial S.A.               |
-| C.H. Los Condores              | Ingenieria, suministro, fabricacion y montaje de tuberia blindada en presion, diametro 3400 mm, con transiciones de 3700 a 3400 mm; longitud 80 m.                                               | Ferrovial S.A.               |
-| C.H. Los Condores              | Ingenieria, suministro, fabricacion y montaje de acceso vehicular; bifurcacion con entrada 3200 mm y salidas 3200 y 2800 mm.                                                                     | Ferrovial S.A.               |
-| C.H. Los Condores              | Ingenieria, suministro, fabricacion y montaje de pieza de conexion que une tunel de aduccion, pique blindado en presion y chimenea de equilibrio; bifurcacion 3700 mm y ramales 3000/2200 mm.    | Ferrovial S.A.               |
 | C.H. Queltehues                | Ingenieria, fabricacion, desmontaje de tuberia existente, demolicion de machones y apoyos deslizantes, montaje de nueva tuberia de 1500 y 1800 mm, y reconstruccion de nuevos apoyos y machones. | AES Andes S.A.               |
 
 ## 8.3 Banco de proyectos - Compuertas y valvulas
 
 | **Proyecto**              | **Alcance / datos relevantes**                                                                                                                                                                              | **Cliente**                      |
-|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | C.H. Mampil               | Equipamiento hidromecanico completo.                                                                                                                                                                        | Elecnor S.A.                     |
 | C.H. Peuchen              | Equipamiento hidromecanico completo.                                                                                                                                                                        | Elecnor S.A.                     |
 | C.H. Rucue                | 2 ataguias de aislamiento.                                                                                                                                                                                  | Colbun S.A.                      |
@@ -454,7 +445,7 @@ con 425 m y diametro 1800 mm.
 ## 8.4 Banco de proyectos - Montajes electromecanicos
 
 | **Proyecto**        | **Alcance / datos relevantes**    | **Cliente**                       |
-|---------------------|-----------------------------------|-----------------------------------|
+| ------------------- | --------------------------------- | --------------------------------- |
 | C.H. Peuchen        | Montaje electromecanico completo. | Elecnor                           |
 | C.H. Mampil         | Montaje electromecanico completo. | Elecnor                           |
 | C.H. Ralco          | Apoyo a montaje electromecanico.  | Alstom                            |
@@ -466,7 +457,7 @@ con 425 m y diametro 1800 mm.
 ## 8.5 Banco de proyectos - Limpiarrejas
 
 | **Proyecto**  | **Alcance / datos relevantes**                                         | **Cliente**                       |
-|---------------|------------------------------------------------------------------------|-----------------------------------|
+| ------------- | ---------------------------------------------------------------------- | --------------------------------- |
 | C.H. Peuchen  | Suministro y montaje de rejas y limpiarrejas.                          | Elecnor                           |
 | C.H. Mampil   | Suministro y montaje de rejas y limpiarrejas.                          | Elecnor                           |
 | C.H. Mainco   | Ingenieria, suministro, fabricacion y montaje de rejas y limpiarrejas. | Mainco S.A.                       |
@@ -476,7 +467,7 @@ con 425 m y diametro 1800 mm.
 ## 8.6 Banco de proyectos - Estanques, estructuras y obras generales
 
 | **Proyecto**                    | **Alcance / datos relevantes**                                                                                                      | **Cliente**                  |
-|---------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | CELCO, San Jose de la Mariquina | Estanques DN 11000 (100 T), DN 11000 (145 T) y acero inoxidable DN 600 (50 T).                                                      | Maestranza Iquique           |
 | Celulosa Santa Fe               | Suministro y fabricacion de Feed Water DN 4800 (80 T).                                                                              | No indicado                  |
 | C.H. Peuchen                    | Reforzamiento estructural de canal de hormigon; vigas de refuerzo, anclajes y estructuras.                                          | Duqueco SpA                  |
@@ -487,7 +478,7 @@ con 425 m y diametro 1800 mm.
 Fuente PDF: paginas 6 y 58.
 
 | **Dato**         | **Informacion**                                                                                 |
-|------------------|-------------------------------------------------------------------------------------------------|
+| ---------------- | ----------------------------------------------------------------------------------------------- |
 | Razon social     | Hidromont Chile S.A.                                                                            |
 | Domicilio social | Av. Las Industrias No. 10.950, Longitudinal Sur, Km 513, Los Angeles, Region del Biobio, Chile. |
 | Direccion postal | Casilla 48 - Los Angeles, Region del Biobio, Chile.                                             |
@@ -510,7 +501,7 @@ dossier.
 ## Mapa de sitio sugerido
 
 | **Pagina** | **Contenido recomendado**                                                                                                            |
-|------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Inicio     | Hero, propuesta de valor, servicios principales, proyectos destacados, clientes, CTA de contacto.                                    |
 | Empresa    | Quienes somos, trayectoria desde 1983, presencia en Chile desde 1997, calidad, instalaciones y equipo tecnico.                       |
 | Servicios  | Vista general con acceso a paginas individuales: tuberias, compuertas, valvulas, turbinas, limpiarrejas y montajes.                  |
@@ -542,7 +533,7 @@ dossier.
 ## Microcopys y llamados a la accion
 
 | **Ubicacion web** | **Texto sugerido**                                                                  |
-|-------------------|-------------------------------------------------------------------------------------|
+| ----------------- | ----------------------------------------------------------------------------------- |
 | Boton principal   | Solicitar asesoria tecnica                                                          |
 | Boton secundario  | Ver experiencia en proyectos                                                        |
 | Servicios         | Soluciones hidromecanicas llave en mano, desde ingenieria hasta montaje.            |

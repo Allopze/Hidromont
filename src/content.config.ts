@@ -15,6 +15,8 @@ const proyectos = defineCollection({
     z.object({
       nombre: z.string(),
       cliente: z.string().optional(),
+      mandante: z.string().optional(),
+      contratista: z.string().optional(),
       alcance: z.string(),
       categoria: categoriaProyecto,
       tipo: z.enum(['destacado', 'banco']).default('banco'),

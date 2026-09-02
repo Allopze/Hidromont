@@ -5,7 +5,9 @@ alcance: >-
   Fabricación de válvulas de repuesto para el MOP.
 categoria: compuertas
 cliente: Consorcio Dragados - Besalco / M.O.P. / D.O.H.
-diametro: DN 1600 / DN 1400 / DN 800
+contratista: Consorcio Dragados - Besalco
+mandante: M.O.P. / D.O.H.
+diametro: DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350
 longitud: 360 m
 nombre: Embalse Chironta
 orden: 2

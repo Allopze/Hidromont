@@ -91,7 +91,12 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
                   {p.data.alcance}
                 </td>
                 <td class="px-5 py-4 align-top whitespace-nowrap">
-                  <span class="text-text-muted">{p.data.cliente ?? '—'}</span>
+                  <span class="text-text-muted">{p.data.contratista ?? p.data.cliente ?? '—'}</span>
+                  {p.data.mandante && (
+                    <span class="block text-xs text-text-muted mt-0.5">
+                      Mandante: {p.data.mandante}
+                    </span>
+                  )}
                   {p.data.ubicacion && p.data.ubicacion !== 'Chile' && (
                     <span class="block font-mono text-xs text-primary mt-0.5">
                       {p.data.ubicacion}
@@ -144,10 +149,11 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
 
             <p class="text-sm text-text-muted leading-relaxed mb-3">{p.data.alcance}</p>
 
-            {p.data.cliente && (
+            {(p.data.cliente || p.data.contratista || p.data.mandante) && (
               <div class="flex items-center gap-2 flex-wrap text-xs text-text-muted">
-                <span>Cliente:</span>
-                <span class="font-medium text-text">{p.data.cliente}</span>
+                <span>{p.data.contratista ? 'Contratista:' : 'Cliente:'}</span>
+                <span class="font-medium text-text">{p.data.contratista ?? p.data.cliente}</span>
+                {p.data.mandante && <span>Mandante: {p.data.mandante}</span>}
                 {p.data.ubicacion && p.data.ubicacion !== 'Chile' && (
                   <span class="font-mono text-primary">{p.data.ubicacion}</span>
                 )}

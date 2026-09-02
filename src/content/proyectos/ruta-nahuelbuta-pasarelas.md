@@ -13,7 +13,7 @@ tipo: banco
 ubicacion: 'Ruta Nahuelbuta, Chile'
 ---
 
-El proyecto contempla el desarrollo completo de las cúpulas de protección para ocho pasarelas peatonales a lo largo del trazado de mejoramiento vial, garantizando la seguridad, durabilidad y protección climática de los usuarios.
+El proyecto contempla la fabricación de cúpulas de protección para ocho pasarelas peatonales del trazado de mejoramiento vial.
 
 ## Alcance del proyecto
 

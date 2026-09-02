@@ -47,12 +47,12 @@ tipos:
 titulo: Tuberías Forzadas y Blindajes
 ---
 
-Hidromont Chile S.A. Ejecuta proyectos completos llave en mano para tuberías forzadas y blindajes, integrando ingeniería, fabricación especializada y montaje en terreno. Nuestra experiencia abarca desde minicentrales hasta proyectos de gran envergadura con diámetros superiores a 5.500 mm y presiones de diseño de hasta 89 kg/cm².
+Hidromont Chile ejecuta trabajos de ingeniería, fabricación y montaje de tuberías forzadas y blindajes para centrales hidroeléctricas y obras de conducción.
 
 ## Capacidad de fabricación
 
 Nuestro taller en Los Ángeles, Región del Biobío, cuenta con equipamiento especializado para fabricar tuberías de gran diámetro: cilindradora hidráulica de hasta 65 mm de espesor, máquinas de arco sumergido ESAB y mesa de corte de plasma y oxicorte de 12 m × 3 m.
 
-## Experiencia comprobada
+## Proyectos de referencia
 
-Hemos ejecutado proyectos de tuberías forzadas para centrales como C.H. Los Condores (DN 2200, 1.600 m), C.H. Queltehues (DN 1500/1800, 550 m), C.H. Ralco (blindaje DN 5500), C.H. Nacaome en Honduras (DN 4000) y más de 40 proyectos adicionales en Chile y el extranjero.
+Entre los trabajos publicados se encuentran C.H. Los Cóndores, con blindaje DN 2.200 y ramales DN 1.600, y C.H. Queltehues, con tubería DN 1.500/1.800. Las fichas de proyecto detallan el alcance documentado de cada obra.

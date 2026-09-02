@@ -1,4 +1,5 @@
 {
+  "id": "clientes",
   "items": [
     { "nombre": "Acciona", "sector": "construccion", "logo": "/logos-clientes/acciona.svg" },
     { "nombre": "AES Andes", "sector": "electrica", "logo": "/logos-clientes/aes-andes.png" },

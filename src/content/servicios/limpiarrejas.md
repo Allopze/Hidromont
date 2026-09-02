@@ -40,4 +40,4 @@ tipos:
 titulo: Limpiarrejas
 ---
 
-Los equipos limpiarrejas de Hidromont garantizan la libre admisión de agua en bocatomas, cámaras de carga y torres de toma, evitando obstrucciones por sólidos arrastrados por la corriente. Cada equipo se diseña a medida según las condiciones del proyecto.
+Los equipos limpiarrejas retiran sólidos acumulados en rejas de bocatomas, cámaras de carga y torres de toma. El diseño se ajusta al tipo de desecho, las dimensiones de la reja y las condiciones de operación del proyecto.

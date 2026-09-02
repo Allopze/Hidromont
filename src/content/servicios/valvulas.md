@@ -14,7 +14,7 @@ normas:
   - DIN 19705
   - ASME
   - Directiva de Máquinas 2006/42/CE
-  - Directiva de Equipos a Presión 2014/68/EN PED
+  - Directiva de Equipos a Presión 2014/68/EU (PED)
 orden: 8
 procesos:
   - titulo: Ingeniería
@@ -55,4 +55,4 @@ Las válvulas diseñadas y fabricadas por Hidromont cubren todo el espectro de a
 
 ## Capacidad técnica
 
-Fabricamos válvulas de cualquier diámetro y presión de trabajo. Nuestro equipo de ingeniería dimensiona cada válvula conforme a las normativas aplicables y realiza pruebas de presión y estanqueidad antes de la entrega.
+El diámetro y la presión de trabajo se definen según las condiciones hidráulicas y las normas aplicables a cada proyecto. Antes de la entrega se realizan las pruebas de presión y estanqueidad especificadas para el equipo.

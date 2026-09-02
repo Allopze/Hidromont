@@ -53,4 +53,4 @@ Diseñamos y fabricamos compuertas para cualquier requerimiento de control hidr�
 
 ## Proyectos destacados en compuertas
 
-Hemos suministrado y montado compuertas en proyectos como Embalse Chironta, Embalse Chacrillas, Embalse El Bato, C.H. Pulelfu (4 compuertas radiales + 7 de emergencia + 3 vagón), Bocatoma Canal San Carlos (2 compuertas radiales 5×5 m) y más de 20 proyectos adicionales.
+Las referencias publicadas incluyen trabajos en Embalse Chironta y Embalse Chacrillas. Cada ficha indica los equipos y diámetros que cuentan con respaldo editorial.

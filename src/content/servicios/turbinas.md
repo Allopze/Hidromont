@@ -25,8 +25,7 @@ procesos:
       piezas de precisión requeridas en reparaciones.
 resumen: >-
   Montaje de nuevas instalaciones, mantenimientos, reparaciones y
-  rehabilitaciones de turbinas Pelton, Francis, Kaplan y Bulbo. Desde
-  minicentrales hasta potencias de 106 MVA.
+  rehabilitaciones de turbinas Pelton, Francis, Kaplan y Bulbo.
 tipos:
   - Turbina Pelton
   - Turbina Francis
@@ -35,8 +34,8 @@ tipos:
 titulo: Turbinas Hidráulicas
 ---
 
-Hidromont ejecuta todos los trabajos mecánicos requeridos en turbinas hidráulicas: desde el montaje completo de nuevas instalaciones hasta la rehabilitación integral de máquinas con deterioro por cavitación o desgaste prolongado.
+Hidromont realiza montaje, mantenimiento y reparación mecánica de turbinas hidráulicas. El trabajo puede incluir recuperación de componentes afectados por cavitación, alineación, equilibrado y mecanizado.
 
 ## Experiencia en turbinas
 
-Hemos trabajado en turbinas para clientes como Besalco, Iberdrola, Acciona, EDP, Endesa y múltiples minicentrales en Chile y el extranjero. Nuestros tornos de hasta 6 m y el torno al aire con volteo de 4,5 m permiten mecanizar piezas de gran tamaño en taller propio.
+Las referencias disponibles incluyen trabajos para Besalco, Iberdrola, Acciona y Endesa, además de intervenciones en minicentrales.

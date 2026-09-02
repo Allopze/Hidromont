@@ -12,6 +12,7 @@
     "cms:import-gallery": "tsx cms/scripts/import-gallery-json.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",
+    "cms:migrate-audited-content": "tsx cms/scripts/migrate-audited-content.ts",
     "cms:reset-password": "tsx cms/scripts/reset-password.ts",
     "build": "astro check && astro build",
     "preview": "astro preview",

@@ -41,8 +41,8 @@ tipos:
 titulo: Montajes y Fabricaciones Especiales
 ---
 
-Hidromont complementa sus servicios principales con capacidades de montaje electromecánico general y fabricación de estructuras metálicas para cualquier requerimiento de infraestructura hidráulica e industrial.
+Hidromont realiza montajes electromecánicos y fabrica estructuras metálicas para obras hidráulicas e instalaciones industriales, de acuerdo con el alcance definido para cada proyecto.
 
 ## Estanques y estructuras
 
-Hemos fabricado estanques de gran capacidad para la industria de la celulosa, incluyendo estanques DN 11.000 de hasta 145 toneladas y estructuras de soporte para plantas industriales. También ejecutamos reforzamientos estructurales de canales de hormigón y construcción de vigas para puentes sobre canales de descarga.
+El trabajo en taller incluye estanques y estructuras de soporte para plantas industriales. En terreno también se han ejecutado refuerzos de canales de hormigón y vigas para puentes sobre canales de descarga.

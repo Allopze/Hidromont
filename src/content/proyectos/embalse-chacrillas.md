@@ -6,6 +6,8 @@ alcance: >-
   descarga de caudal ecológico DN 500.
 categoria: compuertas
 cliente: Constructora OHL
+contratista: Constructora OHL
+mandante: M.O.P. / D.O.H.
 diametro: DN 1000 / DN 1600
 nombre: Embalse Chacrillas
 orden: 7
@@ -34,7 +36,7 @@ El Embalse Chacrillas fue un proyecto integral que incluyó tanto la fabricació
 - Válvula mariposa DN 500.
 - Válvula Howell-Bunger DN 350.
 
-## Clientes
+## Participantes
 
-- **Constructora OHL** (equipamiento principal)
-- **M.O.P. / D.O.H.** (caudal ecológico)
+- **Contratista:** Constructora OHL.
+- **Mandante:** M.O.P. / D.O.H.

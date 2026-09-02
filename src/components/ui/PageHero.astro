@@ -26,6 +26,7 @@ interface Props {
   cmsTitleField?: string | false;
   cmsSubtitleField?: string | false;
   compact?: boolean; // tighter vertical rhythm (text-only layout) — e.g. gallery/index pages
+  imagePresentation?: 'cover' | 'contained';
 }
 
 const {
@@ -44,6 +45,7 @@ const {
   cmsTitleField = 'title',
   cmsSubtitleField = 'subtitle',
   compact = false,
+  imagePresentation = 'cover',
 } = Astro.props;
 
 const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg:py-24';
@@ -137,10 +139,19 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
         <div
           class="flex-1 relative overflow-hidden min-h-[280px] lg:min-h-0"
           data-reveal-cinematic
+          data-image-presentation={imagePresentation}
           style="--reveal-delay: 0.06s;"
         >
           {/* Parallax wrapper: oversized to allow pan without edge bleed */}
-          <div class="absolute w-full" style="top: -6%; height: 112%;" data-parallax="0.04">
+          <div
+            class:list={[
+              'absolute w-full',
+              imagePresentation === 'contained' &&
+                'inset-0 flex items-center justify-center p-6 lg:p-10',
+            ]}
+            style={imagePresentation === 'contained' ? undefined : 'top: -6%; height: 112%;'}
+            data-parallax={imagePresentation === 'contained' ? undefined : '0.04'}
+          >
             {videoSrc ? (
               <>
                 <video
@@ -153,7 +164,11 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
                   preload="metadata"
                   aria-label={videoAlt || imageAlt}
                   data-hero-video
-                  class="w-full h-full object-cover"
+                  class={
+                    imagePresentation === 'contained'
+                      ? 'max-w-full max-h-full object-contain'
+                      : 'w-full h-full object-cover'
+                  }
                 />
                 {imageSrc && (
                   <img
@@ -162,7 +177,11 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
                     width={imageWidth}
                     height={imageHeight}
                     data-hero-video-poster
-                    class="w-full h-full object-cover"
+                    class={
+                      imagePresentation === 'contained'
+                        ? 'max-w-full max-h-full object-contain'
+                        : 'w-full h-full object-cover'
+                    }
                   />
                 )}
               </>
@@ -178,7 +197,16 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
                 loading="eager"
                 fetchpriority="high"
                 decoding="async"
-                class="w-full h-full object-cover"
+                class={
+                  imagePresentation === 'contained'
+                    ? 'w-auto h-auto max-w-full max-h-full object-contain'
+                    : 'w-full h-full object-cover'
+                }
+                style={
+                  imagePresentation === 'contained'
+                    ? `max-width:${imageWidth}px;max-height:${imageHeight}px`
+                    : undefined
+                }
               />
             )}
           </div>

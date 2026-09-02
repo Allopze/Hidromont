@@ -20,6 +20,4 @@ C.H. Besaya fue un proyecto de rehabilitación en España que requirió el uso d
 - **Logística especial:** transporte de la tubería hasta el punto de montaje mediante teleférico.
 - **Montaje:** instalación del tramo nuevo, conexión con la tubería antigua mediante cono de transición, construcción de nuevo apoyo de hormigón y punto fijo.
 
-## Aspectos técnicos
-
-Este proyecto ejemplifica la capacidad de Hidromont para ejecutar montajes en condiciones de acceso difícil, empleando medios de transporte especiales cuando la topografía o las condiciones de la obra lo requieren.
+El acceso al punto de montaje requirió transportar la tubería por teleférico y coordinar la instalación con la obra civil de apoyo.
