@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from './config/unifiedConfig';
 
-const distDir = path.join(config.rootDir, 'dist');
+const distDir = config.cms.staticDir;
 
 const contentTypes: Record<string, string> = {
   '.css': 'text/css; charset=utf-8',
@@ -53,7 +53,9 @@ async function serveStaticSite(request: FastifyRequest, reply: FastifyReply) {
   return reply.send(fs.createReadStream(filePath));
 }
 
-async function resolvePublicFile(pathname: string): Promise<{ filePath: string; statusCode: number } | null> {
+async function resolvePublicFile(
+  pathname: string
+): Promise<{ filePath: string; statusCode: number } | null> {
   if (pathname.startsWith(`${config.cms.publicUploadBase}/`)) {
     const uploadPath = pathname.slice(config.cms.publicUploadBase.length + 1);
     const filePath = await findContainedFile(config.cms.uploadDir, uploadPath);
@@ -61,10 +63,7 @@ async function resolvePublicFile(pathname: string): Promise<{ filePath: string; 
   }
 
   const relativePath = pathname === '/' ? 'index.html' : pathname.slice(1);
-  const candidates = [
-    relativePath,
-    path.join(relativePath, 'index.html'),
-  ];
+  const candidates = [relativePath, path.join(relativePath, 'index.html')];
 
   for (const candidate of candidates) {
     const filePath = await findContainedFile(distDir, candidate);
@@ -100,7 +99,10 @@ function getPathname(url: string): string {
 }
 
 function cacheControlFor(pathname: string, extension: string): string {
-  if (pathname.startsWith('/_assets/') || ['.webp', '.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(extension)) {
+  if (
+    pathname.startsWith('/_assets/') ||
+    ['.webp', '.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(extension)
+  ) {
     return 'public, max-age=31536000, immutable';
   }
 

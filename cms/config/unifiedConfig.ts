@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveStaticDir } from './staticDir';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -41,6 +42,7 @@ export const config = {
   cms: {
     host: process.env.CMS_HOST ?? '127.0.0.1',
     port: intFromEnv('CMS_PORT', intFromEnv('PORT', 8787)),
+    staticDir: resolveStaticDir(rootDir, process.env.CMS_STATIC_DIR),
     databasePath:
       process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
     allowedOrigins: csvFromEnv('CMS_ALLOWED_ORIGINS', [

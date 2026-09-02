@@ -1,6 +1,7 @@
 # Build output
 dist/
 .astro/
+.capture/
 
 # Environment
 .env
