@@ -24,7 +24,7 @@ procesos:
   - titulo: Fabricación
     descripcion: >-
       Mecanizado de precisión, soldadura especializada y protección superficial
-      en taller propio.
+      en taller.
   - titulo: Montaje
     descripcion: >-
       Instalación, conexión hidráulica y pruebas de funcionamiento y

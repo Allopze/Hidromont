@@ -1908,7 +1908,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles."
+          "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles."
         },
         "title": {
           "type": "text",
@@ -1938,7 +1938,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Taller propio en Los Ángeles, Biobío"
+          "value": "Taller en Los Ángeles, Biobío"
         }
       }
     },

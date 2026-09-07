@@ -351,7 +351,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles.',
+          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles.',
       },
       primaryLabel: { type: 'text', value: 'Conocer nuestros servicios' },
       secondaryLabel: { type: 'text', value: 'Ver proyectos' },
