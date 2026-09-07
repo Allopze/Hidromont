@@ -38,4 +38,4 @@ En el taller de Los Ángeles se realizan el rolado de mantos y tapas, la soldadu
 
 Para **Gasco** fabricamos tanques de GLP destinados a la planta de almacenamiento y distribución de Coyhaique.
 
-También fabricamos **tres tanques aéreos de 18.000 galones cada uno** para la planta de distribución de GLP de Puerto Williams.
+También fabricamos tres tanques aéreos de 18.000 galones cada uno para la planta de distribución de GLP de Puerto Williams.

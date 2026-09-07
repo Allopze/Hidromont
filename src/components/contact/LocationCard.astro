@@ -40,7 +40,15 @@ const mapsUrl =
       <circle cx="12" cy="10" r="2.5"></circle>
     </svg>
   </div>
-  <h2 id="location-card-title" class="mt-8 font-heading text-xl font-bold">Hidromont Chile</h2>
+  <h2
+    id="location-card-title"
+    class:list={[
+      'mt-8 font-heading text-xl font-bold',
+      theme === 'dark' ? 'text-white' : 'text-primary-dark',
+    ]}
+  >
+    Hidromont Chile
+  </h2>
   <p
     class:list={[
       'mt-2 text-sm leading-relaxed',

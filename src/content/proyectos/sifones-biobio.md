@@ -1,5 +1,5 @@
 ---
-alcance: Reparación post terremoto de sifones Mulchén y Bureo DN 3200.
+alcance: Reparación postterremoto de sifones Mulchén y Bureo DN 3.200.
 categoria: estructuras
 cliente: Mainco S.A.
 diametro: DN 3200

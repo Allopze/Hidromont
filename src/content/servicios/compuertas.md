@@ -53,4 +53,4 @@ Diseñamos y fabricamos compuertas para cualquier requerimiento de control hidr�
 
 ## Proyectos destacados en compuertas
 
-Las referencias publicadas incluyen trabajos en Embalse Chironta y Embalse Chacrillas. Cada ficha indica los equipos y diámetros que cuentan con respaldo editorial.
+Las referencias publicadas incluyen trabajos en Embalse Chironta y Embalse Chacrillas, cada una con sus equipos y diámetros documentados.

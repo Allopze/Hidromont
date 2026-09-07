@@ -21,7 +21,7 @@ El Embalse Chacrillas fue un proyecto integral que incluyó tanto la fabricació
 
 **Blindajes y tuberías:**
 
-- Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales DN 1.000-1.600 mm.
+- Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales DN 1.000-1.600.
 
 **Equipamiento hidromecánico:**
 
@@ -30,13 +30,8 @@ El Embalse Chacrillas fue un proyecto integral que incluyó tanto la fabricació
 - 2 válvulas mariposa DN 1.000.
 - 2 válvulas Howell-Bunger DN 760.
 
-**Caudal ecológico (M.O.P./D.O.H.):**
+**Caudal ecológico (M.O.P. / D.O.H.):**
 
 - Tubería de descarga DN 500.
 - Válvula mariposa DN 500.
 - Válvula Howell-Bunger DN 350.
-
-## Participantes
-
-- **Contratista:** Constructora OHL.
-- **Mandante:** M.O.P. / D.O.H.

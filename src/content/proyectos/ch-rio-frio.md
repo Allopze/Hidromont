@@ -17,17 +17,5 @@ C.H. Río Frío es un proyecto de tubería forzada de larga longitud ejecutado e
 ## Alcance del proyecto
 
 - **Ingeniería:** proyecto completo de la tubería forzada con transiciones de diámetro y análisis de la sección vertical.
-- **Fabricación:** tubería en dos diámetros: DN 1.200 mm y DN 1.000 mm.
+- **Fabricación:** tubería en dos diámetros, DN 1.200 y DN 1.000.
 - **Montaje:** instalación de 1.655 m de tubería, incluyendo 185 m en sección vertical.
-
-## Datos técnicos
-
-| Parámetro                 | Valor                  |
-| ------------------------- | ---------------------- |
-| Longitud total            | 1.655 m                |
-| Diámetros                 | DN 1.200 / DN 1.000 mm |
-| Longitud sección vertical | 185 m                  |
-
-## Cliente
-
-**Norvento (España)**

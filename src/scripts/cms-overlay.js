@@ -87,6 +87,10 @@
     .hm-cms-panel button.destructive:hover {
       background: #fecaca;
     }
+    /* La barra flotante tapa el final de la página: damos aire al contenido. */
+    body.hm-cms-active {
+      padding-bottom: 84px;
+    }
     .hm-cms-panel {
       pointer-events: auto;
       position: fixed;
@@ -398,6 +402,29 @@
       color: #172331;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+    /* Sin este relevo de especificidad, la regla genérica
+       ".hm-cms-panel button" (azul) pisaba a ".hm-cms-tab": las pestañas
+       inactivas se veían rellenas de azul y la activa blanca, al revés. */
+    .hm-cms-panel .hm-cms-tab {
+      background: transparent;
+      color: #475569;
+      border: 0;
+    }
+    .hm-cms-panel .hm-cms-tab.active {
+      background: white;
+      color: #172331;
+    }
+    /* Los botones secundarios del cuerpo claro del panel (Editar, Volver,
+       Cancelar) necesitan fondo visible: el "secondary" blanco al 10% está
+       pensado para el header oscuro y aquí desaparecía. */
+    .hm-cms-panel main button.secondary {
+      background: white;
+      color: #1f2933;
+      border: 1px solid #cbd5e1;
+    }
+    .hm-cms-panel main button.secondary:hover {
+      background: #f1f5f9;
+    }
     .hm-cms-entry-form {
       display: grid;
       gap: 12px;
@@ -511,11 +538,11 @@
     <div class="hm-cms-bar">
       <strong>Hidromont CMS</strong>
       <span class="hm-cms-badge" data-state-badge style="display:none"></span>
-      <button type="button" class="secondary" data-action="collections">Colecciones</button>
-      <button type="button" class="secondary" data-action="gallery">Galería</button>
-      <button type="button" class="secondary" data-action="jobs">Historial</button>
-      <button type="button" data-action="publish" title="Exporta el contenido a los archivos del sitio y ejecuta la validación (astro check). El despliegue a hidromont.cl es un paso aparte.">Exportar y validar</button>
-      <button type="button" class="secondary" data-action="logout">Salir</button>
+      <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
+      <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
+      <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
+      <button type="button" data-action="publish" data-auth hidden title="Exporta el contenido a los archivos del sitio y ejecuta la validación (astro check). El despliegue a hidromont.cl es un paso aparte.">Exportar y validar</button>
+      <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
     </div>
     <aside class="hm-cms-panel" aria-label="Editor CMS">
       <header>
@@ -526,6 +553,16 @@
     </aside>
   `;
   document.body.appendChild(shell);
+  document.body.classList.add('hm-cms-active');
+
+  // Las acciones de la barra solo existen con sesión iniciada: sin sesión se
+  // muestra el rótulo "Hidromont CMS" y nada más (antes "Salir" aparecía sin
+  // haber entrado, y Colecciones/Galería/Historial invitaban a clicks fallidos).
+  function setAuthenticatedUI(isAuthenticated) {
+    shell.querySelectorAll('[data-auth]').forEach((el) => {
+      el.hidden = !isAuthenticated;
+    });
+  }
 
   const panel = shell.querySelector('.hm-cms-panel');
   const panelBody = shell.querySelector('[data-panel-body]');
@@ -641,14 +678,14 @@
     openPanel(`
       <form data-login>
         <label>Correo electrónico
-          <input name="email" type="email" autocomplete="username" value="admin@hidromont.local" required />
+          <input name="email" type="email" autocomplete="username" required />
         </label>
         <label>Contraseña
           <input name="password" type="password" autocomplete="current-password" required />
         </label>
         ${error ? `<p class="hm-cms-error">${escapeHtml(error)}</p>` : ''}
         <button type="submit">Entrar</button>
-        <p class="hm-cms-muted">Servidor CMS: ${apiBase}</p>
+        ${config.isDev ? `<p class="hm-cms-muted">Servidor CMS: ${apiBase}</p>` : ''}
       </form>
     `);
   }
@@ -657,12 +694,15 @@
     try {
       const session = await api('/api/cms/session');
       if (!session.authenticated) {
+        setAuthenticatedUI(false);
         loginView();
         return false;
       }
       state.csrfToken = session.csrfToken;
+      setAuthenticatedUI(true);
       return true;
     } catch (error) {
+      setAuthenticatedUI(false);
       loginView(error.message);
       return false;
     }

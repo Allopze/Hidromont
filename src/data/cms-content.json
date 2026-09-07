@@ -355,7 +355,7 @@
         },
         "serviceLabel": {
           "type": "text",
-          "value": "Servicio requerido"
+          "value": "Servicio de interés"
         },
         "servicePlaceholder": {
           "type": "text",
@@ -435,7 +435,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Mensaje enviado correctamente"
+          "value": "Mensaje enviado"
         }
       }
     },
@@ -533,7 +533,7 @@
         },
         "p1": {
           "type": "textarea",
-          "value": "Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
+          "value": "Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 tiene sede en la Región del Biobío, Chile, y participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
         },
         "p2": {
           "type": "textarea",
@@ -641,7 +641,7 @@
         },
         "item10": {
           "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 KVA"
+          "value": "Grupos electrógenos de 100 a 200 kVA"
         },
         "item11": {
           "type": "text",
@@ -649,7 +649,7 @@
         },
         "item12": {
           "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 KVA"
+          "value": "Grupos electrógenos de 100 a 200 kVA"
         },
         "item2": {
           "type": "text",
@@ -715,7 +715,7 @@
         },
         "item4": {
           "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 KVA"
+          "value": "Grupos electrógenos de 100 a 200 kVA"
         },
         "item5": {
           "type": "text",
@@ -2158,7 +2158,7 @@
         },
         "navServiciosTuberias": {
           "type": "text",
-          "value": "Tuberías Forzadas"
+          "value": "Tuberías y Blindajes"
         },
         "navServiciosTurbinas": {
           "type": "text",

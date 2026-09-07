@@ -1,3 +1,31 @@
+import fs from 'fs';
+
+/**
+ * Lee el tamaño de un PNG desde su cabecera IHDR, sin dependencias:
+ * firma de 8 bytes + 4 de largo + 4 "IHDR" + 4 width (BE) + 4 height (BE).
+ * Devuelve null si el buffer no trae una cabecera PNG válida.
+ */
+export function readPngSize(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 24 || buffer.readUInt32BE(0) !== 0x89504e47) {
+    return null;
+  }
+  const width = buffer.readUInt32BE(16);
+  const height = buffer.readUInt32BE(20);
+  if (width <= 0 || height <= 0) return null;
+  return { width, height };
+}
+
+export function readPngSizeFromFile(filePath) {
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    const header = Buffer.alloc(24);
+    const read = fs.readSync(fd, header, 0, 24, 0);
+    return readPngSize(header.subarray(0, read));
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 export function collectRoutesFromHtmlPaths(relativePaths) {
   const routes = [];
   const skipped = [];

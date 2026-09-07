@@ -76,6 +76,11 @@ export const mobileMenuStyles = `
       font: 800 14px/1 Inter, system-ui, sans-serif;
       cursor: pointer;
     }
+    /* Sin sesión el launcher queda oculto: el atributo hidden debe ganarle a
+       la regla display:inline-flex de arriba. */
+    .hm-cms-mobile-launcher[hidden] {
+      display: none;
+    }
     .hm-cms-panel.open ~ .hm-cms-mobile-launcher {
       display: none;
     }
@@ -157,6 +162,8 @@ export function getMobileMenuRuntime() {
     launcher.setAttribute('aria-label', 'Abrir menú CMS');
     launcher.setAttribute('aria-expanded', 'false');
     launcher.setAttribute('aria-controls', 'hm-cms-mobile-sheet');
+    launcher.setAttribute('data-auth', '');
+    launcher.hidden = true;
 
     const sheet = document.createElement('section');
     sheet.id = 'hm-cms-mobile-sheet';
@@ -171,11 +178,11 @@ export function getMobileMenuRuntime() {
       </div>
       <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state></span>
       <div class="hm-cms-mobile-sheet-actions">
-        <button type="button" class="secondary" data-action="collections">Colecciones</button>
-        <button type="button" class="secondary" data-action="gallery">Galería</button>
-        <button type="button" class="secondary" data-action="jobs">Historial</button>
-        <button type="button" data-action="publish">Exportar y validar</button>
-        <button type="button" class="secondary" data-action="logout">Salir</button>
+        <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
+        <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
+        <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
+        <button type="button" data-action="publish" data-auth hidden>Exportar y validar</button>
+        <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
       </div>
     \`;
     shell.append(launcher, sheet);

@@ -25,31 +25,10 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
       {/* Brand & Map (Spans 3 columns on desktop) — hidden when hideMap */}
       {
         !hideMap && (
-          <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-[1.8fr_1fr] gap-8">
-            {/* Map Info (Left side on desktop) */}
-            <div class="flex flex-col justify-start pt-1">
-              <LocationCard theme="dark" />
-            </div>
-
-            {/* Brand Info */}
-            <div>
-              <div class="space-y-2 text-sm text-white/70">
-                <p>
-                  <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">
-                    Dirección
-                  </span>
-                  <>
-                    <EditableText entry="site.company" field="domicilio">
-                      {company.domicilio}
-                    </EditableText>
-                    <br />
-                  </>
-                  <EditableText entry="site.company" field="ciudad">
-                    {company.ciudad}
-                  </EditableText>
-                </p>
-              </div>
-            </div>
+          <div class="lg:col-span-3">
+            {/* La dirección vive solo en LocationCard: repetirla en la columna
+                de al lado la mostraba dos veces en el mismo pie. */}
+            <LocationCard theme="dark" />
           </div>
         )
       }
@@ -195,7 +174,9 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
               href={`mailto:${company.email}`}
               class="hover:text-white no-underline transition-colors duration-fast block break-all"
             >
-              <EditableText entry="site.company" field="email">{company.email}</EditableText>
+              <EditableText entry="site.company" field="email">
+                {company.email.split('@')[0]}@<wbr />{company.email.split('@')[1]}
+              </EditableText>
             </a>
           </p>
         </div>
@@ -210,7 +191,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
     >
       <p class="text-xs text-white/70">
         &copy; {year}
-        {company.razonSocial}. Todos los derechos reservados.
+        {company.razonSocial.replace(/\.+$/, '')}. Todos los derechos reservados.
       </p>
       <p class="text-xs text-white/60">
         <EditableText entry="layout.footer" field="location">

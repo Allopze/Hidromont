@@ -21,7 +21,7 @@ procesos:
   - titulo: Reparación
     descripcion: >-
       Reparación y reforzamiento de infraestructura existente, incluidas
-      intervenciones post-terremoto.
+      intervenciones postterremoto.
 resumen: >-
   Fabricación y montaje de estructuras metálicas para obras viales e
   hidráulicas. Hemos construido cúpulas para pasarelas peatonales, reparado
@@ -38,6 +38,6 @@ Fabricamos y montamos estructuras metálicas para obras viales e hidráulicas.
 
 ## Proyectos destacados en infraestructuras
 
-Para el mejoramiento de la **Ruta Nahuelbuta** fabricamos y montamos las cúpulas de protección de 8 pasarelas peatonales. Las estructuras se construyeron en módulos de 6 metros, con arcos de tubo galvanizado de 2", malla electrosoldada, barandas de acero A240ES y cubierta de policarbonato, y se montaron sobre las pasarelas con andamios mecano tubulares y equipos de elevación.
+Para el mejoramiento de la **Ruta Nahuelbuta** fabricamos y montamos las cúpulas de protección de 8 pasarelas peatonales. Las estructuras se construyeron en módulos de 6 metros, con arcos de tubo galvanizado de 2 pulgadas, malla electrosoldada, barandas de acero A240ES y cubierta de policarbonato, y se montaron sobre las pasarelas con andamios mecano tubulares y equipos de elevación.
 
-En obras hidráulicas ejecutamos la reparación post-terremoto de los **sifones Mulchén y Bureo DN 3200** para los canalistas del Biobío Sur, además de reforzamientos de canales de hormigón y estructuras vinculadas a embalses.
+En obras hidráulicas ejecutamos la reparación postterremoto de los **sifones Mulchén y Bureo DN 3.200** para los canalistas del Biobío Sur, además de reforzamientos de canales de hormigón y estructuras vinculadas a embalses.

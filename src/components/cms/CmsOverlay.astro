@@ -13,6 +13,7 @@ const mobileMenuScript = getMobileMenuRuntime();
     <script is:inline define:vars={{ apiBase, isDev }}>
       window.__HIDROMONT_CMS__ = {
         apiBase: apiBase || (isDev ? `${location.protocol}//${location.hostname}:8787` : location.origin),
+        isDev,
       };
     </script>
     <script is:inline set:html={overlayScript}></script>

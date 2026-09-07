@@ -43,6 +43,6 @@ titulo: Montajes y Fabricaciones Especiales
 
 Hidromont realiza montajes electromecánicos y fabrica estructuras metálicas para obras hidráulicas e instalaciones industriales, de acuerdo con el alcance definido para cada proyecto.
 
-## Estanques y estructuras
+## Proyectos destacados en montajes y fabricaciones especiales
 
 El trabajo en taller incluye estanques y estructuras de soporte para plantas industriales. En terreno también se han ejecutado refuerzos de canales de hormigón y vigas para puentes sobre canales de descarga.

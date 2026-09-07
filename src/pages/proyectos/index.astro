@@ -8,6 +8,7 @@ import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
 import CTASection from '../../components/ui/CTASection.astro';
+import Button from '../../components/ui/Button.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
@@ -57,7 +58,7 @@ const filterItems = [
     subtitle={getCmsText(
       'proyectos.index.hero',
       'subtitle',
-      'Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos.'
+      'Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías y blindajes, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales.'
     )}
     imageSrc={getCmsText(
       'proyectos.index.hero',
@@ -97,6 +98,22 @@ const filterItems = [
             {destacados.map((p) => (
               <ProjectCard proyecto={p} />
             ))}
+            {/* 8.ª celda: evita el hueco de la grilla de 4 cuando los
+               destacados no llenan la última fila (con 7 quedaba un hueco). */}
+            {destacados.length % 4 !== 0 && (
+              <div class="flex flex-col items-start justify-center gap-3 border border-dashed border-border bg-background-alt p-6 min-h-[220px]">
+                <p class="font-heading font-semibold text-primary-dark text-lg">
+                  ¿Tiene un proyecto en mente?
+                </p>
+                <p class="text-sm text-text-muted">
+                  Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
+                  montaje.
+                </p>
+                <Button href="/contacto" variant="primary" class="mt-2">
+                  Contáctenos
+                </Button>
+              </div>
+            )}
           </div>
         </Container>
       </Section>

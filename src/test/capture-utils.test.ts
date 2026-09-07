@@ -3,6 +3,7 @@ import {
   classifyMedia,
   collectRoutesFromHtmlPaths,
   findPublicCmsMarkers,
+  readPngSize,
   resolveCapturePorts,
   validateScreenshotInventory,
 } from '../../scripts/capture-utils.mjs';
@@ -53,6 +54,24 @@ describe('capture utilities', () => {
       'Agregar imagen',
     ]);
     expect(findPublicCmsMarkers('<main>Sitio público</main>')).toEqual([]);
+  });
+
+  it('reads PNG dimensions from the IHDR header and rejects invalid buffers', () => {
+    // PNG 1x1 válido: firma de 8 bytes + chunk IHDR con width=1, height=1.
+    const png = Buffer.from(
+      '89504e470d0a1a0a0000000d494844520000000100000001080600000' + '01f15c489',
+      'hex'
+    );
+    expect(readPngSize(png)).toEqual({ width: 1, height: 1 });
+
+    const wide = Buffer.from(png);
+    wide.writeUInt32BE(3840, 16);
+    wide.writeUInt32BE(13080, 20);
+    expect(readPngSize(wide)).toEqual({ width: 3840, height: 13080 });
+
+    expect(readPngSize(Buffer.alloc(0))).toBeNull();
+    expect(readPngSize(Buffer.alloc(24, 0xff))).toBeNull();
+    expect(readPngSize('no-buffer')).toBeNull();
   });
 
   it('requires 24 public pages and four CMS scenes per viewport', () => {

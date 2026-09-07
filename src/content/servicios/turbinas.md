@@ -34,8 +34,8 @@ tipos:
 titulo: Turbinas Hidráulicas
 ---
 
-Hidromont realiza montaje, mantenimiento y reparación mecánica de turbinas hidráulicas. El trabajo puede incluir recuperación de componentes afectados por cavitación, alineación, equilibrado y mecanizado.
+Hidromont realiza montaje, mantenimiento y reparación mecánica de turbinas hidráulicas. El trabajo puede incluir la recuperación de componentes afectados por cavitación, además de alineación, equilibrado y mecanizado.
 
-## Experiencia en turbinas
+## Proyectos destacados en turbinas
 
-Las referencias disponibles incluyen trabajos para Besalco, Iberdrola, Acciona y Endesa, además de intervenciones en minicentrales.
+Entre las referencias se cuentan trabajos para Besalco, Iberdrola, Acciona y Endesa, además de intervenciones en minicentrales.

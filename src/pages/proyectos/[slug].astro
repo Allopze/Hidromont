@@ -11,6 +11,7 @@ import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
+import { formatDN } from '../../utils/format';
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
@@ -74,7 +75,7 @@ const jsonLd = {
 };
 ---
 
-<PageLayout title={nombre} description={alcance} image={heroImg?.src} jsonLd={jsonLd}>
+<PageLayout title={nombre} description={formatDN(alcance)} image={heroImg?.src} jsonLd={jsonLd}>
   <PageHero
     badge={categoriaLabels[categoria] ?? categoria}
     title={nombre}
@@ -118,7 +119,7 @@ const jsonLd = {
                       <dt class="text-xs text-text-muted uppercase tracking-wide">
                         {diametro.includes('/') ? 'Diámetros principales' : 'Diámetro'}
                       </dt>
-                      <dd class="font-mono font-semibold text-text">{diametro}</dd>
+                      <dd class="font-mono font-semibold text-text">{formatDN(diametro)}</dd>
                     </div>
                   )}
                   {longitud && (
@@ -211,7 +212,7 @@ const jsonLd = {
               href={servicioHref[categoria] ?? '/servicios'}
               class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast"
             >
-              ← Ver servicio relacionado: {categoriaLabels[categoria]}
+              → Ver servicio relacionado: {categoriaLabels[categoria]}
             </a>
           </div>
         </aside>

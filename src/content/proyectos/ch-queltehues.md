@@ -19,11 +19,7 @@ La rehabilitación de C.H. Queltehues implicó la renovación completa de la tub
 
 - **Ingeniería:** proyecto completo de la nueva tubería, cálculos mecánicos y estructurales, planos de montaje y reconstrucción de apoyos.
 - **Desmontaje:** retiro de la tubería forzada existente.
-- **Demolición:** demolición de apoyos deslizantes y machones de hormigón existentes.
-- **Fabricación:** fabricación de nueva tubería con diámetros 1.500 y 1.800 mm.
-- **Montaje:** montaje de 550 m de nueva tubería.
+- **Demolición:** remoción de apoyos deslizantes y machones de hormigón existentes.
+- **Fabricación:** fabricación de nueva tubería con diámetros DN 1.500 y DN 1.800.
+- **Montaje:** instalación de 550 m de nueva tubería.
 - **Reconstrucción:** construcción de nuevos apoyos y machones.
-
-## Cliente
-
-**AES Andes S.A.**

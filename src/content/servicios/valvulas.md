@@ -1,9 +1,9 @@
 ---
 aplicaciones:
   - Desagüe de fondo
-  - By-pass
+  - Bypass (derivación)
   - Cierre de emergencia
-  - Guarda de turbinas
+  - Guardas de turbinas
   - Aireación de conducciones
   - Vaciado y llenado de conducciones
   - Control de caudal ecológico
@@ -36,7 +36,7 @@ procesos:
 resumen: >-
   Diseño, fabricación, montaje, mantenimiento y reparación de válvulas para
   obras hidráulicas e hidroeléctricas. Soluciones para desagüe de fondo,
-  by-pass, cierre de emergencia, guarda de turbinas y aireación.
+  bypass (derivación), cierre de emergencia, guardas de turbinas y aireación.
 tipos:
   - Válvula Bureau
   - Válvula Howell-Bunger

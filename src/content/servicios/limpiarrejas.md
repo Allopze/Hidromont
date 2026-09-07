@@ -32,11 +32,11 @@ procesos:
 resumen: >-
   Diseño, fabricación, montaje, mantenimiento y reparación de equipos
   limpiarrejas para canales, presas y centrales hidroeléctricas. Equipos para
-  limpieza de desechos de rejas metálicas y libre admisión de agua.
+  limpieza de desechos de rejas metálicas, permitiendo la libre admisión de agua.
 tipos:
-  - Limpiarreje de husillos
-  - Limpiarreje de cremallera
-  - Limpiarreje oleo-hidráulico
+  - Limpiarrejas de husillos
+  - Limpiarrejas de cremallera
+  - Limpiarrejas oleohidráulicos
 titulo: Limpiarrejas
 ---
 

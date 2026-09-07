@@ -31,13 +31,19 @@ function safeHref(cmsField: string, fallback: string): string {
   }
   // Valor inválido o vacío: usar el fallback hardcodeado.
   if (import.meta.env.DEV && value !== fallback) {
-    console.warn(`[nav] href inválido para layout.header.${cmsField}: "${value}". Usando fallback "${fallback}".`);
+    console.warn(
+      `[nav] href inválido para layout.header.${cmsField}: "${value}". Usando fallback "${fallback}".`
+    );
   }
   return fallback;
 }
 
 export const navItems: NavItem[] = [
-  { label: getCmsText('layout.header', 'navInicio', 'Inicio'), href: safeHref('hrefInicio', '/'), cmsField: 'navInicio' },
+  {
+    label: getCmsText('layout.header', 'navInicio', 'Inicio'),
+    href: safeHref('hrefInicio', '/'),
+    cmsField: 'navInicio',
+  },
   {
     label: getCmsText('layout.header', 'navServicios', 'Servicios'),
     href: safeHref('hrefServicios', '/servicios'),
@@ -69,7 +75,7 @@ export const navItems: NavItem[] = [
         cmsField: 'navServiciosTanques',
       },
       {
-        label: getCmsText('layout.header', 'navServiciosTuberias', 'Tuberías Forzadas'),
+        label: getCmsText('layout.header', 'navServiciosTuberias', 'Tuberías y Blindajes'),
         href: safeHref('hrefServiciosTuberias', '/servicios/tuberias-forzadas'),
         cmsField: 'navServiciosTuberias',
       },
@@ -85,11 +91,31 @@ export const navItems: NavItem[] = [
       },
     ],
   },
-  { label: getCmsText('layout.header', 'navProyectos', 'Proyectos'), href: safeHref('hrefProyectos', '/proyectos'), cmsField: 'navProyectos' },
-  { label: getCmsText('layout.header', 'navGaleria', 'Galería'), href: safeHref('hrefGaleria', '/galeria'), cmsField: 'navGaleria' },
-  { label: getCmsText('layout.header', 'navEmpresa', 'Empresa'), href: safeHref('hrefEmpresa', '/empresa'), cmsField: 'navEmpresa' },
-  { label: getCmsText('layout.header', 'navClientes', 'Clientes'), href: safeHref('hrefClientes', '/clientes'), cmsField: 'navClientes' },
-  { label: getCmsText('layout.header', 'navContacto', 'Contacto'), href: safeHref('hrefContacto', '/contacto'), cmsField: 'navContacto' },
+  {
+    label: getCmsText('layout.header', 'navProyectos', 'Proyectos'),
+    href: safeHref('hrefProyectos', '/proyectos'),
+    cmsField: 'navProyectos',
+  },
+  {
+    label: getCmsText('layout.header', 'navGaleria', 'Galería'),
+    href: safeHref('hrefGaleria', '/galeria'),
+    cmsField: 'navGaleria',
+  },
+  {
+    label: getCmsText('layout.header', 'navEmpresa', 'Empresa'),
+    href: safeHref('hrefEmpresa', '/empresa'),
+    cmsField: 'navEmpresa',
+  },
+  {
+    label: getCmsText('layout.header', 'navClientes', 'Clientes'),
+    href: safeHref('hrefClientes', '/clientes'),
+    cmsField: 'navClientes',
+  },
+  {
+    label: getCmsText('layout.header', 'navContacto', 'Contacto'),
+    href: safeHref('hrefContacto', '/contacto'),
+    cmsField: 'navContacto',
+  },
 ];
 
 export const ctaLabel = getCmsText('layout.header', 'ctaLabel', 'Contáctenos');

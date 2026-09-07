@@ -13,6 +13,7 @@ import {
   classifyMedia,
   collectRoutesFromHtmlPaths,
   findPublicCmsMarkers,
+  readPngSizeFromFile,
   resolveCapturePorts,
   validateScreenshotInventory,
 } from './capture-utils.mjs';
@@ -240,7 +241,28 @@ async function capturePage(
       }
     }
     await settlePage(page);
-    await page.screenshot({ path: outFile, fullPage });
+    if (fullPage) {
+      // Guardia anti-corrupción: el PNG debe medir lo que mide la página
+      // (scrollHeight x dpr). El stitching de fullPage puede salir mal sin
+      // lanzar error; con esta comparación el fallo aparece en el script.
+      const expectedHeight = await page.evaluate(() =>
+        Math.round(document.documentElement.scrollHeight * window.devicePixelRatio)
+      );
+      await page.screenshot({ path: outFile, fullPage });
+      const actual = readPngSizeFromFile(outFile);
+      if (!actual) {
+        throw new Error(`PNG ilegible (cabecera inválida): ${outFile}`);
+      }
+      const drift = Math.abs(actual.height - expectedHeight) / expectedHeight;
+      if (drift > 0.02) {
+        throw new Error(
+          `Captura corrupta: PNG mide ${actual.height}px pero la página ${expectedHeight}px ` +
+            `(${(drift * 100).toFixed(1)}% de desvío) -> ${path.relative(ROOT, outFile)}`
+        );
+      }
+    } else {
+      await page.screenshot({ path: outFile, fullPage });
+    }
     console.log(`   ${label} -> ${path.relative(ROOT, outFile)}`);
     return true;
   } catch (err) {

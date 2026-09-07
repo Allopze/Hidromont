@@ -142,7 +142,9 @@ const row2 = conLogo.slice(mid);
   .clients-marquee-wrapper {
     position: relative;
     overflow: hidden;
-    padding-block: 16px;
+    /* Banda superior reservada para el botón de pausa (top:8px + 44px de
+       alto): antes flotaba sobre el último logo de la fila 1 (BESALCO). */
+    padding: 56px 0 16px;
     mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
   }
