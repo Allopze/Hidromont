@@ -1,4 +1,19 @@
 ---
+/**
+ * El overlay se inyecta como script inline (`set:html`), no como módulo ES: por
+ * eso `cms-overlay.js` se importa con `?raw` y es un IIFE autocontenido.
+ *
+ * Existió un intento de partirlo en `src/scripts/cms/{ui,styles,editor,
+ * collections,state-api}.js` que quedó a medias (cubría ~1/3 de los estilos y
+ * la mitad de las funciones, sin la galería ni el selector de medios) y que
+ * nadie llegó a importar. Se eliminó en sep-2026: al no estar conectado se
+ * desactualizaba en silencio mientras el monolito avanzaba, y arreglar un bug
+ * ahí no tenía ningún efecto sobre el sitio.
+ *
+ * Si se retoma la modularización, el patrón correcto es el de `mobile-menu.ts`:
+ * autorlo como módulo TypeScript que exporta una función devolviendo el runtime
+ * como string, para que siga entrando por `set:html` y quede cubierto por tests.
+ */
 import overlayScript from '../../scripts/cms-overlay.js?raw';
 import { getMobileMenuRuntime } from '../../scripts/cms/mobile-menu';
 

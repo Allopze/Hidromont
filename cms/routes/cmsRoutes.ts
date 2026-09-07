@@ -116,6 +116,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     }
     const result = await authController.login(request, reply);
     if (reply.statusCode === 200) {
+      rateLimitRepository.reset(ip);
       auditRepository.log({
         action: 'login.success',
         ip,

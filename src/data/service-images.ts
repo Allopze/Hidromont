@@ -20,10 +20,10 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     height: 900,
   },
   turbinas: {
-    src: '/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp',
+    src: '/fotos/curadas/turbinas-montaje-rodete.webp',
     alt: 'Montaje del rodete y el distribuidor de un grupo hidráulico con el puente grúa de la casa de máquinas',
-    width: 1024,
-    height: 768,
+    width: 1448,
+    height: 1086,
   },
   limpiarrejas: {
     src: '/fotos/curadas/limpiarrejas-peine-reja-taller.webp',

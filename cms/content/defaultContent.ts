@@ -39,10 +39,10 @@ const serviceImageSeeds: Array<{
   {
     slug: 'turbinas',
     title: 'Turbinas',
-    src: '/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp',
+    src: '/fotos/curadas/turbinas-montaje-rodete.webp',
     alt: 'Montaje del rodete y el distribuidor de un grupo hidráulico con el puente grúa de la casa de máquinas',
-    width: 1024,
-    height: 768,
+    width: 1448,
+    height: 1086,
   },
   {
     slug: 'limpiarrejas',
@@ -409,7 +409,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Infraestructura especializada para responder a proyectos complejos con rapidez y precisión.',
+          'Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje.',
       },
     },
   },
@@ -738,44 +738,11 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Infraestructura' },
-      title: { type: 'text', value: 'Instalaciones y medios productivos' },
+      title: { type: 'text', value: 'El taller de Los Ángeles' },
       subtitle: {
         type: 'textarea',
         value:
-          'El taller se montó para abastecer con urgencia las piezas imprevistas que aparecen durante una reparación, y permite fabricar tubería de gran diámetro y mecanizar en la misma nave.',
-      },
-      item1Title: { type: 'text', value: 'Superficie de terreno' },
-      item1Value: { type: 'text', value: '11.000 m²' },
-      item1Desc: {
-        type: 'textarea',
-        value:
-          'Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras.',
-      },
-      item2Title: { type: 'text', value: 'Taller industrial' },
-      item2Value: { type: 'text', value: '2.000 m²' },
-      item2Desc: {
-        type: 'textarea',
-        value:
-          'Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes.',
-      },
-      item3Title: { type: 'text', value: 'Taller de pintura' },
-      item3Value: { type: 'text', value: '400 m²' },
-      item3Desc: {
-        type: 'textarea',
-        value:
-          'Área techada y equipada para preparación de superficie, arenado y aplicación de pintura industrial.',
-      },
-      item4Title: { type: 'text', value: 'Oficinas e ingeniería' },
-      item4Value: { type: 'text', value: '320 m²' },
-      item4Desc: {
-        type: 'textarea',
-        value: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
-      },
-      item6Title: { type: 'text', value: 'Puentes grúa' },
-      item6Value: { type: 'text', value: '5 unidades' },
-      item6Desc: {
-        type: 'textarea',
-        value: '5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje.',
+          'Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje de las estructuras antes de salir a obra.',
       },
     },
   },
@@ -805,8 +772,6 @@ export const defaultContentEntries: EntrySeed[] = [
       item6: { type: 'text', value: 'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm' },
       item7: { type: 'text', value: 'Plegadora MEBUSA 200 t × 3 m' },
       item8: { type: 'text', value: 'Oxicorte hasta 100 mm' },
-      item9: { type: 'text', value: 'Grúa autopropulsada 50 t' },
-      item10: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
     },
   },
   {

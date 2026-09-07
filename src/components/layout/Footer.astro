@@ -28,7 +28,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
           <div class="lg:col-span-3">
             {/* La dirección vive solo en LocationCard: repetirla en la columna
                 de al lado la mostraba dos veces en el mismo pie. */}
-            <LocationCard theme="dark" />
+            <LocationCard theme="dark" showDirections={false} />
           </div>
         )
       }

@@ -180,7 +180,7 @@ import { company } from '../data/company';
           class="font-heading font-bold text-primary-dark mb-4"
           style="font-size: var(--font-size-h2);"
         >
-          {getCmsText('empresa.instalaciones', 'title', 'Instalaciones y medios productivos')}
+          {getCmsText('empresa.instalaciones', 'title', 'El taller de Los Ángeles')}
         </EditableText>
         <EditableText
           as="p"
@@ -194,74 +194,10 @@ import { company } from '../data/company';
             getCmsText(
               'empresa.instalaciones',
               'subtitle',
-              'Taller de calderería, mecanizado y pintura industrial, equipado para fabricar piezas de gran escala y responder a plazos de obra ajustados.'
+              'Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje de las estructuras antes de salir a obra.'
             )
           }
         </EditableText>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {
-          [
-            {
-              key: 1,
-              val: '11.000 m²',
-              title: 'Superficie de terreno',
-              desc: 'Terreno destinado a acopio, premontaje y logística de estructuras de gran tamaño.',
-            },
-            {
-              key: 2,
-              val: '2.000 m²',
-              title: 'Taller industrial',
-              desc: 'Línea de fabricación de compuertas, tuberías forzadas y estructuras hidromecánicas, con capacidad para suministros urgentes.',
-            },
-            {
-              key: 3,
-              val: '320 m²',
-              title: 'Oficinas e ingeniería',
-              desc: 'Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad.',
-            },
-            {
-              key: 4,
-              val: '65 mm',
-              title: 'Cilindradora hidráulica',
-              desc: 'Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa.',
-            },
-            {
-              key: 5,
-              val: '5 unidades',
-              title: 'Puentes grúa',
-              desc: '5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje.',
-            },
-          ].map((item) => (
-            <div class="p-6 bg-surface border border-border rounded-none">
-              <EditableText
-                as="p"
-                entry="empresa.instalaciones"
-                field={`item${item.key}Value`}
-                class="font-mono font-bold text-primary text-2xl mb-1"
-              >
-                {getCmsText('empresa.instalaciones', `item${item.key}Value`, item.val)}
-              </EditableText>
-              <EditableText
-                as="h3"
-                entry="empresa.instalaciones"
-                field={`item${item.key}Title`}
-                class="font-heading font-semibold text-primary-dark text-sm mb-2"
-              >
-                {getCmsText('empresa.instalaciones', `item${item.key}Title`, item.title)}
-              </EditableText>
-              <EditableText
-                as="p"
-                entry="empresa.instalaciones"
-                field={`item${item.key}Desc`}
-                type="textarea"
-                class="text-xs text-text-muted leading-relaxed"
-              >
-                {getCmsText('empresa.instalaciones', `item${item.key}Desc`, item.desc)}
-              </EditableText>
-            </div>
-          ))
-        }
       </div>
     </Container>
   </Section>

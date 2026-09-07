@@ -37,10 +37,27 @@ describe('Security', () => {
       expect(result.allowed).toBe(true);
     });
 
+    it('reset clears the window so a correct login does not lock itself out', () => {
+      const ip = '10.0.2.1';
+      for (let i = 0; i < 9; i++) ctx.rateLimitRepository.check(ip);
+      ctx.rateLimitRepository.reset(ip);
+      // Sin el reset, el intento 11 daría 429 aunque todos fueran correctos.
+      for (let i = 0; i < 10; i++) {
+        expect(ctx.rateLimitRepository.check(ip).allowed).toBe(true);
+      }
+    });
+
+    it('reset does not disarm brute force protection for other IPs', () => {
+      const attacker = '10.0.2.2';
+      for (let i = 0; i < 10; i++) ctx.rateLimitRepository.check(attacker);
+      ctx.rateLimitRepository.reset('10.0.2.3');
+      expect(ctx.rateLimitRepository.check(attacker).allowed).toBe(false);
+    });
+
     it('cleanup removes expired entries', () => {
       // Insert expired entry directly
       (ctx.db as import('better-sqlite3').Database)
-        .prepare("INSERT OR REPLACE INTO login_attempts (ip, count, reset_at) VALUES (?, 99, ?)")
+        .prepare('INSERT OR REPLACE INTO login_attempts (ip, count, reset_at) VALUES (?, 99, ?)')
         .run('10.0.0.99', new Date(Date.now() - 120_000).toISOString());
 
       ctx.rateLimitRepository.cleanup();
@@ -54,7 +71,13 @@ describe('Security', () => {
 
   describe('Audit events', () => {
     it('logs events and lists them', () => {
-      ctx.auditRepository.log({ action: 'test.event', userId: 'user-1', entityType: 'entry', entityId: 'e-1', ip: '127.0.0.1' });
+      ctx.auditRepository.log({
+        action: 'test.event',
+        userId: 'user-1',
+        entityType: 'entry',
+        entityId: 'e-1',
+        ip: '127.0.0.1',
+      });
       const events = ctx.auditRepository.list(10);
       expect(events.length).toBeGreaterThan(0);
       const found = events.find((e) => e.action === 'test.event');
@@ -80,7 +103,9 @@ describe('Security', () => {
 
   describe('SVG upload rejection', () => {
     it('rejects SVG via createMedia', async () => {
-      const svgBuffer = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+      const svgBuffer = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+      );
       await expect(
         ctx.mediaService.createMedia({
           filename: 'evil.svg',
@@ -94,8 +119,8 @@ describe('Security', () => {
     it('accepts JPEG uploads', async () => {
       // Minimal valid JPEG header
       const jpegBuffer = Buffer.from([
-        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
-        0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+        0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00,
+        0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
       ]);
       // sharp will fail on minimal bytes but we only need to verify MIME check passes
       // Use a PNG header to avoid sharp errors in unit test scope
@@ -116,7 +141,7 @@ describe('Security', () => {
       await expect(
         ctx.mediaService.createMedia({
           filename: 'image.png', // extension says PNG
-          mime: 'image/jpeg',   // but MIME says JPEG
+          mime: 'image/jpeg', // but MIME says JPEG
           buffer,
           alt: '',
         })

@@ -982,7 +982,7 @@
             </div>
             <p class="hm-cms-muted">${escapeHtml(formatDate(job.createdAt))}${job.completedAt ? ` - ${escapeHtml(formatDate(job.completedAt))}` : ''}</p>
             <p class="hm-cms-muted">${escapeHtml(job.id)}</p>
-            <pre class="hm-cms-log">${escapeHtml((job.logs || []).slice(-8).join('\n'))}</pre>
+            <pre class="hm-cms-log" tabindex="0" aria-label="Registro de la publicación">${escapeHtml((job.logs || []).slice(-8).join('\n'))}</pre>
           </article>
         `
           )

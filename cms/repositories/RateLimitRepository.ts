@@ -37,10 +37,19 @@ export class RateLimitRepository {
     return { allowed: true, retryAfterMs: 0 };
   }
 
+  /**
+   * Borra la ventana de una IP tras un login correcto. `check()` cuenta todos
+   * los intentos antes de autenticar, así que sin esto diez ingresos legítimos
+   * en un minuto desde la misma IP se bloqueaban a sí mismos con un 429. La
+   * protección contra fuerza bruta no cambia: quien falla sigue acumulando y se
+   * bloquea igual: solo el acierto limpia el contador.
+   */
+  reset(ip: string): void {
+    this.db.prepare('DELETE FROM login_attempts WHERE ip = ?').run(ip);
+  }
+
   /** Clean up expired windows (call periodically or at startup). */
   cleanup(): void {
-    this.db
-      .prepare("DELETE FROM login_attempts WHERE reset_at < ?")
-      .run(new Date().toISOString());
+    this.db.prepare('DELETE FROM login_attempts WHERE reset_at < ?').run(new Date().toISOString());
   }
 }

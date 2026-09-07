@@ -4,80 +4,84 @@ import { company } from '../../data/company';
 interface Props {
   theme?: 'light' | 'dark';
   class?: string;
+  /**
+   * Enlace a las indicaciones. En el pie se omite: aparece en las 24 páginas,
+   * ahí la tarjeta solo tiene que decir dónde está la empresa, y el propio
+   * embed ya ofrece su botón "Abrir en Maps". En /contacto sí se muestra,
+   * porque es donde alguien puede estar planificando la visita y el enlace
+   * lleva a la ruta y no a la ficha del lugar.
+   */
+  showDirections?: boolean;
 }
 
-const { theme = 'light', class: className = '' } = Astro.props;
-const mapsUrl =
-  'https://www.google.com/maps/dir/?api=1&destination=Hidromont+Chile+S.A.,+Avenida+Las+Industrias+10950,+Los+Angeles,+Chile';
+const { theme = 'light', class: className = '', showDirections = true } = Astro.props;
+
+const destino = 'Hidromont Chile S.A., Avenida Las Industrias 10950, Los Angeles, Chile';
+const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
+// Forma sin clave del embed de Google Maps: no requiere API key ni facturación.
+// El dominio ya está autorizado en el CSP de public/_headers (frame-src).
+const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&z=15&hl=es&output=embed`;
 ---
 
 <section
   class:list={[
-    'location-card relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden border p-6 md:p-8',
-    theme === 'dark'
-      ? 'border-white/15 bg-white/5 text-white'
-      : 'border-border bg-primary-light text-primary-dark',
+    'location-card flex flex-col overflow-hidden border',
+    theme === 'dark' ? 'border-white/15 bg-white/5 text-white' : 'border-border bg-white',
     className,
   ]}
   aria-labelledby="location-card-title"
 >
-  <div class="location-grid absolute inset-0 -z-10 opacity-40" aria-hidden="true"></div>
-  <div
-    class:list={[
-      'mb-auto inline-flex h-12 w-12 items-center justify-center border',
-      theme === 'dark' ? 'border-white/20 bg-background-strong' : 'border-primary/20 bg-white',
-    ]}
-    aria-hidden="true"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      class="h-6 w-6 text-primary"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      <path d="M20 10c0 5.5-8 12-8 12S4 15.5 4 10a8 8 0 1 1 16 0Z"></path>
-      <circle cx="12" cy="10" r="2.5"></circle>
-    </svg>
+  <div class="relative min-h-[260px] flex-1 bg-background-alt">
+    <iframe
+      src={embedUrl}
+      title="Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío"
+      class:list={['absolute inset-0 h-full w-full border-0', theme === 'dark' && 'map-dark']}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"></iframe>
   </div>
-  <h2
-    id="location-card-title"
-    class:list={[
-      'mt-8 font-heading text-xl font-bold',
-      theme === 'dark' ? 'text-white' : 'text-primary-dark',
-    ]}
-  >
-    Hidromont Chile
-  </h2>
-  <p
-    class:list={[
-      'mt-2 text-sm leading-relaxed',
-      theme === 'dark' ? 'text-white/75' : 'text-text-muted',
-    ]}
-  >
-    {company.domicilio}<br />{company.ciudad}
-  </p>
-  <a
-    href={mapsUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    class:list={[
-      'mt-5 inline-flex min-h-[44px] w-fit items-center justify-center border px-4 py-2 text-sm font-semibold no-underline transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-accent',
-      theme === 'dark'
-        ? 'border-white/30 text-white hover:bg-white/10'
-        : 'border-primary text-primary-dark hover:bg-white',
-    ]}
-  >
-    Abrir en Google Maps
-  </a>
+
+  <div class="p-4 md:p-5">
+    <h2
+      id="location-card-title"
+      class:list={[
+        'font-heading text-base font-bold leading-tight',
+        theme === 'dark' ? 'text-white' : 'text-primary-dark',
+      ]}
+    >
+      Hidromont Chile
+    </h2>
+    <p
+      class:list={[
+        'mt-1 text-xs leading-snug',
+        theme === 'dark' ? 'text-white/75' : 'text-text-muted',
+      ]}
+    >
+      {company.domicilio}<br />{company.ciudad}
+    </p>
+    {
+      showDirections && (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class:list={[
+            'mt-3 inline-flex min-h-[44px] w-fit items-center justify-center border px-3 py-1.5 text-xs font-semibold no-underline transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-accent',
+            theme === 'dark'
+              ? 'border-white/30 text-white hover:bg-white/10'
+              : 'border-primary text-primary-dark hover:bg-white',
+          ]}
+        >
+          Abrir en Google Maps
+        </a>
+      )
+    }
+  </div>
 </section>
 
 <style>
-  .location-grid {
-    background-image:
-      linear-gradient(30deg, transparent 48%, currentColor 49%, currentColor 51%, transparent 52%),
-      linear-gradient(120deg, transparent 48%, currentColor 49%, currentColor 51%, transparent 52%);
-    background-size: 72px 72px;
-    color: var(--color-primary);
+  /* En el pie, sobre fondo azul oscuro, un mapa a todo color desentona. El
+     filtro lo oscurece manteniendo legibles calles y etiquetas. */
+  .map-dark {
+    filter: invert(90%) hue-rotate(180deg) grayscale(0.2) contrast(1.1);
   }
 </style>

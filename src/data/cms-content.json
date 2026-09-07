@@ -557,73 +557,13 @@
           "type": "text",
           "value": "Infraestructura"
         },
-        "item1Desc": {
-          "type": "textarea",
-          "value": "Área de terreno destinada a maniobras de acopio, premontaje y logística de grandes estructuras."
-        },
-        "item1Title": {
-          "type": "text",
-          "value": "Superficie de terreno"
-        },
-        "item1Value": {
-          "type": "text",
-          "value": "11.000 m²"
-        },
-        "item2Desc": {
-          "type": "textarea",
-          "value": "Preparado para fabricar elementos de gran tamaño y responder a suministros urgentes."
-        },
-        "item2Title": {
-          "type": "text",
-          "value": "Taller industrial"
-        },
-        "item2Value": {
-          "type": "text",
-          "value": "2.000 m²"
-        },
-        "item3Desc": {
-          "type": "textarea",
-          "value": "Equipo técnico dedicado a ingeniería de proyectos, cálculo y control de calidad."
-        },
-        "item3Title": {
-          "type": "text",
-          "value": "Oficinas e ingeniería"
-        },
-        "item3Value": {
-          "type": "text",
-          "value": "320 m²"
-        },
-        "item4Desc": {
-          "type": "textarea",
-          "value": "Cilindradora MG: ancho útil 3 m y espesor hasta 65 mm de placa."
-        },
-        "item4Title": {
-          "type": "text",
-          "value": "Cilindradora hidráulica"
-        },
-        "item4Value": {
-          "type": "text",
-          "value": "65 mm"
-        },
-        "item5Desc": {
-          "type": "textarea",
-          "value": "5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje."
-        },
-        "item5Title": {
-          "type": "text",
-          "value": "Puentes grúa"
-        },
-        "item5Value": {
-          "type": "text",
-          "value": "5 unidades"
-        },
         "subtitle": {
           "type": "textarea",
-          "value": "El taller se montó para abastecer con urgencia las piezas imprevistas que aparecen durante una reparación, y permite fabricar tubería de gran diámetro y mecanizar en la misma nave."
+          "value": "Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje de las estructuras antes de salir a obra."
         },
         "title": {
           "type": "text",
-          "value": "Instalaciones y medios productivos"
+          "value": "El taller de Los Ángeles"
         }
       }
     },
@@ -1934,7 +1874,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Infraestructura especializada para responder a proyectos complejos con rapidez y precisión."
+          "value": "Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje."
         },
         "title": {
           "type": "text",
@@ -3054,7 +2994,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp"
+          "value": "/fotos/curadas/turbinas-montaje-rodete.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -3062,11 +3002,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 768
+          "value": 1086
         },
         "imageWidth": {
           "type": "number",
-          "value": 1024
+          "value": 1448
         }
       }
     },

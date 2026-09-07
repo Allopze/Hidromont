@@ -29,9 +29,14 @@ test('project bank paginates after filtering the complete list', async ({ page }
   await expect(rows).not.toHaveCount(0);
 });
 
-test('location renders without an external embed', async ({ page }) => {
+// Antes se verificaba lo contrario ("renders without an external embed"): el
+// mapa se había quitado y el test fijaba esa decisión. Se repuso a pedido, con
+// la misma forma sin clave del embed que usaba la versión original.
+test('location renders the map embed and the directions link', async ({ page }) => {
   await page.goto('/contacto');
-  await expect(page.locator('iframe')).toHaveCount(0);
+  const map = page.locator('iframe[title*="Mapa"]');
+  await expect(map).toHaveCount(1);
+  await expect(map).toHaveAttribute('loading', 'lazy');
   await expect(page.getByRole('link', { name: 'Abrir en Google Maps' }).first()).toBeVisible();
 });
 
