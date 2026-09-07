@@ -10,7 +10,7 @@ export const company = {
     'casillaPostal',
     'Casilla 48 — Los Ángeles, Región del Biobío'
   ),
-  telefono: getCmsText('site.company', 'telefono', '+56 43 32 84 14'),
+  telefono: getCmsText('site.company', 'telefono', '+56 43 232 8414'),
   email: getCmsText('site.company', 'email', 'hidromont@hidromont.cl'),
   sitioWeb: getCmsText('site.company', 'sitioWeb', 'https://hidromont.cl'),
   fundacion: getCmsNumber('site.company', 'fundacion', 1983),

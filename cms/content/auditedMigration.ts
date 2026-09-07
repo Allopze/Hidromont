@@ -116,12 +116,10 @@ export const auditedValueRules: AuditedValueRule[] = [
     from: 'DN 1600 / DN 1400 / DN 800',
     to: 'DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350',
   },
-  {
-    entryId: 'proyectos.ch-dorias',
-    key: 'diametro',
-    from: 'DN 4000 / DN 6000',
-    to: 'Blindaje DN 4000 / DN 2600; chimenea DN 6000; válvulas DN 2700',
-  },
+  // La regla de 'proyectos.ch-dorias' se retiró: el catálogo de la matriz
+  // identifica la obra como C.H. Doiras (Asturias, 2007), no como un proyecto
+  // chileno, y la chimenea Ø 6.000 que fijaba no tiene respaldo en ninguna
+  // fuente. Aplicarla hoy reescribiría el dato corregido.
   {
     entryId: 'servicios.valvulas',
     key: 'body',

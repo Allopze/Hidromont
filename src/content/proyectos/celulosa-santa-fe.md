@@ -1,7 +1,12 @@
 ---
-alcance: Suministro y fabricación de tubería de agua de alimentación (feed water) DN 4.800 (80 t).
+alcance: >-
+  Fabricación y montaje del recipiente de agua de alimentación Ø 4.800, 26 m de
+  longitud y 80 t.
 categoria: estructuras
-cliente: Arauco
+cliente: Vapor Industrial S.A.
+diametro: Ø 4.800
+longitud: 26 m
+peso: 80 t
 nombre: Celulosa Santa Fe
 orden: 61
 tipo: banco

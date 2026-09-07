@@ -1,14 +1,15 @@
 ---
 alcance: >-
   Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales
-  DN 1000-1600. Equipamiento hidromecánico completo: 4 compuertas planas, 2
-  válvulas Bureau, 2 mariposa DN 1000 y 2 Howell-Bunger DN 760. Tubería de
-  descarga de caudal ecológico DN 500.
+  Ø 1.000 / Ø 1.600. Equipamiento hidromecánico completo: 4 compuertas planas,
+  2 válvulas Bureau de 1,2 x 1,2 m PN 16, 3 válvulas mariposa (2 DN 1000 y
+  1 DN 1600, PN 25) y 2 válvulas Howell-Bunger DN 760 PN 16. Tubería de descarga
+  de caudal ecológico Ø 500.
 categoria: compuertas
 cliente: Constructora OHL
 contratista: Constructora OHL
 mandante: M.O.P. / D.O.H.
-diametro: DN 1000 / DN 1600
+diametro: Ø 1.000 / Ø 1.600
 nombre: Embalse Chacrillas
 orden: 7
 tipo: destacado
@@ -21,17 +22,17 @@ El Embalse Chacrillas fue un proyecto integral que incluyó tanto la fabricació
 
 **Blindajes y tuberías:**
 
-- Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales DN 1.000-1.600.
+- Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales Ø 1.000 / Ø 1.600.
 
 **Equipamiento hidromecánico:**
 
-- 4 compuertas planas.
-- 2 válvulas Bureau.
-- 2 válvulas mariposa DN 1.000.
-- 2 válvulas Howell-Bunger DN 760.
+- 4 compuertas planas y compuertas tipo Bureau.
+- 2 válvulas Bureau de 1,2 x 1,2 m, PN 16.
+- 2 válvulas mariposa DN 1000 y 1 válvula mariposa DN 1600, PN 25.
+- 2 válvulas Howell-Bunger DN 760, PN 16.
 
 **Caudal ecológico (M.O.P. / D.O.H.):**
 
-- Tubería de descarga DN 500.
+- Tubería de descarga Ø 500.
 - Válvula mariposa DN 500.
 - Válvula Howell-Bunger DN 350.

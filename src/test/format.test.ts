@@ -1,25 +1,37 @@
 import { describe, expect, it } from 'vitest';
-import { formatDN } from '../utils/format';
+import { formatDiameters } from '../utils/format';
 
-describe('formatDN', () => {
+describe('formatDiameters', () => {
   it('adds Chilean thousands separators to DN values', () => {
-    expect(formatDN('DN 2200')).toBe('DN 2.200');
-    expect(formatDN('DN 1200 / DN 1000')).toBe('DN 1.200 / DN 1.000');
-    expect(formatDN('DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350')).toBe(
+    expect(formatDiameters('DN 2200')).toBe('DN 2.200');
+    expect(formatDiameters('DN 1200 / DN 1000')).toBe('DN 1.200 / DN 1.000');
+    expect(formatDiameters('DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350')).toBe(
       'DN 1.600 / DN 1.400 / DN 800 / DN 700 / DN 350'
     );
   });
 
-  it('normalizes spacing and casing around DN', () => {
-    expect(formatDN('Blindaje DN 4000 / DN 2600; chimenea DN 6000; válvulas DN 2700')).toBe(
-      'Blindaje DN 4.000 / DN 2.600; chimenea DN 6.000; válvulas DN 2.700'
-    );
-    expect(formatDN('tubería dn1600 de 360 m')).toBe('tubería DN 1.600 de 360 m');
+  it('formats Ø the same way and unifies the ∅ variant', () => {
+    expect(formatDiameters('Ø 4000 / Ø 2600')).toBe('Ø 4.000 / Ø 2.600');
+    expect(formatDiameters('Blindaje Ø5500')).toBe('Blindaje Ø 5.500');
+    expect(formatDiameters('∅ 18800')).toBe('Ø 18.800');
+    expect(formatDiameters('Ø 1.016')).toBe('Ø 1.016');
   });
 
-  it('leaves non-DN numbers untouched', () => {
-    expect(formatDN('2.448 t de peso total')).toBe('2.448 t de peso total');
-    expect(formatDN('550 m de tubería')).toBe('550 m de tubería');
-    expect(formatDN('sin diametros')).toBe('sin diametros');
+  it('normalizes spacing and casing around the prefix', () => {
+    expect(formatDiameters('Blindaje Ø 4000 / Ø 2600; válvulas mariposa DN 2700')).toBe(
+      'Blindaje Ø 4.000 / Ø 2.600; válvulas mariposa DN 2.700'
+    );
+    expect(formatDiameters('tubería dn1600 de 360 m')).toBe('tubería DN 1.600 de 360 m');
+  });
+
+  it('leaves decimals alone so they are not regrouped into another number', () => {
+    expect(formatDiameters('Ø 2,4 m')).toBe('Ø 2,4 m');
+    expect(formatDiameters('válvula de 1,2 x 1,2 m')).toBe('válvula de 1,2 x 1,2 m');
+  });
+
+  it('leaves non-diameter numbers untouched', () => {
+    expect(formatDiameters('2.448 t de peso total')).toBe('2.448 t de peso total');
+    expect(formatDiameters('550 m de tubería')).toBe('550 m de tubería');
+    expect(formatDiameters('sin diametros')).toBe('sin diametros');
   });
 });

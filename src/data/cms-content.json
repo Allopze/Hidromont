@@ -133,11 +133,11 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Conozca los procesos de ingeniería, fabricación y montaje que aplica Hidromont en sus proyectos."
+          "value": "Cuéntenos el alcance y revisamos las alternativas de fabricación y montaje."
         },
         "title": {
           "type": "text",
-          "value": "Empresas que trabajan con infraestructura hidráulica e hidroeléctrica"
+          "value": "¿Trabaja en una obra hidráulica o hidroeléctrica?"
         }
       }
     },
@@ -489,7 +489,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío."
+          "value": "Cuéntenos el alcance de su obra y revisamos qué parte podemos ejecutar en el taller de Los Ángeles y qué parte en terreno."
         },
         "title": {
           "type": "text",
@@ -607,7 +607,7 @@
         },
         "item5Desc": {
           "type": "textarea",
-          "value": "5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje."
+          "value": "5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje."
         },
         "item5Title": {
           "type": "text",
@@ -619,7 +619,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión."
+          "value": "El taller se montó para abastecer con urgencia las piezas imprevistas que aparecen durante una reparación, y permite fabricar tubería de gran diámetro y mecanizar en la misma nave."
         },
         "title": {
           "type": "text",
@@ -638,18 +638,6 @@
         "item1": {
           "type": "text",
           "value": "Estaciones de soldadura automática de arco sumergido (4 unidades)"
-        },
-        "item10": {
-          "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 kVA"
-        },
-        "item11": {
-          "type": "text",
-          "value": "Grúa autopropulsada 50 Tn"
-        },
-        "item12": {
-          "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 kVA"
         },
         "item2": {
           "type": "text",
@@ -673,15 +661,11 @@
         },
         "item7": {
           "type": "text",
-          "value": "Plegadora MEBUSA 200 Tn × 3 m"
+          "value": "Plegadora MEBUSA 200 t × 3 m"
         },
         "item8": {
           "type": "text",
           "value": "Oxicorte hasta 100 mm"
-        },
-        "item9": {
-          "type": "text",
-          "value": "Grúa autopropulsada 50 Tn"
         },
         "subtitle": {
           "type": "textarea",
@@ -703,7 +687,7 @@
         },
         "item1": {
           "type": "text",
-          "value": "Grúa autopropulsada 50 Tn"
+          "value": "Grúa autopropulsada 50 t"
         },
         "item2": {
           "type": "text",
@@ -1924,7 +1908,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983."
+          "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles."
         },
         "title": {
           "type": "text",
@@ -1986,7 +1970,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje, mantenimiento y rehabilitación en terreno."
+          "value": "Cada línea cubre la ingeniería, la fabricación en taller y el montaje en terreno, además del mantenimiento y la rehabilitación de instalaciones existentes."
         },
         "title": {
           "type": "text",
@@ -2238,9 +2222,9 @@
         }
       }
     },
-    "project-gallery.ch-dorias": {
-      "title": "Galería proyecto ch-dorias",
-      "slug": "project-gallery/ch-dorias",
+    "project-gallery.ch-doiras": {
+      "title": "Galería proyecto ch-doiras",
+      "slug": "project-gallery/ch-doiras",
       "fields": {
         "gallery1": {
           "type": "image",
@@ -2464,9 +2448,9 @@
         }
       }
     },
-    "project-image.ch-dorias": {
+    "project-image.ch-doiras": {
       "title": "Imagen proyecto C.H. Dorias",
-      "slug": "project-image/ch-dorias",
+      "slug": "project-image/ch-doiras",
       "fields": {
         "image": {
           "type": "image",
@@ -2606,7 +2590,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Registro de proyectos ejecutados clasificados por línea de servicio."
+          "value": "Obras del grupo en Chile, España, Honduras y Costa Rica, agrupadas por línea de servicio."
         },
         "title": {
           "type": "text",
@@ -2624,7 +2608,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra."
+          "value": "Hemos ejecutado obras en Chile, España, Honduras y Costa Rica."
         },
         "title": {
           "type": "text",
@@ -2738,27 +2722,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-instalado-rozadio.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Limpiarrejas de husillos instalado sobre la reja inclinada de una bocatoma"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-patente-funcionamiento.webp"
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Esquema del modelo de utilidad patentado: peine, husillos laterales y carriles de guiado"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-patente-guiado-peine.webp"
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Detalle del guiado del peine y de las tuercas de bronce accionadas por los husillos"
         },
         "images": {
           "type": "list",
@@ -2870,27 +2854,27 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-montaje-rotor-sobradelo.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Izaje del rotor del alternador con el puente grúa de la casa de máquinas"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-mecanizado-brida-camara-espiral.webp"
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Mecanizado in situ de la brida de la cámara espiral de una turbina"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-turboalternador-francis.webp"
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Montaje de un turboalternador Francis"
         },
         "images": {
           "type": "list",
@@ -2904,11 +2888,11 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/obturador-bureau-patente-cupula.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Esquema del sistema tablero-cúpula patentado para mantenimiento de válvulas Bureau con carga de agua"
         },
         "gallery2": {
           "type": "image",
@@ -2938,19 +2922,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/compuertas.jpg"
+          "value": "/fotos/curadas/compuertas.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Compuerta hidráulica instalada en presa"
+          "value": "Compuertas planas azules instaladas entre machones de hormigón sobre el cauce"
         },
         "imageHeight": {
           "type": "number",
-          "value": 621
+          "value": 1086
         },
         "imageWidth": {
           "type": "number",
-          "value": 446
+          "value": 1448
         }
       }
     },
@@ -2982,19 +2966,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/limpiarrejas.jpg"
+          "value": "/fotos/curadas/limpiarrejas-peine-reja-taller.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Limpiarreja instalada en obra hidroeléctrica"
+          "value": "Peine del limpiarrejas recorriendo la reja durante las pruebas en taller, con el eje de transmisión y el reenvío angular a la vista"
         },
         "imageHeight": {
           "type": "number",
-          "value": 314
+          "value": 1080
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1920
         }
       }
     },
@@ -3070,19 +3054,19 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/turbinas-obra-1.webp"
+          "value": "/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp"
         },
         "imageAlt": {
           "type": "text",
-          "value": "Mantenimiento de componente de turbina hidráulica en taller"
+          "value": "Montaje del rodete y el distribuidor de un grupo hidráulico con el puente grúa de la casa de máquinas"
         },
         "imageHeight": {
           "type": "number",
-          "value": 900
+          "value": 768
         },
         "imageWidth": {
           "type": "number",
-          "value": 1200
+          "value": 1024
         }
       }
     },
@@ -3144,7 +3128,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales."
+          "value": "Ocho líneas de trabajo: tuberías forzadas y blindajes, compuertas, válvulas, turbinas, limpiarrejas, tanques especiales, infraestructuras y fabricaciones especiales."
         },
         "title": {
           "type": "text",
@@ -3276,7 +3260,7 @@
         },
         "telefono": {
           "type": "text",
-          "value": "+56 43 32 84 14"
+          "value": "+56 43 232 8414"
         }
       }
     }

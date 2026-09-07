@@ -16,7 +16,7 @@ procesos:
     descripcion: 'Calderería y armado en taller, con control dimensional antes del despacho.'
   - titulo: Montaje
     descripcion: >-
-      Transporte, posicionamiento e izaje en obra con grúas y andamios mecano
+      Transporte, posicionamiento e izaje en obra con grúas y andamios metálicos
       tubulares.
   - titulo: Reparación
     descripcion: >-
@@ -38,6 +38,6 @@ Fabricamos y montamos estructuras metálicas para obras viales e hidráulicas.
 
 ## Proyectos destacados en infraestructuras
 
-Para el mejoramiento de la **Ruta Nahuelbuta** fabricamos y montamos las cúpulas de protección de 8 pasarelas peatonales. Las estructuras se construyeron en módulos de 6 metros, con arcos de tubo galvanizado de 2 pulgadas, malla electrosoldada, barandas de acero A240ES y cubierta de policarbonato, y se montaron sobre las pasarelas con andamios mecano tubulares y equipos de elevación.
+Para el mejoramiento de la **Ruta Nahuelbuta** fabricamos y montamos las cúpulas de protección de 8 pasarelas peatonales. Las estructuras se construyeron en módulos de 6 metros, con arcos de tubo galvanizado de 2 pulgadas, malla electrosoldada, barandas de acero A240ES y cubierta de policarbonato, y se montaron sobre las pasarelas con andamios metálicos tubulares y equipos de elevación.
 
-En obras hidráulicas ejecutamos la reparación postterremoto de los **sifones Mulchén y Bureo DN 3.200** para los canalistas del Biobío Sur, además de reforzamientos de canales de hormigón y estructuras vinculadas a embalses.
+En obras hidráulicas ejecutamos la reparación postterremoto de los **sifones Mulchén y Bureo Ø 3.200** para los canalistas del Biobío Sur, además de reforzamientos de canales de hormigón y estructuras vinculadas a embalses.

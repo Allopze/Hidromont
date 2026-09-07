@@ -26,7 +26,7 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
     width: 429,
     height: 491,
   },
-  'ch-dorias': {
+  'ch-doiras': {
     src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',
     alt: 'Bifurcación instalada en obra',
     width: 441,

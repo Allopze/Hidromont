@@ -9,7 +9,7 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
   },
   compuertas: {
     src: '/fotos/curadas/compuertas.webp',
-    alt: 'Compuerta hidráulica instalada en presa',
+    alt: 'Compuertas planas azules instaladas entre machones de hormigón sobre el cauce',
     width: 1448,
     height: 1086,
   },
@@ -20,16 +20,16 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
     height: 900,
   },
   turbinas: {
-    src: '/fotos/curadas/turbinas-obra-1.webp',
-    alt: 'Mantenimiento de componente de turbina hidráulica en taller',
-    width: 1200,
-    height: 900,
+    src: '/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp',
+    alt: 'Montaje del rodete y el distribuidor de un grupo hidráulico con el puente grúa de la casa de máquinas',
+    width: 1024,
+    height: 768,
   },
   limpiarrejas: {
-    src: '/fotos/curadas/limpiarrejas-obra-1.webp',
-    alt: 'Sistema de captación con limpiarreja en obra hidroeléctrica',
-    width: 1200,
-    height: 674,
+    src: '/fotos/curadas/limpiarrejas-peine-reja-taller.webp',
+    alt: 'Peine del limpiarrejas recorriendo la reja durante las pruebas en taller',
+    width: 1920,
+    height: 1080,
   },
   'otros-montajes': {
     src: '/fotos/curadas/cuerpo-vapor-taller.webp',

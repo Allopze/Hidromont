@@ -23,10 +23,10 @@ const serviceImageSeeds: Array<{
   {
     slug: 'compuertas',
     title: 'Compuertas',
-    src: '/fotos/curadas/compuertas.jpg',
-    alt: 'Compuerta hidráulica instalada en presa',
-    width: 446,
-    height: 621,
+    src: '/fotos/curadas/compuertas.webp',
+    alt: 'Compuertas planas azules instaladas entre machones de hormigón sobre el cauce',
+    width: 1448,
+    height: 1086,
   },
   {
     slug: 'valvulas',
@@ -39,18 +39,18 @@ const serviceImageSeeds: Array<{
   {
     slug: 'turbinas',
     title: 'Turbinas',
-    src: '/fotos/curadas/turbinas-obra-1.webp',
-    alt: 'Mantenimiento de componente de turbina hidráulica en taller',
-    width: 1200,
-    height: 900,
+    src: '/fotos/catalogo/turbinas-montaje-rodete-sobradelo.webp',
+    alt: 'Montaje del rodete y el distribuidor de un grupo hidráulico con el puente grúa de la casa de máquinas',
+    width: 1024,
+    height: 768,
   },
   {
     slug: 'limpiarrejas',
     title: 'Limpiarrejas',
-    src: '/fotos/curadas/limpiarrejas.jpg',
-    alt: 'Limpiarreja instalada en obra hidroeléctrica',
-    width: 471,
-    height: 314,
+    src: '/fotos/curadas/limpiarrejas-peine-reja-taller.webp',
+    alt: 'Peine del limpiarrejas recorriendo la reja durante las pruebas en taller',
+    width: 1920,
+    height: 1080,
   },
   {
     slug: 'otros-montajes',
@@ -111,7 +111,7 @@ const projectImageSeeds: Array<{
     height: 640,
   },
   {
-    slug: 'ch-dorias',
+    slug: 'ch-doiras',
     title: 'C.H. Dorias',
     src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',
     alt: 'Bifurcación instalada en obra',
@@ -159,7 +159,7 @@ const projectGallerySlugs = [
   'ch-los-condores',
   'embalse-chironta',
   'ch-besaya',
-  'ch-dorias',
+  'ch-doiras',
   'ch-queltehues',
   'ch-rio-frio',
   'embalse-chacrillas',
@@ -266,7 +266,7 @@ export const defaultContentEntries: EntrySeed[] = [
       domicilio: { type: 'text', value: 'Av. Las Industrias N° 10.950' },
       ciudad: { type: 'text', value: 'Los Ángeles, Región del Biobío, Chile' },
       casillaPostal: { type: 'text', value: 'Casilla 48 — Los Ángeles, Región del Biobío' },
-      telefono: { type: 'text', value: '+56 43 32 84 14' },
+      telefono: { type: 'text', value: '+56 43 232 8414' },
       email: { type: 'text', value: 'hidromont@hidromont.cl' },
       sitioWeb: { type: 'link', value: 'https://hidromont.cl' },
       fundacion: { type: 'number', value: 1983 },
@@ -351,7 +351,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Más de 40 años de trayectoria en proyectos hidráulicos e hidroeléctricos en Chile y el exterior. Especialistas en soluciones técnicas de alta complejidad desde 1983.',
+          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles.',
       },
       primaryLabel: { type: 'text', value: 'Conocer nuestros servicios' },
       secondaryLabel: { type: 'text', value: 'Ver proyectos' },
@@ -479,7 +479,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Desde ingeniería hasta montaje en terreno. Abarcamos toda la cadena de valor: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y fabricaciones especiales.',
+          'Ocho líneas de trabajo: tuberías forzadas y blindajes, compuertas, válvulas, turbinas, limpiarrejas, tanques especiales, infraestructuras y fabricaciones especiales.',
       },
       image: { type: 'image', value: '/fotos/curadas/otros-montajes.jpg' },
       imageAlt: { type: 'text', value: 'Fabricación de grandes equipos hidromecánicos en taller' },
@@ -742,7 +742,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Nuestro taller está preparado para responder a suministros urgentes, fabricar elementos de gran tamaño y ejecutar trabajos de alta precisión.',
+          'El taller se montó para abastecer con urgencia las piezas imprevistas que aparecen durante una reparación, y permite fabricar tubería de gran diámetro y mecanizar en la misma nave.',
       },
       item1Title: { type: 'text', value: 'Superficie de terreno' },
       item1Value: { type: 'text', value: '11.000 m²' },
@@ -775,7 +775,7 @@ export const defaultContentEntries: EntrySeed[] = [
       item6Value: { type: 'text', value: '5 unidades' },
       item6Desc: {
         type: 'textarea',
-        value: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
+        value: '5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje.',
       },
     },
   },
@@ -803,9 +803,9 @@ export const defaultContentEntries: EntrySeed[] = [
       item4: { type: 'text', value: 'Torno al aire con volteo 4,5 m' },
       item5: { type: 'text', value: 'Cizalla LOIRE 3 m/16 mm' },
       item6: { type: 'text', value: 'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm' },
-      item7: { type: 'text', value: 'Plegadora MEBUSA 200 Tn × 3 m' },
+      item7: { type: 'text', value: 'Plegadora MEBUSA 200 t × 3 m' },
       item8: { type: 'text', value: 'Oxicorte hasta 100 mm' },
-      item9: { type: 'text', value: 'Grúa autopropulsada 50 Tn' },
+      item9: { type: 'text', value: 'Grúa autopropulsada 50 t' },
       item10: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
     },
   },
@@ -824,7 +824,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.',
       },
-      item1: { type: 'text', value: 'Grúa autopropulsada 50 Tn' },
+      item1: { type: 'text', value: 'Grúa autopropulsada 50 t' },
       item2: { type: 'text', value: 'Camiones pluma para maniobras de montaje en terreno' },
       item3: { type: 'text', value: 'Vehículos Pick-Up 4×4 para acceso a terreno' },
       item4: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
@@ -848,7 +848,8 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: '¿Necesita revisar un alcance técnico?' },
       subtitle: {
         type: 'textarea',
-        value: 'Conozca nuestra historia, equipo técnico e infraestructura en Los Ángeles, Biobío.',
+        value:
+          'Cuéntenos el alcance de su obra y revisamos qué parte podemos ejecutar en el taller de Los Ángeles y qué parte en terreno.',
       },
       buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
     },
@@ -951,7 +952,8 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: 'Registro de obras hidráulicas e hidroeléctricas' },
       subtitle: {
         type: 'textarea',
-        value: 'Registro de proyectos ejecutados clasificados por línea de servicio.',
+        value:
+          'Obras del grupo en Chile, España, Honduras y Costa Rica, agrupadas por línea de servicio.',
       },
     },
   },
@@ -966,8 +968,7 @@ export const defaultContentEntries: EntrySeed[] = [
       title: { type: 'text', value: 'Más de 40 años de proyectos en Chile y el exterior' },
       subtitle: {
         type: 'textarea',
-        value:
-          'Nuestra experiencia en decenas de proyectos nos permite anticipar los desafíos técnicos de cada obra.',
+        value: 'Hemos ejecutado obras en Chile, España, Honduras y Costa Rica.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
@@ -1014,12 +1015,11 @@ export const defaultContentEntries: EntrySeed[] = [
     fields: {
       title: {
         type: 'text',
-        value: 'Empresas que trabajan con infraestructura hidráulica e hidroeléctrica',
+        value: '¿Trabaja en una obra hidráulica o hidroeléctrica?',
       },
       subtitle: {
         type: 'textarea',
-        value:
-          'Conozca los procesos de ingeniería, fabricación y montaje que aplica Hidromont en sus proyectos.',
+        value: 'Cuéntenos el alcance y revisamos las alternativas de fabricación y montaje.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },

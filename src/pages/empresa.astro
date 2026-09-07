@@ -230,7 +230,7 @@ import { company } from '../data/company';
               key: 5,
               val: '5 unidades',
               title: 'Puentes grúa',
-              desc: '5 puentes grúa de 10 a 20 toneladas para maniobras de fabricación y montaje.',
+              desc: '5 puentes grúa de 10 a 20 t para maniobras de fabricación y montaje.',
             },
           ].map((item) => (
             <div class="p-6 bg-surface border border-border rounded-none">
@@ -303,7 +303,7 @@ import { company } from '../data/company';
           </EditableText>
           <ul class="space-y-2.5">
             {
-              ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((i) => (
+              ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
                 <li class="flex items-start gap-2.5 text-sm text-text-muted">
                   <span
                     class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
@@ -320,10 +320,8 @@ import { company } from '../data/company';
                         'Torno al aire con volteo 4,5 m',
                         'Cizalla LOIRE 3 m/16 mm',
                         'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
-                        'Plegadora MEBUSA 200 Tn × 3 m',
+                        'Plegadora MEBUSA 200 t × 3 m',
                         'Oxicorte hasta 100 mm',
-                        'Grúa autopropulsada 50 Tn',
-                        'Grupos electrógenos de 100 a 200 kVA',
                       ][i - 1]
                     )}
                   </EditableText>
@@ -377,7 +375,7 @@ import { company } from '../data/company';
                       'empresa.mediosdeobra',
                       `item${i}`,
                       [
-                        'Grúa autopropulsada 50 Tn',
+                        'Grúa autopropulsada 50 t',
                         'Camiones pluma de hasta 9.000 kg de capacidad de levante',
                         'Vehículos Pick-Up 4×4 para acceso a terreno',
                         'Grupos electrógenos de 100 a 200 kVA',
@@ -404,7 +402,7 @@ import { company } from '../data/company';
     subtitle={getCmsText(
       'empresa.cta',
       'subtitle',
-      'Conozca nuestra historia, infraestructura y medios de trabajo en Los Ángeles, Biobío.'
+      'Cuéntenos el alcance de su obra y revisamos qué parte podemos ejecutar en el taller de Los Ángeles y qué parte en terreno.'
     )}
     primary={{
       label: getCmsText('empresa.cta', 'buttonLabel', 'Contactar equipo técnico'),

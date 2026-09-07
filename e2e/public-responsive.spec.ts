@@ -35,7 +35,7 @@ test('location renders without an external embed', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Abrir en Google Maps' }).first()).toBeVisible();
 });
 
-for (const slug of ['ch-besaya', 'ch-dorias', 'ch-queltehues']) {
+for (const slug of ['ch-besaya', 'ch-doiras', 'ch-queltehues']) {
   test(`${slug} keeps its project image within the useful source size`, async ({ page }) => {
     await page.goto(`/proyectos/${slug}`);
     const image = page.locator('[data-image-presentation="contained"] img').first();

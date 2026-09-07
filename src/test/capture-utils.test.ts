@@ -14,13 +14,13 @@ describe('capture utilities', () => {
       'index.html',
       '404.html',
       'contacto/index.html',
-      'proyectos/ch-dorias/index.html',
+      'proyectos/ch-doiras/index.html',
       'fotos/curacion-preview.html',
       'contacto/index.html',
     ]);
 
     expect(result).toEqual({
-      routes: ['/', '/contacto', '/proyectos/ch-dorias'],
+      routes: ['/', '/contacto', '/proyectos/ch-doiras'],
       skipped: ['fotos/curacion-preview.html'],
     });
   });

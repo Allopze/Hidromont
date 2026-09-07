@@ -10,9 +10,15 @@ export interface ProjectGallery {
 }
 
 const projectSlugs = [
-  'ch-los-condores', 'embalse-chironta', 'ch-besaya', 'ch-dorias',
-  'ch-queltehues', 'ch-rio-frio', 'embalse-chacrillas',
-  'tanques-glp-coyhaique', 'tanques-glp-puerto-williams',
+  'ch-los-condores',
+  'embalse-chironta',
+  'ch-besaya',
+  'ch-doiras',
+  'ch-queltehues',
+  'ch-rio-frio',
+  'embalse-chacrillas',
+  'tanques-glp-coyhaique',
+  'tanques-glp-puerto-williams',
 ];
 
 export const projectGalleries: Record<string, ProjectGallery> = Object.fromEntries(

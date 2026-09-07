@@ -1,10 +1,10 @@
 ---
 alcance: >-
   Ingeniería, suministro y montaje de tubería forzada de 1.655 m de longitud,
-  diámetros 1.200/1.000 mm, incluyendo 185 m de tubería vertical.
+  diámetros Ø 1.200 y Ø 1.000, incluyendo 185 m de tubería vertical.
 categoria: tuberias
 cliente: Norvento
-diametro: DN 1200 / DN 1000
+diametro: Ø 1.200 / Ø 1.000
 longitud: 1.655 m
 nombre: C.H. Río Frío
 orden: 6
@@ -17,5 +17,5 @@ C.H. Río Frío es un proyecto de tubería forzada de larga longitud ejecutado e
 ## Alcance del proyecto
 
 - **Ingeniería:** proyecto completo de la tubería forzada con transiciones de diámetro y análisis de la sección vertical.
-- **Fabricación:** tubería en dos diámetros, DN 1.200 y DN 1.000.
+- **Fabricación:** tubería en dos diámetros, Ø 1.200 y Ø 1.000.
 - **Montaje:** instalación de 1.655 m de tubería, incluyendo 185 m en sección vertical.

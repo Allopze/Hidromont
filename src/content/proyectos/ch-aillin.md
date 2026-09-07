@@ -1,8 +1,8 @@
 ---
-alcance: 'Suministro, fabricación y montaje de tubería en presión DN 1100.'
+alcance: 'Suministro, fabricación y montaje de tubería a presión Ø 1.100.'
 categoria: tuberias
 cliente: Constructora Obechile
-diametro: DN 1100
+diametro: Ø 1.100
 nombre: C.H. Ayllín
 orden: 26
 tipo: banco

@@ -7,10 +7,11 @@ aplicaciones:
   - Rehabilitación y reemplazo de tuberías existentes
 icono: pipe
 normas:
-  - C.E.C.T.
-  - AWWA M11
-  - ASME
-  - Guía técnica CEDEX para tuberías de transporte de agua a presión
+  - Normas C.E.C.T.
+  - ASME VIII
+  - ASME IX
+  - SIS 05 5900
+  - ANSI/ASME B31.1
 orden: 6
 procesos:
   - titulo: Ingeniería
@@ -25,7 +26,7 @@ procesos:
   - titulo: Montaje
     descripcion: >-
       Instalación de tuberías forzadas y blindajes en condiciones especiales,
-      incluyendo uso de teleférico o plataformas de montaje cuando la obra lo
+      incluyendo teleférico, pórtico o plataformas de montaje cuando la obra lo
       requiere.
   - titulo: Mantenimiento y Rehabilitación
     descripcion: >-
@@ -55,4 +56,8 @@ Nuestro taller en Los Ángeles, Región del Biobío, cuenta con equipamiento esp
 
 ## Proyectos destacados en tuberías forzadas y blindajes
 
-Entre los trabajos publicados se encuentran C.H. Los Cóndores, con blindaje DN 2.200 y ramales DN 1.600, y C.H. Queltehues, con tubería DN 1.500/1.800. Cada obra cuenta con documentación técnica verificable.
+En **C.H. Los Cóndores** fabricamos y montamos 1.200 m de blindaje Ø 2.200 con ramales Ø 1.600, incluidos 132 m instalados en pique, para un total de 2.448 t. El túnel en presión se ejecutó en acero S460 ML, con espesores de 28 a 38 mm.
+
+En **C.H. Queltehues** desmontamos la tubería forzada existente, demolimos los apoyos y machones y fabricamos y montamos 550 m de tubería nueva Ø 1.500 y Ø 1.800.
+
+En **C.H. Ralco** ejecutamos el blindaje Ø 5.500 y la chimenea de equilibrio Ø 9.200 / Ø 5.000, y en **C.H. La Joya**, en Costa Rica, la trifurcación Ø 3.700 a tres ramales Ø 2.100.

@@ -1,13 +1,14 @@
 ---
 alcance: >-
-  Montaje de tubería forzada DN 1900. Equipamiento hidromecánico completo: 4
-  compuertas radiales, 7 de emergencia, 3 vagón, 1 deslizante de seguridad, 1
-  desarenadora y 1 desripiadora. Ingeniería, suministro, fabricación y montaje
-  de rejas y limpiarrejas. Montaje electromecánico completo.
+  Montaje de tubería forzada Ø 1.900. Equipamiento hidromecánico completo:
+  4 compuertas radiales, 7 compuertas de emergencia, 3 compuertas vagón,
+  1 compuerta de seguridad, 1 compuerta desarenadora y 1 compuerta desripiadora.
+  Ingeniería, suministro, fabricación y montaje de rejas y limpiarrejas. Montaje
+  electromecánico completo.
 categoria: tuberias
 cliente: Empresa Eléctrica La Leonera
-diametro: DN 1900
+diametro: Ø 1.900
 nombre: C.H. Pulelfú
-orden: 23
+orden: 45
 tipo: banco
 ---

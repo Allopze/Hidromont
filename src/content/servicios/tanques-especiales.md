@@ -25,17 +25,17 @@ resumen: >-
   Diseño, fabricación y pruebas de recipientes a presión y estanques de
   almacenamiento para plantas de distribución de GLP.
 tipos:
-  - Tanques de GLP aéreos
+  - Estanques de GLP aéreos
   - Recipientes a presión
   - Estanques cilíndricos horizontales
   - Estanques industriales de gran capacidad
 titulo: Tanques Especiales
 ---
 
-En el taller de Los Ángeles se realizan el rolado de mantos y tapas, la soldadura, los controles definidos para cada proyecto y la pintura industrial.
+En el taller de Los Ángeles se ejecutan el rolado de mantos y tapas, la soldadura, los controles definidos para cada proyecto y la pintura industrial.
 
 ## Proyectos destacados en tanques
 
-Para **Gasco** fabricamos tanques de GLP destinados a la planta de almacenamiento y distribución de Coyhaique.
+Para **Gasco** fabricamos los recipientes a presión de GLP de la planta de almacenamiento y distribución de Coyhaique.
 
-También fabricamos tres tanques aéreos de 18.000 galones cada uno para la planta de distribución de GLP de Puerto Williams.
+También fabricamos tres estanques aéreos de 18.000 galones cada uno para la planta de distribución de GLP de Puerto Williams.

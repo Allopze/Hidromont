@@ -11,7 +11,7 @@ import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
-import { formatDN } from '../../utils/format';
+import { formatDiameters } from '../../utils/format';
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
@@ -43,7 +43,7 @@ const heroImg = projectImages[slug];
 const gallery = projectGalleries[slug];
 const galleryEntryId = `project-gallery.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
-const containedHero = ['ch-besaya', 'ch-dorias', 'ch-queltehues'].includes(slug);
+const containedHero = ['ch-besaya', 'ch-doiras', 'ch-queltehues'].includes(slug);
 const participantSummary = contratista
   ? `Contratista: ${contratista}${mandante ? ` · Mandante: ${mandante}` : ''}`
   : cliente
@@ -75,7 +75,12 @@ const jsonLd = {
 };
 ---
 
-<PageLayout title={nombre} description={formatDN(alcance)} image={heroImg?.src} jsonLd={jsonLd}>
+<PageLayout
+  title={nombre}
+  description={formatDiameters(alcance)}
+  image={heroImg?.src}
+  jsonLd={jsonLd}
+>
   <PageHero
     badge={categoriaLabels[categoria] ?? categoria}
     title={nombre}
@@ -119,7 +124,7 @@ const jsonLd = {
                       <dt class="text-xs text-text-muted uppercase tracking-wide">
                         {diametro.includes('/') ? 'Diámetros principales' : 'Diámetro'}
                       </dt>
-                      <dd class="font-mono font-semibold text-text">{formatDN(diametro)}</dd>
+                      <dd class="font-mono font-semibold text-text">{formatDiameters(diametro)}</dd>
                     </div>
                   )}
                   {longitud && (

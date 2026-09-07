@@ -41,8 +41,16 @@ tipos:
 titulo: Montajes y Fabricaciones Especiales
 ---
 
-Hidromont realiza montajes electromecánicos y fabrica estructuras metálicas para obras hidráulicas e instalaciones industriales, de acuerdo con el alcance definido para cada proyecto.
+Hidromont realiza montajes electromecánicos y fabrica estructuras metálicas y equipos especiales para obras hidráulicas e instalaciones industriales.
+
+## Obturación de desagües de fondo
+
+En la **presa de Belesar** fabricamos cuatro obturadores para el desagüe de fondo. Cada cuerpo se forma con dos fondos semiesféricos e incorpora by-pass mediante válvula cónica, válvula manual de seguridad, cabrestante manual para la aproximación a la embocadura, llaves de entrada y salida de agua, puente y orejetas de sustentación, y banda de cierre de neopreno. Las maniobras de obturación se ejecutaron con equipo de buceo y un ROV dirigido por control remoto desde coronación, con seguimiento por sonar.
 
 ## Proyectos destacados en montajes y fabricaciones especiales
 
-El trabajo en taller incluye estanques y estructuras de soporte para plantas industriales. En terreno también se han ejecutado refuerzos de canales de hormigón y vigas para puentes sobre canales de descarga.
+Para la **planta Santa Fe de C.M.P.C.** fabricamos el cuerpo de vapores Ø 4.632, de 17,7 t y 6.300 mm de altura, y el evaporador Ø 4.132 / Ø 2.900, de 11,43 t y 6.237 mm de altura.
+
+En **C.H. Puclaro** fabricamos el repartidor de aducción Ø 1.800 a dos ramales Ø 1.200, y en **C.H. La Higuera** la junta de desmontaje Ø 3.700 y el mejoramiento y blindaje de la chimenea de equilibrio Ø 18.800.
+
+En terreno también se han ejecutado refuerzos de canales de hormigón y vigas para puentes sobre canales de descarga.

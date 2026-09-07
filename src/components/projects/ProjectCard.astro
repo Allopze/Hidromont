@@ -7,7 +7,7 @@ import ArrowIcon from '../ui/ArrowIcon.astro';
 import { projectImages } from '../../data/project-images';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
-import { formatDN } from '../../utils/format';
+import { formatDiameters } from '../../utils/format';
 
 interface Props {
   proyecto: CollectionEntry<'proyectos'>;
@@ -65,7 +65,7 @@ const photo = projectImages[slug];
     </h3>
 
     <p class="text-text-muted text-sm leading-relaxed line-clamp-3">
-      {formatDN(alcance)}
+      {formatDiameters(alcance)}
     </p>
 
     {
@@ -95,7 +95,9 @@ const photo = projectImages[slug];
               {ubicacion}
             </span>
           )}
-          {diametro && <span>⌀ {formatDN(diametro)}</span>}
+          {/* El valor ya trae su propio prefijo (Ø para tubería y blindaje, DN para
+              válvulas), así que anteponer ⌀ lo duplicaría. */}
+          {diametro && <span>{formatDiameters(diametro)}</span>}
           {longitud && (
             <span class="inline-flex items-center gap-1">
               <svg

@@ -1,8 +1,8 @@
 ---
-alcance: Suministro y fabricación de trifurcador y ramales DN 3700-2100.
+alcance: Ingeniería y fabricación de la trifurcación Ø 3.700 a 3 ramales Ø 2.100.
 categoria: tuberias
 cliente: Alstom
-diametro: DN 3700-2100
+diametro: Ø 3.700 / Ø 2.100
 nombre: C.H. La Joya
 orden: 15
 tipo: banco

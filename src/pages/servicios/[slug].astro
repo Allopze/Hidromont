@@ -169,7 +169,10 @@ const jsonLd = [
   </Section>
 
   {
-    !isLimpiarrejas && (gallery?.images.length > 0 || cmsEditingEnabled) && (
+    /* Limpiarrejas ya no se excluye: la galería es donde viven los esquemas del
+       modelo de utilidad patentado y las instalaciones, que el video del hero
+       no muestra. */
+    (gallery?.images.length > 0 || cmsEditingEnabled) && (
       <Section variant="default">
         <Container>
           <h2
