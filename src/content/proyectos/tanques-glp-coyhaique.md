@@ -6,7 +6,7 @@ categoria: estructuras
 cliente: Gasco
 nombre: Tanques de GLP — Coyhaique
 orden: 63
-tipo: banco
+tipo: destacado
 ubicacion: 'Coyhaique, Región de Aysén, Chile'
 ---
 

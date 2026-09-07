@@ -74,22 +74,22 @@ describe('capture utilities', () => {
     expect(readPngSize('no-buffer')).toBeNull();
   });
 
-  it('requires 24 public pages and four CMS scenes per viewport', () => {
+  it('requires 27 public pages and four CMS scenes per viewport', () => {
     const files = [
-      ...Array.from({ length: 24 }, (_, index) => `desktop/public/page-${index}.png`),
-      ...Array.from({ length: 24 }, (_, index) => `mobile/public/page-${index}.png`),
+      ...Array.from({ length: 27 }, (_, index) => `desktop/public/page-${index}.png`),
+      ...Array.from({ length: 27 }, (_, index) => `mobile/public/page-${index}.png`),
       ...Array.from({ length: 4 }, (_, index) => `desktop/cms/scene-${index}.png`),
       ...Array.from({ length: 4 }, (_, index) => `mobile/cms/scene-${index}.png`),
     ];
 
     expect(validateScreenshotInventory(files)).toEqual({
-      total: 56,
-      desktop: 28,
-      mobile: 28,
-      publicPerViewport: 24,
+      total: 62,
+      desktop: 31,
+      mobile: 31,
+      publicPerViewport: 27,
       cmsPerViewport: 4,
     });
-    expect(() => validateScreenshotInventory(files.slice(1))).toThrow(/55 de 56/);
+    expect(() => validateScreenshotInventory(files.slice(1))).toThrow(/61 de 62/);
   });
 
   it('uses capture-only ports and accepts explicit overrides', () => {

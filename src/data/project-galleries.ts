@@ -19,6 +19,7 @@ const projectSlugs = [
   'embalse-chacrillas',
   'tanques-glp-coyhaique',
   'tanques-glp-puerto-williams',
+  'ruta-nahuelbuta-pasarelas',
 ];
 
 export const projectGalleries: Record<string, ProjectGallery> = Object.fromEntries(

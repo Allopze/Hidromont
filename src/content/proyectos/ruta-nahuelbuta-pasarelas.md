@@ -9,7 +9,7 @@ categoria: estructuras
 cliente: Constructora Renaico SpA
 nombre: Mejoramiento Ruta Nahuelbuta — Cúpulas para Pasarelas
 orden: 61
-tipo: banco
+tipo: destacado
 ubicacion: 'Ruta Nahuelbuta, Chile'
 ---
 

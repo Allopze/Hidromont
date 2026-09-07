@@ -142,6 +142,30 @@ const projectImageSeeds: Array<{
     width: 1425,
     height: 1104,
   },
+  {
+    slug: 'tanques-glp-coyhaique',
+    title: 'Tanques de GLP — Coyhaique',
+    src: '/fotos/curadas/tanques-glp-coyhaique.webp',
+    alt: 'Tanque de GLP 30.000 galones en fabricación en taller',
+    width: 1200,
+    height: 1600,
+  },
+  {
+    slug: 'tanques-glp-puerto-williams',
+    title: 'Tanques Aéreos de GLP 18.000 Galones — Puerto Williams',
+    src: '/fotos/curadas/tanques-glp-puerto-williams.webp',
+    alt: 'Tanques aéreos de GLP pintados listos para despacho',
+    width: 1200,
+    height: 1600,
+  },
+  {
+    slug: 'ruta-nahuelbuta-pasarelas',
+    title: 'Mejoramiento Ruta Nahuelbuta — Cúpulas para Pasarelas',
+    src: '/fotos/curadas/pasarela-ruta-nahuelbuta.webp',
+    alt: 'Cúpula y estructura metálica para pasarela peatonal en carretera',
+    width: 1600,
+    height: 720,
+  },
 ];
 
 const serviceGallerySlugs = [
@@ -163,7 +187,87 @@ const projectGallerySlugs = [
   'ch-queltehues',
   'ch-rio-frio',
   'embalse-chacrillas',
+  'tanques-glp-coyhaique',
+  'tanques-glp-puerto-williams',
+  'ruta-nahuelbuta-pasarelas',
 ];
+
+// Fotos reales para los proyectos cuya galería sí tiene material disponible
+// (mismo contenido que src/data/cms-content.json, para que un cms:import no
+// pise con valores vacíos lo que ya está publicado). Los proyectos sin fotos
+// disponibles no aparecen aquí y su galería sigue naciendo vacía, como antes.
+const projectGalleryImageSeeds: Record<string, Array<{ src: string; alt: string }>> = {
+  'ch-los-condores': [
+    {
+      src: '/gallery/derived/7216a79a-1600.webp',
+      alt: 'Montaje vertical de blindaje en caverna subterránea de Los Cóndores',
+    },
+    {
+      src: '/gallery/derived/8b04c48f-1600.webp',
+      alt: 'Soldadura de tubería forzada en túnel de C.H. Los Cóndores',
+    },
+    {
+      src: '/gallery/derived/c4859dc0-1600.webp',
+      alt: 'Válvula azul ya instalada en línea con la tubería del túnel, con el destello de una soldadura en la base',
+    },
+  ],
+  'ch-queltehues': [
+    {
+      src: '/gallery/derived/9380be96-1600.webp',
+      alt: 'Armado de una compuerta plana de gran tamaño dentro del canal de hormigón, con sus vigas y planchas apuntaladas',
+    },
+    {
+      src: '/gallery/derived/20f23b02-1600.webp',
+      alt: 'Vista cenital del tablero de la compuerta con soldadores trabajando sobre la viga principal',
+    },
+    {
+      src: '/gallery/derived/18dba00f-1600.webp',
+      alt: 'El canal ya con agua, con la compuerta y su pasarela de rejilla instaladas en la desembocadura',
+    },
+  ],
+  'ruta-nahuelbuta-pasarelas': [
+    {
+      src: '/gallery/derived/ed1997f7-1600.webp',
+      alt: 'Dos operarios sueldan los arcos galvanizados de una cúpula sobre una plataforma dentro de la nave del taller, entre chispas',
+    },
+    {
+      src: '/gallery/derived/8c4c856b-1600.webp',
+      alt: 'Camión pluma montando cúpulas sobre las dos pasarelas peatonales que cruzan la carretera, visto desde la mediana entre calzadas',
+    },
+    {
+      src: '/gallery/derived/1ffd1453-1600.webp',
+      alt: 'Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol',
+    },
+  ],
+  'tanques-glp-coyhaique': [
+    {
+      src: '/gallery/derived/77cc84b2-1600.webp',
+      alt: 'Especialista técnico inspeccionando ensamble interno de cabezal semiesférico',
+    },
+    {
+      src: '/gallery/derived/13da5f4c-1600.webp',
+      alt: 'Vista frontal de cabezal de tanque con elementos estructurales de apoyo',
+    },
+    {
+      src: '/gallery/derived/fbee1d7f-1600.webp',
+      alt: 'Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural',
+    },
+  ],
+  'tanques-glp-puerto-williams': [
+    {
+      src: '/gallery/derived/5ad057cd-1600.webp',
+      alt: 'Conformado de cabezal semiesférico para recipiente a presión',
+    },
+    {
+      src: '/gallery/derived/8f3e1d15-1600.webp',
+      alt: 'Ensamblaje de plinto y soporte frontal para estanque horizontal',
+    },
+    {
+      src: '/gallery/derived/1b836a2c-1600.webp',
+      alt: 'Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial',
+    },
+  ],
+};
 
 const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
   { key: 'acciona', nombre: 'Acciona', logo: '/logos-clientes/acciona.svg' },
@@ -233,23 +337,28 @@ const imageEntries: EntrySeed[] = [
       gallery3Alt: { type: 'text' as const, value: '' },
     },
   })),
-  // Galerías de proyectos (3 slots por proyecto, vacíos por defecto)
-  ...projectGallerySlugs.map((slug) => ({
-    id: `project-gallery.${slug}`,
-    kind: 'settings',
-    slug: `project-gallery/${slug}`,
-    locale: 'es-CL',
-    title: `Galería proyecto ${slug}`,
-    status: 'published' as const,
-    fields: {
-      gallery1: { type: 'image' as const, value: '' },
-      gallery1Alt: { type: 'text' as const, value: '' },
-      gallery2: { type: 'image' as const, value: '' },
-      gallery2Alt: { type: 'text' as const, value: '' },
-      gallery3: { type: 'image' as const, value: '' },
-      gallery3Alt: { type: 'text' as const, value: '' },
-    },
-  })),
+  // Galerías de proyectos (3 slots por proyecto; se rellenan con
+  // projectGalleryImageSeeds cuando hay fotos disponibles, vacíos si no).
+  ...projectGallerySlugs.map((slug) => {
+    const images = projectGalleryImageSeeds[slug] ?? [];
+    const get = (n: number, field: 'src' | 'alt') => images[n - 1]?.[field] ?? '';
+    return {
+      id: `project-gallery.${slug}`,
+      kind: 'settings',
+      slug: `project-gallery/${slug}`,
+      locale: 'es-CL',
+      title: `Galería proyecto ${slug}`,
+      status: 'published' as const,
+      fields: {
+        gallery1: { type: 'image' as const, value: get(1, 'src') },
+        gallery1Alt: { type: 'text' as const, value: get(1, 'alt') },
+        gallery2: { type: 'image' as const, value: get(2, 'src') },
+        gallery2Alt: { type: 'text' as const, value: get(2, 'alt') },
+        gallery3: { type: 'image' as const, value: get(3, 'src') },
+        gallery3Alt: { type: 'text' as const, value: get(3, 'alt') },
+      },
+    };
+  }),
 ];
 
 export const defaultContentEntries: EntrySeed[] = [

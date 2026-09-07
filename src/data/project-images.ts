@@ -62,6 +62,12 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
     width: 1200,
     height: 1600,
   },
+  'ruta-nahuelbuta-pasarelas': {
+    src: '/fotos/curadas/pasarela-ruta-nahuelbuta.webp',
+    alt: 'Cúpula y estructura metálica para pasarela peatonal en carretera',
+    width: 1600,
+    height: 720,
+  },
 };
 
 export const projectImages: Record<string, ProjectImageData> = Object.fromEntries(

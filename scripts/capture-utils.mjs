@@ -87,19 +87,27 @@ export function validateScreenshotInventory(files) {
     cmsPerViewport: count('desktop/cms/'),
   };
 
+  // 27 rutas públicas: las 24 originales + ruta-nahuelbuta-pasarelas,
+  // tanques-glp-coyhaique y tanques-glp-puerto-williams, promovidas de
+  // `tipo: banco` a `tipo: destacado` (ahora generan página propia).
+  const PUBLIC_ROUTES = 27;
+  const CMS_SCENES = 4;
+  const expectedTotal = (PUBLIC_ROUTES + CMS_SCENES) * 2;
+
   const valid =
-    inventory.total === 56 &&
-    inventory.desktop === 28 &&
-    inventory.mobile === 28 &&
-    inventory.publicPerViewport === 24 &&
-    count('mobile/public/') === 24 &&
-    inventory.cmsPerViewport === 4 &&
-    count('mobile/cms/') === 4;
+    inventory.total === expectedTotal &&
+    inventory.desktop === PUBLIC_ROUTES + CMS_SCENES &&
+    inventory.mobile === PUBLIC_ROUTES + CMS_SCENES &&
+    inventory.publicPerViewport === PUBLIC_ROUTES &&
+    count('mobile/public/') === PUBLIC_ROUTES &&
+    inventory.cmsPerViewport === CMS_SCENES &&
+    count('mobile/cms/') === CMS_SCENES;
 
   if (!valid) {
     throw new Error(
-      `Inventario incompleto: ${inventory.total} de 56 PNG; ` +
-        `${inventory.desktop}/28 desktop y ${inventory.mobile}/28 mobile.`
+      `Inventario incompleto: ${inventory.total} de ${expectedTotal} PNG; ` +
+        `${inventory.desktop}/${PUBLIC_ROUTES + CMS_SCENES} desktop y ` +
+        `${inventory.mobile}/${PUBLIC_ROUTES + CMS_SCENES} mobile.`
     );
   }
 
