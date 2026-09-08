@@ -200,7 +200,7 @@ const projectGalleryImageSeeds: Record<string, Array<{ src: string; alt: string 
   'ch-los-condores': [
     {
       src: '/gallery/derived/7216a79a-1600.webp',
-      alt: 'Montaje vertical de blindaje en caverna subterránea de Los Cóndores',
+      alt: 'Vista a través de la brida abierta de la válvula: un trabajador esmerilando dentro del conducto da la escala de la pieza',
     },
     {
       src: '/gallery/derived/8b04c48f-1600.webp',

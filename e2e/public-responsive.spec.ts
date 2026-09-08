@@ -10,7 +10,10 @@ test('gallery progressively renders all photos and searches the full dataset', a
   await expect(cards).toHaveCount(48);
 
   while (await loadMore.isVisible()) await loadMore.click();
-  await expect(cards).toHaveCount(201);
+  // 173 tras deduplicar 34 fotos repetidas (32% de las 201 originales, tres
+  // pipelines de ingesta que nunca se dedujeron entre sí) y ampliar turbinas
+  // y limpiarrejas con material ya vetted de los catálogos de la empresa.
+  await expect(cards).toHaveCount(173);
 
   await page.getByLabel('Buscar proyecto en galería').fill('vista cenital del tablero');
   await expect(cards).toHaveCount(1);
