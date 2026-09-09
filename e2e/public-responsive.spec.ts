@@ -1,18 +1,27 @@
 import { expect, test } from '@playwright/test';
 
-test('gallery progressively renders all photos and searches the full dataset', async ({ page }) => {
+test('gallery infinite-scrolls through all photos and searches the full dataset', async ({
+  page,
+}) => {
   await page.goto('/galeria');
   const cards = page.locator('#photo-wall .gallery-card');
-  const loadMore = page.getByRole('button', { name: 'Ver 24 fotos más' });
 
   await expect(cards).toHaveCount(24);
-  await loadMore.click();
-  await expect(cards).toHaveCount(48);
 
-  while (await loadMore.isVisible()) await loadMore.click();
-  // 173 tras deduplicar 34 fotos repetidas (32% de las 201 originales, tres
+  // Un scroll real por vuelta: cada `wheel` mueve la posición, así que el
+  // IntersectionObserver del centinela vuelve a evaluar y dispara otro lote
+  // de 24 fotos. No se usa `expect(...).toPass()` aquí porque su intento
+  // interno (`toHaveCount(173)`) agota su propio timeout de 5s en cada
+  // vuelta esperando un valor que solo sube de a 24 — con el timeout externo
+  // de `toPass` solo alcanzan 2-3 vueltas antes de cortar. Un bucle simple
+  // con esperas cortas deja hacer todas las vueltas que hagan falta. 173
+  // tras deduplicar 34 fotos repetidas (32% de las 201 originales, tres
   // pipelines de ingesta que nunca se dedujeron entre sí) y ampliar turbinas
   // y limpiarrejas con material ya vetted de los catálogos de la empresa.
+  for (let i = 0; i < 20 && (await cards.count()) < 173; i++) {
+    await page.mouse.wheel(0, 1500);
+    await page.waitForTimeout(250);
+  }
   await expect(cards).toHaveCount(173);
 
   await page.getByLabel('Buscar proyecto en galería').fill('vista cenital del tablero');

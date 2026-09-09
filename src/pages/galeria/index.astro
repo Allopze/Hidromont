@@ -10,7 +10,6 @@ import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
 import PageHero from '../../components/ui/PageHero.astro';
-import ProjectAlbumCard from '../../components/gallery/ProjectAlbumCard.astro';
 import Lightbox from '../../components/gallery/Lightbox.astro';
 import { getCmsText } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
@@ -19,22 +18,19 @@ import {
   getGalleryCategories,
   getGalleryItems,
   getCategoryCounts,
-  getProjectAlbums,
+  getAlbumName,
 } from '../../data/gallery';
 
 const categories = getGalleryCategories();
 const allItems = getGalleryItems();
-const albums = getProjectAlbums();
 const categoryCounts = getCategoryCounts();
 
-// Con "Todas las Categorías" la galería no se divide en álbumes: muestra un
-// muro con TODAS las fotos mezcladas (solicitud expresa del usuario). La
-// mezcla es un round-robin determinista entre álbumes — una foto de cada uno
-// por turno — para que fotos consecutivas vengan de proyectos distintos sin
-// depender de aleatoriedad (el build queda reproducible). El round-robin
-// conserva el orden relativo dentro de cada álbum, así que el Lightbox puede
-// usar esta MISMA secuencia como payload: al abrir un álbum, su filtro por
-// projectSlug reconstruye el orden original del álbum.
+// La galería no agrupa en álbumes: siempre es un muro de fotos individuales
+// (solicitud expresa del usuario). La mezcla es un round-robin determinista
+// entre proyectos — una foto de cada uno por turno — para que fotos
+// consecutivas vengan de proyectos distintos sin depender de aleatoriedad (el
+// build queda reproducible), tanto viendo "todas las categorías" como al
+// filtrar por una sola: el filtro simplemente recorta este mismo orden.
 const itemsByAlbum = new Map<string, typeof allItems>();
 for (const item of allItems) {
   const key = item.projectSlug || 'general';
@@ -51,10 +47,9 @@ for (let i = 0; albumBuckets.some((bucket) => i < bucket.length); i++) {
 }
 
 // Nombre del proyecto por slug, para el índice de búsqueda de cada foto.
-const projectNameBySlug = new Map(albums.map((a) => [a.projectSlug, a.projectName]));
 const gallerySearchText = (item: (typeof allItems)[number]) =>
   [
-    projectNameBySlug.get(item.projectSlug ?? '') ?? '',
+    item.projectSlug ? getAlbumName(item.projectSlug) : '',
     (item.projectSlug ?? '').replaceAll('-', ' '),
     item.categoryName ?? '',
     item.alt,
@@ -116,7 +111,7 @@ const filters = [
 
   <Section padding="tight" class="bg-background">
     {
-      albums.length === 0 ? (
+      allItems.length === 0 ? (
         <Container>
           <div class="text-center py-20" data-reveal>
             <p class="text-text-muted text-lg">
@@ -130,10 +125,10 @@ const filters = [
         </Container>
       ) : (
         <div class="w-full px-4 md:px-8 max-w-7xl mx-auto">
-          {/* UIUX-16 fix: the page h1 (PageHero) was followed directly by each
-               album card's h3 — no h2 in between. Visually hidden since the
+          {/* UIUX-16 fix: the page h1 (PageHero) needs an h2 before the photo
+               grid for a correct heading hierarchy. Visually hidden since the
                PageHero title already covers this visually. */}
-          <h2 class="sr-only">Proyectos</h2>
+          <h2 class="sr-only">Fotos</h2>
           {/* ── Search & Filter Toolbar — one bordered container so both
                controls read as a single filtering system instead of two
                stacked, unrelated bars. ── */}
@@ -234,10 +229,11 @@ const filters = [
             </div>
           </div>
 
-          {/* ── Muro de fotos mezcladas — vista de "Todas las Categorías".
-               Cada tile es un `.gallery-card`: el Lightbox ya delega clicks en
-               esa clase y abre la foto exacta por data-item-id, navegando la
-               secuencia completa en este mismo orden. ── */}
+          {/* ── Muro de fotos: siempre fotos individuales, ya sea "todas las
+               categorías" o una sola. Cada tile es un `.gallery-card`: el
+               Lightbox delega clicks en esa clase y abre la foto exacta por
+               data-item-id, navegando el conjunto que esté filtrado en cada
+               momento (ver #lightbox-data en el script de abajo). ── */}
           <div id="photo-wall" class="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
             {mixedItems.slice(0, 24).map((item) => (
               <button
@@ -262,25 +258,13 @@ const filters = [
             ))}
           </div>
 
-          <div id="gallery-load-more-wrap" class="mt-8 flex justify-center">
-            <button
-              type="button"
-              id="gallery-load-more"
-              class="min-h-[44px] px-5 py-3 border border-primary text-primary-dark font-semibold hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              Ver 24 fotos más
-            </button>
-          </div>
-
-          {/* ── Project Albums Grid — vista al filtrar por una categoría ── */}
-          <div
-            id="album-grid"
-            class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch"
-          >
-            {albums.map((album, index) => (
-              <ProjectAlbumCard album={album} index={index} />
-            ))}
-          </div>
+          {/* Centinela de scroll infinito: sin contenido ni botón, solo un
+             punto de referencia para el IntersectionObserver del script de
+             abajo. Al entrar en el viewport carga el siguiente lote — tanto
+             al hacer scroll con el mouse como al tabular entre fotos, ya que
+             enfocar un elemento fuera de vista también lo desplaza a la
+             pantalla. */}
+          <div id="gallery-load-sentinel" class="h-px" aria-hidden="true" />
 
           {/* UIUX-8 fix: announce filter/search results to screen readers — the
              old gallery had this (aria-live counter), the new one didn't. */}
@@ -292,7 +276,7 @@ const filters = [
               {getCmsText(
                 'page.galeria',
                 'noResults',
-                'No se encontraron proyectos coincidentes con tu búsqueda.'
+                'No se encontraron fotos coincidentes con tu búsqueda.'
               )}
             </p>
           </div>
@@ -343,16 +327,14 @@ const filters = [
     const triggerLabel = document.getElementById('filter-trigger-label');
     const menu = document.getElementById('filter-menu');
     const buttons = menu?.querySelectorAll('[data-filter]');
-    const albumCards = document.querySelectorAll('.project-album-card');
-    const albumGrid = document.getElementById('album-grid');
     const photoWall = document.getElementById('photo-wall');
-    const loadMore = document.getElementById('gallery-load-more') as HTMLButtonElement | null;
-    const loadMoreWrap = document.getElementById('gallery-load-more-wrap');
+    const sentinel = document.getElementById('gallery-load-sentinel');
     const wallData = document.getElementById('gallery-wall-data');
+    const lightboxData = document.getElementById('lightbox-data');
     const noResults = document.getElementById('no-results');
     const resultsCount = document.getElementById('results-count');
 
-    if (!albumCards.length) return;
+    if (!photoWall || !wallData) return;
 
     // JS-L4 fix: restore the hash deep-link the old gallery had
     // (/galeria#tuberias activates that category filter on load).
@@ -368,9 +350,13 @@ const filters = [
       width: number;
       height: number;
       alt: string;
+      categorySlug: string | null;
+      categoryName: string | null;
+      projectSlug?: string | null;
       searchText: string;
     };
-    const wallItems: WallItem[] = wallData?.textContent ? JSON.parse(wallData.textContent) : [];
+    const wallItems: WallItem[] = wallData.textContent ? JSON.parse(wallData.textContent) : [];
+    let hasMorePhotos = false;
 
     const btnArray = Array.from(buttons || []) as HTMLElement[];
 
@@ -409,83 +395,46 @@ const filters = [
       );
     }
 
+    // El Lightbox lee `#lightbox-data` de cero cada vez que abre una foto
+    // (collectImages()), así que reescribir este bloque en cada cambio de
+    // filtro/búsqueda basta para que "siguiente/anterior" navegue solo dentro
+    // de la categoría o búsqueda activa — sin tocar la lógica del visor.
+    function updateLightboxData(items: WallItem[]) {
+      if (!lightboxData) return;
+      lightboxData.textContent = JSON.stringify(
+        items.map(({ id, src, srcset, alt, categoryName, projectSlug, width, height }) => ({
+          id,
+          src,
+          srcset,
+          alt,
+          categoryName,
+          projectSlug,
+          width,
+          height,
+        }))
+      );
+    }
+
     function updateFilter() {
-      let visibleCount = 0;
+      const result = paginateMatches(
+        wallItems,
+        (item) =>
+          (activeCategory === 'all' || item.categorySlug === activeCategory) &&
+          (!searchQuery || normalizeForSearch(item.searchText).includes(searchQuery)),
+        visiblePhotoLimit
+      );
 
-      // "Todas las Categorías" = muro de fotos mezcladas; una categoría
-      // concreta = tarjetas de álbum. El buscador filtra la vista activa.
-      const wallMode = activeCategory === 'all';
-      photoWall?.classList.toggle('hidden', !wallMode);
-      albumGrid?.classList.toggle('hidden', wallMode);
+      renderWall(result.visible);
+      updateLightboxData(result.matching);
+      hasMorePhotos = result.hasMore;
 
-      if (wallMode) {
-        const result = paginateMatches(
-          wallItems,
-          (item) => !searchQuery || normalizeForSearch(item.searchText).includes(searchQuery),
-          visiblePhotoLimit
-        );
-        renderWall(result.visible);
-        visibleCount = result.total;
-        loadMoreWrap?.classList.toggle('hidden', !result.hasMore);
-
-        if (noResults) noResults.classList.toggle('hidden', visibleCount > 0);
-        if (resultsCount) {
-          resultsCount.textContent =
-            visibleCount === 0
-              ? 'No se encontraron fotos.'
-              : `Mostrando ${result.visible.length} de ${visibleCount} ${visibleCount === 1 ? 'foto' : 'fotos'}.`;
-        }
-        return;
-      }
-
-      loadMoreWrap?.classList.add('hidden');
-
-      albumCards.forEach((card) => {
-        const el = card as HTMLElement;
-        // GAL-13: el álbum pertenece a TODAS las categorías de sus fotos, no
-        // solo a la de la portada.
-        const cats = (el.getAttribute('data-categories') ?? '').split(' ').filter(Boolean);
-        // GAL-14: nombre del álbum + categorías + títulos y descripciones.
-        const haystack = normalizeForSearch(
-          (
-            el.getAttribute('data-search') ??
-            el.getAttribute('data-project-name') ??
-            ''
-          ).toLowerCase()
-        );
-
-        const matchesCat = activeCategory === 'all' || cats.includes(activeCategory);
-        const matchesSearch = !searchQuery || haystack.includes(searchQuery);
-
-        const show = matchesCat && matchesSearch;
-
-        // Mostrar/ocultar directo, sin fade por tarjeta: la transición de
-        // opacity dependía de transitionend, que nunca dispara cuando el grid
-        // completo estaba display:none (al llegar desde el muro de fotos) y
-        // dejaba tarjetas invisibles ocupando celda en el grid.
-        if (show) {
-          visibleCount++;
-          el.style.removeProperty('display');
-          el.style.opacity = '1';
-          el.style.transform = 'scale(1)';
-        } else {
-          el.style.display = 'none';
-        }
-      });
-
-      if (noResults) {
-        if (visibleCount === 0) {
-          noResults.classList.remove('hidden');
-        } else {
-          noResults.classList.add('hidden');
-        }
-      }
+      if (noResults) noResults.classList.toggle('hidden', result.total > 0);
       // UIUX-8 fix: announce the visible count on every filter/search change.
       if (resultsCount) {
         resultsCount.textContent =
-          visibleCount === 0
-            ? 'No se encontraron proyectos.'
-            : `Mostrando ${visibleCount} ${visibleCount === 1 ? 'proyecto' : 'proyectos'}.`;
+          result.total === 0
+            ? 'No se encontraron fotos.'
+            : `Mostrando ${result.visible.length} de ${result.total} ${result.total === 1 ? 'foto' : 'fotos'}.`;
       }
     }
 
@@ -644,22 +593,30 @@ const filters = [
       }
     });
 
-    loadMore?.addEventListener('click', () => {
-      visiblePhotoLimit += 24;
-      updateFilter();
-    });
+    // Scroll infinito: el centinela vive siempre después del muro de fotos.
+    // rootMargin lo dispara ~600px antes de que entre en pantalla, para que
+    // el siguiente lote ya esté renderizado cuando el usuario llega abajo.
+    // hasMorePhotos evita seguir incrementando el límite una vez agotadas
+    // las fotos que coinciden con el filtro activo (el centinela seguiría
+    // "visible" indefinidamente si quedan menos de 24 resultados en total).
+    if (sentinel) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (hasMorePhotos && entries.some((entry) => entry.isIntersecting)) {
+            visiblePhotoLimit += 24;
+            updateFilter();
+          }
+        },
+        { rootMargin: '600px 0px' }
+      );
+      observer.observe(sentinel);
+    }
 
     updateFilter();
   })();
 </script>
 
 <style>
-  .project-album-card {
-    transition:
-      opacity 200ms ease-out,
-      transform 200ms ease-out;
-  }
-
   /* Custom category dropdown: chevron flips when the menu is open, and the
      option list gets a visible thin scrollbar since it can hold many
      categories (max-h-72 + overflow-y-auto on #filter-menu). */

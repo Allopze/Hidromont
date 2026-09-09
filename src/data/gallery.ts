@@ -29,26 +29,6 @@ export interface GalleryItemData {
   focalY: number;
 }
 
-export interface ProjectAlbumData {
-  projectSlug: string;
-  projectName: string;
-  /** Categoría de la portada. Solo para mostrar un rótulo único en la tarjeta. */
-  categorySlug: string | null;
-  categoryName: string | null;
-  /**
-   * GAL-13: TODAS las categorías presentes en el álbum, no solo la de la
-   * portada. El filtro se aplica sobre este conjunto: antes usaba la categoría
-   * de la portada y eso dejaba 24 fotos inalcanzables desde el filtro de su
-   * propia categoría (p. ej. las fotos de tuberías forzadas dentro de
-   * `ch-queltehues`, cuyo álbum quedaba rotulado como compuertas).
-   */
-  categorySlugs: string[];
-  categoryNames: string[];
-  coverImage: GalleryItemData;
-  itemCount: number;
-  items: GalleryItemData[];
-}
-
 export interface GalleryAlbumMeta {
   slug: string;
   name: string;
@@ -92,20 +72,15 @@ export function getGalleryItemCount(): number {
 }
 
 /**
- * GAL-13: cuántos **álbumes** quedan visibles con cada filtro.
- *
- * Antes contaba fotos mientras el filtro se aplicaba a tarjetas: el desplegable
- * decía "Tuberías Forzadas y Blindajes (101)" y al elegirlo aparecían 8
- * tarjetas. El número que acompaña a un filtro tiene que ser el número de cosas
- * que ese filtro deja a la vista.
+ * Cuántas **fotos** quedan visibles con cada filtro de categoría — la galería
+ * ya no agrupa en álbumes, así que el número junto a cada filtro es
+ * simplemente cuántas fotos tiene esa categoría.
  */
 export function getCategoryCounts(): Record<string, number> {
-  const albums = getProjectAlbums();
-  const counts: Record<string, number> = { all: albums.length };
-  for (const album of albums) {
-    for (const slug of album.categorySlugs) {
-      counts[slug] = (counts[slug] ?? 0) + 1;
-    }
+  const counts: Record<string, number> = { all: data.items.length };
+  for (const item of data.items) {
+    if (!item.categorySlug) continue;
+    counts[item.categorySlug] = (counts[item.categorySlug] ?? 0) + 1;
   }
   return counts;
 }
@@ -117,47 +92,12 @@ function slugToName(slug: string): string {
     .join(' ');
 }
 
-export function getProjectAlbums(): ProjectAlbumData[] {
-  const albumsMap = new Map<string, GalleryItemData[]>();
-
-  for (const item of data.items) {
-    const slug = item.projectSlug || 'general';
-    if (!albumsMap.has(slug)) {
-      albumsMap.set(slug, []);
-    }
-    albumsMap.get(slug)!.push(item);
-  }
-
-  const albums: ProjectAlbumData[] = [];
-  for (const [slug, items] of albumsMap.entries()) {
-    items.sort((a, b) => a.position - b.position);
-    const cover = items.find((i) => i.featured) || items[0];
-    const meta = albumMetaBySlug.get(slug);
-
-    // Categorías presentes en el álbum, en el orden global de categorías para
-    // que el rótulo sea estable entre tarjetas.
-    const present = new Set(items.map((i) => i.categorySlug).filter(Boolean) as string[]);
-    const ordered = getGalleryCategories().filter((c) => present.has(c.slug));
-
-    albums.push({
-      projectSlug: slug,
-      // El nombre del álbum lo administra el CMS. Si faltara, se deriva del
-      // slug: antes caía en el título de la portada, que ya no existe.
-      projectName: meta?.name || slugToName(slug),
-      categorySlug: cover.categorySlug,
-      categoryName: cover.categoryName,
-      categorySlugs: ordered.map((c) => c.slug),
-      categoryNames: ordered.map((c) => c.name),
-      coverImage: cover,
-      itemCount: items.length,
-      items,
-    });
-  }
-
-  // Orden del CMS (GAL-21). Los álbumes sin metadatos van al final.
-  return albums.sort((a, b) => {
-    const pa = albumMetaBySlug.get(a.projectSlug)?.position ?? Number.MAX_SAFE_INTEGER;
-    const pb = albumMetaBySlug.get(b.projectSlug)?.position ?? Number.MAX_SAFE_INTEGER;
-    return pa - pb || a.projectName.localeCompare(b.projectName, 'es');
-  });
+/**
+ * Nombre legible del proyecto/álbum de una foto, para el índice de búsqueda
+ * (p. ej. que "queltehues" encuentre sus fotos aunque el texto de búsqueda
+ * escrito sea "C.H. Queltehues"). El nombre lo administra el CMS; si faltara
+ * se deriva del slug.
+ */
+export function getAlbumName(projectSlug: string): string {
+  return albumMetaBySlug.get(projectSlug)?.name || slugToName(projectSlug);
 }

@@ -242,17 +242,16 @@
 
     // ── GAL-16: estado del visor en la URL ──
     //
-    // Sin esto no se podía compartir una foto ni un álbum, y —lo más visible en
-    // móvil— el botón Atrás salía de la página en vez de cerrar el visor, que
-    // es el gesto que cualquiera intenta primero.
+    // Sin esto no se podía compartir una foto, y —lo más visible en móvil— el
+    // botón Atrás salía de la página en vez de cerrar el visor, que es el
+    // gesto que cualquiera intenta primero.
     //
-    // Se usan query params y no el hash porque el hash ya está tomado por el
+    // Se usa un query param y no el hash porque el hash ya está tomado por el
     // deep-link de categoría de la grilla (/galeria#tuberias).
     //
     // `pushState` solo al abrir: así Atrás cierra el visor y devuelve a la
     // grilla. Navegar entre fotos usa `replaceState` para no dejar 15 entradas
     // de historial que obliguen a pulsar Atrás quince veces para salir.
-    let albumSlug: string | null = null;
     let ownsHistoryEntry = false;
     /** Evita que popstate, al deshacer nuestra propia entrada, reabra el visor. */
     let suppressUrlSync = false;
@@ -260,15 +259,12 @@
     function syncUrl() {
       if (suppressUrlSync || !ownsHistoryEntry) return;
       const url = new URL(location.href);
-      if (albumSlug) url.searchParams.set('album', albumSlug);
-      else url.searchParams.delete('album');
       url.searchParams.set('foto', String(currentIndex + 1));
       history.replaceState(history.state, '', url);
     }
 
     function pushOpenState() {
       const url = new URL(location.href);
-      if (albumSlug) url.searchParams.set('album', albumSlug);
       url.searchParams.set('foto', String(currentIndex + 1));
       history.pushState({ lightbox: true }, '', url);
       ownsHistoryEntry = true;
@@ -475,7 +471,6 @@
 
       // Save focus to restore on close
       previousFocus = document.activeElement as HTMLElement;
-      albumSlug = null;
 
       setBackgroundInert(true);
 
@@ -489,43 +484,6 @@
       showImage(currentIndex);
 
       // Move focus into dialog
-      requestAnimationFrame(() => closeBtn.focus());
-    }
-
-    function openAlbum(albumElement: HTMLElement) {
-      const projectSlug = albumElement.getAttribute('data-project-slug');
-      const allImages = collectImages();
-      // JS-L6 fix: getProjectAlbums() (src/data/gallery.ts) buckets items with
-      // no real project under the synthetic slug "general", but those items'
-      // own projectSlug field is null/empty, not the string "general" — a
-      // naive `=== projectSlug` match against that bucket always yielded zero
-      // results and silently fell back to showing the ENTIRE gallery instead
-      // of just that album. Special-case it to match by absence instead.
-      images = !projectSlug
-        ? allImages
-        : projectSlug === 'general'
-          ? allImages.filter((img) => !img.projectSlug)
-          : allImages.filter((img) => img.projectSlug === projectSlug);
-      if (!images.length) {
-        console.error(`No se encontraron imágenes para el álbum "${projectSlug}"`);
-        return;
-      }
-      currentIndex = 0;
-      albumSlug = projectSlug || null;
-
-      cancelPendingClose();
-
-      previousFocus = document.activeElement as HTMLElement;
-
-      setBackgroundInert(true);
-
-      lightbox!.classList.remove('hidden');
-      lightbox!.classList.add('is-animating');
-      lightbox!.offsetHeight;
-      lightbox!.style.opacity = '1';
-
-      pushOpenState();
-      showImage(currentIndex);
       requestAnimationFrame(() => closeBtn.focus());
     }
 
@@ -548,7 +506,6 @@
 
       if (fromHistory) ownsHistoryEntry = false;
       else clearUrlState();
-      albumSlug = null;
 
       lightbox!.classList.add('is-animating');
       lightbox!.style.opacity = '0';
@@ -581,14 +538,8 @@
       showImage((currentIndex + 1) % images.length);
     }
 
-    // ── Event delegation: click on project album cards or gallery cards ──
+    // ── Event delegation: click on gallery cards ──
     document.addEventListener('click', (e) => {
-      const albumCard = (e.target as HTMLElement)?.closest?.('.project-album-card') as HTMLElement;
-      if (albumCard) {
-        e.preventDefault();
-        openAlbum(albumCard);
-        return;
-      }
       const card = (e.target as HTMLElement)?.closest?.('.gallery-card') as HTMLElement;
       if (card) {
         e.preventDefault();
@@ -634,20 +585,9 @@
       const foto = Number.parseInt(params.get('foto') ?? '', 10);
       if (!Number.isFinite(foto) || foto < 1) return false;
 
-      const slug = params.get('album');
-      const card = slug
-        ? (document.querySelector(
-            `.project-album-card[data-project-slug="${CSS.escape(slug)}"]`
-          ) as HTMLElement | null)
-        : null;
-
-      if (slug && !card) return false; // álbum inexistente: se ignora el enlace
-      if (card) openAlbum(card);
-      else {
-        const first = document.querySelector('.gallery-card') as HTMLElement | null;
-        if (!first) return false;
-        open(first);
-      }
+      const first = document.querySelector('.gallery-card') as HTMLElement | null;
+      if (!first) return false;
+      open(first);
 
       const index = foto - 1;
       if (index < images.length) showImage(index);
@@ -655,7 +595,7 @@
     }
 
     // Apertura directa desde una URL compartida. Reemplaza la entrada que
-    // openAlbum() empuja, para que Atrás lleve a la página anterior y no a la
+    // open() empuja, para que Atrás lleve a la página anterior y no a la
     // misma URL con el visor cerrado.
     const initialParams = new URLSearchParams(location.search);
     if (initialParams.has('foto')) {
@@ -663,7 +603,6 @@
         const opened = openFromUrl(initialParams);
         if (!opened) {
           const url = new URL(location.href);
-          url.searchParams.delete('album');
           url.searchParams.delete('foto');
           history.replaceState(null, '', url);
         }
