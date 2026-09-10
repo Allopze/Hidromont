@@ -6,9 +6,9 @@ alcance: >-
 categoria: compuertas
 cliente: Consorcio Dragados–Besalco
 contratista: Consorcio Dragados–Besalco
-mandante: M.O.P. / D.O.H.
 diametro: DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350
 longitud: 360 m
+mandante: M.O.P. / D.O.H.
 nombre: Embalse Chironta
 orden: 2
 tipo: destacado

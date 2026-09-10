@@ -1,7 +1,8 @@
 ---
 alcance: >-
   Ingeniería, fabricación, desmontaje de tubería existente, demolición de apoyos
-  y machones, fabricación y montaje de nueva tubería de 550 m con diámetros Ø 1.500 y Ø 1.800.
+  y machones, fabricación y montaje de nueva tubería de 550 m con diámetros Ø
+  1.500 y Ø 1.800.
 categoria: tuberias
 cliente: AES Andes S.A.
 diametro: Ø 1.500 / Ø 1.800

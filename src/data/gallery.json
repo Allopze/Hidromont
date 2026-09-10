@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T22:38:17.316817Z",
+  "updatedAt": "2026-09-09T21:21:20.394Z",
   "categories": [
     {
       "id": "9hq5VkeyXZTQSaKWOqLhI",
@@ -107,14 +107,14 @@
       "position": 10
     },
     {
-      "slug": "ch-queltehues",
-      "name": "C.H. Queltehues",
-      "position": 12
-    },
-    {
       "slug": "ch-los-condores",
       "name": "C.H. Los Cóndores",
       "position": 11
+    },
+    {
+      "slug": "ch-queltehues",
+      "name": "C.H. Queltehues",
+      "position": 12
     },
     {
       "slug": "ch-ralco",
@@ -2713,6 +2713,22 @@
       "focalY": 0.5
     },
     {
+      "id": "gal-limpiarrejas-obra-1",
+      "alt": "Estructura metálica inclinada instalada sobre canal de hormigón con agua corriendo, rodeada de cerros y caminos de faena",
+      "categorySlug": "limpiarrejas",
+      "categoryName": "Limpiarrejas",
+      "projectSlug": "servicio-limpiarrejas",
+      "featured": false,
+      "position": 194,
+      "src": "/gallery/derived/f3cbc924-1024.webp",
+      "width": 1024,
+      "height": 575,
+      "srcset": "/gallery/derived/f3cbc924-640.webp 640w, /gallery/derived/f3cbc924-1024.webp 1024w",
+      "lqip": "data:image/webp;base64,UklGRqQAAABXRUJQVlA4IJgAAAAQBQCdASogABIAPu1kqk2ppaQiMAgBMB2JQBYj6rhFzLFE2723noZsboA3BXyHKpXAAP7jwJrWu0ujHqwebPWrbBOMTzpISgDPzyaj5UUDnM/aPzrdKan8gfvN/UFMEPxZ0gRBqXa7hmZKg5Xwm2FES5lBz4AlD7wkZX/f+HDJA7oaA3+MUWa2eG8MOTEum/+SY/OvUAAAAA==",
+      "focalX": 0.5,
+      "focalY": 0.5
+    },
+    {
       "id": "gal-valvulas",
       "alt": "Cuerpo de válvula mecanizado y pieza cónica azul cargados sobre camión frente al galpón del taller",
       "categorySlug": "valvulas",
@@ -2917,22 +2933,6 @@
       "height": 382,
       "srcset": "/gallery/derived/cd68b947-640.webp 640w",
       "lqip": "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAABwBACdASogABMAPu1sq1EppaOiqAqpMB2JQAAEto/0BaSR11ljgaSwN4D0AAD+w9perh+g9AAO6J+EmSs/rpmUYgFTQZveo1iBQP8e1Ak3IBhOv6CNrSrfvGtdnGM0kF9ZAi7hJj7HuLIXTZ+RXdNAfMuFvvNnfbnSkoITDpUtt7ds4lym+qZhtZkJ0SpGcpNzwNSiwAA=",
-      "focalX": 0.5,
-      "focalY": 0.5
-    },
-    {
-      "id": "gal-limpiarrejas-obra-1",
-      "alt": "Estructura metálica inclinada instalada sobre canal de hormigón con agua corriendo, rodeada de cerros y caminos de faena",
-      "categorySlug": "limpiarrejas",
-      "categoryName": "Limpiarrejas",
-      "projectSlug": "servicio-limpiarrejas",
-      "featured": false,
-      "position": 194,
-      "src": "/gallery/derived/f3cbc924-1024.webp",
-      "width": 1024,
-      "height": 575,
-      "srcset": "/gallery/derived/f3cbc924-640.webp 640w, /gallery/derived/f3cbc924-1024.webp 1024w",
-      "lqip": "data:image/webp;base64,UklGRqQAAABXRUJQVlA4IJgAAAAQBQCdASogABIAPu1kqk2ppaQiMAgBMB2JQBYj6rhFzLFE2723noZsboA3BXyHKpXAAP7jwJrWu0ujHqwebPWrbBOMTzpISgDPzyaj5UUDnM/aPzrdKan8gfvN/UFMEPxZ0gRBqXa7hmZKg5Xwm2FES5lBz4AlD7wkZX/f+HDJA7oaA3+MUWa2eG8MOTEum/+SY/OvUAAAAA==",
       "focalX": 0.5,
       "focalY": 0.5
     }

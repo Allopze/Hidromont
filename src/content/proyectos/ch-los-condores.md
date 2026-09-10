@@ -5,10 +5,10 @@ alcance: >-
 categoria: tuberias
 cliente: Ferrovial S.A.
 diametro: Ø 2.200 / Ø 1.600
-longitud: 1.200 m, incluidos 132 m en pique
-peso: 2.448 t
+longitud: '1.200 m, incluidos 132 m en pique'
 nombre: C.H. Los Cóndores
 orden: 1
+peso: 2.448 t
 tipo: destacado
 ubicacion: Chile
 ---

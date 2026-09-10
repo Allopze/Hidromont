@@ -5,8 +5,8 @@ alcance: >-
   entrada del túnel de desvío.
 categoria: compuertas
 cliente: Colbún S.A.
-peso: 40 t por conjunto
 nombre: C.H. San Pedro
 orden: 33
+peso: 40 t por conjunto
 tipo: banco
 ---

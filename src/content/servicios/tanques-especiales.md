@@ -4,6 +4,9 @@ aplicaciones:
   - Plantas industriales y de celulosa
   - Emplazamientos de clima extremo y alta exigencia sísmica
 icono: tank
+normas:
+  - ASME Sec. VIII Div. 1
+  - ASME Sec. IX
 orden: 5
 procesos:
   - titulo: Ingeniería
@@ -15,8 +18,7 @@ procesos:
       Rolado de mantos y tapas en plancha de acero y ejecución de las uniones
       soldadas definidas para el proyecto.
   - titulo: Inspección y pruebas
-    descripcion: >-
-      Controles de fabricación y pruebas especificadas para cada recipiente.
+    descripcion: Controles de fabricación y pruebas especificadas para cada recipiente.
   - titulo: Recubrimiento y despacho
     descripcion: >-
       Granallado, esquema epóxico-poliuretano y coordinación del transporte de

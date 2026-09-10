@@ -6,8 +6,8 @@ categoria: estructuras
 cliente: Vapor Industrial S.A.
 diametro: Ø 4.800
 longitud: 26 m
-peso: 80 t
 nombre: Celulosa Santa Fe
 orden: 61
+peso: 80 t
 tipo: banco
 ---

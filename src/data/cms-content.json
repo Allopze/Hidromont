@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-16T02:05:52.972Z",
+  "updatedAt": "2026-09-07T16:17:55.952720+00:00",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -167,6 +167,14 @@
           "type": "image",
           "value": "/logos-clientes/acciona.png"
         },
+        "logo-aes-andes": {
+          "type": "image",
+          "value": "/logos-clientes/aes-andes.png"
+        },
+        "logo-arauco": {
+          "type": "image",
+          "value": "/logos-clientes/arauco.svg"
+        },
         "logo-besalco": {
           "type": "image",
           "value": "/logos-clientes/besalco.png"
@@ -187,6 +195,14 @@
           "type": "image",
           "value": "/logos-clientes/electrica-puntilla.png"
         },
+        "logo-endesa": {
+          "type": "image",
+          "value": "/logos-clientes/endesa.png"
+        },
+        "logo-engie": {
+          "type": "image",
+          "value": "/logos-clientes/engie.png"
+        },
         "logo-fcc": {
           "type": "image",
           "value": "/logos-clientes/fcc.png"
@@ -206,6 +222,10 @@
         "logo-iberdrola": {
           "type": "image",
           "value": "/logos-clientes/iberdrola.png"
+        },
+        "logo-mop-doh": {
+          "type": "image",
+          "value": "/logos-clientes/mop-doh.jpeg"
         },
         "logo-naturener": {
           "type": "image",
@@ -234,7 +254,7 @@
       }
     },
     "clientes.sectores": {
-      "title": "Sectores clientes",
+      "title": "Referencias clientes",
       "slug": "/clientes",
       "fields": {
         "eyebrow": {
@@ -2206,7 +2226,7 @@
         },
         "gallery1Alt": {
           "type": "text",
-          "value": "Vista a través de la brida abierta de la válvula: un trabajador esmerilando dentro del conducto da la escala de la pieza"
+          "value": "Montaje vertical de blindaje en caverna subterránea de Los Cóndores"
         },
         "gallery2": {
           "type": "image",
@@ -2366,6 +2386,108 @@
         }
       }
     },
+    "project-gallery.ruta-nahuelbuta-pasarelas": {
+      "title": "Galería proyecto ruta-nahuelbuta-pasarelas",
+      "slug": "project-gallery/ruta-nahuelbuta-pasarelas",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": "/gallery/derived/ed1997f7-1600.webp"
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": "Dos operarios sueldan los arcos galvanizados de una cúpula sobre una plataforma dentro de la nave del taller, entre chispas"
+        },
+        "gallery2": {
+          "type": "image",
+          "value": "/gallery/derived/8c4c856b-1600.webp"
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": "Camión pluma montando cúpulas sobre las dos pasarelas peatonales que cruzan la carretera, visto desde la mediana entre calzadas"
+        },
+        "gallery3": {
+          "type": "image",
+          "value": "/gallery/derived/1ffd1453-1600.webp"
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": "Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol"
+        },
+        "images": {
+          "type": "list",
+          "value": []
+        }
+      }
+    },
+    "project-gallery.tanques-glp-coyhaique": {
+      "title": "Galería proyecto tanques-glp-coyhaique",
+      "slug": "project-gallery/tanques-glp-coyhaique",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": "/gallery/derived/77cc84b2-1600.webp"
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": "Especialista técnico inspeccionando ensamble interno de cabezal semiesférico"
+        },
+        "gallery2": {
+          "type": "image",
+          "value": "/gallery/derived/13da5f4c-1600.webp"
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": "Vista frontal de cabezal de tanque con elementos estructurales de apoyo"
+        },
+        "gallery3": {
+          "type": "image",
+          "value": "/gallery/derived/fbee1d7f-1600.webp"
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": "Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural"
+        },
+        "images": {
+          "type": "list",
+          "value": []
+        }
+      }
+    },
+    "project-gallery.tanques-glp-puerto-williams": {
+      "title": "Galería proyecto tanques-glp-puerto-williams",
+      "slug": "project-gallery/tanques-glp-puerto-williams",
+      "fields": {
+        "gallery1": {
+          "type": "image",
+          "value": "/gallery/derived/5ad057cd-1600.webp"
+        },
+        "gallery1Alt": {
+          "type": "text",
+          "value": "Conformado de cabezal semiesférico para recipiente a presión"
+        },
+        "gallery2": {
+          "type": "image",
+          "value": "/gallery/derived/8f3e1d15-1600.webp"
+        },
+        "gallery2Alt": {
+          "type": "text",
+          "value": "Ensamblaje de plinto y soporte frontal para estanque horizontal"
+        },
+        "gallery3": {
+          "type": "image",
+          "value": "/gallery/derived/1b836a2c-1600.webp"
+        },
+        "gallery3Alt": {
+          "type": "text",
+          "value": "Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial"
+        },
+        "images": {
+          "type": "list",
+          "value": []
+        }
+      }
+    },
     "project-image.ch-besaya": {
       "title": "Imagen proyecto C.H. Besaya",
       "slug": "project-image/ch-besaya",
@@ -2517,6 +2639,72 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        }
+      }
+    },
+    "project-image.ruta-nahuelbuta-pasarelas": {
+      "title": "Imagen proyecto Mejoramiento Ruta Nahuelbuta — Cúpulas para Pasarelas",
+      "slug": "project-image/ruta-nahuelbuta-pasarelas",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Cúpula y estructura metálica para pasarela peatonal en carretera"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 720
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1600
+        }
+      }
+    },
+    "project-image.tanques-glp-coyhaique": {
+      "title": "Imagen proyecto Tanques de GLP — Coyhaique",
+      "slug": "project-image/tanques-glp-coyhaique",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/tanques-glp-coyhaique.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Tanque de GLP 30.000 galones en fabricación en taller"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 1600
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1200
+        }
+      }
+    },
+    "project-image.tanques-glp-puerto-williams": {
+      "title": "Imagen proyecto Tanques Aéreos de GLP 18.000 Galones — Puerto Williams",
+      "slug": "project-image/tanques-glp-puerto-williams",
+      "fields": {
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/tanques-glp-puerto-williams.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Tanques aéreos de GLP pintados listos para despacho"
+        },
+        "imageHeight": {
+          "type": "number",
+          "value": 1600
+        },
+        "imageWidth": {
+          "type": "number",
+          "value": 1200
         }
       }
     },
@@ -3201,174 +3389,6 @@
         "telefono": {
           "type": "text",
           "value": "+56 43 232 8414"
-        }
-      }
-    },
-    "project-image.ruta-nahuelbuta-pasarelas": {
-      "title": "Imagen proyecto Mejoramiento Ruta Nahuelbuta — Cúpulas para Pasarelas",
-      "slug": "project-image/ruta-nahuelbuta-pasarelas",
-      "fields": {
-        "image": {
-          "type": "image",
-          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
-        },
-        "imageAlt": {
-          "type": "text",
-          "value": "Cúpula y estructura metálica para pasarela peatonal en carretera"
-        },
-        "imageHeight": {
-          "type": "number",
-          "value": 720
-        },
-        "imageWidth": {
-          "type": "number",
-          "value": 1600
-        }
-      }
-    },
-    "project-gallery.ruta-nahuelbuta-pasarelas": {
-      "title": "Galería proyecto ruta-nahuelbuta-pasarelas",
-      "slug": "project-gallery/ruta-nahuelbuta-pasarelas",
-      "fields": {
-        "gallery1": {
-          "type": "image",
-          "value": "/gallery/derived/ed1997f7-1600.webp"
-        },
-        "gallery1Alt": {
-          "type": "text",
-          "value": "Dos operarios sueldan los arcos galvanizados de una cúpula sobre una plataforma dentro de la nave del taller, entre chispas"
-        },
-        "gallery2": {
-          "type": "image",
-          "value": "/gallery/derived/8c4c856b-1600.webp"
-        },
-        "gallery2Alt": {
-          "type": "text",
-          "value": "Camión pluma montando cúpulas sobre las dos pasarelas peatonales que cruzan la carretera, visto desde la mediana entre calzadas"
-        },
-        "gallery3": {
-          "type": "image",
-          "value": "/gallery/derived/1ffd1453-1600.webp"
-        },
-        "gallery3Alt": {
-          "type": "text",
-          "value": "Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol"
-        },
-        "images": {
-          "type": "list",
-          "value": []
-        }
-      }
-    },
-    "project-image.tanques-glp-coyhaique": {
-      "title": "Imagen proyecto Tanques de GLP — Coyhaique",
-      "slug": "project-image/tanques-glp-coyhaique",
-      "fields": {
-        "image": {
-          "type": "image",
-          "value": "/fotos/curadas/tanques-glp-coyhaique.webp"
-        },
-        "imageAlt": {
-          "type": "text",
-          "value": "Tanque de GLP 30.000 galones en fabricación en taller"
-        },
-        "imageHeight": {
-          "type": "number",
-          "value": 1600
-        },
-        "imageWidth": {
-          "type": "number",
-          "value": 1200
-        }
-      }
-    },
-    "project-gallery.tanques-glp-coyhaique": {
-      "title": "Galería proyecto tanques-glp-coyhaique",
-      "slug": "project-gallery/tanques-glp-coyhaique",
-      "fields": {
-        "gallery1": {
-          "type": "image",
-          "value": "/gallery/derived/77cc84b2-1600.webp"
-        },
-        "gallery1Alt": {
-          "type": "text",
-          "value": "Especialista técnico inspeccionando ensamble interno de cabezal semiesférico"
-        },
-        "gallery2": {
-          "type": "image",
-          "value": "/gallery/derived/13da5f4c-1600.webp"
-        },
-        "gallery2Alt": {
-          "type": "text",
-          "value": "Vista frontal de cabezal de tanque con elementos estructurales de apoyo"
-        },
-        "gallery3": {
-          "type": "image",
-          "value": "/gallery/derived/fbee1d7f-1600.webp"
-        },
-        "gallery3Alt": {
-          "type": "text",
-          "value": "Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural"
-        },
-        "images": {
-          "type": "list",
-          "value": []
-        }
-      }
-    },
-    "project-image.tanques-glp-puerto-williams": {
-      "title": "Imagen proyecto Tanques Aéreos de GLP 18.000 Galones — Puerto Williams",
-      "slug": "project-image/tanques-glp-puerto-williams",
-      "fields": {
-        "image": {
-          "type": "image",
-          "value": "/fotos/curadas/tanques-glp-puerto-williams.webp"
-        },
-        "imageAlt": {
-          "type": "text",
-          "value": "Tanques aéreos de GLP pintados listos para despacho"
-        },
-        "imageHeight": {
-          "type": "number",
-          "value": 1600
-        },
-        "imageWidth": {
-          "type": "number",
-          "value": 1200
-        }
-      }
-    },
-    "project-gallery.tanques-glp-puerto-williams": {
-      "title": "Galería proyecto tanques-glp-puerto-williams",
-      "slug": "project-gallery/tanques-glp-puerto-williams",
-      "fields": {
-        "gallery1": {
-          "type": "image",
-          "value": "/gallery/derived/5ad057cd-1600.webp"
-        },
-        "gallery1Alt": {
-          "type": "text",
-          "value": "Conformado de cabezal semiesférico para recipiente a presión"
-        },
-        "gallery2": {
-          "type": "image",
-          "value": "/gallery/derived/8f3e1d15-1600.webp"
-        },
-        "gallery2Alt": {
-          "type": "text",
-          "value": "Ensamblaje de plinto y soporte frontal para estanque horizontal"
-        },
-        "gallery3": {
-          "type": "image",
-          "value": "/gallery/derived/1b836a2c-1600.webp"
-        },
-        "gallery3Alt": {
-          "type": "text",
-          "value": "Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     }

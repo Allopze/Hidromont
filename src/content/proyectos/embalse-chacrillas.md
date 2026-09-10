@@ -1,15 +1,15 @@
 ---
 alcance: >-
   Ingeniería, suministro, fabricación y montaje de blindaje y piezas especiales
-  Ø 1.000 / Ø 1.600. Equipamiento hidromecánico completo: 4 compuertas planas,
-  2 válvulas Bureau de 1,2 x 1,2 m PN 16, 3 válvulas mariposa (2 DN 1000 y
-  1 DN 1600, PN 25) y 2 válvulas Howell-Bunger DN 760 PN 16. Tubería de descarga
-  de caudal ecológico Ø 500.
+  Ø 1.000 / Ø 1.600. Equipamiento hidromecánico completo: 4 compuertas planas, 2
+  válvulas Bureau de 1,2 x 1,2 m PN 16, 3 válvulas mariposa (2 DN 1000 y 1 DN
+  1600, PN 25) y 2 válvulas Howell-Bunger DN 760 PN 16. Tubería de descarga de
+  caudal ecológico Ø 500.
 categoria: compuertas
 cliente: Constructora OHL
 contratista: Constructora OHL
-mandante: M.O.P. / D.O.H.
 diametro: Ø 1.000 / Ø 1.600
+mandante: M.O.P. / D.O.H.
 nombre: Embalse Chacrillas
 orden: 7
 tipo: destacado
