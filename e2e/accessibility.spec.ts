@@ -10,7 +10,38 @@ const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
 const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD ?? 'Hidromont-Admin-ChangeMe';
 
+/**
+ * Espera a que la página esté pintada de verdad antes de medir.
+ *
+ * `page.goto` resuelve con el evento `load`, que no garantiza que las imágenes
+ * decodificadas ya estén compuestas ni que las tipografías web hayan
+ * reemplazado a la de respaldo. axe calcula el contraste muestreando lo que hay
+ * detrás del elemento, así que el botón sobre el hero salía marcado como
+ * violación seria de `color-contrast` de forma intermitente —según si la foto
+ * había pintado o no— y el mismo test pasaba al repetirlo. Es la misma causa
+ * que ya obligó a acotar las escenas del CMS con `include`, y aquí no se puede
+ * acotar porque lo que se quiere medir es la página entera.
+ *
+ * No se espera imagen por imagen: las de `loading="lazy"` bajo el pliegue no
+ * disparan `load` hasta que se hace scroll, así que hacerlo colgaba el test
+ * hasta el timeout. `networkidle` cubre las que sí carga la página de entrada,
+ * que son las que están detrás de lo que axe mide, y su fallo no es motivo
+ * para tumbar el test.
+ */
+async function esperarPintado(page: Page): Promise<void> {
+  await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    // Dos cuadros: el primero aplica el layout con las tipografías reales, el
+    // segundo garantiza que ya se compuso.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    );
+  });
+}
+
 async function expectNoSeriousViolations(page: Page, label: string, include?: string) {
+  await esperarPintado(page);
   const builder = new AxeBuilder({ page });
   // Las escenas del CMS se acotan al overlay. Analizar la página entera hacía
   // que el resultado dependiera de cómo hubiera compuesto el navegador el hero

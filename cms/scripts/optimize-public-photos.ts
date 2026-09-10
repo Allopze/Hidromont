@@ -86,6 +86,15 @@ async function main(): Promise<void> {
 
   // ── Qué referencia el sitio ────────────────────────────────────────────
   const referenciadas = new Set<string>();
+  // Una fila de media_assets ya es motivo suficiente para conservar el archivo,
+  // aunque hoy ninguna página lo use: la biblioteca de medios es una curación
+  // deliberada y el editor elige de ahí. Sin esta consulta la primera pasada de
+  // este script se llevó 89 fotos de /fotos/curadas que no estaban en ninguna
+  // página pero sí en la biblioteca, y el CMS quedó avisando en cada arranque
+  // de 89 miniaturas rotas. Se recuperaron desde _retirados/.
+  for (const r of db.prepare('SELECT path FROM media_assets').all() as Array<{ path: string }>) {
+    referenciadas.add(r.path);
+  }
   for (const r of db
     .prepare('SELECT m.path FROM gallery_items gi JOIN media_assets m ON m.id = gi.media_id')
     .all() as Array<{ path: string }>) {

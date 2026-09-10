@@ -16,6 +16,7 @@
     "cms:backfill-media-usages": "tsx cms/scripts/backfill-media-usages.ts",
     "cms:optimize-uploads": "tsx cms/scripts/optimize-uploads.ts",
     "cms:optimize-fotos": "tsx cms/scripts/optimize-public-photos.ts",
+    "cms:move-library-photos": "tsx cms/scripts/move-library-only-photos.ts",
     "cms:import-gallery": "tsx cms/scripts/import-gallery-json.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",
