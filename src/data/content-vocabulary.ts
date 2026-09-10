@@ -49,7 +49,19 @@ export const ENTRY_KINDS = [
   'proyecto',
 ] as const;
 
-export const ENTRY_STATUSES = ['draft', 'pending_review', 'published'] as const;
+/**
+ * B-8: aquí había un tercer estado, `pending_review`, que el validador
+ * aceptaba y el desplegable del panel nunca ofrecía. Se retira en vez de
+ * exponerlo, porque exponerlo habría sido una trampa: el export filtra por
+ * `status === 'published'`, así que `pending_review` hace exactamente lo mismo
+ * que `draft` —despublicar, con los dos efectos que describe DRAFT_EFFECT— pero
+ * bajo un nombre que promete que alguien lo revisará. No hay a quién: una sola
+ * cuenta de administración y ninguna cola de revisión. Cero entradas lo usaban.
+ *
+ * Si algún día se construye un flujo de revisión de verdad, el estado vuelve
+ * aquí junto con el filtro del export y la interfaz que lo gestione.
+ */
+export const ENTRY_STATUSES = ['draft', 'published'] as const;
 
 export const FIELD_TYPES = [
   'text',

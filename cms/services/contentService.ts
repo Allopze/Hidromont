@@ -120,7 +120,7 @@ export class ContentService {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'pending_review' | 'published';
+    status?: 'draft' | 'published';
     fields?: Record<string, { type: string; value: unknown }>;
   }) {
     const now = new Date().toISOString();
@@ -142,7 +142,7 @@ export class ContentService {
 
   updateEntryMeta(
     id: string,
-    meta: { title?: string; slug?: string; status?: 'draft' | 'pending_review' | 'published' }
+    meta: { title?: string; slug?: string; status?: 'draft' | 'published' }
   ) {
     return this.contentRepository.updateEntryMeta(id, meta, new Date().toISOString());
   }

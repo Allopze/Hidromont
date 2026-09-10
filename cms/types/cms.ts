@@ -23,7 +23,7 @@ export interface CmsEntry {
   slug: string;
   locale: string;
   title: string;
-  status: 'draft' | 'pending_review' | 'published';
+  status: 'draft' | 'published';
   version: number;
   fields: Record<string, CmsField>;
 }

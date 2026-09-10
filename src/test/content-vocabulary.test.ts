@@ -21,6 +21,7 @@ import {
   ICONO_SERVICIO,
   TIPO_PROYECTO,
   ICONO_SERVICIO_LABEL,
+  ENTRY_STATUSES,
 } from '../data/content-vocabulary';
 
 function frontmatterDe(patron: string): Array<{ file: string; data: Record<string, unknown> }> {
@@ -82,5 +83,25 @@ describe('vocabulario del contenido', () => {
       (key) => !(ICONO_SERVICIO as readonly string[]).includes(key)
     );
     expect(sobrantes).toEqual([]);
+  });
+
+  /**
+   * B-8: el validador y el desplegable del panel llegaron a divergir —tres
+   * estados aceptados, dos ofrecidos—, y el que sobraba despublicaba en
+   * silencio. Este test ata las dos puntas leyendo el overlay como texto, que
+   * es el patrón que ya usan los demás guardas contra deriva de este archivo.
+   */
+  it('el overlay sabe rotular exactamente los estados que acepta el servidor', () => {
+    const overlay = readFileSync('src/scripts/cms-overlay.js', 'utf8');
+    const mapa = /\{ draft: 'Borrador'[^}]*\}/.exec(overlay);
+    expect(mapa).not.toBeNull();
+    const rotulados = [...(mapa?.[0].matchAll(/([a-z_]+):\s*'/g) ?? [])].map((m) => m[1]);
+    expect(rotulados.sort()).toEqual([...ENTRY_STATUSES].sort());
+
+    // Y el desplegable ofrece una opción por estado, ni más ni menos.
+    const opciones = [...overlay.matchAll(/<option value="(published|draft|pending_review)"/g)].map(
+      (m) => m[1]
+    );
+    expect([...new Set(opciones)].sort()).toEqual([...ENTRY_STATUSES].sort());
   });
 });

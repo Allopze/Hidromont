@@ -402,8 +402,12 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       // A-7: se publica el vocabulario de enumeraciones para que el overlay
       // pueda renderizar desplegables en vez de campos de texto libre. Las
       // tres claves originales se conservan (el e2e las verifica) pero ya no
-      // están escritas a mano: `entryStatuses` devolvía 2 valores mientras el
-      // validador aceptaba 3, así que `pending_review` era inalcanzable.
+      // están escritas a mano.
+      //
+      // B-8: `entryStatuses` devolvía 2 valores mientras el validador aceptaba
+      // 3. La divergencia se cerró retirando `pending_review` del vocabulario,
+      // no ofreciéndolo: hacía lo mismo que `draft` bajo un nombre que promete
+      // una revisión que nadie hace. Ver el comentario en content-vocabulary.
       return reply.send({
         fieldTypes: FIELD_TYPES,
         entryKinds: ENTRY_KINDS,

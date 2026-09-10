@@ -146,6 +146,36 @@ describe('Content API', () => {
       expect(entry.fields.body.value).toBe('Contenido de prueba');
     });
 
+    /**
+     * B-8: el validador aceptaba un tercer estado, `pending_review`, que el
+     * panel nunca ofrecía. Se retiró en vez de exponerlo, porque el export
+     * filtra por `published` y ese estado despublicaba igual que `draft` bajo
+     * un nombre que prometía una revisión que nadie hace. Este test fija que
+     * el conjunto aceptado sea el que la interfaz sabe manejar.
+     */
+    it('rechaza un estado que la interfaz no ofrece', async () => {
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'test.en-revision',
+            kind: 'page',
+            slug: '/en-revision',
+            title: 'En revisión',
+            status: 'pending_review',
+            fields: { title: { type: 'text', value: 'Hola' } },
+          }),
+        })
+      );
+      expect(res.statusCode).toBe(400);
+      // Y la entrada no se creó a medias.
+      const buscar = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries/test.en-revision' })
+      );
+      expect(buscar.statusCode).toBe(404);
+    });
+
     // C-1: el archivo exportado se nombra por slug, así que dos entradas de
     // colección con el mismo slug se pisan al exportar y borrar una elimina el
     // .md de la otra. Reproducido en auditoría con pérdida real de contenido.

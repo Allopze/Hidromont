@@ -9,7 +9,7 @@ interface EntryRow {
   slug: string;
   locale: string;
   title: string;
-  status: 'draft' | 'pending_review' | 'published';
+  status: 'draft' | 'published';
   version: number;
 }
 
@@ -36,7 +36,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'pending_review' | 'published';
+    status?: 'draft' | 'published';
     fields: CmsField[];
     now: string;
   }): void {
@@ -82,7 +82,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'pending_review' | 'published';
+    status?: 'draft' | 'published';
     fields: CmsField[];
     now: string;
   }): CmsEntry {
@@ -124,7 +124,7 @@ export class ContentRepository {
   /** Update entry metadata (title, slug, status). Does not touch fields. */
   updateEntryMeta(
     id: string,
-    meta: { title?: string; slug?: string; status?: 'draft' | 'pending_review' | 'published' },
+    meta: { title?: string; slug?: string; status?: 'draft' | 'published' },
     now: string
   ): CmsEntry {
     const existing = this.findEntryRow(id);
@@ -163,7 +163,7 @@ export class ContentRepository {
     slug: string;
     locale?: string;
     title: string;
-    status?: 'draft' | 'pending_review' | 'published';
+    status?: 'draft' | 'published';
     fields: CmsField[];
     now: string;
   }): boolean {

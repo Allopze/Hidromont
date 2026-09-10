@@ -2202,7 +2202,7 @@
                 <div class="hm-cms-collection-item">
                   <div class="hm-cms-collection-info">
                     <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
-                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml({ draft: 'Borrador', pending_review: 'Pendiente de revisión', published: 'Publicado' }[e.status] || e.status)}</span></span>
+                    <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml({ draft: 'Borrador', published: 'Publicado' }[e.status] || e.status)}</span></span>
                   </div>
                   <div class="hm-cms-collection-actions">
                     <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
