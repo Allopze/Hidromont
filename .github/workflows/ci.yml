@@ -120,7 +120,7 @@ jobs:
           echo "--- preview.log ---"; cat preview.log || true
           exit 1
 
-      # Los cuatro archivos e2e, no solo uno. `accessibility.spec.ts` y
+      # Todos los archivos e2e, no solo uno. `accessibility.spec.ts` y
       # `public-responsive.spec.ts` existían desde hacía tiempo y no se
       # ejecutaban nunca, así que no protegían de nada: el desborde a 320 px
       # y las regresiones de accesibilidad pasaban el gate sin que nadie

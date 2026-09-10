@@ -346,6 +346,10 @@
       if (dataScript && dataScript.textContent) {
         try {
           const rawItems: RawLightboxItem[] = JSON.parse(dataScript.textContent);
+          // M-9: la lista vacía no es una respuesta, es un bloque que todavía
+          // no ha rellenado la página. Se cae al DOM, que siempre tiene al
+          // menos las tarjetas ya renderizadas.
+          if (!rawItems.length) throw new Error('lista vacía');
           return rawItems.map((item) => ({
             id: item.id || '',
             src: item.src || '',

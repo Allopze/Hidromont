@@ -57,14 +57,6 @@ const gallerySearchText = (item: (typeof allItems)[number]) =>
     .join(' ')
     .toLowerCase();
 
-// GAL-25: el payload que consume el Lightbox se embebe en el HTML de todos los
-// visitantes, abran o no un álbum. `lqip` (un data URI base64 por foto, 17 KB
-// en total) solo lo usa la tarjeta como placeholder de carga; el visor tiene su
-// propio esqueleto y nunca lo lee. Lo mismo con focalX/focalY, que solo afectan
-// al recorte de la portada. Se recortan aquí en vez de en el export para no
-// perderlos en gallery.json, donde sí hacen falta.
-const lightboxItems = mixedItems.map(({ lqip: _lqip, focalX: _fx, focalY: _fy, ...rest }) => rest);
-
 // ESTRUCT-2 fix: only project detail pages for `tipo: destacado` entries are
 // actually built (see proyectos/[slug].astro's getStaticPaths). Gallery items
 // can reference other projectSlugs (used for album grouping) that have no
@@ -293,12 +285,17 @@ const filters = [
               mixedItems.map((item) => ({ ...item, searchText: gallerySearchText(item) }))
             )}
           />
-          <script
-            id="lightbox-data"
-            type="application/json"
-            is:inline
-            set:html={safeJsonForScript(lightboxItems)}
-          />
+          {/* M-9: este bloque nace vacío a propósito. El script de abajo lo
+              reescribe en `updateFilter()`, que corre al cargar, así que
+              serializarlo aquí mandaba los mismos 173 items una segunda vez
+              —81 KB de los 329 de la página— para que el navegador los tirara
+              antes de que nadie pudiera abrir una foto. Si el script no llegara
+              a correr, el Lightbox reconstruye la lista desde las tarjetas del
+              DOM.
+
+              Sustituye a GAL-25, que recortaba de ese payload los campos que el
+              visor no lee (`lqip`, focalX/focalY): ahora no viaja ninguno. ── */}
+          <script id="lightbox-data" type="application/json" is:inline set:html="[]" />
           {/* ESTRUCT-2 fix: slugs the Lightbox may safely link "Ver Proyecto" to. */}
           <script
             id="lightbox-valid-project-slugs"
