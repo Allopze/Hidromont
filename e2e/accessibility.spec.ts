@@ -74,3 +74,63 @@ test('axe CMS collections, gallery and history scenes', async ({ page }) => {
     await expectNoSeriousViolations(page, label, '.hm-cms-shell');
   }
 });
+
+/**
+ * WCAG 2.2 SC 2.5.8 — tamaño del objetivo (AA): 24×24 px como mínimo.
+ *
+ * axe no cubre esta regla en su conjunto por defecto, así que era el último
+ * incumplimiento AA que quedaba en el sitio y nada lo detectaba: los enlaces
+ * del pie medían 17 px de alto y en móvil ese pie es la navegación
+ * secundaria principal.
+ */
+const RUTAS_OBJETIVO = [
+  '/',
+  '/servicios',
+  '/proyectos',
+  '/galeria',
+  '/contacto',
+  '/clientes',
+  '/empresa',
+];
+
+for (const width of [375, 1440]) {
+  test(`todos los controles miden al menos 24x24 px a ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const pequenos: string[] = [];
+
+    for (const ruta of RUTAS_OBJETIVO) {
+      await page.goto(ruta);
+      // El pie es un acordeón cerrado en móvil: sin abrirlo no se miden sus
+      // enlaces, que son justo los que incumplían.
+      await page.evaluate(() =>
+        document.querySelectorAll<HTMLDetailsElement>('.footer-section').forEach((d) => {
+          d.open = true;
+        })
+      );
+      await page.waitForTimeout(150);
+
+      const encontrados = await page.evaluate(() => {
+        const out: string[] = [];
+        for (const el of document.querySelectorAll('a,button,input,select,[role=button]')) {
+          const box = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          if (box.width === 0 || box.height === 0) continue;
+          if (cs.visibility === 'hidden' || cs.display === 'none') continue;
+          // El skip-link es sr-only hasta recibir el foco: su caja de 1×1 no
+          // es un objetivo real.
+          if (String(el.className).includes('sr-only')) continue;
+          if (box.width < 24 || box.height < 24) {
+            const etiqueta = (el.textContent || el.getAttribute('aria-label') || '').trim();
+            out.push(
+              `${el.tagName.toLowerCase()} "${etiqueta.slice(0, 30)}" ${Math.round(box.width)}x${Math.round(box.height)}`
+            );
+          }
+        }
+        return out;
+      });
+      pequenos.push(...encontrados.map((e) => `${ruta}: ${e}`));
+    }
+
+    expect([...new Set(pequenos)]).toEqual([]);
+  });
+}

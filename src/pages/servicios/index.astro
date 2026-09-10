@@ -41,6 +41,14 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
 
   <Section variant="default">
     <Container>
+      {
+        /* B-4: el H1 de la página iba seguido directamente de los ocho H3 de
+           las tarjetas, saltándose el nivel intermedio y dejando la
+           navegación por encabezados de un lector de pantalla sin el título
+           de la sección. Visualmente oculto porque el PageHero ya lo cubre,
+           igual que el `<h2 class="sr-only">Fotos</h2>` de /galeria. */
+      }
+      <h2 class="sr-only">Servicios</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {
           /* UIUX-L10 fix: was slice(0, 4) here vs slice(0, 3) on the home

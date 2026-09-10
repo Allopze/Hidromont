@@ -85,6 +85,12 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
         >
           Servicios <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
         </summary>
+        {
+          /* M-8: `min-h-[24px]` en cada enlace cumple WCAG 2.2 SC 2.5.8
+            (tamaño del objetivo, AA). Con solo `text-sm` y `space-y-2`
+            medían 17 px de alto, y en móvil este pie es la navegación
+            secundaria principal. Era el último incumplimiento AA del sitio. */
+        }
         <nav aria-label="Servicios">
           <ul class="space-y-2">
             {
@@ -92,7 +98,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
                 <li>
                   <a
                     href={item.href}
-                    class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                    class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                   >
                     {item.label}
                   </a>
@@ -115,35 +121,35 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             <li>
               <a
                 href="/empresa"
-                class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                 >Quiénes somos</a
               >
             </li>
             <li>
               <a
                 href="/proyectos"
-                class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                 >Proyectos</a
               >
             </li>
             <li>
               <a
                 href="/galeria"
-                class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                 >Galería</a
               >
             </li>
             <li>
               <a
                 href="/clientes"
-                class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                 >Clientes</a
               >
             </li>
             <li>
               <a
                 href="/contacto"
-                class="text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                 >Contacto</a
               >
             </li>
@@ -163,7 +169,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">Teléfono</span>
             <a
               href={`tel:${company.telefono.replace(/\s/g, '')}`}
-              class="hover:text-white no-underline transition-colors duration-fast block"
+              class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast"
             >
               <EditableText entry="site.company" field="telefono">{company.telefono}</EditableText>
             </a>
@@ -172,7 +178,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">Correo</span>
             <a
               href={`mailto:${company.email}`}
-              class="hover:text-white no-underline transition-colors duration-fast block break-all"
+              class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast break-all"
             >
               <EditableText entry="site.company" field="email">
                 {company.email.split('@')[0]}@<wbr />{company.email.split('@')[1]}

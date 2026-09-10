@@ -202,6 +202,9 @@ const row2 = conLogo.slice(mid);
   .clients-strip-link {
     display: inline-flex;
     align-items: center;
+    /* M-8: WCAG 2.2 SC 2.5.8 exige 24 px de alto; con `font-size-small` el
+       enlace medía 21. */
+    min-height: 24px;
     gap: 4px;
     font-size: var(--font-size-small);
     font-weight: 600;

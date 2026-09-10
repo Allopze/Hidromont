@@ -118,7 +118,7 @@ import { getCmsText } from '../../data/cms';
           </EditableText>
           <a
             href={`tel:${company.telefono.replace(/\s/g, '')}`}
-            class="text-sm text-primary hover:text-primary-dark"
+            class="inline-flex min-h-[24px] items-center text-sm text-primary hover:text-primary-dark"
           >
             <EditableText entry="site.company" field="telefono">{company.telefono}</EditableText>
           </a>
@@ -148,7 +148,10 @@ import { getCmsText } from '../../data/cms';
           >
             {getCmsText('contact.info', 'emailLabel', 'Correo electrónico')}
           </EditableText>
-          <a href={`mailto:${company.email}`} class="text-sm text-primary hover:text-primary-dark">
+          <a
+            href={`mailto:${company.email}`}
+            class="inline-flex min-h-[24px] items-center text-sm text-primary hover:text-primary-dark"
+          >
             <EditableText entry="site.company" field="email">{company.email}</EditableText>
           </a>
         </div>

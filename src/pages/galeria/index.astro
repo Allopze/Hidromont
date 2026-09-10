@@ -75,6 +75,9 @@ const buildableProjectSlugs = (
 ).map((p) => entrySlug(p.id));
 
 // Filter list by category
+// B-5: el título NO lleva el nombre de la empresa concatenado — BaseLayout ya
+// lo añade. Hacerlo aquí producía «Galería de Proyectos | Hidromont Chile |
+// Hidromont Chile S.A.», y era la única ruta de las trece que lo hacía.
 const filters = [
   { slug: 'all', name: 'Todas las Categorías', count: mixedItems.length },
   ...categories
@@ -88,7 +91,7 @@ const filters = [
 ---
 
 <PageLayout
-  title={getCmsText('page.galeria', 'title', 'Galería de Proyectos') + ' | Hidromont Chile'}
+  title={getCmsText('page.galeria', 'title', 'Galería de Proyectos')}
   description={getCmsText(
     'page.galeria',
     'subtitle',
