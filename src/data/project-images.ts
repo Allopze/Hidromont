@@ -21,13 +21,13 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
     height: 740,
   },
   'ch-besaya': {
-    src: '/fotos/curadas/proyecto-montaje-tuberia.jpg',
+    src: '/fotos/curadas/proyecto-montaje-tuberia.webp',
     alt: 'Montaje de tubería forzada de gran diámetro',
     width: 429,
     height: 491,
   },
   'ch-doiras': {
-    src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',
+    src: '/fotos/curadas/proyecto-bifurcacion-obra.webp',
     alt: 'Bifurcación instalada en obra',
     width: 441,
     height: 259,

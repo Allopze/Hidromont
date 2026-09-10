@@ -24,17 +24,21 @@ pasos de abajo incluyen lo necesario para que eso sea seguro.
 | Tiempo de CPU por proceso  | Compilar tarda; si el plan corta procesos largos, «Publicar» fallará                | sin límite estricto |
 | HTTPS con certificado      | La cookie de sesión del CMS exige HTTPS                                             | obligatorio         |
 
-Reparto del espacio, medido en este repositorio:
+Reparto del espacio tras la optimización de imágenes:
 
 ```
-uploads/cms      2.2 GB   originales de las fotos (los sirve el CMS)
 node_modules     410 MB   solo si se compila en el servidor
-dist             236 MB   lo que se sirve
-public           184 MB   solo si se compila en el servidor
-cms/data          12 MB   base de datos y respaldos
+uploads/cms      275 MB   biblioteca de medios del CMS (WebP ≤1600 px)
+dist             130 MB   lo que se sirve
+public           104 MB   solo si se compila en el servidor
+cms/data          17 MB   base de datos y respaldos
                  ───────
-                 ~3.0 GB
+                 ~936 MB
 ```
+
+Antes de optimizar eran ~3,0 GB: los originales de cámara pesaban 2,2 GB y
+el sitio nunca sirve más de 1.600 px de ancho. Ver
+`npm run cms:optimize-uploads` y `npm run cms:optimize-fotos`.
 
 ---
 
@@ -237,6 +241,9 @@ La base es un único archivo. Un cron diario basta:
 
 Deja copias con fecha en `cms/data/backups/`. Conviene además bajarlas fuera
 del servidor de vez en cuando: es donde vive todo el contenido editado.
+
+No subas al servidor los respaldos que tengas en local: son ~2 MB cada uno y
+no aportan nada allí. Conviene también podar los antiguos cada cierto tiempo.
 
 ---
 

@@ -62,3 +62,6 @@ public/fotos/curadas/whatsapp-image-*
 
 # HIG-2: stray backup files shouldn't be versioned
 *.bak
+
+uploads/_originales/
+_retirados/

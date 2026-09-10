@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T02:04:52.552Z",
+  "updatedAt": "2026-09-10T02:34:05.542Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -2562,7 +2562,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-montaje-tuberia.jpg"
+          "value": "/fotos/curadas/proyecto-montaje-tuberia.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -2584,7 +2584,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-bifurcacion-obra.jpg"
+          "value": "/fotos/curadas/proyecto-bifurcacion-obra.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -3342,7 +3342,7 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/otros-montajes.webp"
         },
         "imageAlt": {
           "type": "text",
