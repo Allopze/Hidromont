@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T13:02:49.927Z",
+  "updatedAt": "2026-09-10T14:01:50.490Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -1894,6 +1894,30 @@
           "type": "text",
           "value": "Por qué elegirnos"
         },
+        "item1Desc": {
+          "type": "text",
+          "value": "Equipos para embalses y centrales hidroeléctricas."
+        },
+        "item1Title": {
+          "type": "text",
+          "value": "Especialización sectorial"
+        },
+        "item2Desc": {
+          "type": "text",
+          "value": "Diseño, ingeniería, fabricación, suministro, montaje y mantenimiento."
+        },
+        "item2Title": {
+          "type": "text",
+          "value": "Alcance de servicios"
+        },
+        "item3Desc": {
+          "type": "text",
+          "value": "Experiencia en Chile, España, Honduras y Costa Rica."
+        },
+        "item3Title": {
+          "type": "text",
+          "value": "Experiencia internacional"
+        },
         "subtitle": {
           "type": "textarea",
           "value": "Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales."
@@ -1968,6 +1992,42 @@
       "title": "Instalaciones home",
       "slug": "/",
       "fields": {
+        "card1Desc": {
+          "type": "text",
+          "value": "Fundada en 1983 en España"
+        },
+        "card1Label": {
+          "type": "text",
+          "value": "Trayectoria"
+        },
+        "card1Value": {
+          "type": "text",
+          "value": "40+ años"
+        },
+        "card2Desc": {
+          "type": "text",
+          "value": "Los Ángeles, Región del Biobío"
+        },
+        "card2Label": {
+          "type": "text",
+          "value": "En Chile desde"
+        },
+        "card2Value": {
+          "type": "text",
+          "value": "1997"
+        },
+        "card3Desc": {
+          "type": "text",
+          "value": "Proyectos en Chile, España, Honduras y Costa Rica"
+        },
+        "card3Label": {
+          "type": "text",
+          "value": "Presencia internacional"
+        },
+        "card3Value": {
+          "type": "text",
+          "value": "4 países"
+        },
         "eyebrow": {
           "type": "text",
           "value": "Instalaciones y medios productivos"

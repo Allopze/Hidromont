@@ -29,17 +29,14 @@ proyectosDestacados.sort((a, b) => a.data.orden - b.data.orden);
 
 const clientesEntry = await getEntry('clientes', 'clientes');
 
-const instalaciones = [
-  {
-    title: 'Trayectoria',
-    description: 'Fundada en 1983 en España',
-    value: '40+ años',
-  },
-  {
-    title: 'En Chile desde',
-    description: 'Los Ángeles, Región del Biobío',
-    value: '1997',
-  },
+// E-1: estas dos listas estaban escritas aquí, así que las cifras de la home
+// —«40+ años», «4 países»— solo se podían actualizar con un desarrollador y un
+// despliegue, y son justo el dato que caduca solo. Cada texto sale del CMS con
+// el literal de antes como valor por defecto: si la entrada no tiene el campo,
+// la página muestra exactamente lo mismo que mostraba.
+const INSTALACIONES_FALLBACK = [
+  { title: 'Trayectoria', description: 'Fundada en 1983 en España', value: '40+ años' },
+  { title: 'En Chile desde', description: 'Los Ángeles, Región del Biobío', value: '1997' },
   {
     title: 'Presencia internacional',
     description: 'Proyectos en Chile, España, Honduras y Costa Rica',
@@ -47,7 +44,7 @@ const instalaciones = [
   },
 ];
 
-const propuestaValor = [
+const PROPUESTA_FALLBACK = [
   {
     title: 'Especialización sectorial',
     description: 'Equipos para embalses y centrales hidroeléctricas.',
@@ -61,6 +58,25 @@ const propuestaValor = [
     description: 'Experiencia en Chile, España, Honduras y Costa Rica.',
   },
 ];
+
+const instalaciones = [1, 2, 3].map((n) => ({
+  title: getCmsText('home.installations', `card${n}Label`, INSTALACIONES_FALLBACK[n - 1].title),
+  description: getCmsText(
+    'home.installations',
+    `card${n}Desc`,
+    INSTALACIONES_FALLBACK[n - 1].description
+  ),
+  value: getCmsText('home.installations', `card${n}Value`, INSTALACIONES_FALLBACK[n - 1].value),
+}));
+
+const propuestaValor = [1, 2, 3].map((n) => ({
+  title: getCmsText('home.capabilities', `item${n}Title`, PROPUESTA_FALLBACK[n - 1].title),
+  description: getCmsText(
+    'home.capabilities',
+    `item${n}Desc`,
+    PROPUESTA_FALLBACK[n - 1].description
+  ),
+}));
 ---
 
 <PageLayout

@@ -41,6 +41,11 @@ const ARCHIVOS_CON_CLAVE_DINAMICA = [
   // Listas numeradas: `card${i}Label`, `item${i}Title`. Cubierto porque el
   // seed declara el mismo número de elementos que el bucle recorre.
   'src/pages/empresa.astro',
+  // E-1: las tres cifras y las tres propuestas de valor de la home. El bucle
+  // recorre [1,2,3] y el seed declara card1..3 y item1..3 en las dos entradas,
+  // así que la correspondencia se rompería solo cambiando ambos a la vez. El
+  // tercer argumento de getCmsText mantiene el texto anterior si faltara.
+  'src/pages/index.astro',
   'src/pages/servicios/index.astro',
 ].sort();
 
@@ -76,5 +81,33 @@ describe('claves del CMS referenciadas por el sitio', () => {
 
   it('los archivos con clave dinámica son los conocidos', () => {
     expect(conClaveDinamica.sort()).toEqual(ARCHIVOS_CON_CLAVE_DINAMICA);
+  });
+
+  /**
+   * E-1: las cifras y las propuestas de valor de la home se piden con clave
+   * construida (`card${n}Label`), así que el test de claves literales no las
+   * ve. Y `getCmsText` cae al literal en silencio: si estos campos
+   * desaparecieran del seed, la home seguiría pintando lo mismo y nadie se
+   * enteraría de que dejaron de ser editables. Se comprueban por su nombre.
+   */
+  it('las listas numeradas de la home existen en el contenido exportado', () => {
+    const esperados = [
+      ...[1, 2, 3].flatMap((n) => [
+        `home.installations.card${n}Label`,
+        `home.installations.card${n}Value`,
+        `home.installations.card${n}Desc`,
+      ]),
+      ...[1, 2, 3].flatMap((n) => [
+        `home.capabilities.item${n}Title`,
+        `home.capabilities.item${n}Desc`,
+      ]),
+    ];
+    const faltantes = esperados.filter((ref) => {
+      const corte = ref.lastIndexOf('.');
+      const id = ref.slice(0, corte);
+      const key = ref.slice(corte + 1);
+      return cms.entries[id]?.fields?.[key] === undefined;
+    });
+    expect(faltantes).toEqual([]);
   });
 });

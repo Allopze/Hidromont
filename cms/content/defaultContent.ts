@@ -524,6 +524,24 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Más de 40 años de trayectoria en proyectos hidráulicos nacionales e internacionales.',
       },
+      // E-1: las tres propuestas de valor también estaban en index.astro.
+      // Mismo molde que servicios.index.metodologia, que ya usaba
+      // item<N>Title/Desc para una lista de puntos.
+      item1Title: { type: 'text', value: 'Especialización sectorial' },
+      item1Desc: {
+        type: 'text',
+        value: 'Equipos para embalses y centrales hidroeléctricas.',
+      },
+      item2Title: { type: 'text', value: 'Alcance de servicios' },
+      item2Desc: {
+        type: 'text',
+        value: 'Diseño, ingeniería, fabricación, suministro, montaje y mantenimiento.',
+      },
+      item3Title: { type: 'text', value: 'Experiencia internacional' },
+      item3Desc: {
+        type: 'text',
+        value: 'Experiencia en Chile, España, Honduras y Costa Rica.',
+      },
     },
   },
   {
@@ -546,6 +564,19 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Calderería, mecanizado, arenado y pintura en la misma nave, con terreno contiguo para acopio y premontaje.',
       },
+      // E-1: las tres cifras de la home estaban escritas en index.astro, así
+      // que actualizar «40+ años» exigía un desarrollador y un despliegue —y
+      // es un dato que caduca solo. Mismo molde de claves que
+      // empresa.metricas, que ya usaba card<N>Label/Value/Desc.
+      card1Label: { type: 'text', value: 'Trayectoria' },
+      card1Value: { type: 'text', value: '40+ años' },
+      card1Desc: { type: 'text', value: 'Fundada en 1983 en España' },
+      card2Label: { type: 'text', value: 'En Chile desde' },
+      card2Value: { type: 'text', value: '1997' },
+      card2Desc: { type: 'text', value: 'Los Ángeles, Región del Biobío' },
+      card3Label: { type: 'text', value: 'Presencia internacional' },
+      card3Value: { type: 'text', value: '4 países' },
+      card3Desc: { type: 'text', value: 'Proyectos en Chile, España, Honduras y Costa Rica' },
     },
   },
   {
