@@ -9,8 +9,35 @@ import { captureException, initErrorTracking } from './utils/errorTracking';
 initErrorTracking();
 
 const DEFAULT_PASSWORD = 'Hidromont-Admin-ChangeMe';
-const isLocalOnly =
+
+/**
+ * Bajo Passenger (el modo «Node.js App» de cPanel) `CMS_HOST` y `CMS_PORT` no
+ * se usan para nada: Passenger engancha el primer `http.Server` que llama a
+ * `listen()` y lo pone en un socket Unix suyo, así que «el número de puerto que
+ * se pasa a listen() es irrelevante y no tiene efecto» —su documentación—.
+ *
+ * Eso invertía dos guardas de abajo. `CMS_HOST` se queda en su valor por
+ * defecto, `127.0.0.1`, así que `isLocalOnly` daba `true` y el servidor se
+ * consideraba local... mientras Passenger lo publicaba en el dominio. El
+ * guarda que impide arrancar con la contraseña por defecto quedaba desactivado
+ * justo en el único escenario donde importa.
+ */
+const isPassenger =
+  typeof (globalThis as { PhusionPassenger?: unknown }).PhusionPassenger !== 'undefined' ||
+  !!process.env._PASSENGER_NODE_CONTROL_SERVER;
+
+const isLoopbackHost =
   config.cms.host === '127.0.0.1' || config.cms.host === 'localhost' || config.cms.host === '::1';
+
+// Detrás de un servidor de aplicaciones, el host al que decimos escuchar no
+// dice nada sobre quién nos alcanza.
+const isLocalOnly = isLoopbackHost && !isPassenger;
+
+if (isPassenger) {
+  process.stderr.write(
+    '[CMS] Detectado Passenger: CMS_HOST y CMS_PORT se ignoran (el socket lo asigna Passenger).\n'
+  );
+}
 
 // H2: si el CMS escucha en una interfaz expuesta (0.0.0.0 u otra no-loopback),
 // la cookie de sesión DEBE ser segura (HTTPS) para no viajar en claro por la red.
@@ -35,6 +62,20 @@ if (!isLocalOnly && !config.cms.cookieSecure && config.cms.allowInsecureCookie) 
       config.cms.host +
       '). La cookie de sesión viaja en claro. Aceptable solo en LAN de confianza.\n'
   );
+}
+
+// La contraseña por defecto está en el repositorio y en la documentación, así
+// que en producción no hay ninguna configuración que la haga aceptable. Este
+// guarda no depende de detectar Passenger ni de adivinar la exposición: si
+// NODE_ENV dice producción, se niega a arrancar. cPanel fija NODE_ENV desde su
+// «Modo de aplicación», así que cubre el caso aunque la detección falle.
+if (config.admin.password === DEFAULT_PASSWORD && process.env.NODE_ENV === 'production') {
+  process.stderr.write(
+    '[CMS] ERROR: NODE_ENV=production con la contraseña de administrador por defecto.\n' +
+      '[CMS] Esa contraseña es pública: está en el repositorio y en la documentación.\n' +
+      '[CMS] Defina CMS_ADMIN_PASSWORD antes de arrancar en producción.\n'
+  );
+  process.exit(1);
 }
 
 if (config.admin.password === DEFAULT_PASSWORD && !isLocalOnly) {

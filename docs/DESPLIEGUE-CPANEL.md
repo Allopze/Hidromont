@@ -179,6 +179,53 @@ rsync -avz --progress uploads/cms/ USUARIO@SERVIDOR:~/hidromont-datos/uploads-cm
 
 ---
 
+## 3 bis. Rellenar el formulario «Setup Node.js App»
+
+| Campo                    | Qué poner                              |
+| ------------------------ | -------------------------------------- |
+| Versión de Node.js       | `24.15.0`                              |
+| Modo de aplicación       | `Production`                           |
+| Raíz de aplicación       | `hidromont` (relativa a tu home)       |
+| URL de la aplicación     | `hidromontchile.cl`, subruta **vacía** |
+| Archivo de inicio        | `server.mjs`                           |
+| Archivo de log Passenger | `/home4/hidrochile/logs/passenger.log` |
+
+`server.mjs` ya está en el repositorio y son tres líneas: registra el cargador
+de `tsx` y arranca `cms/server.ts`. Verificado con `node server.mjs`: sirve el
+sitio, `/uploads/cms/*`, los 301 de `_redirects` y las cabeceras de seguridad
+desde un solo proceso.
+
+**La subruta de la URL tiene que quedar vacía.** Con una subruta el sitio
+quedaría en `hidromontchile.cl/algo/` y todas las rutas absolutas del HTML
+(`/fotos/…`, `/_assets/…`) apuntarían fuera.
+
+### Passenger ignora CMS_HOST y CMS_PORT
+
+No es un descuido de configuración: Passenger engancha el primer `http.Server`
+que llama a `listen()` y lo pone en un socket Unix suyo, así que —su
+documentación— «el número de puerto que se pasa a `listen()` es irrelevante y
+no tiene efecto». La aplicación tiene un solo servidor HTTP, así que funciona
+sin tocar nada.
+
+Consecuencia que sí importa: como `CMS_HOST` se queda en `127.0.0.1`, el
+servidor no puede deducir de ahí si está expuesto. Los guardas de arranque
+detectan Passenger y, además, se niegan a levantar con la contraseña por
+defecto cuando `NODE_ENV=production`, que es lo que fija el «Modo de
+aplicación» de esta pantalla.
+
+### Dónde poner la configuración
+
+Las variables se pueden dar por dos vías, y **el panel «Environment
+variables» gana sobre el archivo `.env`** (comprobado: `process.loadEnvFile`
+no sobreescribe lo que ya está en el entorno). Lo práctico:
+
+- `.env` en la raíz de la aplicación para todo el perfil, copiado de
+  `.env.production.example`.
+- El panel de cPanel solo para `CMS_ADMIN_PASSWORD`, si prefieres no dejar la
+  contraseña en un archivo.
+
+---
+
 ## 4. Configuración
 
 ```bash
