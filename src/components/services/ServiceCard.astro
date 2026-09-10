@@ -1,4 +1,5 @@
 ---
+import type { IconoServicio } from '../../data/content-vocabulary';
 import Button from '../ui/Button.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 
@@ -13,7 +14,10 @@ interface Props {
 
 const { title, description, href, icon, bullets, compact = false } = Astro.props;
 
-const icons: Record<string, string> = {
+// A-7: tipado contra el vocabulario compartido, así el compilador falla si
+// las claves de este mapa y ICONO_SERVICIO divergen — que es justo lo que
+// había pasado: el CMS documentaba 6 iconos y aquí hay 8.
+const icons: Record<IconoServicio, string> = {
   pipe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M2 9h20M2 15h20" />
     <rect x="2" y="7" width="2" height="10" rx="1" />
@@ -85,7 +89,10 @@ const icons: Record<string, string> = {
   </svg>`,
 };
 
-const iconSvg = icon ? (icons[icon] ?? icons.pipe) : icons.pipe;
+// El `icon` llega como string desde la colección; el enum lo valida en el
+// schema de Astro, pero el fallback se mantiene por si un .md editado a mano
+// trae otro valor.
+const iconSvg = icons[icon as IconoServicio] ?? icons.pipe;
 ---
 
 <article

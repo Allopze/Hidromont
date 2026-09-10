@@ -580,6 +580,7 @@
     const map = {
       unsaved: { label: '● Sin exportar', cls: 'failed' },
       exported: { label: '✓ Exportado · falta desplegar', cls: 'succeeded' },
+      warning: { label: '⚠ Exportado con omisiones', cls: 'failed' },
       error: { label: '✗ Error', cls: 'failed' },
     };
     const s = map[stateKey] || { label: stateKey, cls: '' };
@@ -918,6 +919,11 @@
         ${fieldEditor(element, entry, field)}
         <div class="hm-cms-actions">
           <button type="submit">Guardar</button>
+          ${
+            element.dataset.cmsType === 'image'
+              ? ''
+              : `<button type="button" class="secondary destructive" data-action="clear-field">Vaciar este texto</button>`
+          }
           <button type="button" class="secondary" data-action="export">Exportar</button>
           <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
         </div>
@@ -1096,6 +1102,44 @@
     } catch {
       return value;
     }
+  }
+
+  /**
+   * A-7/A-9: lo que el export dejó fuera y lo que volvió al texto por
+   * defecto. Antes esto solo salía por el stderr del servidor mientras el job
+   * se cerraba como correcto, así que un proyecto podía dejar de publicarse
+   * sin que el editor se enterara.
+   */
+  function exportNoticeMarkup(exported) {
+    const omitidas = exported?.skipped || [];
+    const revertidas = exported?.revertedToFallback || [];
+    if (!omitidas.length && !revertidas.length) return '';
+
+    const lista = (titulo, filas) =>
+      filas.length
+        ? `<p style="margin:0 0 4px"><strong>${escapeHtml(titulo)}</strong></p>
+           <ul style="margin:0 0 8px;padding-left:18px">
+             ${filas.join('')}
+           </ul>`
+        : '';
+
+    return `
+      <div class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:10px 12px;margin-bottom:10px">
+        ${lista(
+          'No se publicaron (corrige el campo y vuelve a exportar):',
+          omitidas.map(
+            (e) =>
+              `<li>${escapeHtml(e.slug)} — ${escapeHtml(e.reason)}
+                 <button type="button" class="secondary" style="font-size:11px;padding:3px 7px;margin-left:6px" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
+               </li>`
+          )
+        )}
+        ${lista(
+          'En borrador: el sitio muestra el texto por defecto del código',
+          revertidas.map((e) => `<li>${escapeHtml(e.title)} (${escapeHtml(e.id)})</li>`)
+        )}
+      </div>
+    `;
   }
 
   function renderPublishJobs(items) {
@@ -1772,8 +1816,31 @@
     }
   }
 
+  /**
+   * A-7/A-9: el vocabulario de enumeraciones y los efectos de «Borrador»
+   * vienen del servidor (`/api/cms/schema`), que los lee del módulo
+   * compartido con el schema de Astro. Se pide una vez por sesión.
+   */
+  let schemaCache = null;
+  async function getSchema() {
+    if (schemaCache) return schemaCache;
+    try {
+      schemaCache = await api('/api/cms/schema');
+    } catch {
+      schemaCache = { enumFields: {}, draftEffect: {} };
+    }
+    return schemaCache;
+  }
+
   async function showEntryForm(entryId = null, kind = activeCollectionKind) {
     if (!(await ensureSession())) return;
+    const schema = await getSchema();
+    const enums = schema.enumFields?.[kind] || {};
+    const draftGroup = kind === 'servicio' || kind === 'proyecto' ? 'collection' : 'page';
+    const draft = schema.draftEffect?.[draftGroup] || {
+      label: 'Borrador',
+      warning: '',
+    };
     let entry = null;
     if (entryId) {
       try {
@@ -1801,11 +1868,12 @@
           <input name="slug" value="${escapeHtml(entry?.slug || '')}" required />
         </label>
         <label>Estado
-          <select name="status">
+          <select name="status" data-initial-status="${escapeHtml(entry?.status || 'published')}">
             <option value="published" ${!entry || entry.status === 'published' ? 'selected' : ''}>Publicado</option>
-            <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>Borrador</option>
+            <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>${escapeHtml(draft.label)}</option>
           </select>
         </label>
+        <p class="hm-cms-muted" data-draft-warning hidden style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:8px 10px">${escapeHtml(draft.warning)}</p>
         ${
           !entryId && (kind === 'servicio' || kind === 'proyecto')
             ? `
@@ -1824,6 +1892,28 @@
                 .filter(([, f]) => ['text', 'textarea', 'number', 'list'].includes(f.type))
                 .map(([key, f]) => {
                   const name = `field:${escapeHtml(key)}`;
+                  // A-7: los campos de enumeración eran texto libre, y un
+                  // valor mal escrito hacía que el export omitiera la entrada
+                  // en silencio mientras el job se cerraba como correcto.
+                  if (enums[key]) {
+                    const actual = String(f.value ?? '');
+                    const conocido = enums[key].some((o) => o.value === actual);
+                    return `<label>${escapeHtml(key)}
+                      <select name="${name}" data-field-type="text">
+                        ${
+                          !conocido && actual
+                            ? `<option value="${escapeHtml(actual)}" selected>⚠ ${escapeHtml(actual)} (valor inválido)</option>`
+                            : ''
+                        }
+                        ${enums[key]
+                          .map(
+                            (o) =>
+                              `<option value="${escapeHtml(o.value)}"${o.value === actual ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
+                          )
+                          .join('')}
+                      </select>
+                    </label>`;
+                  }
                   if (f.type === 'list') {
                     return `<label>${escapeHtml(key)}</label>${listEditorMarkup(asList(f.value), name)}`;
                   }
@@ -1857,6 +1947,17 @@
     const title = form.elements.title.value.trim();
     const slug = form.elements.slug.value.trim();
     const entryStatus = form.elements.status.value;
+
+    // A-9: despublicar tiene efectos opuestos según el tipo y ninguno es
+    // reversible con un clic, así que se confirma con el efecto a la vista.
+    const estadoPrevio = form.elements.status.dataset?.initialStatus;
+    if (entryStatus === 'draft' && estadoPrevio === 'published') {
+      const aviso = form.querySelector('[data-draft-warning]')?.textContent?.trim();
+      if (!window.confirm(`${aviso}\n\n¿Continuar?`)) {
+        if (status) status.textContent = '';
+        return;
+      }
+    }
 
     try {
       if (!entryId) {
@@ -1939,6 +2040,8 @@
         setButtonLoading(btn, true, 'Exportando...');
         try {
           const result = await api('/api/cms/export', { method: 'POST' });
+          const aviso = exportNoticeMarkup(result.exported);
+          if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           if (status)
             status.textContent =
               `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
@@ -2193,14 +2296,40 @@
         try {
           const result = await api('/api/cms/publish', { method: 'POST' });
           renderPublishJobs(result.job ? [result.job] : []);
+          const aviso = exportNoticeMarkup(result.exported);
+          if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           const jobStatus = result.job?.status;
-          setGlobalState(jobStatus === 'succeeded' ? 'exported' : 'error');
+          const conOmisiones =
+            (result.exported?.skipped || []).length > 0 ||
+            (result.exported?.revertedToFallback || []).length > 0;
+          setGlobalState(
+            jobStatus !== 'succeeded' ? 'error' : conOmisiones ? 'warning' : 'exported'
+          );
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
           setGlobalState('error');
         } finally {
           setButtonLoading(btn, false);
         }
+      }
+      // A-9: la afordancia correcta para «quiero que este rótulo desaparezca».
+      // Vaciar el campo sí lo borra del sitio (getCmsText distingue clave
+      // ausente de clave vacía); poner la entrada en Borrador, en cambio,
+      // revierte TODOS sus campos al texto del código. Sin este botón, el
+      // desplegable de estado era el único camino visible y se usaba mal.
+      // Excluido en campos de imagen: ahí una cadena vacía es un <img src="">
+      // roto, y por eso getCmsText cae al fallback para ese tipo.
+      if (action === 'clear-field') {
+        event.preventDefault();
+        const form = panelBody.querySelector('[data-edit]');
+        if (!form) return;
+        if (!window.confirm('¿Vaciar este texto? Dejará de aparecer en el sitio.')) return;
+        const campo = form.elements.value;
+        if (campo) {
+          campo.value = '';
+          setFormDirty(true);
+        }
+        return;
       }
       if (action === 'load-more-media') {
         event.preventDefault();
@@ -2439,6 +2568,15 @@
           status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
       }
     }
+  });
+
+  // A-9: el aviso del efecto de «Borrador» aparece en cuanto se elige, no
+  // después de exportar y descubrir que la página desapareció.
+  document.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement) || target.name !== 'status') return;
+    const warning = target.form?.querySelector('[data-draft-warning]');
+    if (warning) warning.hidden = target.value !== 'draft';
   });
 
   document.addEventListener('input', (event) => {

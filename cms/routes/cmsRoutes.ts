@@ -2,6 +2,14 @@ import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 import { config } from '../config/unifiedConfig';
+import {
+  DRAFT_EFFECT,
+  ENTRY_KINDS,
+  ENTRY_STATUSES,
+  ENUM_FIELDS,
+  ENUM_FIELD_LABELS,
+  FIELD_TYPES,
+} from '../../src/data/content-vocabulary';
 import { AuthController } from '../controllers/AuthController';
 import { ContentController } from '../controllers/ContentController';
 import { MediaController } from '../controllers/MediaController';
@@ -369,10 +377,32 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     '/api/cms/schema',
     { preHandler: [requireAuth(authService)] },
     async (_request, reply) => {
+      // A-7: se publica el vocabulario de enumeraciones para que el overlay
+      // pueda renderizar desplegables en vez de campos de texto libre. Las
+      // tres claves originales se conservan (el e2e las verifica) pero ya no
+      // están escritas a mano: `entryStatuses` devolvía 2 valores mientras el
+      // validador aceptaba 3, así que `pending_review` era inalcanzable.
       return reply.send({
-        fieldTypes: ['text', 'textarea', 'richtext', 'image', 'link', 'number', 'list', 'object'],
-        entryKinds: ['page', 'layout', 'component', 'settings', 'servicio', 'proyecto'],
-        entryStatuses: ['draft', 'published'],
+        fieldTypes: FIELD_TYPES,
+        entryKinds: ENTRY_KINDS,
+        entryStatuses: ENTRY_STATUSES,
+        enumFields: Object.fromEntries(
+          Object.entries(ENUM_FIELDS).map(([kind, fields]) => [
+            kind,
+            Object.fromEntries(
+              Object.entries(fields).map(([key, values]) => [
+                key,
+                values.map((value) => ({
+                  value,
+                  label: ENUM_FIELD_LABELS[kind]?.[key]?.[value] ?? value,
+                })),
+              ])
+            ),
+          ])
+        ),
+        // A-9: el mismo valor `draft` tiene dos efectos opuestos según el
+        // tipo de entrada. Se declara aquí para que el overlay lo diga.
+        draftEffect: DRAFT_EFFECT,
       });
     }
   );

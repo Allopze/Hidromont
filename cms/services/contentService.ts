@@ -3,6 +3,7 @@ import path from 'node:path';
 import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import { getInitialEntries } from './contentSeed';
+import { CATEGORIA_PROYECTO, ICONO_SERVICIO } from '../../src/data/content-vocabulary';
 
 type SeedField = { type: string; value: unknown };
 
@@ -18,9 +19,10 @@ function requiredFieldTemplate(kind: string, title: string): Record<string, Seed
     return {
       titulo: { type: 'text', value: title },
       resumen: { type: 'textarea', value: 'Descripción pendiente de completar.' },
-      // Debe ser una clave válida de iconos en ServiceCard.astro
-      // (pipe | gate | valve | turbine | rack | crane).
-      icono: { type: 'text', value: 'pipe' },
+      // A-7: el vocabulario válido está en src/data/content-vocabulary.ts
+      // (ICONO_SERVICIO). Este comentario listaba 6 iconos cuando
+      // ServiceCard define 8, y la base ya usaba los dos que faltaban.
+      icono: { type: 'text', value: ICONO_SERVICIO[0] },
       orden: { type: 'number', value: 100 },
       body: { type: 'textarea', value: 'Contenido pendiente de completar.' },
     };
@@ -29,8 +31,8 @@ function requiredFieldTemplate(kind: string, title: string): Record<string, Seed
     return {
       nombre: { type: 'text', value: title },
       alcance: { type: 'textarea', value: 'Alcance pendiente de completar.' },
-      // Debe ser uno del enum categoriaProyecto en src/content/config.ts.
-      categoria: { type: 'text', value: 'tuberias' },
+      // A-7: vocabulario en src/data/content-vocabulary.ts.
+      categoria: { type: 'text', value: CATEGORIA_PROYECTO[0] },
       tipo: { type: 'text', value: 'banco' },
       orden: { type: 'number', value: 100 },
       body: { type: 'textarea', value: 'Contenido pendiente de completar.' },

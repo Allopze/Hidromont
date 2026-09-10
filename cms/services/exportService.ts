@@ -6,22 +6,32 @@ import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import type { GalleryRepository } from '../repositories/GalleryRepository';
 import type { ImageService } from './imageService';
+import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import type { CmsEntry } from '../types/cms';
 
-// CMS-10: mirrors the enums Zod enforces in src/content.config.ts for the
-// `proyectos` collection. Can't import astro:content here (this runs under
-// plain Node/tsx, not the Astro runtime), so these are kept in sync by hand.
-// A value outside these sets exports a syntactically valid .md that then
-// fails `astro check` at publish time with a confusing, hard-to-trace error —
-// catching it here at export time instead gives a clear, attributable one.
-const CATEGORIA_PROYECTO_VALUES = new Set([
-  'tuberias',
-  'compuertas',
-  'electromecanicos',
-  'limpiarrejas',
-  'estructuras',
-]);
-const TIPO_PROYECTO_VALUES = new Set(['destacado', 'banco']);
+/** A-7: entrada que el export dejó fuera, para poder avisar al editor. */
+export interface SkippedEntry {
+  id: string;
+  kind: string;
+  slug: string;
+  reason: string;
+}
+
+/**
+ * A-9: entrada de tipo página excluida por estar en borrador. No se oculta:
+ * el sitio vuelve al texto por defecto del código, y eso hay que decirlo.
+ */
+export interface RevertedEntry {
+  id: string;
+  kind: string;
+  title: string;
+}
+
+// A-7: el vocabulario ya no se duplica aquí. Vive en
+// src/data/content-vocabulary.ts, del que también consumen el schema de Astro,
+// el validador del servidor y el `<select>` del overlay. Antes eran dos `Set`
+// mantenidos a mano con un comentario que reconocía la duplicación, y dos de
+// las siete copias del vocabulario ya habían divergido.
 
 /**
  * A1-001 + A1-003: escritura atomica y robusta.
@@ -168,7 +178,13 @@ export class ExportService {
     private readonly imageService?: ImageService
   ) {}
 
-  async exportContent(): Promise<{ files: string[]; removed: string[] }> {
+  async exportContent(): Promise<{
+    files: string[];
+    removed: string[];
+    skipped: SkippedEntry[];
+    revertedToFallback: RevertedEntry[];
+  }> {
+    const skipped: SkippedEntry[] = [];
     // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
     // Carga todas las entradas. Para cada una, exporta su archivo .md con sus
     // valores por defecto (page content) o conserva el .md previo (colecciones).
@@ -187,7 +203,8 @@ export class ExportService {
       // collection entry regardless of version; re-writing unchanged content
       // is harmless (idempotent), unlike omitting live content entirely.
       ...(await this.exportCollection(
-        entries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind))
+        entries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind)),
+        skipped
       )),
     ];
 
@@ -202,7 +219,18 @@ export class ExportService {
       allEntries.filter((entry) => ['servicio', 'proyecto'].includes(entry.kind))
     );
 
-    return { files: written, removed };
+    // A-9: despublicar una entrada de página no la oculta — la saca de
+    // cms-content.json y el sitio vuelve al texto por defecto del código, que
+    // el editor no ve ni controla. Se reporta para que el efecto sea visible.
+    const revertedToFallback = allEntries
+      .filter(
+        (entry) =>
+          entry.status !== 'published' &&
+          ['page', 'layout', 'component', 'settings'].includes(entry.kind)
+      )
+      .map((entry) => ({ id: entry.id, kind: entry.kind, title: entry.title }));
+
+    return { files: written, removed, skipped, revertedToFallback };
   }
 
   private exportPageContent(entries: CmsEntry[]): string {
@@ -282,38 +310,48 @@ export class ExportService {
   }
 
   /**
-   * CMS-10: `field.value` reaches here as `unknown` (updateFieldSchema accepts
-   * z.unknown()), so nothing stops an operator from setting `categoria`/`tipo`
-   * to a value outside the enum Astro's content schema enforces. Previously
-   * this wrote a syntactically valid .md that then failed `astro check` at
-   * publish time with an error pointing at Astro's internals, not the actual
-   * bad field. Returns the first violation found, or null if the entry is valid.
+   * A-7: `field.value` llega como `unknown` (updateFieldSchema acepta
+   * z.unknown()), así que un valor fuera del enum que Astro exige podía
+   * colarse hasta el .md y hacer fallar `astro check` con un error que
+   * apuntaba a las tripas de Astro y no al campo culpable.
+   *
+   * Recorre ENUM_FIELDS en vez de dos campos escritos a mano, así que añadir
+   * un campo de enumeración al vocabulario lo cubre aquí sin tocar nada.
    */
   private validateCollectionEntry(entry: CmsEntry): string | null {
-    if (entry.kind !== 'proyecto') return null;
+    const enums = ENUM_FIELDS[entry.kind];
+    if (!enums) return null;
 
-    const categoria = entry.fields.categoria?.value;
-    if (categoria !== undefined && !CATEGORIA_PROYECTO_VALUES.has(String(categoria))) {
-      return `categoria "${categoria}" inválida (valores permitidos: ${[...CATEGORIA_PROYECTO_VALUES].join(', ')})`;
+    for (const [key, allowed] of Object.entries(enums)) {
+      const value = entry.fields[key]?.value;
+      if (value === undefined) continue;
+      if (!allowed.includes(String(value))) {
+        return `${key} "${value}" inválido (valores permitidos: ${allowed.join(', ')})`;
+      }
     }
-
-    const tipo = entry.fields.tipo?.value;
-    if (tipo !== undefined && !TIPO_PROYECTO_VALUES.has(String(tipo))) {
-      return `tipo "${tipo}" inválido (valores permitidos: ${[...TIPO_PROYECTO_VALUES].join(', ')})`;
-    }
-
     return null;
   }
 
-  private async exportCollection(entries: CmsEntry[]): Promise<string[]> {
+  private async exportCollection(entries: CmsEntry[], skipped: SkippedEntry[]): Promise<string[]> {
     const written: string[] = [];
+    const writtenTargets = new Set<string>();
 
     for (const entry of entries) {
       const validationError = this.validateCollectionEntry(entry);
       if (validationError) {
+        // A-7: además de avisar por stderr (útil para `npm run cms:export`
+        // desde terminal), se acumula para devolverlo al panel. Antes el job
+        // se cerraba como `succeeded` y el editor no se enteraba de que su
+        // proyecto no se había publicado.
         process.stderr.write(
           `  ⚠ Omitiendo ${entry.kind} "${entry.slug}" (${entry.id}): ${validationError}. Corrija el campo en el CMS y vuelva a exportar.\n`
         );
+        skipped.push({
+          id: entry.id,
+          kind: entry.kind,
+          slug: entry.slug,
+          reason: validationError,
+        });
         continue;
       }
 
@@ -329,6 +367,23 @@ export class ExportService {
           frontmatter[key] = field.value;
         }
       }
+
+      // C-1: en bases anteriores al índice único dos entradas publicadas
+      // pueden reclamar el mismo slug. Escribir la segunda sobre la primera
+      // haría desaparecer contenido según el orden de iteración.
+      if (writtenTargets.has(target)) {
+        process.stderr.write(
+          `  ⚠ Omitiendo ${entry.kind} "${entry.slug}" (${entry.id}): otra entrada ya escribió ese archivo.\n`
+        );
+        skipped.push({
+          id: entry.id,
+          kind: entry.kind,
+          slug: entry.slug,
+          reason: 'otra entrada publicada reclama el mismo slug',
+        });
+        continue;
+      }
+      writtenTargets.add(target);
 
       writeFileSyncAtomic(target, await canonicalMarkdown(frontmatter, body, target, this.rootDir));
       written.push(path.relative(this.rootDir, target));

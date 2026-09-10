@@ -1,4 +1,6 @@
 import { z } from 'zod';
+// A-7: vocabulario compartido con el schema de Astro y el overlay.
+import { ENTRY_KINDS, ENTRY_STATUSES } from '../../src/data/content-vocabulary';
 
 export const loginSchema = z.object({
   email: z.email(),
@@ -39,7 +41,7 @@ export const createEntrySchema = z.object({
       /^[a-z0-9._-]+$/,
       'ID debe contener solo letras minúsculas, números, puntos, guiones y guiones bajos'
     ),
-  kind: z.enum(['page', 'layout', 'component', 'settings', 'servicio', 'proyecto']),
+  kind: z.enum(ENTRY_KINDS),
   slug: z
     .string()
     .min(1)
@@ -51,7 +53,7 @@ export const createEntrySchema = z.object({
     .refine((val) => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)'),
   locale: z.string().optional(),
   title: z.string().min(1).max(240),
-  status: z.enum(['draft', 'pending_review', 'published']).optional(),
+  status: z.enum(ENTRY_STATUSES).optional(),
   fields: z.record(z.string(), z.object({ type: z.string(), value: z.unknown() })).optional(),
 });
 
@@ -67,7 +69,7 @@ export const updateEntryMetaSchema = z.object({
     )
     .refine((val) => !val.includes('..'), 'Slug no puede contener retrocesos de directorio (..)')
     .optional(),
-  status: z.enum(['draft', 'pending_review', 'published']).optional(),
+  status: z.enum(ENTRY_STATUSES).optional(),
 });
 
 // H-16: parámetros de paginación opcionales. Defecto page=1, limit=100

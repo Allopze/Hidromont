@@ -206,6 +206,11 @@ describe('ExportService — CMS-10: omite entradas de proyecto con categoria/tip
   it('omite la entrada con categoria invalida sin afectar a las demas', async () => {
     const result = await exportService.exportContent();
     expect(result.files).not.toContain('src/content/proyectos/bad-categoria.md');
+    // A-7: además de no escribirse, la omisión vuelve al llamador para que el
+    // panel pueda avisar. Antes solo salía por el stderr del servidor y el
+    // job se cerraba como `succeeded`, así que el editor no se enteraba.
+    expect(result.skipped.map((e) => e.slug)).toContain('bad-categoria');
+    expect(result.skipped.find((e) => e.slug === 'bad-categoria')?.reason).toMatch(/categoria/i);
     expect(
       fs.existsSync(path.join(tmpRoot, 'src', 'content', 'proyectos', 'bad-categoria.md'))
     ).toBe(false);

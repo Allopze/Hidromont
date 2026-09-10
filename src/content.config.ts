@@ -1,13 +1,9 @@
 import { defineCollection, z } from 'astro:content';
 import { glob, file } from 'astro/loaders';
+// A-7: vocabulario compartido con el CMS, que antes lo duplicaba a mano.
+import { CATEGORIA_PROYECTO, ICONO_SERVICIO, TIPO_PROYECTO } from './data/content-vocabulary';
 
-const categoriaProyecto = z.enum([
-  'tuberias',
-  'compuertas',
-  'electromecanicos',
-  'limpiarrejas',
-  'estructuras',
-]);
+const categoriaProyecto = z.enum(CATEGORIA_PROYECTO);
 
 const proyectos = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/proyectos' }),
@@ -19,7 +15,7 @@ const proyectos = defineCollection({
       contratista: z.string().optional(),
       alcance: z.string(),
       categoria: categoriaProyecto,
-      tipo: z.enum(['destacado', 'banco']).default('banco'),
+      tipo: z.enum(TIPO_PROYECTO).default('banco'),
       ubicacion: z.string().optional(),
       anio: z.number().optional(),
       diametro: z.string().optional(),
@@ -37,7 +33,8 @@ const servicios = defineCollection({
     z.object({
       titulo: z.string(),
       resumen: z.string(),
-      icono: z.string(),
+      // A-7: endurecido de z.string() al enum real, ahora que hay lista.
+      icono: z.enum(ICONO_SERVICIO),
       tipos: z.array(z.string()).optional(),
       aplicaciones: z.array(z.string()).optional(),
       normas: z.array(z.string()).optional(),

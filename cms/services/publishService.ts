@@ -3,9 +3,30 @@ import { promisify } from 'node:util';
 import { config } from '../config/unifiedConfig';
 import type { PublishJobRepository } from '../repositories/PublishJobRepository';
 import type { PublishJob } from '../types/cms';
-import type { ExportService } from './exportService';
+import type { ExportService, RevertedEntry, SkippedEntry } from './exportService';
+
+type Exported = {
+  files: string[];
+  removed: string[];
+  skipped: SkippedEntry[];
+  revertedToFallback: RevertedEntry[];
+};
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * A-7/A-9: las omisiones y las reversiones al texto por defecto entran en el
+ * log del job igual que las eliminaciones, para que queden en el historial y
+ * no solo en el stderr del servidor.
+ */
+function noticeLines(exported: Exported): string[] {
+  return [
+    ...exported.skipped.map((e) => `⚠ omitida: ${e.kind} "${e.slug}" (${e.id}) — ${e.reason}`),
+    ...exported.revertedToFallback.map(
+      (e) => `⚠ vuelve al texto por defecto: ${e.id} («${e.title}»)`
+    ),
+  ];
+}
 
 interface ExecFailure extends Error {
   stdout?: string;
@@ -40,7 +61,7 @@ export class PublishService {
 
   async exportContent(): Promise<{
     job: PublishJob;
-    exported: { files: string[]; removed: string[] };
+    exported: Exported;
     galleryExported?: { file: string; count: number };
   }> {
     this.acquireLock();
@@ -64,6 +85,7 @@ export class PublishService {
             `${completedAt} exported ${exported.files.length} file(s)`,
             ...exported.files.map((file) => `file: ${file}`),
             ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+            ...noticeLines(exported),
           ],
         });
         return { job: completed, exported };
@@ -78,7 +100,7 @@ export class PublishService {
 
   async exportContentWithGallery(): Promise<{
     job: PublishJob;
-    exported: { files: string[]; removed: string[] };
+    exported: Exported;
     galleryExported: { file: string; count: number };
   }> {
     this.acquireLock();
@@ -103,6 +125,7 @@ export class PublishService {
             `${completedAt} exported ${exported.files.length} file(s)`,
             ...exported.files.map((file) => `file: ${file}`),
             ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+            ...noticeLines(exported),
             `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
           ],
         });
@@ -118,7 +141,7 @@ export class PublishService {
 
   async publishContent(): Promise<{
     job: PublishJob;
-    exported: { files: string[]; removed: string[] };
+    exported: Exported;
     galleryExported: { file: string; count: number };
     publish: { stdout: string; stderr: string };
   }> {
@@ -153,6 +176,7 @@ export class PublishService {
             ...job.logs,
             `${completedAt} exported ${exported.files.length} file(s)`,
             ...exported.removed.map((file) => `removed (renamed/unpublished/deleted): ${file}`),
+            ...noticeLines(exported),
             `gallery: ${galleryExported.count} items → ${galleryExported.file}`,
             `publish: ${config.cms.publishCheckCommand}`,
             ...this.nonEmptyLines(result.stdout, 'stdout'),

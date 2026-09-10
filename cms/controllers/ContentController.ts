@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { ContentService } from '../services/contentService';
+import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import {
   createEntrySchema,
   entryParamsSchema,
@@ -76,6 +77,20 @@ export class ContentController extends BaseController {
           reply
             .status(400)
             .send({ error: `El campo "${params.key}" de tipo "${type}" debe ser texto` });
+          return;
+        }
+      }
+
+      // A-7: el valor de un campo de enumeración se valida aquí, donde el
+      // editor puede corregirlo con contexto. El gate del export sigue
+      // existiendo como red de seguridad para todo lo que no pasa por la API
+      // (seed, scripts, restauración de revisiones, edición directa de SQLite).
+      const allowed = ENUM_FIELDS[entry.kind]?.[params.key];
+      if (allowed && body.value !== null && body.value !== undefined) {
+        if (!allowed.includes(String(body.value))) {
+          reply.status(400).send({
+            error: `El campo "${params.key}" debe ser uno de: ${allowed.join(', ')}`,
+          });
           return;
         }
       }
