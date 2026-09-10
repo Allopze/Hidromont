@@ -15,12 +15,67 @@
 
   const style = document.createElement('style');
   style.textContent = `
+    /*
+     * B-3: la barra y el panel pintaban con 40 colores escritos a mano, nueve
+     * de ellos copias literales de los tokens del sitio. Cambiar el azul de
+     * marca dejaba la interfaz de administración con el anterior.
+     *
+     * Los nueve pasan a leer el token, con el literal como respaldo: el overlay
+     * también se inyecta en páginas que podrían no cargar tokens.css, y sin el
+     * respaldo se quedaría sin color. Los demás son grises y colores de aviso
+     * que el sitio no declara; se nombran aquí para que haya un solo sitio
+     * donde cambiarlos.
+     */
+    :root {
+      --hm-cms-primary: var(--color-primary, #0065A9);
+      --hm-cms-primary-dark: var(--color-primary-dark, #004B7D);
+      --hm-cms-accent: var(--color-accent, #00A6D6);
+      --hm-cms-ink: var(--color-text, #1F2933);
+      --hm-cms-muted: var(--color-text-muted, #5B6770);
+      --hm-cms-line: var(--color-border, #D9E2EC);
+      --hm-cms-dark: var(--color-background-strong, #0F2433);
+      --hm-cms-alt: var(--color-background-alt, #F5F8FA);
+      --hm-cms-error: var(--color-error, #C62828);
+      --hm-cms-success: var(--color-success, #2E7D32);
+      --hm-cms-primary-light: var(--color-primary-light, #E6F2FA);
+
+      /* Grises del panel: sin equivalente en los tokens del sitio. */
+      --hm-cms-line-soft: #cbd5e1;
+      --hm-cms-line-softer: #e2e8f0;
+      --hm-cms-ink-soft: #334155;
+      --hm-cms-ink-softer: #475569;
+      --hm-cms-muted-soft: #64748b;
+      --hm-cms-dark-hover: #172331;
+      --hm-cms-surface-soft: #f1f5f9;
+
+      /* Avisos: fondo, borde y texto de cada estado. */
+      --hm-cms-warn-bg: #fffbeb;
+      --hm-cms-warn-line: #fde68a;
+      --hm-cms-warn-ink: #f59e0b;
+      --hm-cms-danger-bg: #fee2e2;
+      --hm-cms-danger-line: #fecaca;
+      --hm-cms-danger-ink: #991b1b;
+      --hm-cms-info-bg: #eff8ff;
+      --hm-cms-info-line: #bae6fd;
+      --hm-cms-ok-bg: #e8f5e9;
+      --hm-cms-ok-line: #a5d6a7;
+      --hm-cms-ok-ink: #1b5e20;
+      --hm-cms-error-bg: #ffebee;
+
+      /* Distintivos de estado de la lista de entradas. */
+      --hm-cms-badge-draft-bg: #fef3c7;
+      --hm-cms-badge-draft-ink: #92400e;
+      --hm-cms-badge-published-bg: #dcfce7;
+      --hm-cms-badge-published-ink: #166534;
+      --hm-cms-badge-dark-bg: #0f172a;
+      --hm-cms-badge-dark-ink: #dbeafe;
+    }
     [data-cms-entry] {
       cursor: crosshair;
       outline-offset: 4px;
     }
     [data-cms-entry]:hover {
-      outline: 2px solid #0065A9;
+      outline: 2px solid var(--hm-cms-primary);
       box-shadow: 0 0 0 4px rgba(0,101,169,0.2);
     }
     .hm-cms-shell {
@@ -39,9 +94,9 @@
       align-items: center;
       gap: 8px;
       padding: 8px;
-      background: #0F2433;
+      background: var(--hm-cms-dark);
       color: white;
-      border: 1px solid #D9E2EC;
+      border: 1px solid var(--hm-cms-line);
       border-radius: 0px;
       box-shadow: 0 16px 40px rgba(0,0,0,0.24);
     }
@@ -53,19 +108,19 @@
       min-height: 44px;
       min-width: 44px;
       font-weight: 700;
-      background: #0065A9;
+      background: var(--hm-cms-primary);
       color: #fff;
       cursor: pointer;
       transition: background-color 150ms ease;
     }
     .hm-cms-bar button:hover,
     .hm-cms-panel button:hover {
-      background: #004B7D;
+      background: var(--hm-cms-primary-dark);
     }
     /* H-03: estilos :focus-visible para navegacion por teclado (WCAG 2.2 SC 2.4.7) */
     .hm-cms-bar button:focus-visible,
     .hm-cms-panel button:focus-visible {
-      outline: 2px solid #00A6D6;
+      outline: 2px solid var(--hm-cms-accent);
       outline-offset: 2px;
     }
     .hm-cms-bar button.secondary,
@@ -80,12 +135,12 @@
     /* H-06: estilo destructivo consistente para botones de eliminacion */
     .hm-cms-bar button.destructive,
     .hm-cms-panel button.destructive {
-      background: #fee2e2;
-      color: #991b1b;
+      background: var(--hm-cms-danger-bg);
+      color: var(--hm-cms-danger-ink);
     }
     .hm-cms-bar button.destructive:hover,
     .hm-cms-panel button.destructive:hover {
-      background: #fecaca;
+      background: var(--hm-cms-danger-line);
     }
     /* La barra flotante tapa el final de la página: damos aire al contenido. */
     body.hm-cms-active {
@@ -98,9 +153,9 @@
       right: 0;
       width: min(420px, 100vw);
       height: 100dvh;
-      background: #F5F8FA;
-      color: #1F2933;
-      border-left: 1px solid #D9E2EC;
+      background: var(--hm-cms-alt);
+      color: var(--hm-cms-ink);
+      border-left: 1px solid var(--hm-cms-line);
       box-shadow: -20px 0 60px rgba(15,36,51,0.24);
       transform: translateX(104%);
       transition: transform 180ms ease;
@@ -112,7 +167,7 @@
     }
     .hm-cms-panel header {
       padding: 18px;
-      background: #0F2433;
+      background: var(--hm-cms-dark);
       color: white;
       display: flex;
       align-items: center;
@@ -135,25 +190,25 @@
       gap: 6px;
       font-size: 13px;
       font-weight: 700;
-      color: #1F2933;
+      color: var(--hm-cms-ink);
     }
     .hm-cms-panel input,
     .hm-cms-panel textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #D9E2EC;
+      border: 1px solid var(--hm-cms-line);
       border-radius: 0px;
       padding: 10px;
       font: inherit;
-      color: #1F2933;
+      color: var(--hm-cms-ink);
       background: white;
     }
     .hm-cms-panel input:focus-visible,
     .hm-cms-panel textarea:focus-visible,
     .hm-cms-panel select:focus-visible {
-      outline: 2px solid #0065A9;
+      outline: 2px solid var(--hm-cms-primary);
       outline-offset: 0;
-      border-color: #0065A9;
+      border-color: var(--hm-cms-primary);
       box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
     }
     .hm-cms-panel textarea {
@@ -161,11 +216,11 @@
       resize: vertical;
     }
     .hm-cms-error {
-      color: #C62828;
+      color: var(--hm-cms-error);
       font-size: 13px;
     }
     .hm-cms-muted {
-      color: #5B6770;
+      color: var(--hm-cms-muted);
       font-size: 12px;
       line-height: 1.5;
     }
@@ -178,7 +233,7 @@
     .hm-cms-field-key {
       font-weight: 400;
       font-size: 11px;
-      color: #5B6770;
+      color: var(--hm-cms-muted);
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     /* M-6: panel de administración (registro, respaldos, contraseña). */
@@ -191,17 +246,17 @@
       font-size: 14px;
       letter-spacing: 0.02em;
       text-transform: uppercase;
-      color: #0F2433;
-      border-bottom: 1px solid #D9E2EC;
+      color: var(--hm-cms-dark);
+      border-bottom: 1px solid var(--hm-cms-line);
       padding-bottom: 6px;
     }
     .hm-cms-admin h3:first-child {
       margin-top: 0;
     }
     .hm-cms-ok {
-      color: #1B5E20;
-      background: #E8F5E9;
-      border: 1px solid #A5D6A7;
+      color: var(--hm-cms-ok-ink);
+      background: var(--hm-cms-ok-bg);
+      border: 1px solid var(--hm-cms-ok-line);
       padding: 8px 10px;
       font-size: 13px;
       margin: 0;
@@ -212,8 +267,8 @@
       padding: 0;
       display: grid;
       gap: 1px;
-      background: #D9E2EC;
-      border: 1px solid #D9E2EC;
+      background: var(--hm-cms-line);
+      border: 1px solid var(--hm-cms-line);
       max-height: 320px;
       overflow-y: auto;
     }
@@ -229,7 +284,7 @@
     /* Los eventos de acceso se distinguen: son los que se revisan cuando se
        sospecha de un intento de entrada ajeno. */
     .hm-cms-admin-list li[data-security] {
-      border-left: 3px solid #00A6D6;
+      border-left: 3px solid var(--hm-cms-accent);
     }
     /* H-05: spinner para operaciones asincronas */
     @keyframes hm-cms-spin {
@@ -259,7 +314,7 @@
       display: grid;
       gap: 8px;
       padding: 10px;
-      border: 1px solid #D9E2EC;
+      border: 1px solid var(--hm-cms-line);
       border-radius: 0px;
       background: white;
     }
@@ -270,26 +325,26 @@
       gap: 8px;
       font-size: 13px;
       font-weight: 800;
-      color: #1F2933;
+      color: var(--hm-cms-ink);
     }
     .hm-cms-badge {
       display: inline-flex;
       align-items: center;
       border-radius: 0px;
       padding: 3px 8px;
-      background: #E6F2FA;
-      color: #004B7D;
+      background: var(--hm-cms-primary-light);
+      color: var(--hm-cms-primary-dark);
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
     }
     .hm-cms-badge.succeeded {
-      background: #e8f5e9;
-      color: #2E7D32;
+      background: var(--hm-cms-ok-bg);
+      color: var(--hm-cms-success);
     }
     .hm-cms-badge.failed {
-      background: #ffebee;
-      color: #C62828;
+      background: var(--hm-cms-error-bg);
+      color: var(--hm-cms-error);
     }
     .hm-cms-log {
       max-height: 150px;
@@ -297,8 +352,8 @@
       margin: 0;
       padding: 8px;
       border-radius: 0px;
-      background: #0f172a;
-      color: #dbeafe;
+      background: var(--hm-cms-badge-dark-bg);
+      color: var(--hm-cms-badge-dark-ink);
       font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       white-space: pre-wrap;
     }
@@ -306,7 +361,7 @@
       display: grid;
       gap: 8px;
       padding: 10px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       background: white;
     }
@@ -314,7 +369,7 @@
       width: 100%;
       max-height: 180px;
       object-fit: contain;
-      background: #e2e8f0;
+      background: var(--hm-cms-line-softer);
       border-radius: 0px;
     }
     .hm-cms-media-grid {
@@ -328,17 +383,17 @@
     .hm-cms-media-item {
       display: grid;
       gap: 6px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       padding: 6px;
       background: white;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
       text-align: left;
       cursor: pointer;
     }
     .hm-cms-media-item:hover,
     .hm-cms-media-item.selected {
-      border-color: #0065A9;
+      border-color: var(--hm-cms-primary);
       box-shadow: 0 0 0 3px rgba(0,101,169,0.16);
     }
     .hm-cms-media-item img {
@@ -346,14 +401,14 @@
       aspect-ratio: 4 / 3;
       object-fit: cover;
       border-radius: 0px;
-      background: #e2e8f0;
+      background: var(--hm-cms-line-softer);
     }
     .hm-cms-media-name {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 11px;
-      color: #475569;
+      color: var(--hm-cms-ink-softer);
     }
     .hm-cms-two {
       display: grid;
@@ -370,13 +425,13 @@
       justify-content: space-between;
       gap: 8px;
       padding: 8px 10px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       background: white;
     }
     .hm-cms-revision-item.current {
-      border-color: #0065A9;
-      background: #eff8ff;
+      border-color: var(--hm-cms-primary);
+      background: var(--hm-cms-info-bg);
     }
     .hm-cms-revision-info {
       display: grid;
@@ -385,11 +440,11 @@
     .hm-cms-revision-version {
       font-size: 12px;
       font-weight: 700;
-      color: #334155;
+      color: var(--hm-cms-ink-soft);
     }
     .hm-cms-revision-date {
       font-size: 11px;
-      color: #64748b;
+      color: var(--hm-cms-muted-soft);
     }
     .hm-cms-collection-list {
       display: grid;
@@ -401,12 +456,12 @@
       justify-content: space-between;
       gap: 8px;
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       background: white;
     }
     .hm-cms-collection-item:hover {
-      border-color: #0065A9;
+      border-color: var(--hm-cms-primary);
     }
     .hm-cms-collection-info {
       display: grid;
@@ -416,14 +471,14 @@
     .hm-cms-collection-title {
       font-size: 13px;
       font-weight: 700;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .hm-cms-collection-meta {
       font-size: 11px;
-      color: #64748b;
+      color: var(--hm-cms-muted-soft);
     }
     .hm-cms-collection-actions {
       display: flex;
@@ -438,7 +493,7 @@
       display: flex;
       gap: 4px;
       padding: 4px;
-      background: #e2e8f0;
+      background: var(--hm-cms-line-softer);
       border-radius: 0px;
       margin-bottom: 12px;
     }
@@ -452,11 +507,11 @@
       font-weight: 700;
       cursor: pointer;
       background: transparent;
-      color: #475569;
+      color: var(--hm-cms-ink-softer);
     }
     .hm-cms-tab.active {
       background: white;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     /* Sin este relevo de especificidad, la regla genérica
@@ -464,23 +519,23 @@
        inactivas se veían rellenas de azul y la activa blanca, al revés. */
     .hm-cms-panel .hm-cms-tab {
       background: transparent;
-      color: #475569;
+      color: var(--hm-cms-ink-softer);
       border: 0;
     }
     .hm-cms-panel .hm-cms-tab.active {
       background: white;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
     }
     /* Los botones secundarios del cuerpo claro del panel (Editar, Volver,
        Cancelar) necesitan fondo visible: el "secondary" blanco al 10% está
        pensado para el header oscuro y aquí desaparecía. */
     .hm-cms-panel main button.secondary {
       background: white;
-      color: #1f2933;
-      border: 1px solid #cbd5e1;
+      color: var(--hm-cms-ink);
+      border: 1px solid var(--hm-cms-line-soft);
     }
     .hm-cms-panel main button.secondary:hover {
-      background: #f1f5f9;
+      background: var(--hm-cms-surface-soft);
     }
     .hm-cms-entry-form {
       display: grid;
@@ -491,26 +546,26 @@
       gap: 5px;
       font-size: 13px;
       font-weight: 700;
-      color: #334155;
+      color: var(--hm-cms-ink-soft);
     }
     .hm-cms-entry-form input,
     .hm-cms-entry-form select,
     .hm-cms-entry-form textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       padding: 9px 10px;
       font: inherit;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
       background: white;
     }
     .hm-cms-entry-form textarea {
       min-height: 120px;
       resize: vertical;
     }
-    .hm-cms-badge.draft { background: #fef3c7; color: #92400e; }
-    .hm-cms-badge.published { background: #dcfce7; color: #166534; }
+    .hm-cms-badge.draft { background: var(--hm-cms-badge-draft-bg); color: var(--hm-cms-badge-draft-ink); }
+    .hm-cms-badge.published { background: var(--hm-cms-badge-published-bg); color: var(--hm-cms-badge-published-ink); }
     .hm-cms-gallery-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -523,19 +578,19 @@
       border-radius: 0px;
       border: 2px solid transparent;
       cursor: pointer;
-      background: #e2e8f0;
+      background: var(--hm-cms-line-softer);
     }
     .hm-cms-gallery-thumb img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .hm-cms-gallery-thumb:hover { border-color: #0065A9; }
+    .hm-cms-gallery-thumb:hover { border-color: var(--hm-cms-primary); }
     .hm-cms-gallery-thumb .hm-cms-gallery-featured {
       position: absolute;
       top: 3px;
       right: 3px;
-      background: #00A6D6;
+      background: var(--hm-cms-accent);
       color: white;
       font-size: 9px;
       font-weight: 800;
@@ -549,18 +604,18 @@
       justify-content: space-between;
       gap: 6px;
       padding: 8px 10px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--hm-cms-line-soft);
       border-radius: 0px;
       background: white;
       cursor: pointer;
       text-align: left;
       font: inherit;
       font-size: 13px;
-      color: #172331;
+      color: var(--hm-cms-dark-hover);
     }
-    .hm-cms-gallery-cat-btn:hover { border-color: #0065A9; }
+    .hm-cms-gallery-cat-btn:hover { border-color: var(--hm-cms-primary); }
     .hm-cms-gallery-cat-name { font-weight: 700; }
-    .hm-cms-gallery-cat-slug { font-size: 11px; color: #64748b; font-family: ui-monospace, monospace; }
+    .hm-cms-gallery-cat-slug { font-size: 11px; color: var(--hm-cms-muted-soft); font-family: ui-monospace, monospace; }
     @media (max-width: 640px) {
       .hm-cms-bar {
         left: 8px;
@@ -578,7 +633,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #f59e0b;
+      background: var(--hm-cms-warn-ink);
       flex-shrink: 0;
       opacity: 0;
       transition: opacity 200ms ease;
@@ -975,14 +1030,14 @@
               .map(
                 (item, i) => `
               <div style="display:flex;gap:6px;align-items:center">
-                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
+                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:0px;padding:8px 10px;font:inherit" />
                 <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" style="font-weight:700">×</button>
               </div>
             `
               )
               .join('')}
           </div>
-          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
+          <button type="button" data-action="add-list-item" style="border:1px dashed var(--hm-cms-line-soft);background:white;color:var(--hm-cms-ink-soft);border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
           <input name="${escapeHtml(inputName)}" type="hidden" data-field-type="list" value="${escapeHtml(JSON.stringify(items))}" />
         </div>
       `;
@@ -1086,7 +1141,7 @@
     // C-2: un asset cuyo archivo no está en disco se marca en vez de
     // renderizarse como una miniatura rota sin explicación.
     const cuerpo = item.missing
-      ? `<span class="hm-cms-media-name" style="display:grid;place-items:center;aspect-ratio:4/3;background:#f1f5f9;color:#991b1b;text-align:center">⚠ archivo<br />no encontrado</span>`
+      ? `<span class="hm-cms-media-name" style="display:grid;place-items:center;aspect-ratio:4/3;background:var(--hm-cms-surface-soft);color:var(--hm-cms-danger-ink);text-align:center">⚠ archivo<br />no encontrado</span>`
       : `<img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />`;
     return `
       <button
@@ -1256,7 +1311,7 @@
         : '';
 
     return `
-      <div class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:10px 12px;margin-bottom:10px">
+      <div class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:10px 12px;margin-bottom:10px">
         ${lista(
           'No se publicaron (corrige el campo y vuelve a exportar):',
           omitidas.map(
@@ -1283,7 +1338,7 @@
     openPanel(`
       <section class="hm-cms-job-list">
         <p class="hm-cms-muted">Historial de exportaciones y validaciones.</p>
-        <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:0px;padding:8px 10px">
+        <p class="hm-cms-muted" style="background:var(--hm-cms-info-bg);border:1px solid var(--hm-cms-info-line);border-radius:0px;padding:8px 10px">
           ℹ️ «Publicar» exporta el contenido y compila el sitio. Cuando el CMS corre en el mismo servidor que el sitio, el cambio queda en línea al terminar; si editas en local, falta subir el resultado.
         </p>
         ${items
@@ -1728,17 +1783,17 @@
         <div style="display:grid;gap:12px">
           <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-            <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
-              <strong style="display:block;font-size:24px;color:#0065A9">${cats.length}</strong>
-              <span style="font-size:12px;color:#475569">Categorías</span>
+            <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${cats.length}</strong>
+              <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Categorías</span>
             </button>
-            <button type="button" data-action="gallery-albums" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
-              <strong style="display:block;font-size:24px;color:#0065A9">${albums.length}</strong>
-              <span style="font-size:12px;color:#475569">Álbumes</span>
+            <button type="button" data-action="gallery-albums" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${albums.length}</strong>
+              <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Álbumes</span>
             </button>
-            <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid #cbd5e1;border-radius:0px;background:white;cursor:pointer;text-align:center">
-              <strong style="display:block;font-size:24px;color:#0065A9">${items.length}</strong>
-              <span style="font-size:12px;color:#475569">Imágenes</span>
+            <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
+              <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${items.length}</strong>
+              <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Imágenes</span>
             </button>
           </div>
           <button type="button" data-action="gallery-cats">Gestionar categorías</button>
@@ -1762,7 +1817,7 @@
       openPanel(`
         <div style="display:grid;gap:8px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:13px;color:#64748b">${cats.length} categorías</span>
+            <span style="font-size:13px;color:var(--hm-cms-muted-soft)">${cats.length} categorías</span>
             <button type="button" data-action="gallery-new-cat">+ Nueva categoría</button>
           </div>
           <div style="display:grid;gap:6px">
@@ -1849,7 +1904,7 @@
       openPanel(`
         <div style="display:grid;gap:8px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:13px;color:#64748b">${albums.length} álbumes</span>
+            <span style="font-size:13px;color:var(--hm-cms-muted-soft)">${albums.length} álbumes</span>
             <button type="button" data-action="gallery-new-album">+ Nuevo álbum</button>
           </div>
           <div style="display:grid;gap:6px">
@@ -1971,7 +2026,7 @@
       `
       <div style="display:grid;gap:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:13px;color:#64748b">
+          <span style="font-size:13px;color:var(--hm-cms-muted-soft)">
             ${
               filtrados.length === galleryItemsCache.length
                 ? `${galleryItemsCache.length} imágenes`
@@ -2083,7 +2138,7 @@
       <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
         <input name="mediaId" type="hidden" value="${escapeHtml(item.mediaId || '')}" />
         <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt=""
-          style="width:100%;max-height:180px;object-fit:contain;background:#e2e8f0;border-radius:0px;${item.mediaPath ? '' : 'display:none'}" />
+          style="width:100%;max-height:180px;object-fit:contain;background:var(--hm-cms-line-softer);border-radius:0px;${item.mediaPath ? '' : 'display:none'}" />
         <label>Seleccionar imagen
           <input name="mediaSearch" type="search" placeholder="Buscar en la biblioteca de medios..." data-gallery-media-search />
         </label>
@@ -2279,11 +2334,11 @@
             <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>${escapeHtml(draft.label)}</option>
           </select>
         </label>
-        <p class="hm-cms-muted" data-draft-warning hidden style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:8px 10px">${escapeHtml(draft.warning)}</p>
+        <p class="hm-cms-muted" data-draft-warning hidden style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">${escapeHtml(draft.warning)}</p>
         ${
           !entryId && (kind === 'servicio' || kind === 'proyecto')
             ? `
-          <p class="hm-cms-muted" style="background:#fffbeb;border:1px solid #fde68a;border-radius:0px;padding:8px 10px">
+          <p class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">
             Se crearán campos obligatorios con valores de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Edítalos luego haciendo clic en los elementos de la página antes de exportar.
           </p>`
             : ''
@@ -2665,8 +2720,8 @@
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;gap:6px;align-items:center';
         row.innerHTML = `
-        <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
-        <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:#fee2e2;color:#991b1b;border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+        <input type="text" data-list-item="${idx}" value="" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:0px;padding:8px 10px;font:inherit" />
+        <button type="button" data-action="remove-list-item" data-index="${idx}" style="border:0;background:var(--hm-cms-danger-bg);color:var(--hm-cms-danger-ink);border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
       `;
         container.appendChild(row);
         row.querySelector('input')?.focus();

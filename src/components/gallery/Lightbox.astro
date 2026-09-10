@@ -28,9 +28,15 @@
   aria-label="Visor de imágenes de galería"
   tabindex="-1"
 >
-  {/* Backdrop */}
+  {
+    /* Backdrop. B-3: este componente era el único del sitio público que pintaba
+      con la paleta por defecto de Tailwind (`neutral-*`) en vez de la del
+      proyecto, así que un cambio de marca lo habría dejado con los grises
+      viejos. El fondo usa el azul oscuro de `background-strong`, y las chapas
+      de los botones el `white/10` que ya usaba el botón de cerrar. */
+  }
   <div
-    class="absolute inset-0 bg-neutral-950/95 backdrop-blur-sm"
+    class="absolute inset-0 bg-background-strong/95 backdrop-blur-sm"
     data-lb-backdrop
     aria-hidden="true"
   >
@@ -41,7 +47,7 @@
     {/* Top bar */}
     <div class="flex justify-between items-center px-4 md:px-6 py-3 shrink-0">
       <div
-        class="text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-400 font-mono"
+        class="text-xs md:text-sm font-semibold uppercase tracking-wider text-white/70 font-mono"
         data-lb-counter
       >
       </div>
@@ -72,7 +78,7 @@
       {/* Prev */}
       <button
         type="button"
-        class="absolute left-2 md:left-6 z-20 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        class="absolute left-2 md:left-6 z-20 p-3 bg-white/10 hover:bg-white/20 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-prev
         aria-label="Imagen anterior (←)"
       >
@@ -115,7 +121,7 @@
       {/* Next */}
       <button
         type="button"
-        class="absolute right-2 md:right-6 z-20 p-3 bg-neutral-900/50 hover:bg-neutral-800/80 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        class="absolute right-2 md:right-6 z-20 p-3 bg-white/10 hover:bg-white/20 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-next
         aria-label="Siguiente imagen (→)"
       >

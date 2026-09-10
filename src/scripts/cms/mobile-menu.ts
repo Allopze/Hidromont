@@ -48,6 +48,15 @@ export function createMobileMenuController({
   };
 }
 
+/*
+ * B-3: los colores salen de las variables que declara la hoja del overlay
+ * (`--hm-cms-*`), que a su vez leen los tokens del sitio. Este archivo se
+ * inyecta siempre después, así que las variables ya existen en :root.
+ *
+ * Las sombras siguen en `rgba(15,36,51,…)`: es el mismo azul oscuro, pero una
+ * variable de color no se puede interpolar dentro de rgba() sin cambiar el
+ * formato de los tokens del sitio, que es un cambio de otro alcance.
+ */
 export const mobileMenuStyles = `
   .hm-cms-mobile-launcher,
   .hm-cms-mobile-sheet {
@@ -68,9 +77,9 @@ export const mobileMenuStyles = `
       min-width: 48px;
       min-height: 48px;
       padding: 8px 12px;
-      border: 1px solid #d9e2ec;
+      border: 1px solid var(--hm-cms-line);
       border-radius: 0;
-      background: #0f2433;
+      background: var(--hm-cms-dark);
       color: #fff;
       box-shadow: 0 12px 32px rgba(15, 36, 51, 0.28);
       font: 800 14px/1 Inter, system-ui, sans-serif;
@@ -86,7 +95,7 @@ export const mobileMenuStyles = `
     }
     .hm-cms-mobile-launcher:focus-visible,
     .hm-cms-mobile-sheet button:focus-visible {
-      outline: 3px solid #00a6d6;
+      outline: 3px solid var(--hm-cms-accent);
       outline-offset: 3px;
     }
     .hm-cms-mobile-sheet {
@@ -99,9 +108,9 @@ export const mobileMenuStyles = `
       max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
       overflow-y: auto;
       padding: 16px;
-      border: 1px solid #d9e2ec;
+      border: 1px solid var(--hm-cms-line);
       border-radius: 0;
-      background: #0f2433;
+      background: var(--hm-cms-dark);
       color: #fff;
       box-shadow: 0 20px 48px rgba(15, 36, 51, 0.36);
     }
@@ -125,7 +134,7 @@ export const mobileMenuStyles = `
       border: 1px solid rgba(255, 255, 255, 0.24);
       border-radius: 0;
       padding: 10px 12px;
-      background: #0065a9;
+      background: var(--hm-cms-primary);
       color: #fff;
       font: 700 14px/1.2 Inter, system-ui, sans-serif;
       text-align: left;
