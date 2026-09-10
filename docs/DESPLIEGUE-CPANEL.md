@@ -147,7 +147,8 @@ Las dos subidas se pueden automatizar:
 
 ```bash
 npm run pack:deploy
-npm run deploy:ftp -- --dry    # dice qué haría, sin conectarse
+npm run deploy:ftp -- --dry       # dice qué haría, sin conectarse
+npm run deploy:ftp -- --probar    # conecta y lista, pero no sube nada
 npm run deploy:ftp             # sube el paquete de aplicación
 ```
 
@@ -159,6 +160,12 @@ Detalles que importan:
 
 - **Usa FTPS** (`FTP_PROTOCOL=ftps`, el valor por defecto). Con `ftp` a secas
   la contraseña y los archivos viajan legibles por la red; el script avisa.
+- **En `FTP_HOST` va el nombre del servidor, no `ftp.tudominio.cl`.** El FTP de
+  un hosting compartido presenta el certificado TLS del proveedor, así que con
+  el nombre del dominio la verificación falla. Para esta cuenta es
+  `int12.cpanelhost.cl`; en general está en cPanel → Cuentas FTP → Configurar
+  cliente FTP. Si te equivocas, el script detecta el fallo de certificado y te
+  dice qué nombre poner, resolviéndolo por DNS inverso.
 - **Crea una cuenta FTP dedicada** en cPanel, limitada al directorio de la
   aplicación, en vez de usar la cuenta principal.
 - La contraseña nunca llega a la línea de órdenes: viaja a `curl` por su
