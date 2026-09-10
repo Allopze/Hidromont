@@ -97,7 +97,10 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               )
             }
           </EditableText>
-          <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
+          <!-- A tres columnas, «2.000 m²» y «5 Puentes» no caben en 320 px:
+               la rejilla pedía 300 px dentro de un contenedor de 272 y
+               desbordaba la página. Se apilan hasta 360 px. -->
+          <div class="grid grid-cols-1 min-[360px]:grid-cols-3 gap-4 pt-4 border-t border-white/10">
             <div>
               <p class="font-mono font-bold text-accent text-xl">2.000 m²</p>
               <p class="text-xs text-white/70">Taller industrial</p>

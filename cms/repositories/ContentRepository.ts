@@ -218,6 +218,46 @@ export class ContentRepository {
     return true;
   }
 
+  /**
+   * M-4: inserta los campos del seed que la entrada todavía no tiene, sin
+   * tocar los que ya existen.
+   *
+   * `insertEntryIfMissing` opera a nivel de ENTRADA: si la entrada existe,
+   * sale antes de mirar los campos. Así que añadir una clave nueva al seed
+   * no llegaba nunca a una base viva, y el único camino alternativo
+   * (`importInitialContent`) usa upsert y sobreescribe todo lo editado desde
+   * el panel. Ese hueco dejó 11 claves que el frontend pedía y que solo
+   * existían como fallback en el código: parecían editables y no lo eran.
+   *
+   * `INSERT OR IGNORE` sobre la PK (entry_id, key) hace el trabajo: lo que ya
+   * está no se toca.
+   *
+   * @returns cuántos campos se insertaron.
+   */
+  insertMissingFields(entryId: string, fields: CmsField[], now: string): number {
+    if (!this.findEntryRow(entryId)) return 0;
+
+    const insert = this.db.prepare(
+      `INSERT OR IGNORE INTO content_fields (entry_id, key, type, value_json, source_ref_json, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    let inserted = 0;
+    this.db.transaction(() => {
+      for (const field of fields) {
+        const result = insert.run(
+          entryId,
+          field.key,
+          field.type,
+          JSON.stringify(field.value),
+          field.sourceRef ? JSON.stringify(field.sourceRef) : null,
+          now
+        );
+        inserted += result.changes;
+      }
+    })();
+    return inserted;
+  }
+
   listEntries(kind?: string, limit = 100, offset = 0): { entries: CmsEntry[]; total: number } {
     const total: number = kind
       ? (

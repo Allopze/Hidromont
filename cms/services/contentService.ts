@@ -73,11 +73,21 @@ export class ContentService {
     return { imported: entries.length };
   }
 
-  /** Import only entries whose IDs do not yet exist in the DB (safe for live DBs). */
-  importMissingEntries(): { inserted: number } {
+  /**
+   * Importa lo que falte del seed sin pisar nada editado.
+   *
+   * Dos niveles, porque hasta ahora solo había uno: las ENTRADAS que no
+   * existen se crean, y en las que ya existen se insertan los CAMPOS nuevos
+   * (M-4). Sin lo segundo, añadir una clave al seed no llegaba jamás a una
+   * base viva y el frontend se quedaba pidiendo algo que nadie podía editar.
+   * `insertMissingFields` usa INSERT OR IGNORE, así que un campo ya editado
+   * desde el panel no se toca.
+   */
+  importMissingEntries(): { inserted: number; fieldsInserted: number } {
     const now = new Date().toISOString();
     const entries = getInitialEntries();
     let inserted = 0;
+    let fieldsInserted = 0;
 
     for (const entry of entries) {
       const created = this.contentRepository.insertEntryIfMissing({
@@ -90,10 +100,18 @@ export class ContentService {
         fields: Object.values(entry.fields),
         now,
       });
-      if (created) inserted++;
+      if (created) {
+        inserted++;
+        continue;
+      }
+      fieldsInserted += this.contentRepository.insertMissingFields(
+        entry.id,
+        Object.values(entry.fields),
+        now
+      );
     }
 
-    return { inserted };
+    return { inserted, fieldsInserted };
   }
 
   createEntry(input: {

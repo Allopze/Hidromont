@@ -1,4 +1,9 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { CmsEntry } from '../types/cms';
+
+const rootDirForSeed = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 type EntrySeed = Omit<CmsEntry, 'version' | 'fields'> & {
   fields: Record<string, { type: CmsEntry['fields'][string]['type']; value: unknown }>;
@@ -269,27 +274,39 @@ const projectGalleryImageSeeds: Record<string, Array<{ src: string; alt: string 
   ],
 };
 
-const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = [
-  { key: 'acciona', nombre: 'Acciona', logo: '/logos-clientes/acciona.svg' },
-  { key: 'aes-andes', nombre: 'AES Andes', logo: '/logos-clientes/aes-andes.png' },
-  { key: 'arauco', nombre: 'Arauco', logo: '/logos-clientes/arauco.svg' },
-  { key: 'besalco', nombre: 'Besalco', logo: '/logos-clientes/besalco.webp' },
-  { key: 'colbun', nombre: 'Colbún', logo: '/logos-clientes/colbun.svg' },
-  { key: 'conpax', nombre: 'Conpax', logo: '/logos-clientes/conpax.png' },
-  { key: 'elecnor', nombre: 'Elecnor', logo: '/logos-clientes/elecnor.svg' },
-  {
-    key: 'electrica-puntilla',
-    nombre: 'Eléctrica Puntilla',
-    logo: '/logos-clientes/electrica-puntilla.png',
-  },
-  { key: 'endesa', nombre: 'Endesa', logo: '/logos-clientes/endesa.png' },
-  { key: 'engie', nombre: 'Engie', logo: '/logos-clientes/engie.png' },
-  { key: 'ferrovial', nombre: 'Ferrovial', logo: '/logos-clientes/ferrovial.png' },
-  { key: 'gpe', nombre: 'GPE', logo: '/logos-clientes/gpe.png' },
-  { key: 'iberdrola', nombre: 'Iberdrola', logo: '/logos-clientes/iberdrola.png' },
-  { key: 'mop-doh', nombre: 'M.O.P. / D.O.H.', logo: '/logos-clientes/mop-doh.jpeg' },
-  { key: 'pacific-hydro', nombre: 'Pacific Hydro', logo: '/logos-clientes/pacific-hydro.png' },
-];
+/**
+ * M-4: derivado de `src/content/clientes/clientes.json`, que es la fuente
+ * canónica según el propio docblock de `src/data/cliente-logos.ts`.
+ *
+ * Antes eran 15 entradas escritas a mano frente a los 24 clientes reales, así
+ * que 9 logos no tenían clave en el CMS: se veían bien —caen al path de la
+ * colección— pero no eran editables, y el sitio avisaba de la clave faltante
+ * en cada arranque de desarrollo. Derivarlo elimina la duplicación y cubre a
+ * todos, incluidos los que se añadan después.
+ *
+ * El slugify debe coincidir con `logoKeyFor` de src/data/cliente-logos.ts:
+ * es la clave con la que el frontend pide el override.
+ */
+function logoKeyFor(nombre: string): string {
+  return nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+const clientesCollection = JSON.parse(
+  fs.readFileSync(path.join(rootDirForSeed, 'src', 'content', 'clientes', 'clientes.json'), 'utf8')
+) as { items: Array<{ nombre: string; logo?: string }> };
+
+const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = clientesCollection.items
+  .filter((cliente) => Boolean(cliente.logo))
+  .map((cliente) => ({
+    key: logoKeyFor(cliente.nombre),
+    nombre: cliente.nombre,
+    logo: cliente.logo as string,
+  }));
 
 const imageEntries: EntrySeed[] = [
   ...serviceImageSeeds.map((image) => ({
@@ -614,6 +631,30 @@ export const defaultContentEntries: EntrySeed[] = [
     },
   },
   {
+    // M-4: esta entrada no existía en absoluto, así que las cinco claves del
+    // banner de /servicios eran texto del código disfrazado de editable.
+    id: 'servicios.index.banner',
+    kind: 'page',
+    slug: '/servicios',
+    locale: 'es-CL',
+    title: 'Servicios — banner de capacidad industrial',
+    status: 'published',
+    fields: {
+      eyebrow: { type: 'text', value: 'Capacidad Industrial' },
+      title: { type: 'text', value: 'Taller y medios de fabricación' },
+      subtitle: {
+        type: 'textarea',
+        value:
+          'En Los Ángeles contamos con terreno para acopio y premontaje, además de talleres de calderería, mecanizado y pintura industrial.',
+      },
+      image: { type: 'image', value: '/fotos/curadas/fabricacion-tuberias-taller.webp' },
+      imageAlt: {
+        type: 'text',
+        value: 'Proceso de fabricacion y caldereria hidromecanica en taller',
+      },
+    },
+  },
+  {
     id: 'page.galeria',
     kind: 'page',
     slug: '/galeria',
@@ -629,6 +670,17 @@ export const defaultContentEntries: EntrySeed[] = [
       },
       image: { type: 'image', value: '' },
       imageAlt: { type: 'text', value: 'Galería de proyectos Hidromont Chile' },
+      // M-4: el frontend ya pedía estas tres claves y no existían, así que
+      // el texto vivía solo en el fallback del código y no era editable.
+      searchPlaceholder: { type: 'text', value: 'Buscar proyecto...' },
+      noResults: {
+        type: 'text',
+        value: 'No se encontraron fotos coincidentes con tu búsqueda.',
+      },
+      emptyState: {
+        type: 'text',
+        value: 'Próximamente se añadirán proyectos a esta galería.',
+      },
     },
   },
   {
@@ -713,6 +765,18 @@ export const defaultContentEntries: EntrySeed[] = [
       genericRequiredError: { type: 'text', value: 'Campo requerido.' },
       genericInvalidError: { type: 'text', value: 'Valor inválido.' },
       genericTooShortError: { type: 'text', value: 'Valor demasiado corto.' },
+      // M-4: los mensajes de resultado del envío. El frontend ya los pedía y
+      // no existían en el export, así que no eran editables.
+      successTitle: { type: 'text', value: '¡Mensaje enviado!' },
+      successBody: {
+        type: 'textarea',
+        value: 'Hemos recibido su consulta. Le contactaremos después de revisarla.',
+      },
+      errorBody: {
+        type: 'textarea',
+        value:
+          'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.',
+      },
     },
   },
   {

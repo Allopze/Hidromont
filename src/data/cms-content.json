@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T16:17:55.952720+00:00",
+  "updatedAt": "2026-09-10T02:04:52.552Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -171,6 +171,10 @@
           "type": "image",
           "value": "/logos-clientes/aes-andes.png"
         },
+        "logo-alstom": {
+          "type": "image",
+          "value": "/logos-clientes/alstom.svg"
+        },
         "logo-arauco": {
           "type": "image",
           "value": "/logos-clientes/arauco.svg"
@@ -183,9 +187,21 @@
           "type": "image",
           "value": "/logos-clientes/colbun.png"
         },
+        "logo-comercial-creo-s-a": {
+          "type": "image",
+          "value": "/logos-clientes/comercial-creo.svg"
+        },
         "logo-conpax": {
           "type": "image",
           "value": "/logos-clientes/conpax.png"
+        },
+        "logo-constructora-renaico-spa": {
+          "type": "image",
+          "value": "/logos-clientes/constructora-renaico.svg"
+        },
+        "logo-dragado": {
+          "type": "image",
+          "value": "/logos-clientes/dragado.png"
         },
         "logo-elecnor": {
           "type": "image",
@@ -215,6 +231,10 @@
           "type": "image",
           "value": "/logos-clientes/gas-natural-fenosa.png"
         },
+        "logo-gasco": {
+          "type": "image",
+          "value": "/logos-clientes/gasco.png"
+        },
         "logo-gpe": {
           "type": "image",
           "value": "/logos-clientes/gpe.png"
@@ -222,6 +242,14 @@
         "logo-iberdrola": {
           "type": "image",
           "value": "/logos-clientes/iberdrola.png"
+        },
+        "logo-innergex": {
+          "type": "image",
+          "value": "/logos-clientes/innergex.svg"
+        },
+        "logo-m-o-p-d-o-h": {
+          "type": "image",
+          "value": "/logos-clientes/mop-doh.jpeg"
         },
         "logo-mop-doh": {
           "type": "image",
@@ -239,6 +267,14 @@
           "type": "image",
           "value": "/logos-clientes/norvento.png"
         },
+        "logo-nyrstar-el-toqui": {
+          "type": "image",
+          "value": "/logos-clientes/nyrstar-el-toqui.png"
+        },
+        "logo-ohl": {
+          "type": "image",
+          "value": "/logos-clientes/ohl.svg"
+        },
         "logo-pacific-hydro": {
           "type": "image",
           "value": "/logos-clientes/pacific-hydro.png"
@@ -246,6 +282,14 @@
         "logo-plenium-partners": {
           "type": "image",
           "value": "/logos-clientes/plenium-partners.png"
+        },
+        "logo-potencia": {
+          "type": "image",
+          "value": "/logos-clientes/potencia.png"
+        },
+        "logo-sociedad-concesionaria-ruta-nahuelbuta": {
+          "type": "image",
+          "value": "/logos-clientes/ruta-nahuelbuta.jpg"
         },
         "logo-viesgo": {
           "type": "image",
@@ -316,6 +360,10 @@
         "emailRequiredError": {
           "type": "text",
           "value": "Por favor ingrese su correo electrónico."
+        },
+        "errorBody": {
+          "type": "textarea",
+          "value": "Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente."
         },
         "fromName": {
           "type": "text",
@@ -400,6 +448,14 @@
         "submitLabel": {
           "type": "text",
           "value": "Enviar consulta"
+        },
+        "successBody": {
+          "type": "textarea",
+          "value": "Hemos recibido su consulta. Le contactaremos después de revisarla."
+        },
+        "successTitle": {
+          "type": "text",
+          "value": "¡Mensaje enviado!"
         }
       }
     },
@@ -2126,6 +2182,10 @@
       "title": "Galería",
       "slug": "/galeria",
       "fields": {
+        "emptyState": {
+          "type": "text",
+          "value": "Próximamente se añadirán proyectos a esta galería."
+        },
         "eyebrow": {
           "type": "text",
           "value": "Nuestro trabajo"
@@ -2137,6 +2197,14 @@
         "imageAlt": {
           "type": "text",
           "value": "Galería de proyectos Hidromont Chile"
+        },
+        "noResults": {
+          "type": "text",
+          "value": "No se encontraron fotos coincidentes con tu búsqueda."
+        },
+        "searchPlaceholder": {
+          "type": "text",
+          "value": "Buscar proyecto..."
         },
         "subtitle": {
           "type": "textarea",
@@ -3217,6 +3285,32 @@
         "imageWidth": {
           "type": "number",
           "value": 1448
+        }
+      }
+    },
+    "servicios.index.banner": {
+      "title": "Servicios — banner de capacidad industrial",
+      "slug": "/servicios",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Capacidad Industrial"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Proceso de fabricacion y caldereria hidromecanica en taller"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "En Los Ángeles contamos con terreno para acopio y premontaje, además de talleres de calderería, mecanizado y pintura industrial."
+        },
+        "title": {
+          "type": "text",
+          "value": "Taller y medios de fabricación"
         }
       }
     },

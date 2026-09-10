@@ -71,10 +71,24 @@ for (const slug of ['ch-besaya', 'ch-doiras', 'ch-queltehues']) {
   });
 }
 
-for (const width of [390, 768, 1440]) {
+// 320 px es el móvil pequeño real (iPhone SE de 1.ª gen y equivalentes
+// Android), y es donde aparecían los desbordes que 390 no detecta: la
+// rejilla de tres columnas del banner de /servicios pedía 300 px dentro de
+// un contenedor de 272.
+for (const width of [320, 390, 768, 1440]) {
   test(`public pages have no horizontal overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['/', '/servicios', '/proyectos', '/galeria', '/contacto', '/clientes']) {
+    for (const path of [
+      '/',
+      '/servicios',
+      '/proyectos',
+      '/galeria',
+      '/contacto',
+      '/clientes',
+      '/empresa',
+      '/servicios/compuertas',
+      '/proyectos/ch-los-condores',
+    ]) {
       await page.goto(path);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth

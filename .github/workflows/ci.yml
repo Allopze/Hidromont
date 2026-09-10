@@ -48,7 +48,9 @@ jobs:
       - name: Unit tests (vitest)
         run: npm test
 
-      - name: Build gate — dist/ must not contain CMS overlay (H1)
+      # Perfil público: PUBLIC_ENABLE_CMS=0 a nivel de job, así que aquí el
+      # gate exige que el overlay no aparezca por ningún lado.
+      - name: Build gate — perfil público (sin overlay)
         run: npx playwright test --project=chromium e2e/build-gate.spec.ts
 
       - name: Upload dist artifact
@@ -118,8 +120,20 @@ jobs:
           echo "--- preview.log ---"; cat preview.log || true
           exit 1
 
+      # Los cuatro archivos e2e, no solo uno. `accessibility.spec.ts` y
+      # `public-responsive.spec.ts` existían desde hacía tiempo y no se
+      # ejecutaban nunca, así que no protegían de nada: el desborde a 320 px
+      # y las regresiones de accesibilidad pasaban el gate sin que nadie
+      # mirara. `csp.spec.ts` necesita el servidor Node sirviendo dist/, que
+      # este job ya levanta, porque el dev server no aplica cabeceras.
       - name: Run E2E tests
-        run: npx playwright test --project=chromium e2e/cms-overlay.spec.ts
+        run: npx playwright test --project=chromium
+
+      # Verifica el gate también en el perfil con overlay, que es el que se
+      # desplegará en el servidor: aquí el build SÍ lleva el CMS y lo que se
+      # comprueba es que siga inerte y no arrastre credenciales.
+      - name: Build gate — perfil con CMS
+        run: npx playwright test --project=chromium e2e/build-gate.spec.ts
 
       # Sin esto, un e2e rojo solo deja el assert: no se ve qué respondió el CMS
       # ni qué había en pantalla, y el fallo se vuelve irreproducible en local.
