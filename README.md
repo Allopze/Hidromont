@@ -183,6 +183,8 @@ contenido, ejecuta `npm run build` y el `dist/` regenerado es el mismo que el
 proceso sirve**, así que el cambio queda en línea al terminar. No hay paso
 manual de subida.
 
+**Guía paso a paso: [docs/DESPLIEGUE-CPANEL.md](docs/DESPLIEGUE-CPANEL.md)** — qué preguntar al proveedor, cómo migrar los 2,2 GB de imágenes, qué directorios deben sobrevivir a un redespliegue y qué hacer cuando algo falla.
+
 ### Antes del primer despliegue
 
 ```bash
