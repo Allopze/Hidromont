@@ -325,3 +325,123 @@ describe('ExportService — slugs con caracteres especiales (A1-005)', () => {
     ).toBe(true);
   });
 });
+
+/**
+ * A-5 — El export debe ser idempotente.
+ *
+ * Un `POST /api/cms/publish` sobre un árbol limpio producía
+ * `15 files changed, 246 insertions(+), 223 deletions(-)` sin haber editado
+ * nada: los dos JSON llevaban `new Date()`, y el frontmatter se reordenaba
+ * porque su orden lo decidía el `ORDER BY key` del repositorio en vez del
+ * exportador. El ruido enterraba los cambios de verdad en el diff.
+ */
+describe('ExportService — idempotencia (A-5)', () => {
+  let db: Database.Database;
+  let tmpRoot: string;
+  let exportService: ExportService;
+
+  function snapshotTree(dir: string): Map<string, string> {
+    const out = new Map<string, string>();
+    const walk = (current: string) => {
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const full = path.join(current, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else out.set(path.relative(dir, full), fs.readFileSync(full, 'utf-8'));
+      }
+    };
+    walk(dir);
+    return out;
+  }
+
+  beforeEach(() => {
+    db = new Database(':memory:');
+    db.pragma('foreign_keys = ON');
+    db.exec(SCHEMA_SQL);
+
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-export-idem-'));
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'data'), { recursive: true });
+    fs.mkdirSync(path.join(tmpRoot, 'src', 'content', 'proyectos'), { recursive: true });
+
+    const repo = new ContentRepository(db);
+    const now = new Date().toISOString();
+
+    // Se siembra un caso que ejercita las tres causas observadas: claves en
+    // orden no alfabético, un valor que dispara el entrecomillado de js-yaml
+    // y un texto largo con acentos que fuerza el plegado en bloque `>-`.
+    repo.upsertEntry({
+      id: 'proyectos.idempotente',
+      kind: 'proyecto',
+      slug: 'idempotente',
+      locale: 'es-CL',
+      title: 'Obra idempotente',
+      status: 'published',
+      now,
+      fields: [
+        { key: 'nombre', type: 'text', value: 'Obra idempotente' },
+        { key: 'longitud', type: 'text', value: '1.200 m, incluidos 132 m en pique' },
+        {
+          key: 'alcance',
+          type: 'textarea',
+          value:
+            'Reparación y sustitución de tuberías forzadas Ø 1.000 y Ø 700. Ingeniería, ' +
+            'suministro, fabricación y montaje para la reparación de tramos existentes.',
+        },
+        { key: 'categoria', type: 'text', value: 'tuberias' },
+        { key: 'tipo', type: 'text', value: 'banco' },
+        { key: 'orden', type: 'number', value: 25 },
+      ],
+    });
+    repo.upsertEntry({
+      id: 'home.hero',
+      kind: 'page',
+      slug: '/',
+      locale: 'es-CL',
+      title: 'Hero',
+      status: 'published',
+      now,
+      fields: [{ key: 'title', type: 'text', value: 'Título' }],
+    });
+
+    exportService = new ExportService(repo, tmpRoot);
+  });
+
+  afterEach(() => {
+    db.close();
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  });
+
+  it('una segunda exportación no cambia ningún byte', async () => {
+    await exportService.exportContent();
+    const primera = snapshotTree(tmpRoot);
+    expect(primera.size).toBeGreaterThan(0);
+
+    await exportService.exportContent();
+    const segunda = snapshotTree(tmpRoot);
+
+    const distintos = [...segunda.keys()].filter((f) => segunda.get(f) !== primera.get(f));
+    expect(distintos).toEqual([]);
+  });
+
+  it('el frontmatter sale en orden canónico, no en el que llegó', async () => {
+    await exportService.exportContent();
+    const md = fs.readFileSync(
+      path.join(tmpRoot, 'src', 'content', 'proyectos', 'idempotente.md'),
+      'utf-8'
+    );
+    const claves = [...md.matchAll(/^([a-z]+):/gm)].map((m) => m[1]);
+    expect(claves).toEqual([...claves].sort());
+  });
+
+  it('un campo editado llega al .md exportado', async () => {
+    await exportService.exportContent();
+    const repo = new ContentRepository(db);
+    repo.updateField('proyectos.idempotente', 'nombre', 'Nombre Editado', new Date().toISOString());
+    await exportService.exportContent();
+
+    const md = fs.readFileSync(
+      path.join(tmpRoot, 'src', 'content', 'proyectos', 'idempotente.md'),
+      'utf-8'
+    );
+    expect(md).toContain('nombre: Nombre Editado');
+  });
+});

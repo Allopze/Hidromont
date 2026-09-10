@@ -89,6 +89,72 @@ function assertNoSilentGalleryShrink(target: string, nextCount: number): void {
   );
 }
 
+/**
+ * A-5: marca de tiempo derivada del contenido para que el export sea
+ * idempotente. Las cadenas ISO se ordenan lexicográficamente, así que un
+ * `sort()` basta. Sin entradas devuelve el epoch, nunca la hora actual.
+ */
+const EPOCH = '1970-01-01T00:00:00.000Z';
+
+function maxFieldUpdatedAt(entries: CmsEntry[]): string {
+  let max = EPOCH;
+  for (const entry of entries) {
+    for (const field of Object.values(entry.fields)) {
+      if (field.updatedAt && field.updatedAt > max) max = field.updatedAt;
+    }
+  }
+  return max;
+}
+
+/**
+ * A-5: orden canónico del frontmatter, decidido AQUÍ y no heredado del
+ * `ORDER BY key` de ContentRepository.hydrateEntry. Alfabético porque es el
+ * orden que ya tienen los .md del repositorio; lo importante no es cuál sea,
+ * sino que esté escrito en el exportador: mientras dependía de una cláusula
+ * SQL, cambiarla reabría el problema sin que nadie lo notara.
+ */
+function orderFrontmatterKeys(fields: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.keys(fields)
+      .sort()
+      .map((key) => [key, fields[key]])
+  );
+}
+
+/**
+ * A-5 — Forma canónica de un .md de colección. Exportada para que el test de
+ * punto fijo use exactamente este código y no una segunda implementación que
+ * pueda divergir.
+ *
+ * Sobre el formato: prettier aquí solo normaliza detalles menores (la línea
+ * en blanco tras el `---` de cierre). Quien fija de verdad el estilo del
+ * frontmatter es el js-yaml 3.x que `gray-matter` trae empaquetado — el
+ * plegado de los bloques `>-` a 80 columnas y el entrecomillado de valores
+ * como `'1.200 m, …'` salen de ahí. Es una dependencia transitiva, así que
+ * un `npm update` puede cambiar la salida: la garantía de idempotencia la da
+ * el test, no este paso. No quitar prettier: sin él la salida deja de ser
+ * punto fijo de prettier y `lint-staged` la reformatearía en cada commit.
+ */
+export async function canonicalMarkdown(
+  frontmatter: Record<string, unknown>,
+  body: string,
+  target: string,
+  rootDir: string = config.rootDir
+): Promise<string> {
+  const raw = matter.stringify(body.trim() + '\n', orderFrontmatterKeys(frontmatter));
+  try {
+    const options = await prettier.resolveConfig(target);
+    return await prettier.format(raw, { ...options, filepath: target });
+  } catch (error) {
+    process.stderr.write(
+      `  ⚠ prettier falló en ${path.relative(rootDir, target)}; se escribe sin formatear: ${
+        error instanceof Error ? error.message : String(error)
+      }\n`
+    );
+    return raw;
+  }
+}
+
 export class ExportService {
   /**
    * @param rootDir raíz del repo donde escribir los archivos exportados.
@@ -142,7 +208,11 @@ export class ExportService {
   private exportPageContent(entries: CmsEntry[]): string {
     const target = path.join(this.rootDir, 'src', 'data', 'cms-content.json');
     const payload = {
-      updatedAt: new Date().toISOString(),
+      // A-5: derivado del contenido, no del reloj. Con `new Date()` este
+      // archivo cambiaba en CADA export aunque nada se hubiera editado, así
+      // que el export era no idempotente por construcción y sus diffs
+      // enterraban los cambios reales. Nadie lee este campo en src/.
+      updatedAt: maxFieldUpdatedAt(entries),
       entries: Object.fromEntries(
         entries.map((entry) => [
           entry.id,
@@ -260,38 +330,11 @@ export class ExportService {
         }
       }
 
-      writeFileSyncAtomic(
-        target,
-        await this.formatMarkdown(matter.stringify(body.trim() + '\n', frontmatter), target)
-      );
+      writeFileSyncAtomic(target, await canonicalMarkdown(frontmatter, body, target, this.rootDir));
       written.push(path.relative(this.rootDir, target));
     }
 
     return written;
-  }
-
-  /**
-   * Los .md del repo siguen la convención de prettier (viñetas `-`, tablas
-   * alineadas, printWidth 100); la salida cruda de `matter.stringify` no.
-   * Sin este paso, cada export reescribía los 48 archivos con diffs de puro
-   * formato aunque el contenido no hubiera cambiado. Formatear aquí con la
-   * config del propio repo hace el round-trip DB→.md byte-idéntico.
-   *
-   * El formato es cosmético: si prettier fallara con algún contenido, se
-   * escribe la versión sin formatear antes que hacer fallar el export.
-   */
-  private async formatMarkdown(raw: string, target: string): Promise<string> {
-    try {
-      const options = await prettier.resolveConfig(target);
-      return await prettier.format(raw, { ...options, filepath: target });
-    } catch (error) {
-      process.stderr.write(
-        `  ⚠ prettier falló en ${path.relative(this.rootDir, target)}; se escribe sin formatear: ${
-          error instanceof Error ? error.message : String(error)
-        }\n`
-      );
-      return raw;
-    }
   }
 
   async exportGallery(): Promise<{ file: string; count: number }> {
@@ -344,7 +387,8 @@ export class ExportService {
 
     const target = path.join(this.rootDir, 'src', 'data', 'gallery.json');
     const payload = {
-      updatedAt: new Date().toISOString(),
+      // A-5: derivado del contenido, igual que en cms-content.json.
+      updatedAt: this.galleryRepository.maxUpdatedAt(),
       categories: categories.map((c) => ({
         id: c.id,
         name: c.name,

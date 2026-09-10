@@ -15,6 +15,9 @@ import { ExportService } from '../services/exportService';
 
 function makeExportService(rootDir: string, publishedItems: number) {
   const galleryRepository = {
+    // A-5: el export deriva `updatedAt` del contenido en vez del reloj, para
+    // ser idempotente. Fijo aquí para que el JSON del test sea estable.
+    maxUpdatedAt: () => '2026-01-01T00:00:00.000Z',
     listCategories: () => [],
     listAlbums: () => [
       { slug: 'ch-pangal', name: 'C.H. Pangal', position: 0, itemCount: publishedItems },

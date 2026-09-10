@@ -139,6 +139,24 @@ function fromItemWithMediaRow(row: ItemWithMediaRow): GalleryItemWithMedia {
 export class GalleryRepository {
   constructor(private readonly db: Database.Database) {}
 
+  /**
+   * A-5: marca de tiempo más reciente de todo lo que entra en gallery.json,
+   * para que el export sea idempotente. Antes el archivo llevaba
+   * `new Date()` y cambiaba en cada pasada aunque nada se hubiera editado.
+   */
+  maxUpdatedAt(): string {
+    const row = this.db
+      .prepare(
+        `SELECT MAX(t) AS max_updated FROM (
+           SELECT MAX(updated_at) AS t FROM gallery_items
+           UNION ALL SELECT MAX(updated_at) FROM gallery_categories
+           UNION ALL SELECT MAX(updated_at) FROM gallery_albums
+         )`
+      )
+      .get() as { max_updated: string | null };
+    return row?.max_updated ?? '1970-01-01T00:00:00.000Z';
+  }
+
   // ── Albums (GAL-19) ─────────────────────────────────────────
   //
   // El slug es la clave: es lo que gallery_items.project_slug referencia y lo
