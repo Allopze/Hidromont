@@ -114,7 +114,12 @@ export class ContentController extends BaseController {
     try {
       const query = listEntriesQuerySchema.parse(request.query);
       const offset = (query.page - 1) * query.limit;
-      const { entries, total } = this.contentService.listEntries(query.kind, query.limit, offset);
+      const { entries, total } = this.contentService.listEntries(
+        query.kind,
+        query.limit,
+        offset,
+        query.q
+      );
       this.handleSuccess(reply, {
         entries,
         total,

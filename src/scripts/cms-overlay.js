@@ -653,12 +653,20 @@
       throw Object.assign(new Error(data.error || 'Error CMS'), {
         status: response.status,
         details: data.details,
+        // M-2: el servidor manda Retry-After en el 429 del rate-limit y
+        // nadie lo leía, así que el aviso decía «espere» sin decir cuánto.
+        retryAfter: Number(response.headers.get('Retry-After')) || undefined,
       });
     }
     return data;
   }
 
-  function openPanel(html) {
+  /**
+   * @param autofocus Mover el foco al primer control del panel. Se desactiva
+   *   al repintar una lista filtrada: el foco debe quedarse en el buscador que
+   *   el operador está usando, y este autofoco (diferido 50 ms) se lo robaba.
+   */
+  function openPanel(html, { autofocus = true } = {}) {
     if (document.activeElement && !panel.contains(document.activeElement)) {
       lastActiveElement = document.activeElement;
     }
@@ -669,6 +677,7 @@
     panel.classList.add('open');
 
     // H-02: Mover el foco al primer elemento interactivo del panel
+    if (!autofocus) return;
     setTimeout(() => {
       const firstFocusable = panel.querySelector(
         'input:not([type="hidden"]), textarea, select, button, [tabindex]:not([tabindex="-1"])'
@@ -701,7 +710,7 @@
     }
   }
 
-  function loginView(error = '') {
+  function loginView(error = '', email = '') {
     // Si el formulario ya está en pantalla y no hay un error nuevo que mostrar,
     // no se vuelve a renderizar: recrear el <form> descarta lo que el operador
     // ya escribió. `ensureSession()` corre al cargar la página y otra vez en
@@ -712,10 +721,13 @@
       return;
     }
 
+    // M-2: el camino con error SÍ recreaba el formulario, así que una
+    // contraseña mal escrita obligaba a teclear otra vez el correo — con diez
+    // intentos por minuto antes de que el rate-limit bloquee. Se conserva.
     openPanel(`
       <form data-login>
         <label>Correo electrónico
-          <input name="email" type="email" autocomplete="username" required />
+          <input name="email" type="email" autocomplete="username" value="${escapeHtml(email)}" required />
         </label>
         <label>Contraseña
           <input name="password" type="password" autocomplete="current-password" required />
@@ -1633,38 +1645,124 @@
     }
   }
 
-  async function loadGalleryItemsList() {
+  // M-1: la lista pintaba las 177 fotos de golpe, sin buscador ni filtro, en
+  // un panel de 420 px. Encontrar una foto concreta era imposible en la
+  // práctica. El filtrado es local porque el catálogo entero cabe en una
+  // petición; lo que se acota es cuántas miniaturas se pintan.
+  const GALLERY_PAGE_SIZE = 60;
+  const galleryFilter = { q: '', album: '', categoria: '', limite: GALLERY_PAGE_SIZE };
+  let galleryItemsCache = [];
+  let galleryAlbumsCache = [];
+  let galleryCatsCache = [];
+  let galleryFilterTimer;
+
+  function galleryItemsFiltrados() {
+    const q = galleryFilter.q.trim().toLowerCase();
+    return galleryItemsCache.filter((item) => {
+      if (galleryFilter.album && (item.projectSlug || '') !== galleryFilter.album) return false;
+      if (galleryFilter.categoria && (item.categoryId || '') !== galleryFilter.categoria) {
+        return false;
+      }
+      if (!q) return true;
+      return `${item.alt || ''} ${item.projectSlug || ''} ${item.categoryName || ''}`
+        .toLowerCase()
+        .includes(q);
+    });
+  }
+
+  function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
+    const filtrados = galleryItemsFiltrados();
+    const visibles = filtrados.slice(0, galleryFilter.limite);
+    const restantes = filtrados.length - visibles.length;
+    const opciones = (lista, valorActual, claveValor, claveTexto) =>
+      lista
+        .map(
+          (x) =>
+            `<option value="${escapeHtml(x[claveValor])}"${x[claveValor] === valorActual ? ' selected' : ''}>${escapeHtml(x[claveTexto])}</option>`
+        )
+        .join('');
+
+    openPanel(
+      `
+      <div style="display:grid;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-size:13px;color:#64748b">
+            ${
+              filtrados.length === galleryItemsCache.length
+                ? `${galleryItemsCache.length} imágenes`
+                : `${filtrados.length} de ${galleryItemsCache.length}`
+            }
+          </span>
+          <button type="button" data-action="gallery-new-item">+ Agregar imagen</button>
+        </div>
+        <label>Buscar
+          <input name="galleryFilterQ" type="search" data-gallery-filter-q
+            placeholder="Texto alternativo, álbum o categoría" value="${escapeHtml(galleryFilter.q)}" />
+        </label>
+        <div class="hm-cms-two">
+          <label>Álbum
+            <select data-gallery-filter-album>
+              <option value="">Todos</option>
+              ${opciones(albums, galleryFilter.album, 'slug', 'name')}
+            </select>
+          </label>
+          <label>Categoría
+            <select data-gallery-filter-cat>
+              <option value="">Todas</option>
+              ${opciones(cats, galleryFilter.categoria, 'id', 'name')}
+            </select>
+          </label>
+        </div>
+        ${
+          filtrados.length === 0
+            ? '<p class="hm-cms-muted">Ninguna foto coincide con el filtro.</p>'
+            : `<div class="hm-cms-gallery-grid">
+                ${visibles
+                  .map(
+                    (item) => `
+                  <div class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}" title="${escapeHtml(item.alt)}">
+                    <img src="${escapeHtml(item.mediaPath)}" alt="${escapeHtml(item.alt)}" loading="lazy" />
+                    ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+              ${
+                restantes > 0
+                  ? `<button type="button" class="secondary" data-action="gallery-load-more">Ver ${Math.min(restantes, GALLERY_PAGE_SIZE)} más (${restantes} restantes)</button>`
+                  : ''
+              }`
+        }
+        <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+      </div>
+    `,
+      { autofocus }
+    );
+  }
+
+  async function loadGalleryItemsList({ recargar = true } = {}) {
     if (!(await ensureSession())) return;
     galleryView = 'items';
     setPanelTitle('Imágenes de galería');
-    openPanel('<p class="hm-cms-muted">Cargando imágenes...</p>');
-    try {
-      const data = await api('/api/cms/gallery/items');
-      const items = data.items || [];
-      openPanel(`
-        <div style="display:grid;gap:8px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:13px;color:#64748b">${items.length} imágenes</span>
-            <button type="button" data-action="gallery-new-item">+ Agregar imagen</button>
-          </div>
-          <div class="hm-cms-gallery-grid">
-            ${items
-              .map(
-                (item) => `
-              <div class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}">
-                <img src="${escapeHtml(item.mediaPath)}" alt="${escapeHtml(item.alt)}" loading="lazy" />
-                ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-          <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
-        </div>
-      `);
-    } catch (error) {
-      openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+    if (recargar) {
+      openPanel('<p class="hm-cms-muted">Cargando imágenes...</p>');
+      try {
+        const [itemsData, albumsData, catsData] = await Promise.all([
+          api('/api/cms/gallery/items'),
+          api('/api/cms/gallery/albums'),
+          api('/api/cms/gallery/categories'),
+        ]);
+        galleryItemsCache = itemsData.items || [];
+        galleryAlbumsCache = albumsData.items || [];
+        galleryCatsCache = catsData.items || [];
+        galleryFilter.limite = GALLERY_PAGE_SIZE;
+      } catch (error) {
+        openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+        return;
+      }
     }
+    renderGalleryItemsList(galleryAlbumsCache, galleryCatsCache, { autofocus: recargar });
   }
 
   async function showGalleryItemForm(itemId = null) {
@@ -1770,27 +1868,48 @@
     if (titleEl) titleEl.textContent = title;
   }
 
-  async function loadCollections(kind = activeCollectionKind) {
+  // M-1: la búsqueda va contra el servidor y el panel conserva lo escrito
+  // entre recargas de la lista. Antes se pintaban las 40 entradas de golpe en
+  // un panel de 420 px, sin buscador ni recuento, y con el límite de 100 del
+  // servidor truncando en silencio cualquier colección más grande.
+  let collectionQuery = '';
+  let collectionSearchTimer;
+
+  async function loadCollections(kind = activeCollectionKind, { mantenerFoco = false } = {}) {
+    const opcionesPanel = { autofocus: !mantenerFoco };
     if (!(await ensureSession())) return;
     activeCollectionKind = kind;
     setPanelTitle('Colecciones');
-    openPanel('<p class="hm-cms-muted">Cargando...</p>');
+    if (!mantenerFoco) openPanel('<p class="hm-cms-muted">Cargando...</p>');
     try {
-      const data = await api(`/api/cms/entries?kind=${encodeURIComponent(kind)}`);
+      const params = new URLSearchParams({ kind, limit: '100' });
+      if (collectionQuery) params.set('q', collectionQuery);
+      const data = await api(`/api/cms/entries?${params}`);
       const entries = data.entries || [];
       const tabs = COLLECTION_KINDS.map(
         (k) =>
           `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}">${escapeHtml(k.label)}</button>`
       ).join('');
 
-      openPanel(`
+      openPanel(
+        `
         <div class="hm-cms-tabs">${tabs}</div>
+        <label style="margin-bottom:8px">Buscar
+          <input name="collectionSearch" type="search" data-collection-search
+            placeholder="Título, slug o id" value="${escapeHtml(collectionQuery)}" />
+        </label>
+        <p class="hm-cms-muted" style="margin:0 0 8px">
+          ${entries.length === data.total ? `${data.total} entrada${data.total === 1 ? '' : 's'}` : `Mostrando ${entries.length} de ${data.total}`}
+          ${data.pages > 1 ? ' · acota la búsqueda para ver el resto' : ''}
+        </p>
         <div class="hm-cms-actions" style="margin-bottom:12px">
           <button type="button" data-action="new-entry" data-kind="${escapeHtml(kind)}">+ Nueva entrada</button>
         </div>
         ${
           entries.length === 0
-            ? `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
+            ? collectionQuery
+              ? `<p class="hm-cms-muted">Ninguna entrada de tipo «${escapeHtml(kind)}» coincide con «${escapeHtml(collectionQuery)}».</p>`
+              : `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
             : `<div class="hm-cms-collection-list">
               ${entries
                 .map(
@@ -1810,7 +1929,9 @@
                 .join('')}
             </div>`
         }
-      `);
+      `,
+        opcionesPanel
+      );
     } catch (error) {
       openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
     }
@@ -2090,6 +2211,21 @@
           });
           loadGalleryCategories();
         } catch (error) {
+          // M-3: el servidor rechaza con 409 si la categoría tiene fotos, y
+          // dice cuántas. Antes la confirmación no mencionaba ninguna
+          // consecuencia y las fotos quedaban sin categoría en silencio.
+          if (error.status === 409 && window.confirm(`${error.message}\n\n¿Borrarla igualmente?`)) {
+            try {
+              await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}?confirm=1`, {
+                method: 'DELETE',
+              });
+              loadGalleryCategories();
+              return;
+            } catch (segundo) {
+              openPanel(`<p class="hm-cms-error">${escapeHtml(segundo.message)}</p>`);
+              return;
+            }
+          }
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         }
         return;
@@ -2172,7 +2308,10 @@
       }
       if (action === 'tab-kind' && target instanceof Element) {
         const kind = target.closest('[data-kind]')?.dataset.kind;
-        if (kind) loadCollections(kind);
+        if (kind) {
+          collectionQuery = '';
+          loadCollections(kind);
+        }
       }
       if (action === 'new-entry' && target instanceof Element) {
         const kind = target.closest('[data-kind]')?.dataset.kind || activeCollectionKind;
@@ -2339,6 +2478,12 @@
         }
         return;
       }
+      if (action === 'gallery-load-more') {
+        event.preventDefault();
+        galleryFilter.limite += GALLERY_PAGE_SIZE;
+        await loadGalleryItemsList({ recargar: false });
+        return;
+      }
       if (action === 'load-more-media') {
         event.preventDefault();
         mediaPicker.page += 1;
@@ -2410,6 +2555,11 @@
 
     if (form.matches('[data-login]')) {
       event.preventDefault();
+      const emailEscrito = form.elements.email.value;
+      // M-2: sin esto, un doble clic gastaba dos de los diez intentos que
+      // permite el rate-limit y no había ninguna señal de que estaba enviando.
+      const botonEntrar = form.querySelector('button[type="submit"]');
+      setButtonLoading(botonEntrar, true, 'Entrando...');
       try {
         const result = await api('/api/cms/login', {
           method: 'POST',
@@ -2430,7 +2580,11 @@
         // fallo clásico aquí es emitirla para 127.0.0.1 y pedirla a localhost.
         if (await ensureSession()) closePanel();
       } catch (error) {
-        loginView(error.message);
+        setButtonLoading(botonEntrar, false);
+        const espera = error.retryAfter
+          ? ` Vuelva a intentarlo en ${error.retryAfter} segundo${error.retryAfter === 1 ? '' : 's'}.`
+          : '';
+        loginView(`${error.message}${espera}`, emailEscrito);
       }
     }
 
@@ -2580,8 +2734,20 @@
 
   // A-9: el aviso del efecto de «Borrador» aparece en cuanto se elige, no
   // después de exportar y descubrir que la página desapareció.
-  document.addEventListener('change', (event) => {
+  document.addEventListener('change', async (event) => {
     const target = event.target;
+    if (target instanceof HTMLSelectElement && target.matches('[data-gallery-filter-album]')) {
+      galleryFilter.album = target.value;
+      galleryFilter.limite = GALLERY_PAGE_SIZE;
+      await loadGalleryItemsList({ recargar: false });
+      return;
+    }
+    if (target instanceof HTMLSelectElement && target.matches('[data-gallery-filter-cat]')) {
+      galleryFilter.categoria = target.value;
+      galleryFilter.limite = GALLERY_PAGE_SIZE;
+      await loadGalleryItemsList({ recargar: false });
+      return;
+    }
     if (!(target instanceof HTMLSelectElement) || target.name !== 'status') return;
     const warning = target.form?.querySelector('[data-draft-warning]');
     if (warning) warning.hidden = target.value !== 'draft';
@@ -2593,6 +2759,37 @@
 
     if (target instanceof HTMLInputElement && target.matches('[data-media-search]')) {
       searchMediaPicker(target.value);
+      return;
+    }
+
+    if (target instanceof HTMLInputElement && target.matches('[data-gallery-filter-q]')) {
+      galleryFilter.q = target.value;
+      galleryFilter.limite = GALLERY_PAGE_SIZE;
+      clearTimeout(galleryFilterTimer);
+      galleryFilterTimer = setTimeout(async () => {
+        await loadGalleryItemsList({ recargar: false });
+        const nuevo = panelBody.querySelector('[data-gallery-filter-q]');
+        if (nuevo) {
+          nuevo.focus();
+          nuevo.setSelectionRange(nuevo.value.length, nuevo.value.length);
+        }
+      }, 250);
+      return;
+    }
+
+    if (target instanceof HTMLInputElement && target.matches('[data-collection-search]')) {
+      collectionQuery = target.value.trim();
+      clearTimeout(collectionSearchTimer);
+      collectionSearchTimer = setTimeout(async () => {
+        await loadCollections(activeCollectionKind, { mantenerFoco: true });
+        // Repintar el panel destruye el input, así que se devuelve el foco
+        // y el cursor al final de lo escrito.
+        const nuevo = panelBody.querySelector('[data-collection-search]');
+        if (nuevo) {
+          nuevo.focus();
+          nuevo.setSelectionRange(nuevo.value.length, nuevo.value.length);
+        }
+      }, 250);
       return;
     }
 

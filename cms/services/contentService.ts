@@ -191,8 +191,8 @@ export class ContentService {
     return this.contentRepository.restoreRevision(entryId, revisionId, new Date().toISOString());
   }
 
-  listEntries(kind?: string, limit = 100, offset = 0) {
-    return this.contentRepository.listEntries(kind, limit, offset);
+  listEntries(kind?: string, limit = 100, offset = 0, q?: string) {
+    return this.contentRepository.listEntries(kind, limit, offset, q);
   }
 
   getEntry(id: string) {

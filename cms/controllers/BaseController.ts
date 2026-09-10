@@ -18,6 +18,8 @@ const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] 
   { test: /Conflicto de edición/i, status: 409, message: undefined as unknown as string },
   // A-4: borrar una imagen en uso se rechaza con el detalle de dónde se usa.
   { test: /está en uso/i, status: 409, message: undefined as unknown as string },
+  // M-3: borrar una categoría o un álbum con fotos se rechaza con el recuento.
+  { test: /tiene \d+ foto/i, status: 409, message: undefined as unknown as string },
   // GAL-19: borrar un álbum con fotos se rechaza con su motivo intacto — el
   // operador necesita saber cuántas fotos hay que mover antes de reintentar.
   {

@@ -361,3 +361,96 @@ describe('Gallery API', () => {
     });
   });
 });
+
+/**
+ * M-3 — Borrar una agrupación con fotos dentro debe avisar de la consecuencia.
+ *
+ * Los álbumes ya rechazaban el borrado, pero contando solo las fotos
+ * publicadas: un álbum con todas sus fotos en borrador se eliminaba y las
+ * dejaba con un `project_slug` que ya no existía. Las categorías no tenían
+ * ninguna guarda: la FK es ON DELETE SET NULL, así que borrarlas dejaba a sus
+ * fotos sin categoría —fuera de todos los filtros de la galería— con una
+ * confirmación que no mencionaba nada.
+ */
+describe('M-3 — guardas al borrar agrupaciones con fotos', () => {
+  let ctx: TestApp;
+  let csrfToken: string;
+  let cookieHeader: string;
+
+  beforeAll(async () => {
+    ctx = await createTestApp();
+    ({ csrfToken, cookieHeader } = await ctx.login());
+  });
+
+  afterAll(async () => {
+    await ctx.app.close();
+    ctx.cleanup();
+  });
+
+  const del = (url: string) =>
+    ctx.app.inject({
+      method: 'DELETE',
+      url,
+      headers: { cookie: cookieHeader, 'x-csrf-token': csrfToken },
+    });
+
+  function nuevoMedia(): string {
+    const id = nanoid();
+    const now = new Date().toISOString();
+    ctx.db
+      .prepare(
+        `INSERT INTO media_assets (id, name, path, mime, size, alt, focal_x, focal_y, checksum, created_at, updated_at)
+         VALUES (?, ?, ?, 'image/webp', 1024, 'alt', 0.5, 0.5, ?, ?, ?)`
+      )
+      .run(id, `${id}.webp`, `/uploads/cms/${id}.webp`, id, now, now);
+    return id;
+  }
+
+  it('un álbum con todas sus fotos en borrador no se puede borrar', () => {
+    ctx.galleryService.createAlbum({ name: 'Solo borradores', slug: 'solo-borradores' });
+    ctx.galleryService.createItem({
+      mediaId: nuevoMedia(),
+      projectSlug: 'solo-borradores',
+      alt: 'Foto en borrador',
+      status: 'draft',
+    });
+
+    expect(() => ctx.galleryService.deleteAlbum('solo-borradores')).toThrow(/1 foto/i);
+    expect(ctx.galleryService.listAlbums().some((a) => a.slug === 'solo-borradores')).toBe(true);
+  });
+
+  it('una categoría con fotos se rechaza con 409 y dice cuántas', async () => {
+    const cat = ctx.galleryService.createCategory({ name: 'Con fotos M3' });
+    ctx.galleryService.createItem({
+      mediaId: nuevoMedia(),
+      categoryId: cat.id,
+      alt: 'Foto categorizada',
+    });
+
+    const res = await del(`/api/cms/gallery/categories/${cat.id}`);
+    expect(res.statusCode).toBe(409);
+    expect(res.json<{ error: string }>().error).toMatch(/1 foto/i);
+    expect(ctx.galleryService.listCategories().some((c) => c.id === cat.id)).toBe(true);
+  });
+
+  it('con confirm=1 la borra y sus fotos quedan sin categoría', async () => {
+    const cat = ctx.galleryService.createCategory({ name: 'Confirmada M3' });
+    const item = ctx.galleryService.createItem({
+      mediaId: nuevoMedia(),
+      categoryId: cat.id,
+      alt: 'Foto que se queda sin categoría',
+    });
+
+    const res = await del(`/api/cms/gallery/categories/${cat.id}?confirm=1`);
+    expect(res.statusCode).toBe(200);
+    expect(ctx.galleryService.listCategories().some((c) => c.id === cat.id)).toBe(false);
+    // La foto sobrevive: la FK es SET NULL, no CASCADE.
+    expect(ctx.galleryService.getItem(item.id).categoryId).toBeNull();
+  });
+
+  it('una categoría vacía se borra sin pedir confirmación', async () => {
+    const cat = ctx.galleryService.createCategory({ name: 'Vacía M3' });
+    const res = await del(`/api/cms/gallery/categories/${cat.id}`);
+    expect(res.statusCode).toBe(200);
+  });
+});

@@ -99,7 +99,10 @@ export class GalleryController extends BaseController {
   deleteCategory(request: FastifyRequest, reply: FastifyReply): void {
     try {
       const params = request.params as { id: string };
-      this.galleryService.deleteCategory(params.id);
+      this.galleryService.deleteCategory(
+        params.id,
+        (request.query as { confirm?: string }).confirm === '1'
+      );
       this.handleSuccess(reply, { ok: true });
     } catch (error) {
       this.handleError(error, reply, 'deleteGalleryCategory');

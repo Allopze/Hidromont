@@ -59,8 +59,18 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   // A1-008: barrido periodico de rate-limit. Ademas del cleanup al arranque,
   // un intervalo de 5 min evita que login_attempts crezca sin recoleccion si el
   // proceso vive mucho tiempo entre reinicios. unref() para no bloquear el shutdown.
-  const rateLimitCleanupTimer = setInterval(() => rateLimitRepository.cleanup(), 5 * 60 * 1000);
-  rateLimitCleanupTimer.unref();
+  // B-7: las sesiones caducadas solo se borraban al hacer login, así que la
+  // tabla crecía indefinidamente entre inicios de sesión (165 filas en la base
+  // real). Se aprovecha el mismo barrido que ya existe para el rate-limit.
+  const cleanupTimer = setInterval(
+    () => {
+      rateLimitRepository.cleanup();
+      userRepository.deleteExpiredSessions(new Date().toISOString());
+    },
+    5 * 60 * 1000
+  );
+  cleanupTimer.unref();
+  userRepository.deleteExpiredSessions(new Date().toISOString());
 
   // A1-009: reap jobs de publicacion trabados en 'running' por un crash previo del
   // proceso. Umbral de 10 min: un publish/build sano tarda <120s, asi que cualquier

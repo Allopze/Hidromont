@@ -258,30 +258,46 @@ export class ContentRepository {
     return inserted;
   }
 
-  listEntries(kind?: string, limit = 100, offset = 0): { entries: CmsEntry[]; total: number } {
-    const total: number = kind
-      ? (
-          this.db
-            .prepare('SELECT COUNT(*) as count FROM content_entries WHERE kind = ?')
-            .get(kind) as { count: number }
-        ).count
-      : (
-          this.db.prepare('SELECT COUNT(*) as count FROM content_entries').get() as {
-            count: number;
-          }
-        ).count;
+  /**
+   * M-1: acepta `q` para buscar por título, slug o id.
+   *
+   * Antes solo paginaba, y el overlay no usaba ni eso: pintaba las 40 entradas
+   * de golpe en un panel de 420 px y encontrar un proyecto concreto era
+   * recorrer la lista a ojo. Se busca también por id porque es lo que el
+   * editor ve junto al título en el listado.
+   */
+  listEntries(
+    kind?: string,
+    limit = 100,
+    offset = 0,
+    q?: string
+  ): { entries: CmsEntry[]; total: number } {
+    const condiciones: string[] = [];
+    const parametros: unknown[] = [];
 
-    const rows = kind
-      ? (this.db
-          .prepare(
-            'SELECT id, kind, slug, locale, title, status, version FROM content_entries WHERE kind = ? ORDER BY id LIMIT ? OFFSET ?'
-          )
-          .all(kind, limit, offset) as EntryRow[])
-      : (this.db
-          .prepare(
-            'SELECT id, kind, slug, locale, title, status, version FROM content_entries ORDER BY id LIMIT ? OFFSET ?'
-          )
-          .all(limit, offset) as EntryRow[]);
+    if (kind) {
+      condiciones.push('kind = ?');
+      parametros.push(kind);
+    }
+    const patron = q?.trim() ? `%${q.trim()}%` : null;
+    if (patron) {
+      condiciones.push('(title LIKE ? OR slug LIKE ? OR id LIKE ?)');
+      parametros.push(patron, patron, patron);
+    }
+    const where = condiciones.length > 0 ? ` WHERE ${condiciones.join(' AND ')}` : '';
+
+    const total = (
+      this.db
+        .prepare(`SELECT COUNT(*) as count FROM content_entries${where}`)
+        .get(...parametros) as { count: number }
+    ).count;
+
+    const rows = this.db
+      .prepare(
+        `SELECT id, kind, slug, locale, title, status, version FROM content_entries${where}
+          ORDER BY id LIMIT ? OFFSET ?`
+      )
+      .all(...parametros, limit, offset) as EntryRow[];
 
     return { entries: rows.map((row) => this.hydrateEntry(row)), total };
   }

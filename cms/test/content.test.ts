@@ -52,6 +52,74 @@ describe('Content API', () => {
     });
   });
 
+  describe('GET /api/cms/entries?q= (M-1)', () => {
+    it('busca por título, slug e id', async () => {
+      // El overlay pintaba las 40 entradas de golpe sin buscador; el servidor
+      // paginaba pero no sabía buscar.
+      const crear = (id: string, title: string, slug: string) =>
+        ctx.app.inject(
+          authedMut({
+            method: 'POST',
+            url: '/api/cms/entries',
+            body: JSON.stringify({ id, kind: 'page', slug, title }),
+          })
+        );
+      await crear('busca.alfa', 'Central Alfa', '/alfa');
+      await crear('busca.beta', 'Central Beta', '/beta');
+
+      const porTitulo = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?q=Alfa' })
+      );
+      const r1 = porTitulo.json<{ entries: Array<{ id: string }>; total: number }>();
+      expect(r1.entries.map((e) => e.id)).toEqual(['busca.alfa']);
+      expect(r1.total).toBe(1);
+
+      const porSlug = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?q=/beta' })
+      );
+      expect(porSlug.json<{ entries: Array<{ id: string }> }>().entries.map((e) => e.id)).toEqual([
+        'busca.beta',
+      ]);
+
+      const porId = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?q=busca.' })
+      );
+      expect(porId.json<{ total: number }>().total).toBe(2);
+    });
+
+    it('combina la búsqueda con el filtro por tipo', async () => {
+      await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'busca.gamma',
+            kind: 'proyecto',
+            slug: 'central-gamma',
+            title: 'Central Gamma',
+          }),
+        })
+      );
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?kind=page&q=Central' })
+      );
+      const ids = res.json<{ entries: Array<{ id: string }> }>().entries.map((e) => e.id);
+      expect(ids).not.toContain('busca.gamma');
+      expect(ids).toContain('busca.alfa');
+    });
+
+    it('devuelve vacío sin error cuando nada coincide', async () => {
+      const res = await ctx.app.inject(
+        authed({ method: 'GET', url: '/api/cms/entries?q=noexistenadaasi' })
+      );
+      expect(res.statusCode).toBe(200);
+      expect(res.json<{ entries: unknown[]; total: number }>()).toMatchObject({
+        entries: [],
+        total: 0,
+      });
+    });
+  });
+
   describe('POST /api/cms/entries', () => {
     it('creates a new entry', async () => {
       const res = await ctx.app.inject(

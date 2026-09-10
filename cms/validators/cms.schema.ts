@@ -76,6 +76,8 @@ export const updateEntryMetaSchema = z.object({
 // para compatibilidad con clientes existentes que no envían estos parámetros.
 export const listEntriesQuerySchema = z.object({
   kind: z.string().optional(),
+  // M-1: búsqueda por título, slug o id.
+  q: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(500).default(100),
 });

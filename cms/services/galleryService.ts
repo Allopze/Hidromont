@@ -79,9 +79,27 @@ export class GalleryService {
     return this.galleryRepository.updateCategory(id, input);
   }
 
-  deleteCategory(id: string) {
+  /**
+   * M-3: rechaza borrar una categoría con fotos.
+   *
+   * La FK es ON DELETE SET NULL, así que borrarla dejaba a todas sus fotos sin
+   * categoría — fuera de todos los filtros de la galería pública — con una
+   * confirmación que solo preguntaba «¿Eliminar la categoría X?» y no
+   * mencionaba ninguna consecuencia. Los álbumes ya tenían esta guarda; las
+   * categorías no. Reasignar 30 fotos a mano después no es una alternativa.
+   */
+  deleteCategory(id: string, confirm = false) {
     const existing = this.galleryRepository.getCategory(id);
     if (!existing) throw new Error(`Categoría ${id} no encontrada`);
+
+    if (!confirm) {
+      const enUso = this.galleryRepository.countItemsByCategory(id);
+      if (enUso > 0) {
+        throw new Error(
+          `La categoría "${existing.name}" tiene ${enUso} foto(s). Si la borra, quedarán sin categoría y desaparecerán de los filtros de la galería. Reasígnelas antes, o repita la operación confirmando.`
+        );
+      }
+    }
     this.galleryRepository.deleteCategory(id);
   }
 

@@ -210,12 +210,33 @@ export class GalleryRepository {
   deleteAlbum(slug: string): void {
     const album = this.getAlbum(slug);
     if (!album) throw new Error(`Álbum ${slug} no encontrado`);
-    if (album.itemCount > 0) {
+
+    // M-3: `itemCount` cuenta solo las publicadas, así que un álbum con todas
+    // sus fotos en borrador se borraba y las dejaba con un project_slug que ya
+    // no existe. Aquí se cuentan todas.
+    const total = (
+      this.db
+        .prepare('SELECT COUNT(*) AS n FROM gallery_items WHERE project_slug = ?')
+        .get(slug) as { n: number }
+    ).n;
+    if (total > 0) {
+      const borradores = total - album.itemCount;
+      const detalle =
+        borradores > 0 ? ` (${album.itemCount} publicada(s) y ${borradores} en borrador)` : '';
       throw new Error(
-        `El álbum "${album.name}" tiene ${album.itemCount} foto(s). Muévelas o bórralas antes de eliminarlo.`
+        `El álbum "${album.name}" tiene ${total} foto(s)${detalle}. Muévelas o bórralas antes de eliminarlo.`
       );
     }
     this.db.prepare('DELETE FROM gallery_albums WHERE slug = ?').run(slug);
+  }
+
+  /** M-3: cuántas fotos quedarían sin categoría al borrarla. */
+  countItemsByCategory(categoryId: string): number {
+    return (
+      this.db
+        .prepare('SELECT COUNT(*) AS n FROM gallery_items WHERE category_id = ?')
+        .get(categoryId) as { n: number }
+    ).n;
   }
 
   reorderAlbums(slugs: string[], now: string): void {
