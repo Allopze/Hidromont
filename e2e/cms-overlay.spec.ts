@@ -263,6 +263,71 @@ test.describe('CMS overlay flow', () => {
     expect(opciones).not.toContain('gate');
   });
 
+  /**
+   * E-2: A-11 dejó el aviso al cerrar y el punto ámbar, que advierten pero no
+   * salvan nada: quien aceptaba el aviso perdía el texto. Ahora queda una copia
+   * local recuperable, y el aviso lo dice.
+   */
+  test('lo escrito sin guardar se puede recuperar al reabrir el formulario', async ({ page }) => {
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+
+    const avisos: string[] = [];
+    page.on('dialog', (d) => {
+      avisos.push(d.message());
+      d.accept();
+    });
+
+    const editable = page.locator('[data-cms-entry][data-cms-field]').first();
+    await editable.click();
+    const campo = page.locator('form[data-edit] [name="value"]');
+    await expect(campo).toBeVisible();
+    const valorServidor = await campo.inputValue();
+
+    const texto = `Borrador e2e ${Date.now()}`;
+    await campo.fill(texto);
+    // El autoguardado espera 800 ms para no escribir en localStorage por tecla.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              Object.keys(localStorage).filter((k) => k.startsWith('hidromont:cms:draft:')).length
+          ),
+        { timeout: 4000 }
+      )
+      .toBeGreaterThan(0);
+
+    // Cerrar descartando: el aviso ya anuncia que la copia queda.
+    await page.locator('.hm-cms-panel [data-action="close"]').click();
+    await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible();
+    expect(avisos.join(' ')).toMatch(/copia local que podrás recuperar/i);
+
+    // Al reabrir se ofrece, y el formulario sigue mostrando el valor del
+    // servidor: la copia no se aplica sin decidirlo.
+    await editable.click();
+    const aviso = page.locator('[data-draft-notice]');
+    await expect(aviso).toBeVisible();
+    await expect(aviso).toContainText(/cambios sin guardar/i);
+    await expect(campo).toHaveValue(valorServidor);
+
+    await page.locator('[data-action="restore-draft"]').click();
+    await expect(campo).toHaveValue(texto);
+    await expect(aviso).toHaveCount(0);
+
+    // Y «Descartar» borra la copia de verdad.
+    await page.locator('.hm-cms-panel [data-action="close"]').click();
+    await editable.click();
+    await page.locator('[data-action="discard-draft"]').click();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => Object.keys(localStorage).filter((k) => k.startsWith('hidromont:cms:draft:')).length
+        )
+      )
+      .toBe(0);
+  });
+
   test('collections panel opens and shows entries', async ({ page }) => {
     // Login first via API
     await page.goto('/');

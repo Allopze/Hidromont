@@ -229,6 +229,14 @@
       flex-wrap: wrap;
       gap: 8px;
     }
+    /* E-2: aviso de que hay una copia local sin guardar. */
+    .hm-cms-draft-notice {
+      background: var(--hm-cms-warn-bg);
+      border: 1px solid var(--hm-cms-warn-line);
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--hm-cms-ink);
+    }
     /* E-3: la clave de la base, en pequeño, junto al nombre legible. */
     .hm-cms-field-key {
       font-weight: 400;
@@ -725,6 +733,185 @@
     }
   });
 
+  /**
+   * E-2 — Recuperación de lo escrito sin guardar.
+   *
+   * A-11 dejó el aviso al cerrar y el punto ámbar de la barra, que advierten,
+   * pero no salvan nada: quien acepta el aviso, cierra la pestaña por error o
+   * pierde el navegador se queda sin el texto. Y son formularios donde se
+   * escribe un párrafo entero, no un dato corto.
+   *
+   * Se guarda una copia en `localStorage` mientras se escribe, y al volver a
+   * abrir ese mismo formulario se ofrece recuperarla. La copia se borra en
+   * cuanto el guardado va bien, así que en condiciones normales no queda nada.
+   *
+   * Deliberadamente NO cubre el formulario de acceso ni el de contraseña: son
+   * los dos que no deben dejar rastro en el navegador.
+   */
+  const DRAFT_PREFIX = 'hidromont:cms:draft:';
+  const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const DRAFT_DEBOUNCE_MS = 800;
+  let draftTimer;
+
+  /** Los formularios que se autoguardan, y de dónde sale su identidad. */
+  function draftKeyFor(form) {
+    if (!(form instanceof HTMLFormElement)) return '';
+    if (form.matches('[data-edit]')) {
+      const entryId = form.dataset.entryId;
+      const field = form.dataset.field;
+      return entryId && field ? `campo:${entryId}.${field}` : '';
+    }
+    if (form.matches('[data-entry-form]')) {
+      // Una entrada nueva todavía no tiene id: se guarda bajo su tipo, que es
+      // lo único estable hasta que se cree.
+      return form.dataset.entryId
+        ? `entrada:${form.dataset.entryId}`
+        : `entrada-nueva:${form.dataset.kind || 'sin-tipo'}`;
+    }
+    if (form.matches('[data-gallery-item-form]')) {
+      return form.dataset.itemId ? `imagen:${form.dataset.itemId}` : 'imagen-nueva';
+    }
+    return '';
+  }
+
+  /** Los valores del formulario, sin archivos ni contraseñas. */
+  function draftValues(form) {
+    const valores = {};
+    for (const el of form.elements) {
+      if (!el.name || el.type === 'file' || el.type === 'password' || el.type === 'submit')
+        continue;
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        if (el.checked) valores[el.name] = el.value;
+        continue;
+      }
+      valores[el.name] = el.value;
+    }
+    return valores;
+  }
+
+  function saveDraft(form) {
+    const key = draftKeyFor(form);
+    if (!key) return;
+    try {
+      localStorage.setItem(
+        DRAFT_PREFIX + key,
+        JSON.stringify({ at: Date.now(), values: draftValues(form) })
+      );
+    } catch {
+      // Modo privado, cuota llena o almacenamiento bloqueado. El aviso al
+      // cerrar sigue en pie; no hay nada que decirle al editor aquí.
+    }
+  }
+
+  function clearDraft(form) {
+    const key = draftKeyFor(form);
+    if (!key) return;
+    try {
+      localStorage.removeItem(DRAFT_PREFIX + key);
+    } catch {
+      /* ver saveDraft */
+    }
+  }
+
+  function readDraft(form) {
+    const key = draftKeyFor(form);
+    if (!key) return null;
+    try {
+      const bruto = localStorage.getItem(DRAFT_PREFIX + key);
+      if (!bruto) return null;
+      const copia = JSON.parse(bruto);
+      if (!copia?.values || typeof copia.at !== 'number') return null;
+      if (Date.now() - copia.at > DRAFT_TTL_MS) {
+        localStorage.removeItem(DRAFT_PREFIX + key);
+        return null;
+      }
+      return copia;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Elimina las copias caducadas. Corre una vez, al arrancar el overlay. */
+  function pruneDrafts() {
+    try {
+      const caducadas = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key?.startsWith(DRAFT_PREFIX)) continue;
+        try {
+          const copia = JSON.parse(localStorage.getItem(key) || '{}');
+          if (typeof copia.at !== 'number' || Date.now() - copia.at > DRAFT_TTL_MS) {
+            caducadas.push(key);
+          }
+        } catch {
+          caducadas.push(key);
+        }
+      }
+      for (const key of caducadas) localStorage.removeItem(key);
+    } catch {
+      /* ver saveDraft */
+    }
+  }
+
+  function formatDraftAge(at) {
+    const minutos = Math.round((Date.now() - at) / 60000);
+    if (minutos < 1) return 'hace menos de un minuto';
+    if (minutos < 60) return `hace ${minutos} minuto${minutos === 1 ? '' : 's'}`;
+    const horas = Math.round(minutos / 60);
+    if (horas < 24) return `hace ${horas} hora${horas === 1 ? '' : 's'}`;
+    const dias = Math.round(horas / 24);
+    return `hace ${dias} día${dias === 1 ? '' : 's'}`;
+  }
+
+  /**
+   * Si hay una copia local que difiere de lo que muestra el formulario, lo
+   * anuncia y ofrece recuperarla. Solo si difiere: una copia idéntica a lo que
+   * ya hay en pantalla no es información, es ruido.
+   */
+  function offerDraft(form) {
+    const copia = readDraft(form);
+    if (!copia) return;
+
+    const actuales = draftValues(form);
+    const distintos = Object.entries(copia.values).filter(
+      ([name, value]) => (actuales[name] ?? '') !== value
+    );
+    if (!distintos.length) {
+      clearDraft(form);
+      return;
+    }
+
+    form.insertAdjacentHTML(
+      'afterbegin',
+      `<div class="hm-cms-draft-notice" data-draft-notice>
+        <p style="margin:0 0 6px">
+          Hay cambios sin guardar de este formulario, escritos ${escapeHtml(formatDraftAge(copia.at))}.
+        </p>
+        <span class="hm-cms-actions">
+          <button type="button" class="secondary" data-action="restore-draft">Recuperar lo escrito</button>
+          <button type="button" class="secondary" data-action="discard-draft">Descartar</button>
+        </span>
+      </div>`
+    );
+  }
+
+  function applyDraft(form) {
+    const copia = readDraft(form);
+    if (!copia) return;
+    for (const [name, value] of Object.entries(copia.values)) {
+      const campo = form.elements[name];
+      if (!campo || campo instanceof RadioNodeList) continue;
+      if (campo.type === 'checkbox' || campo.type === 'radio')
+        campo.checked = campo.value === value;
+      else campo.value = value;
+      // Los editores de lista guardan su estado en un hidden y repintan desde
+      // él: sin este evento la copia entraría en el hidden y no en pantalla.
+      campo.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    form.querySelector('[data-draft-notice]')?.remove();
+    setFormDirty(true);
+  }
+
   function setButtonLoading(button, isLoading, loadingText = '') {
     if (!button || !(button instanceof Element)) return;
     const btn = button.closest('button');
@@ -787,6 +974,14 @@
     // sucio de una vista a la siguiente siempre sería incorrecto.
     setFormDirty(false);
     panelBody.innerHTML = html;
+    // E-2: un solo punto para los tres formularios que se autoguardan. Si hay
+    // una copia local que difiere de lo que se acaba de pintar, se ofrece
+    // aquí, antes de que el editor empiece a escribir encima.
+    for (const form of panelBody.querySelectorAll(
+      '[data-edit], [data-entry-form], [data-gallery-item-form]'
+    )) {
+      offerDraft(form);
+    }
     panel.classList.add('open');
     // B-2: solo mientras está abierto. Marcarlo siempre haría que un lector
     // de pantalla anunciara un diálogo que no está en pantalla.
@@ -838,7 +1033,11 @@
     if (
       !force &&
       isFormDirty &&
-      !window.confirm('Hay cambios sin guardar. ¿Cerrar y descartarlos?')
+      // E-2: cerrar ya no pierde nada, así que el aviso lo dice. Antes ponía
+      // «¿Cerrar y descartarlos?», que era cierto y por eso daba miedo.
+      !window.confirm(
+        'Hay cambios sin guardar. Se cerrará el panel y quedará una copia local que podrás recuperar al volver a abrir este formulario. ¿Cerrar?'
+      )
     ) {
       return;
     }
@@ -1094,7 +1293,7 @@
     state.entry = entry;
 
     openPanel(`
-      <form data-edit>
+      <form data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
         <!-- E-3: antes esta línea era la única pista de qué se estaba editando y
              decía \`home.hero.eyebrow\`. Ahora encabeza el nombre legible y la
              clave queda debajo, que es la que aparece en los errores. También
@@ -1759,6 +1958,8 @@
     // A-11: este es el único guardado que no reabre el panel (los formularios
     // de colección y galería vuelven a su listado, y openPanel ya lo limpia).
     setFormDirty(false);
+    // E-2: guardado correcto, la copia local ya no hace falta.
+    clearDraft(form);
   }
 
   // ─── Gallery management ──────────────────────────────────────────────────
@@ -2469,6 +2670,7 @@
       }
 
       if (status) status.textContent = 'Guardado correctamente.';
+      clearDraft(form);
       setTimeout(() => loadCollections(kind), 800);
     } catch (error) {
       if (status)
@@ -2520,6 +2722,17 @@
       }
       if (action === 'admin') {
         loadAdmin();
+      }
+      if (action === 'restore-draft' && target instanceof Element) {
+        const form = target.closest('form');
+        if (form) applyDraft(form);
+      }
+      if (action === 'discard-draft' && target instanceof Element) {
+        const form = target.closest('form');
+        if (form) {
+          clearDraft(form);
+          form.querySelector('[data-draft-notice]')?.remove();
+        }
       }
       if (action === 'admin-more-audit') {
         adminState.auditShown += ADMIN_AUDIT_PAGE;
@@ -3123,6 +3336,7 @@
             body: JSON.stringify(body),
           });
         }
+        clearDraft(form);
         loadGalleryItemsList();
       } catch (error) {
         if (status)
@@ -3233,6 +3447,11 @@
         target.form.matches('[data-gallery-item-form]'))
     ) {
       setFormDirty(true);
+      // E-2: con espera, porque escribir un párrafo dispararía un `setItem` por
+      // pulsación y localStorage es sincrónico.
+      clearTimeout(draftTimer);
+      const formulario = target.form;
+      draftTimer = setTimeout(() => saveDraft(formulario), DRAFT_DEBOUNCE_MS);
     }
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
@@ -3274,5 +3493,8 @@
     closePanel();
   });
 
+  // E-2: limpieza de las copias caducadas, una vez por carga. Va antes de
+  // ensureSession() para que nunca se ofrezca una copia de hace un mes.
+  pruneDrafts();
   ensureSession();
 })();
