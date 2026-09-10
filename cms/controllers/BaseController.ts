@@ -27,6 +27,14 @@ const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] 
     status: 409,
     message: undefined as unknown as string,
   },
+  // M-6: al cambiar la contraseña, «la actual no es correcta» o «la nueva es
+  // demasiado corta» son datos que el operador necesita leer tal cual. El
+  // genérico le dejaba adivinando cuál de los dos campos rechazó el servidor.
+  {
+    test: /contraseña (actual|nueva)/i,
+    status: 400,
+    message: undefined as unknown as string,
+  },
   {
     test: /no permitido|MIME|extensión|demasiado grande|tipo de archivo/i,
     status: 400,
@@ -56,10 +64,13 @@ export class BaseController {
       return;
     }
 
-    captureException(error, { action });
     const rawMessage = error instanceof Error ? error.message : 'Error interno';
 
     // Buscar si el mensaje coincide con un patrón de error conocido y amigable.
+    // Los que casan son condiciones previstas —credenciales, slug repetido,
+    // conflicto de edición, MIME rechazado—, no defectos, así que por el mismo
+    // criterio que el ZodError de arriba no se reportan: antes cada contraseña
+    // mal escrita entraba en el monitoreo como una excepción.
     for (const pattern of USER_FACING_PATTERNS) {
       if (pattern.test.test(rawMessage)) {
         // Si el patrón define un mensaje de reemplazo, usarlo; si no, el mensaje
@@ -71,6 +82,7 @@ export class BaseController {
     }
 
     // Error no reconocido: responder genéricamente. El detalle queda en logs/Sentry.
+    captureException(error, { action });
     reply.status(400).send({ error: 'Error al procesar la solicitud' });
   }
 }

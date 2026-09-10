@@ -111,6 +111,11 @@ export async function createTestApp(): Promise<TestApp> {
     (req, reply) => authController.logout(req, reply)
   );
   app.get('/api/cms/session', (req, reply) => authController.session(req, reply));
+  app.post(
+    '/api/cms/password',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => authController.changePassword(req, reply)
+  );
 
   app.get('/api/cms/entries', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     contentController.listEntries(req, reply)

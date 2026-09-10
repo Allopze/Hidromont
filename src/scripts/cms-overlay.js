@@ -174,6 +174,56 @@
       flex-wrap: wrap;
       gap: 8px;
     }
+    /* M-6: panel de administración (registro, respaldos, contraseña). */
+    .hm-cms-admin {
+      display: grid;
+      gap: 10px;
+    }
+    .hm-cms-admin h3 {
+      margin: 8px 0 0;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #0F2433;
+      border-bottom: 1px solid #D9E2EC;
+      padding-bottom: 6px;
+    }
+    .hm-cms-admin h3:first-child {
+      margin-top: 0;
+    }
+    .hm-cms-ok {
+      color: #1B5E20;
+      background: #E8F5E9;
+      border: 1px solid #A5D6A7;
+      padding: 8px 10px;
+      font-size: 13px;
+      margin: 0;
+    }
+    .hm-cms-admin-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 1px;
+      background: #D9E2EC;
+      border: 1px solid #D9E2EC;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .hm-cms-admin-list li {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 4px 12px;
+      background: white;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+    /* Los eventos de acceso se distinguen: son los que se revisan cuando se
+       sospecha de un intento de entrada ajeno. */
+    .hm-cms-admin-list li[data-security] {
+      border-left: 3px solid #00A6D6;
+    }
     /* H-05: spinner para operaciones asincronas */
     @keyframes hm-cms-spin {
       to { transform: rotate(360deg); }
@@ -542,6 +592,7 @@
       <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
       <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
       <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
+      <button type="button" class="secondary" data-action="admin" data-auth hidden title="Registro de actividad, respaldos de la base y cambio de contraseña.">Administrar</button>
       <button type="button" data-action="publish" data-auth hidden title="Exporta el contenido, compila el sitio y lo deja servido. El comando de validación es configurable (CMS_PUBLISH_CHECK_COMMAND).">Exportar y validar</button>
       <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
     </div>
@@ -675,6 +726,10 @@
     setFormDirty(false);
     panelBody.innerHTML = html;
     panel.classList.add('open');
+    // B-2: solo mientras está abierto. Marcarlo siempre haría que un lector
+    // de pantalla anunciara un diálogo que no está en pantalla.
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
 
     // H-02: Mover el foco al primer elemento interactivo del panel
     if (!autofocus) return;
@@ -688,6 +743,33 @@
     }, 50);
   }
 
+  /**
+   * B-2: el panel movía el foco a su primer control al abrir y lo restituía al
+   * cerrar, pero no lo confinaba: tabulando se salía a la página de detrás,
+   * que sigue siendo interactiva, y se podía editar el fondo sin darse cuenta.
+   * El visor de galería ya resolvía esto en este mismo repositorio con
+   * `role="dialog"` + `aria-modal` y ciclo de Tab; se replica aquí.
+   */
+  const FOCUSABLES =
+    'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  panel.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !panel.classList.contains('open')) return;
+    const focusables = [...panel.querySelectorAll(FOCUSABLES)].filter(
+      (el) => el.offsetParent !== null || el === document.activeElement
+    );
+    if (focusables.length === 0) return;
+    const primero = focusables[0];
+    const ultimo = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === primero) {
+      event.preventDefault();
+      ultimo.focus();
+    } else if (!event.shiftKey && document.activeElement === ultimo) {
+      event.preventDefault();
+      primero.focus();
+    }
+  });
+
   function closePanel(force = false) {
     // A-11: Escape y «Cerrar» descartaban lo escrito sin preguntar, aunque el
     // estado sucio ya se estaba registrando para el aviso del navegador.
@@ -700,6 +782,8 @@
     }
     setFormDirty(false);
     panel.classList.remove('open');
+    panel.removeAttribute('role');
+    panel.removeAttribute('aria-modal');
     state.selected = null;
     state.entry = null;
 
@@ -724,6 +808,7 @@
     // M-2: el camino con error SÍ recreaba el formulario, así que una
     // contraseña mal escrita obligaba a teclear otra vez el correo — con diez
     // intentos por minuto antes de que el rate-limit bloquee. Se conserva.
+    setPanelTitle('Acceso');
     openPanel(`
       <form data-login>
         <label>Correo electrónico
@@ -758,6 +843,7 @@
   }
 
   function fieldEditor(element, entry, field) {
+    setPanelTitle('Editor');
     const cmsType = element.dataset.cmsType || 'text';
     const current = entry.fields[field]?.value ?? '';
     const altField = element.dataset.cmsAltField;
@@ -961,6 +1047,7 @@
   const MEDIA_PAGE_SIZE = 60;
   const mediaPicker = { query: '', page: 1, pages: 1, total: 0, loading: false, seq: 0 };
   let mediaSearchTimer;
+  let previewTimer;
 
   function mediaTileMarkup(item, { action, selected }) {
     // C-2: un asset cuyo archivo no está en disco se marca en vez de
@@ -1185,8 +1272,172 @@
     `);
   }
 
+  /**
+   * M-6: el registro guarda claves técnicas y estables (`entry.delete`,
+   * `login.rate_limited`) porque son las que se consultan por SQL; el panel las
+   * traduce porque quien las lee es el editor, no quien escribió el código.
+   * Una clave sin traducir se muestra tal cual: es preferible a ocultar el
+   * evento.
+   */
+  const AUDIT_LABELS = {
+    'login.success': 'Inicio de sesión',
+    'login.failed': 'Intento de acceso fallido',
+    'login.rate_limited': 'Acceso bloqueado por demasiados intentos',
+    logout: 'Cierre de sesión',
+    'password.change': 'Cambio de contraseña',
+    'password.change_failed': 'Cambio de contraseña rechazado',
+    'entry.create': 'Entrada creada',
+    'entry.update_meta': 'Datos de entrada modificados',
+    'entry.delete': 'Entrada eliminada',
+    'field.update': 'Texto modificado',
+    'revision.restore': 'Revisión restaurada',
+    'media.upload': 'Imagen subida',
+    'media.update': 'Imagen modificada',
+    'media.delete': 'Imagen eliminada',
+    'gallery.category.create': 'Categoría creada',
+    'gallery.category.update': 'Categoría modificada',
+    'gallery.category.delete': 'Categoría eliminada',
+    'gallery.album.create': 'Álbum creado',
+    'gallery.album.update': 'Álbum modificado',
+    'gallery.album.delete': 'Álbum eliminado',
+    'gallery.item.create': 'Imagen agregada a la galería',
+    'gallery.item.update': 'Imagen de galería modificada',
+    'gallery.item.delete': 'Imagen retirada de la galería',
+    'content.export': 'Contenido exportado',
+    'content.publish': 'Sitio publicado',
+    'backup.create': 'Respaldo creado',
+    'publish.jobs_reaped': 'Publicaciones colgadas descartadas',
+  };
+
+  /** Los eventos de acceso son los que interesan revisar por seguridad. */
+  const AUDIT_SECURITY = /^(login|password)\./;
+
+  const ADMIN_AUDIT_PAGE = 25;
+  let adminState = { events: [], backups: [], auditShown: ADMIN_AUDIT_PAGE, notice: '' };
+
+  function formatBytes(bytes) {
+    if (!Number.isFinite(bytes)) return '';
+    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+    return `${bytes} B`;
+  }
+
+  /**
+   * M-6: administración del CMS en un solo panel. Antes el registro de
+   * actividad, los respaldos y el cambio de contraseña existían en el servidor
+   * pero no tenían ninguna interfaz: la única forma de verlos era SQL o
+   * `npm run cms:reset-password`, es decir, pedírselo a un desarrollador.
+   */
+  async function loadAdmin() {
+    if (!(await ensureSession())) return;
+    setPanelTitle('Administración');
+    openPanel('<p class="hm-cms-muted">Cargando administración...</p>');
+    // Se piden en paralelo y se toleran por separado: si los respaldos fallan
+    // (permisos de escritura en el servidor, por ejemplo) el registro y el
+    // cambio de contraseña siguen siendo utilizables.
+    const [auditRes, backupRes] = await Promise.allSettled([
+      api('/api/cms/audit'),
+      api('/api/cms/backup/list'),
+    ]);
+    adminState = {
+      events: auditRes.status === 'fulfilled' ? auditRes.value.events || [] : [],
+      backups: backupRes.status === 'fulfilled' ? backupRes.value.backups || [] : [],
+      auditShown: ADMIN_AUDIT_PAGE,
+      notice: '',
+      auditError: auditRes.status === 'rejected' ? auditRes.reason.message : '',
+      backupError: backupRes.status === 'rejected' ? backupRes.reason.message : '',
+    };
+    renderAdmin();
+  }
+
+  function renderAdmin({ autofocus } = {}) {
+    setPanelTitle('Administración');
+    const { events, backups, auditShown, notice } = adminState;
+    const visibles = events.slice(0, auditShown);
+    const restantes = events.length - visibles.length;
+
+    openPanel(
+      `
+      <section class="hm-cms-admin">
+        ${notice ? `<p class="hm-cms-ok" data-admin-notice>${escapeHtml(notice)}</p>` : ''}
+
+        <h3>Registro de actividad</h3>
+        ${
+          adminState.auditError
+            ? `<p class="hm-cms-error">${escapeHtml(adminState.auditError)}</p>`
+            : ''
+        }
+        ${
+          visibles.length
+            ? `<ul class="hm-cms-admin-list">${visibles
+                .map(
+                  (e) => `<li${AUDIT_SECURITY.test(e.action) ? ' data-security' : ''}>
+                    <span>${escapeHtml(AUDIT_LABELS[e.action] || e.action)}${
+                      e.entityId
+                        ? ` <span class="hm-cms-muted">${escapeHtml(e.entityId)}</span>`
+                        : ''
+                    }</span>
+                    <span class="hm-cms-muted">${escapeHtml(formatDate(e.createdAt))}${e.ip ? ` · ${escapeHtml(e.ip)}` : ''}</span>
+                  </li>`
+                )
+                .join('')}</ul>
+              ${
+                restantes > 0
+                  ? `<button type="button" class="secondary" data-action="admin-more-audit">Ver ${Math.min(restantes, ADMIN_AUDIT_PAGE)} más (${restantes} restantes)</button>`
+                  : ''
+              }`
+            : '<p class="hm-cms-muted">Sin actividad registrada.</p>'
+        }
+        <h3>Respaldos de la base de datos</h3>
+        ${
+          adminState.backupError
+            ? `<p class="hm-cms-error">${escapeHtml(adminState.backupError)}</p>`
+            : ''
+        }
+        <p class="hm-cms-muted">Copia del contenido y la galería. Se guarda en el servidor, junto a la base; descárgala fuera del servidor si es un respaldo que quieres conservar.</p>
+        <span class="hm-cms-actions">
+          <button type="button" class="secondary" data-action="create-backup">Crear respaldo ahora</button>
+        </span>
+        ${
+          backups.length
+            ? `<ul class="hm-cms-admin-list">${backups
+                .map(
+                  (b) => `<li>
+                    <span>${escapeHtml(b.file)}</span>
+                    <span class="hm-cms-muted">${escapeHtml(formatDate(b.createdAt))} · ${escapeHtml(formatBytes(b.size))}</span>
+                  </li>`
+                )
+                .join('')}</ul>`
+            : '<p class="hm-cms-muted">Todavía no hay respaldos.</p>'
+        }
+
+        <h3>Cambiar contraseña</h3>
+        <form data-password-form>
+          <label>Contraseña actual
+            <input type="password" name="actual" autocomplete="current-password" required />
+          </label>
+          <label>Contraseña nueva
+            <input type="password" name="nueva" autocomplete="new-password" minlength="12" required />
+          </label>
+          <label>Repetir la nueva
+            <input type="password" name="repetir" autocomplete="new-password" minlength="12" required />
+          </label>
+          <p class="hm-cms-muted">Mínimo 12 caracteres. Al cambiarla se cierran las demás sesiones abiertas; esta se mantiene.</p>
+          <span class="hm-cms-actions">
+            <button type="submit">Cambiar contraseña</button>
+          </span>
+          <p class="hm-cms-muted" data-status></p>
+        </form>
+
+      </section>
+    `,
+      { autofocus: autofocus !== false }
+    );
+  }
+
   async function loadRevisions(entryId) {
     if (!(await ensureSession())) return;
+    setPanelTitle('Revisiones');
     openPanel(`<p class="hm-cms-muted">Cargando revisiones de ${escapeHtml(entryId)}...</p>`);
     try {
       const data = await api(`/api/cms/revisions/${encodeURIComponent(entryId)}`);
@@ -1247,6 +1498,7 @@
 
   async function loadPublishJobs() {
     if (!(await ensureSession())) return;
+    setPanelTitle('Historial de publicaciones');
     openPanel('<p class="hm-cms-muted">Cargando historial...</p>');
     try {
       const data = await api('/api/cms/publish/jobs');
@@ -2178,6 +2430,32 @@
       if (action === 'jobs') {
         loadPublishJobs();
       }
+      if (action === 'admin') {
+        loadAdmin();
+      }
+      if (action === 'admin-more-audit') {
+        adminState.auditShown += ADMIN_AUDIT_PAGE;
+        // Sin autofocus: el panel ya está abierto y devolver el foco al primer
+        // campo del formulario de contraseña sacaría al operador de la lista
+        // que acaba de expandir.
+        renderAdmin({ autofocus: false });
+      }
+      if (action === 'create-backup' && target instanceof Element) {
+        const btn = target.closest('[data-action="create-backup"]');
+        setButtonLoading(btn, true, 'Respaldando...');
+        try {
+          const result = await api('/api/cms/backup', { method: 'POST' });
+          const lista = await api('/api/cms/backup/list').catch(() => ({ backups: [] }));
+          adminState.backups = lista.backups || [];
+          adminState.backupError = '';
+          adminState.notice = `Respaldo creado: ${(result.file || '').split('/').pop()}`;
+          renderAdmin({ autofocus: false });
+        } catch (error) {
+          setButtonLoading(btn, false);
+          adminState.backupError = error.message;
+          renderAdmin({ autofocus: false });
+        }
+      }
       if (action === 'collections') {
         loadCollections();
       }
@@ -2606,6 +2884,39 @@
       });
     }
 
+    if (form.matches('[data-password-form]')) {
+      event.preventDefault();
+      const status = form.querySelector('[data-status]');
+      const btn = form.querySelector('button[type="submit"]');
+      const nueva = form.elements.nueva.value;
+      if (nueva !== form.elements.repetir.value) {
+        if (status)
+          status.innerHTML =
+            '<span class="hm-cms-error">Las dos contraseñas nuevas no coinciden.</span>';
+        return;
+      }
+      setButtonLoading(btn, true, 'Cambiando...');
+      try {
+        const result = await api('/api/cms/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actual: form.elements.actual.value, nueva }),
+        });
+        // La sesión se recreó al cambiar la contraseña: sin refrescar el token,
+        // la siguiente acción del panel fallaría con un 403 inexplicable.
+        if (result.csrfToken) state.csrfToken = result.csrfToken;
+        adminState.notice =
+          result.sessionsRevoked > 0
+            ? `Contraseña cambiada. Se cerraron ${result.sessionsRevoked} sesión${result.sessionsRevoked === 1 ? '' : 'es'} abierta${result.sessionsRevoked === 1 ? '' : 's'} en otros equipos.`
+            : 'Contraseña cambiada.';
+        renderAdmin({ autofocus: false });
+      } catch (error) {
+        setButtonLoading(btn, false);
+        if (status)
+          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+      }
+    }
+
     if (form.matches('[data-gallery-cat-form]')) {
       event.preventDefault();
       const status = form.querySelector('[data-status]');
@@ -2837,8 +3148,19 @@
     }
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
-      const preview = panelBody.querySelector('[data-image-preview]');
-      if (preview) preview.setAttribute('src', target.value);
+      // B-6: asignar el src en cada tecla hacía que el navegador pidiera una
+      // URL por pulsación (se capturó un 404 de
+      // `/TEXTO%20DE%20AUDITORIA%20SIN%20GUARDAR`) y la vista previa
+      // parpadeaba en roto mientras se escribía.
+      clearTimeout(previewTimer);
+      const valor = target.value;
+      previewTimer = setTimeout(() => {
+        const preview = panelBody.querySelector('[data-image-preview]');
+        // Solo cuando parece una ruta completa a una imagen.
+        if (preview && /^\/.+\.(webp|jpe?g|png|svg|avif)$/i.test(valor)) {
+          preview.setAttribute('src', valor);
+        }
+      }, 400);
     }
     if (target.name === 'alt' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');

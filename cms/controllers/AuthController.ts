@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { config } from '../config/unifiedConfig';
 import type { AuthService } from '../services/authService';
-import { loginSchema } from '../validators/cms.schema';
+import { changePasswordSchema, loginSchema } from '../validators/cms.schema';
 import { BaseController } from './BaseController';
 
 export class AuthController extends BaseController {
@@ -39,6 +39,32 @@ export class AuthController extends BaseController {
       this.handleSuccess(reply, { ok: true });
     } catch (error) {
       this.handleError(error, reply, 'logout');
+    }
+  }
+
+  /** M-6: cambio de contraseña desde el panel (antes solo por terminal). */
+  async changePassword(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    try {
+      const input = changePasswordSchema.parse(request.body);
+      const userId = request.cmsSession?.user.id;
+      if (!userId) throw new Error('No autenticado');
+
+      const { sessionsRevoked } = await this.authService.changePassword(
+        userId,
+        input.actual,
+        input.nueva,
+        { sessionId: request.cookies[config.cms.cookieName] }
+      );
+      // La sesión se recreó con un CSRF nuevo: sin devolverlo, la siguiente
+      // acción del panel fallaría con un 403 sin explicación.
+      const sesion = this.authService.getSession(request.cookies[config.cms.cookieName]);
+      this.handleSuccess(reply, {
+        ok: true,
+        sessionsRevoked,
+        csrfToken: sesion?.csrfToken,
+      });
+    } catch (error) {
+      this.handleError(error, reply, 'changePassword');
     }
   }
 

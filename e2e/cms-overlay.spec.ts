@@ -183,15 +183,51 @@ test.describe('CMS overlay flow', () => {
     // Panel should close after login
     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible({ timeout: 3000 });
 
-    // C-3: y la barra debe quedar operativa SIN recargar. Antes los cinco
-    // botones seguían con `hidden` porque el handler del login no fijaba el
+    // C-3: y la barra debe quedar operativa SIN recargar. Antes los botones
+    // seguían con `hidden` porque el handler del login no fijaba el
     // estado autenticado: el operador veía cerrarse el panel y una barra
     // vacía, y la única salida era recargar o clicar un elemento editable.
-    // Se enumeran los cinco en vez de contarlos: toHaveCount pasa igual
+    // Se enumeran en vez de contarlos: toHaveCount pasa igual
     // aunque estén ocultos, porque `hidden` no afecta al conteo del locator.
-    for (const action of ['collections', 'gallery', 'jobs', 'publish', 'logout']) {
+    for (const action of ['collections', 'gallery', 'jobs', 'admin', 'publish', 'logout']) {
       await expect(page.locator(`.hm-cms-bar [data-action="${action}"]`)).toBeVisible();
     }
+  });
+
+  // M-6: el registro de actividad, los respaldos y el cambio de contraseña
+  // existían en el servidor sin ninguna interfaz. Se comprueba que el panel
+  // los alcanza y que el formulario de contraseña es operable, no solo que
+  // el panel se abre.
+  test('administración muestra registro, respaldos y cambio de contraseña', async ({ page }) => {
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+
+    await page.locator('.hm-cms-bar [data-action="admin"]').click();
+    const panel = page.locator('.hm-cms-panel.open');
+    await expect(panel).toBeVisible();
+
+    await expect(panel.getByRole('heading', { name: 'Cambiar contraseña' })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: /Respaldos/i })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: /Registro de actividad/i })).toBeVisible();
+
+    // El registro tiene al menos el inicio de sesión que acaba de ocurrir.
+    await expect(panel.locator('.hm-cms-admin-list li[data-security]').first()).toBeVisible();
+
+    // Contraseñas que no coinciden: se rechaza en el cliente, sin llegar al
+    // servidor ni cambiar nada.
+    const form = panel.locator('form[data-password-form]');
+    await form.locator('[name="actual"]').fill(ADMIN_PASSWORD);
+    await form.locator('[name="nueva"]').fill('contrasena-larga-uno');
+    await form.locator('[name="repetir"]').fill('contrasena-larga-dos');
+    await form.locator('button[type="submit"]').click();
+    await expect(form.locator('[data-status]')).toContainText(/no coinciden/i);
+
+    // Contraseña actual equivocada: el servidor lo dice con su motivo, no con
+    // un genérico.
+    await form.locator('[name="actual"]').fill('no-es-la-mia');
+    await form.locator('[name="repetir"]').fill('contrasena-larga-uno');
+    await form.locator('button[type="submit"]').click();
+    await expect(form.locator('[data-status]')).toContainText(/contraseña actual/i);
   });
 
   test('collections panel opens and shows entries', async ({ page }) => {
@@ -225,7 +261,8 @@ test.describe('CMS mobile navigation', () => {
     await launcher.click();
     await expect(menu).toBeVisible();
     await expect(launcher).toHaveAttribute('aria-expanded', 'true');
-    await expect(menu.getByRole('button')).toHaveCount(6);
+    // 6 acciones más el botón de cerrar el panel.
+    await expect(menu.getByRole('button')).toHaveCount(7);
 
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();

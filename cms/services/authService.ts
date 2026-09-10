@@ -102,6 +102,63 @@ export class AuthService {
     return { sessionId, csrfToken, expiresAt };
   }
 
+  /**
+   * M-6: cambio de contraseña desde el panel.
+   *
+   * Hasta ahora la única forma era `npm run cms:reset-password` por línea de
+   * comandos, lo que en un servidor de producción significa pedírselo a un
+   * desarrollador. Exige la contraseña actual —una sesión robada no debe
+   * poder cambiarla— y revoca todas las demás sesiones, incluidas las del
+   * atacante si lo hubiera.
+   *
+   * @returns cuántas sesiones se revocaron (sin contar la actual).
+   */
+  async changePassword(
+    userId: string,
+    actual: string,
+    nueva: string,
+    opts: { sessionId?: string; costFactor?: number } = {}
+  ): Promise<{ sessionsRevoked: number }> {
+    if (nueva.length < 12) {
+      throw new Error('La contraseña nueva es demasiado corta: mínimo 12 caracteres.');
+    }
+
+    const user = this.userRepository.findById(userId);
+    if (!user) throw new Error('Usuario no encontrado');
+
+    if (!(await bcrypt.compare(actual, user.password_hash))) {
+      throw new Error('La contraseña actual no es correcta');
+    }
+    if (await bcrypt.compare(nueva, user.password_hash)) {
+      throw new Error('La contraseña nueva debe ser distinta de la actual');
+    }
+
+    const now = new Date().toISOString();
+    this.userRepository.updatePassword(
+      user.id,
+      await bcrypt.hash(nueva, opts.costFactor ?? 12),
+      now
+    );
+
+    // Se revocan todas y se recrea la actual, para no echar al operador de su
+    // propia sesión mientras cambia la contraseña.
+    const revocadas = this.userRepository.deleteSessionsByUser(user.id);
+    let restauradas = 0;
+    if (opts.sessionId) {
+      this.userRepository.createSession({
+        id: opts.sessionId,
+        userId: user.id,
+        csrfToken: nanoid(48),
+        expiresAt: new Date(
+          Date.now() + config.cms.sessionDays * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        now,
+      });
+      restauradas = 1;
+    }
+    return { sessionsRevoked: Math.max(0, revocadas - restauradas) };
+  }
+
   getSession(
     sessionId: string | undefined
   ): { user: { id: string; email: string }; csrfToken: string } | undefined {

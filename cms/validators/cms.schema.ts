@@ -7,6 +7,13 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+// M-6: el mínimo lo valida también authService, que es lo que protege a los
+// scripts y a cualquier otro llamador; aquí sirve para dar el mensaje antes.
+export const changePasswordSchema = z.object({
+  actual: z.string().min(1, 'Indique la contraseña actual'),
+  nueva: z.string().min(12, 'La contraseña nueva debe tener al menos 12 caracteres'),
+});
+
 export const entryParamsSchema = z.object({
   id: z.string().min(1).max(160),
 });

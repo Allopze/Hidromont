@@ -181,6 +181,7 @@ export function getMobileMenuRuntime() {
         <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
         <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
         <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
+        <button type="button" class="secondary" data-action="admin" data-auth hidden>Administrar</button>
         <button type="button" data-action="publish" data-auth hidden>Exportar y validar</button>
         <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
       </div>

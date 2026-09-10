@@ -158,6 +158,18 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     }
   );
   app.get('/api/cms/session', (request, reply) => authController.session(request, reply));
+  app.post(
+    '/api/cms/password',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      await authController.changePassword(request, reply);
+      auditRepository.log({
+        action: reply.statusCode === 200 ? 'password.change' : 'password.change_failed',
+        userId: request.cmsSession?.user.id,
+        ip: request.ip,
+      });
+    }
+  );
 
   app.get('/api/cms/manifest', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     contentController.manifest(request, reply)
