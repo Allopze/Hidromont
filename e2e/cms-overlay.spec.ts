@@ -182,6 +182,16 @@ test.describe('CMS overlay flow', () => {
 
     // Panel should close after login
     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible({ timeout: 3000 });
+
+    // C-3: y la barra debe quedar operativa SIN recargar. Antes los cinco
+    // botones seguían con `hidden` porque el handler del login no fijaba el
+    // estado autenticado: el operador veía cerrarse el panel y una barra
+    // vacía, y la única salida era recargar o clicar un elemento editable.
+    // Se enumeran los cinco en vez de contarlos: toHaveCount pasa igual
+    // aunque estén ocultos, porque `hidden` no afecta al conteo del locator.
+    for (const action of ['collections', 'gallery', 'jobs', 'publish', 'logout']) {
+      await expect(page.locator(`.hm-cms-bar [data-action="${action}"]`)).toBeVisible();
+    }
   });
 
   test('collections panel opens and shows entries', async ({ page }) => {

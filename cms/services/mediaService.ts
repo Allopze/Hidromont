@@ -52,8 +52,23 @@ function safeFilename(name: string): string {
 export class MediaService {
   constructor(private readonly mediaRepository: MediaRepository) {}
 
+  /**
+   * C-2: cada item lleva `missing` para que la cuadrícula pueda distinguir
+   * «archivo no encontrado» de una miniatura que simplemente tarda. Antes el
+   * operador veía imágenes rotas sin explicación — y llegaron a ser 1.721 de
+   * 2.140 por un CMS_UPLOAD_DIR mal apuntado.
+   */
   listMedia(limit = 100, offset = 0, q?: string) {
-    return this.mediaRepository.list(limit, offset, q);
+    const { items, total } = this.mediaRepository.list(limit, offset, q);
+    return {
+      items: items.map((item) => ({ ...item, missing: this.isMissingOnDisk(item.path) })),
+      total,
+    };
+  }
+
+  /** C-2: ¿el archivo al que apunta este asset sigue existiendo? */
+  isMissingOnDisk(assetPath: string): boolean {
+    return !fs.existsSync(resolvePublicAssetPath(assetPath));
   }
 
   getMediaWithUsages(id: string) {
@@ -63,7 +78,10 @@ export class MediaService {
     return { ...asset, usages };
   }
 
-  async syncPublicMedia(): Promise<{ imported: number; orphaned: string[] }> {
+  async syncPublicMedia(): Promise<{
+    imported: number;
+    orphaned: Array<{ id: string; path: string; name: string }>;
+  }> {
     let imported = 0;
     for (const { directory, publicBase } of publicMediaRoots()) {
       if (!fs.existsSync(directory)) continue;
@@ -116,7 +134,7 @@ export class MediaService {
         `[CMS] ADVERTENCIA: ${orphaned.length} media asset(s) referencian archivos que ya no existen en disco:\n` +
           orphaned
             .slice(0, 10)
-            .map((p) => `  - ${p}`)
+            .map((o) => `  - ${o.path} (${o.name})`)
             .join('\n') +
           (orphaned.length > 10 ? `\n  ... y ${orphaned.length - 10} más` : '') +
           '\n[CMS] Revise la biblioteca de medios y reasigne o elimine según corresponda.\n'
@@ -130,17 +148,11 @@ export class MediaService {
    * A1-012: retorna los paths públicos de media_assets cuyo archivo físico ya no
    * existe en disco. No muta la DB; sólo reporta para que el operador actúe.
    */
-  private detectOrphanedMedia(): string[] {
+  detectOrphanedMedia(): Array<{ id: string; path: string; name: string }> {
     const { items: all } = this.mediaRepository.list(100000, 0);
-    const orphaned: string[] = [];
-    for (const asset of all) {
-      // Sólo verificar assets de los roots públicos (no uploads huérfanos de otros origenes).
-      const localPath = resolvePublicAssetPath(asset.path);
-      if (!fs.existsSync(localPath)) {
-        orphaned.push(`${asset.path} (${asset.name})`);
-      }
-    }
-    return orphaned;
+    return all
+      .filter((asset) => this.isMissingOnDisk(asset.path))
+      .map((asset) => ({ id: asset.id, path: asset.path, name: asset.name }));
   }
 
   async createMedia(input: { filename: string; mime: string; buffer: Buffer; alt?: string }) {

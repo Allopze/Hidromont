@@ -1,8 +1,16 @@
+import type Database from 'better-sqlite3';
 import { getDb } from './connection';
 
-export function migrate(): void {
-  const db = getDb();
-
+/**
+ * Aplica el esquema y las migraciones idempotentes.
+ *
+ * P0-A: el parámetro `db` existe para que `cms/test/setup.ts` pueda migrar una
+ * base `:memory:` con esta misma función en vez de mantener una copia a mano
+ * del DDL. Esa copia se desincronizaba en silencio: un índice o una columna
+ * nueva aquí no llegaba a los tests hasta que alguien la duplicaba allí.
+ * Por defecto usa la conexión del proceso, así que ningún llamador cambia.
+ */
+export function migrate(db: Database.Database = getDb()): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -150,6 +158,51 @@ export function migrate(): void {
   migrateGalleryItemsOnDeleteSetNull(db);
   migratePublishJobsUpdatedAt(db);
   migratePublishJobsAction(db);
+  migrateCollectionSlugUniqueness(db);
+}
+
+/**
+ * Migración C-1: impide que dos entradas de colección compartan slug.
+ *
+ * El archivo exportado se nombra por slug (`src/content/<colección>/<slug>.md`),
+ * así que dos entradas con el mismo slug se pisan al exportar y — peor —
+ * borrar una elimina el .md de la otra. Reproducido en auditoría: borrar una
+ * entrada de prueba destruyó `src/content/proyectos/ch-pangal.md`.
+ *
+ * El índice es PARCIAL a propósito. Las entradas de página comparten slug de
+ * forma legítima (34 entradas sobre 9 slugs: `/empresa` ×7, `/` ×6…) porque no
+ * se materializan en un archivo propio; un índice sin filtrar fallaría al
+ * crearse y, al vivir aquí, tumbaría el arranque del servidor.
+ *
+ * Idempotente. Si encuentra duplicados preexistentes NO crea el índice y los
+ * reporta: abortar dejaría al operador sin CMS y sin forma de arreglarlo desde
+ * la interfaz. La validación en ContentRepository protege mientras tanto.
+ */
+function migrateCollectionSlugUniqueness(db: ReturnType<typeof getDb>): void {
+  const duplicates = db
+    .prepare(
+      `SELECT kind, slug, locale, COUNT(*) AS n, GROUP_CONCAT(id, ', ') AS ids
+         FROM content_entries
+        WHERE kind IN ('servicio', 'proyecto')
+        GROUP BY kind, slug, locale
+       HAVING n > 1`
+    )
+    .all() as Array<{ kind: string; slug: string; locale: string; n: number; ids: string }>;
+
+  if (duplicates.length > 0) {
+    process.stderr.write(
+      `[CMS] ADVERTENCIA: ${duplicates.length} slug(s) de colección están duplicados; no se creó el índice único.\n` +
+        duplicates.map((d) => `  - ${d.kind} "${d.slug}" (${d.n}): ${d.ids}\n`).join('') +
+        '[CMS] Renombre el slug de las entradas sobrantes desde el CMS y reinicie para activar la protección.\n'
+    );
+    return;
+  }
+
+  db.exec(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_content_entries_collection_slug
+       ON content_entries (kind, slug, locale)
+       WHERE kind IN ('servicio', 'proyecto');`
+  );
 }
 
 /**

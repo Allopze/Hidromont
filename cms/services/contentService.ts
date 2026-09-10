@@ -40,7 +40,16 @@ function requiredFieldTemplate(kind: string, title: string): Record<string, Seed
 }
 
 export class ContentService {
-  constructor(private readonly contentRepository: ContentRepository) {}
+  /**
+   * @param rootDir raíz del repo donde vive `src/content`. Configurable por el
+   *   mismo motivo que en ExportService: sin esto, un test que borre una
+   *   entrada de tipo servicio/proyecto elimina un .md real del repositorio,
+   *   porque `deleteEntry` resuelve la ruta contra config.rootDir.
+   */
+  constructor(
+    private readonly contentRepository: ContentRepository,
+    private readonly rootDir: string = config.rootDir
+  ) {}
 
   importInitialContent(): { imported: number } {
     const now = new Date().toISOString();
@@ -128,8 +137,20 @@ export class ContentService {
     // hand. Remove it here, at the one point where we have unambiguous
     // knowledge of exactly which file belonged to this entry.
     if (entry && (entry.kind === 'servicio' || entry.kind === 'proyecto')) {
+      // C-1: el archivo se nombra por slug, y el slug no es exclusivo de esta
+      // entrada en bases anteriores al índice único. Si otra entrada lo
+      // reclama, el .md es suyo: borrarlo aquí destruiría contenido ajeno.
+      // Reproducido en auditoría: borrar una entrada de prueba eliminó
+      // src/content/proyectos/ch-pangal.md, de un proyecto distinto.
+      const claimedByOther = this.contentRepository.findCollectionEntryBySlug(
+        entry.kind,
+        entry.slug,
+        entry.locale
+      );
+      if (claimedByOther) return;
+
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
-      const target = path.join(config.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
+      const target = path.join(this.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
       if (fs.existsSync(target)) {
         fs.unlinkSync(target);
       }

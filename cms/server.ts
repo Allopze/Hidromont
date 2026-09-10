@@ -1,3 +1,4 @@
+import path from 'node:path';
 import fastify from 'fastify';
 import { config } from './config/unifiedConfig';
 import { registerCmsRoutes } from './routes/cmsRoutes';
@@ -57,6 +58,27 @@ if (config.admin.password === DEFAULT_PASSWORD && isLocalOnly) {
       '[CMS] port-forward igual lo expondrían con esta credencial conocida públicamente.\n' +
       '[CMS] Ejecute `npm run cms:reset-password` antes de exponer este servidor de cualquier forma.\n'
   );
+}
+
+// C-2: el directorio de subidas NUNCA debe caer dentro de public/. Astro copia
+// public/ entero a dist/ en cada build, así que ahí dentro los 2+ GB de
+// originales se duplicarían en cada compilación. El .env del proyecto apuntaba
+// a ./public/uploads/cms — un directorio que ni siquiera existía — y el
+// resultado fueron 1.705 de 2.140 medios sirviendo 404 sin un solo error.
+const publicDir = path.join(config.rootDir, 'public');
+const resolvedUploadDir = path.resolve(config.cms.uploadDir);
+if (resolvedUploadDir === publicDir || resolvedUploadDir.startsWith(`${publicDir}${path.sep}`)) {
+  process.stderr.write(
+    '[CMS] ERROR: CMS_UPLOAD_DIR apunta dentro de public/ (' +
+      resolvedUploadDir +
+      ').\n' +
+      '[CMS] Astro copia public/ a dist/ en cada build: los originales subidos\n' +
+      '[CMS] se duplicarían en cada compilación y engordarían el sitio publicado.\n' +
+      '[CMS] Use una ruta fuera de public/, por ejemplo CMS_UPLOAD_DIR=./uploads/cms.\n' +
+      '[CMS] El servidor del CMS ya los sirve en /uploads/cms sin necesidad de que\n' +
+      '[CMS] estén en public/ (ver cms/staticSite.ts).\n'
+  );
+  process.exit(1);
 }
 
 const app = fastify({

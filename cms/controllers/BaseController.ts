@@ -7,7 +7,9 @@ import { captureException } from '../utils/errorTracking';
 const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] = [
   { test: /Credenciales|inválidas/i, status: 401, message: 'Credenciales inválidas' },
   { test: /no encontrad[ao]/i, status: 404, message: 'Recurso no encontrado' },
-  { test: /ya existe/i, status: 400, message: 'Ya existe un registro con ese identificador' },
+  // C-1: el mensaje original nombra la entrada en conflicto y su slug, que es
+  // justo lo que el editor necesita para resolverlo. El genérico lo ocultaba.
+  { test: /ya existe/i, status: 400, message: undefined as unknown as string },
   // GAL-19: borrar un álbum con fotos se rechaza con su motivo intacto — el
   // operador necesita saber cuántas fotos hay que mover antes de reintentar.
   {

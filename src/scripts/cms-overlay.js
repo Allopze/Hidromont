@@ -630,7 +630,15 @@
       headers,
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || 'Error CMS');
+    if (!response.ok) {
+      // P0-D: el status y el detalle estructurado se pierden si solo se
+      // propaga el mensaje. Los necesitan A-1 (campos inválidos), A-3
+      // (distinguir el 409 de conflicto de edición) y B-1.
+      throw Object.assign(new Error(data.error || 'Error CMS'), {
+        status: response.status,
+        details: data.details,
+      });
+    }
     return data;
   }
 
@@ -2054,7 +2062,15 @@
           }),
         });
         state.csrfToken = result.csrfToken;
-        closePanel();
+        // C-3: sin esto la barra se queda sin botones tras entrar. El estado
+        // autenticado solo lo fijaba ensureSession(), que corre al cargar la
+        // página y en cada acción — pero las acciones son justo los botones
+        // que siguen ocultos. El operador veía el panel cerrarse y una barra
+        // vacía, y la única salida era recargar.
+        // Se reusa ensureSession() en vez de llamar a setAuthenticatedUI(true)
+        // a secas para confirmar que la cookie vuelve de verdad: el modo de
+        // fallo clásico aquí es emitirla para 127.0.0.1 y pedirla a localhost.
+        if (await ensureSession()) closePanel();
       } catch (error) {
         loginView(error.message);
       }

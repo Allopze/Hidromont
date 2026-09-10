@@ -67,7 +67,15 @@ export const config = {
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
     // Fuera de public/ para que Astro no copie los originales (2+ GB) a dist/
     // en cada build; el servidor CMS los sirve directamente en /uploads/cms.
-    uploadDir: process.env.CMS_UPLOAD_DIR ?? path.join(rootDir, 'uploads', 'cms'),
+    //
+    // C-2: se resuelve contra rootDir y no contra el CWD. Antes el valor de
+    // entorno se usaba crudo, así que un `./uploads/cms` apuntaba a un sitio
+    // distinto según desde dónde se lanzara el proceso — y un `.env` que
+    // apuntaba a `./public/uploads/cms` (directorio inexistente) dejó 1.705
+    // de 2.140 medios irrecuperables sin que nada fallara de forma visible.
+    uploadDir: process.env.CMS_UPLOAD_DIR
+      ? path.resolve(rootDir, process.env.CMS_UPLOAD_DIR)
+      : path.join(rootDir, 'uploads', 'cms'),
     publicUploadBase: '/uploads/cms',
     publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build',
   },

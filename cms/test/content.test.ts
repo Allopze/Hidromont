@@ -78,6 +78,77 @@ describe('Content API', () => {
       expect(entry.fields.body.value).toBe('Contenido de prueba');
     });
 
+    // C-1: el archivo exportado se nombra por slug, así que dos entradas de
+    // colección con el mismo slug se pisan al exportar y borrar una elimina el
+    // .md de la otra. Reproducido en auditoría con pérdida real de contenido.
+    it('rechaza un slug de colección ya usado y nombra el conflicto (C-1)', async () => {
+      const crear = (id: string) =>
+        ctx.app.inject(
+          authedMut({
+            method: 'POST',
+            url: '/api/cms/entries',
+            body: JSON.stringify({
+              id,
+              kind: 'proyecto',
+              slug: 'obra-compartida',
+              title: `Obra ${id}`,
+              status: 'published',
+            }),
+          })
+        );
+
+      expect((await crear('test.obra-a')).statusCode).toBe(201);
+
+      const choque = await crear('test.obra-b');
+      expect(choque.statusCode).toBe(400);
+      const { error } = choque.json<{ error: string }>();
+      // El mensaje debe llegar íntegro: nombra la entrada en conflicto para que
+      // el editor sepa cuál es. BaseController lo sustituía por un genérico.
+      expect(error).toMatch(/obra-compartida/);
+      expect(error).toMatch(/test\.obra-a/);
+    });
+
+    it('permite que dos páginas compartan slug (C-1, no-regresión)', async () => {
+      // 34 entradas de tipo page comparten 9 slugs a propósito: no se
+      // materializan en un archivo por slug, así que el índice único NO
+      // debe alcanzarlas.
+      for (const id of ['test.pagina-a', 'test.pagina-b']) {
+        const res = await ctx.app.inject(
+          authedMut({
+            method: 'POST',
+            url: '/api/cms/entries',
+            body: JSON.stringify({ id, kind: 'page', slug: '/compartida', title: id }),
+          })
+        );
+        expect(res.statusCode).toBe(201);
+      }
+    });
+
+    it('rechaza renombrar una entrada a un slug de colección ocupado (C-1)', async () => {
+      await ctx.app.inject(
+        authedMut({
+          method: 'POST',
+          url: '/api/cms/entries',
+          body: JSON.stringify({
+            id: 'test.obra-c',
+            kind: 'proyecto',
+            slug: 'obra-propia',
+            title: 'Obra C',
+          }),
+        })
+      );
+
+      const res = await ctx.app.inject(
+        authedMut({
+          method: 'PATCH',
+          url: '/api/cms/entries/test.obra-c',
+          body: JSON.stringify({ slug: 'obra-compartida' }),
+        })
+      );
+      expect(res.statusCode).toBe(400);
+      expect(res.json<{ error: string }>().error).toMatch(/obra-compartida/);
+    });
+
     it('returns 400 on duplicate id', async () => {
       const res = await ctx.app.inject(
         authedMut({

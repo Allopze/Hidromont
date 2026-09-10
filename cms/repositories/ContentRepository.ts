@@ -87,6 +87,7 @@ export class ContentRepository {
   }): CmsEntry {
     const existing = this.findEntryRow(input.id);
     if (existing) throw new Error(`Ya existe una entrada con id "${input.id}"`);
+    this.assertSlugAvailable(input.kind, input.slug, input.locale ?? 'es-CL');
 
     const transaction = this.db.transaction(() => {
       this.db
@@ -132,6 +133,10 @@ export class ContentRepository {
     const newSlug = meta.slug ?? existing.slug;
     const newStatus = meta.status ?? existing.status;
 
+    if (newSlug !== existing.slug) {
+      this.assertSlugAvailable(existing.kind, newSlug, existing.locale, id);
+    }
+
     this.db
       .prepare(
         'UPDATE content_entries SET title = ?, slug = ?, status = ?, updated_at = ? WHERE id = ?'
@@ -163,6 +168,15 @@ export class ContentRepository {
   }): boolean {
     const existing = this.findEntryRow(input.id);
     if (existing) return false;
+    // C-1: corre en cada arranque desde importMissingEntries(). Con el índice
+    // único activo, un choque de slug haría que el INSERT OR IGNORE silenciara
+    // la violación y luego contáramos como insertada una entrada inexistente.
+    if (
+      ContentRepository.isCollectionKind(input.kind) &&
+      this.findCollectionEntryBySlug(input.kind, input.slug, input.locale ?? 'es-CL')
+    ) {
+      return false;
+    }
 
     const transaction = this.db.transaction(() => {
       this.db
@@ -381,6 +395,52 @@ export class ContentRepository {
       this.db
         .prepare('UPDATE content_entries SET version = version + 1, updated_at = ? WHERE id = ?')
         .run(now, entryId);
+    }
+  }
+
+  /**
+   * C-1: busca otra entrada de la misma colección que reclame este slug.
+   *
+   * `id` y `slug` son independientes por diseño (el id no cambia aunque el
+   * slug se edite, ver pruneStaleCollectionFiles en exportService), pero nada
+   * impedía que dos entradas compartieran slug — y como el archivo exportado
+   * se nombra por slug, borrar una entrada eliminaba el .md de la otra.
+   * Solo aplica a `servicio`/`proyecto`: las entradas de página comparten slug
+   * a propósito (34 entradas sobre 9 slugs) porque no se materializan en un
+   * archivo propio.
+   */
+  findCollectionEntryBySlug(
+    kind: string,
+    slug: string,
+    locale: string,
+    excludeId?: string
+  ): { id: string; title: string } | undefined {
+    return this.db
+      .prepare(
+        `SELECT id, title FROM content_entries
+          WHERE kind = ? AND slug = ? AND locale = ? AND id IS NOT ?
+          LIMIT 1`
+      )
+      .get(kind, slug, locale, excludeId ?? null) as { id: string; title: string } | undefined;
+  }
+
+  /** C-1: solo las colecciones se materializan en un archivo por slug. */
+  private static isCollectionKind(kind: string): boolean {
+    return kind === 'servicio' || kind === 'proyecto';
+  }
+
+  private assertSlugAvailable(
+    kind: string,
+    slug: string,
+    locale: string,
+    excludeId?: string
+  ): void {
+    if (!ContentRepository.isCollectionKind(kind)) return;
+    const clash = this.findCollectionEntryBySlug(kind, slug, locale, excludeId);
+    if (clash) {
+      throw new Error(
+        `Ya existe una entrada de tipo "${kind}" con el slug "${slug}": «${clash.title}» (${clash.id}). Elija otro slug.`
+      );
     }
   }
 

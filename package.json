@@ -9,6 +9,7 @@
     "dev:cms": "concurrently \"npm run dev\" \"npm run cms\"",
     "cms:import": "tsx cms/scripts/import.ts",
     "cms:sync-media": "tsx cms/scripts/sync-media.ts",
+    "cms:fix-orphan-media": "tsx cms/scripts/fix-orphan-media.ts",
     "cms:import-gallery": "tsx cms/scripts/import-gallery-json.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",

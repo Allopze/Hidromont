@@ -3,6 +3,9 @@
  * Cada suite importa createTestApp() y llama a app.close() al terminar.
  */
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import Database from 'better-sqlite3';
 import fastify, { type FastifyInstance } from 'fastify';
 import { nanoid } from 'nanoid';
@@ -27,135 +30,7 @@ import { GalleryController } from '../controllers/GalleryController';
 import { MediaController } from '../controllers/MediaController';
 import { PublishController } from '../controllers/PublishController';
 import { requireAuth, requireCsrf } from '../middleware/security';
-
-const SCHEMA_SQL = `
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS sessions (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    csrf_token TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-  );
-  CREATE TABLE IF NOT EXISTS content_entries (
-    id TEXT PRIMARY KEY,
-    kind TEXT NOT NULL,
-    slug TEXT NOT NULL,
-    locale TEXT NOT NULL DEFAULT 'es-CL',
-    title TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'published',
-    version INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS content_fields (
-    entry_id TEXT NOT NULL,
-    key TEXT NOT NULL,
-    type TEXT NOT NULL,
-    value_json TEXT NOT NULL,
-    source_ref_json TEXT,
-    updated_at TEXT NOT NULL,
-    PRIMARY KEY (entry_id, key),
-    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
-  );
-  CREATE TABLE IF NOT EXISTS media_assets (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    path TEXT NOT NULL,
-    mime TEXT NOT NULL,
-    width INTEGER,
-    height INTEGER,
-    size INTEGER NOT NULL,
-    alt TEXT,
-    focal_x REAL DEFAULT 0.5,
-    focal_y REAL DEFAULT 0.5,
-    checksum TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS revisions (
-    id TEXT PRIMARY KEY,
-    entry_id TEXT NOT NULL,
-    version INTEGER NOT NULL,
-    snapshot_json TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
-  );
-  CREATE TABLE IF NOT EXISTS publish_jobs (
-    id TEXT PRIMARY KEY,
-    status TEXT NOT NULL,
-    action TEXT NOT NULL DEFAULT 'publish',
-    logs TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    completed_at TEXT
-  );
-  CREATE TABLE IF NOT EXISTS audit_events (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    action TEXT NOT NULL,
-    entity_type TEXT,
-    entity_id TEXT,
-    data_json TEXT,
-    ip TEXT,
-    created_at TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS login_attempts (
-    ip TEXT PRIMARY KEY,
-    count INTEGER NOT NULL DEFAULT 0,
-    reset_at TEXT NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS media_usages (
-    media_id TEXT NOT NULL,
-    entry_id TEXT NOT NULL,
-    field_key TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    PRIMARY KEY (media_id, entry_id, field_key),
-    FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE CASCADE,
-    FOREIGN KEY (entry_id) REFERENCES content_entries(id) ON DELETE CASCADE
-  );
-
-    CREATE TABLE IF NOT EXISTS gallery_categories (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      slug TEXT NOT NULL UNIQUE,
-      position INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS gallery_albums (
-      slug TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      position INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS gallery_items (
-      id TEXT PRIMARY KEY,
-      media_id TEXT,
-      category_id TEXT,
-      project_slug TEXT,
-      title TEXT NOT NULL,
-      alt TEXT NOT NULL,
-      caption TEXT,
-      position INTEGER NOT NULL DEFAULT 0,
-      featured INTEGER NOT NULL DEFAULT 0,
-      status TEXT NOT NULL DEFAULT 'published',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
-      FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
-    );
-`;
+import { migrate } from '../db/schema';
 
 export interface TestApp {
   app: FastifyInstance;
@@ -170,6 +45,14 @@ export interface TestApp {
   rateLimitRepository: RateLimitRepository;
   adminEmail: string;
   adminPassword: string;
+  /**
+   * P0-C: raíz temporal que reciben ContentService y ExportService. Sin ella
+   * ambos resuelven contra config.rootDir, así que un test que borre una
+   * entrada de colección o dispare un export escribe sobre el repo real.
+   */
+  rootDir: string;
+  /** Borra la raíz temporal. Llamar junto a app.close(). */
+  cleanup(): void;
   /** Login and return { csrfToken, cookieHeader } for subsequent requests */
   login(): Promise<{ csrfToken: string; cookieHeader: string }>;
 }
@@ -178,7 +61,15 @@ export async function createTestApp(): Promise<TestApp> {
   const db = new Database(':memory:');
   db.pragma('foreign_keys = ON');
   db.pragma('journal_mode = WAL');
-  db.exec(SCHEMA_SQL);
+  // P0-B: migrar con la misma función que el servidor en vez de una copia del
+  // DDL a mano. La copia se desincronizaba en silencio y ningún índice o
+  // columna nueva llegaba a los tests hasta que alguien la duplicaba aquí.
+  migrate(db);
+
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-test-'));
+  fs.mkdirSync(path.join(rootDir, 'src', 'data'), { recursive: true });
+  fs.mkdirSync(path.join(rootDir, 'src', 'content', 'servicios'), { recursive: true });
+  fs.mkdirSync(path.join(rootDir, 'src', 'content', 'proyectos'), { recursive: true });
 
   const adminEmail = `admin-${nanoid(6)}@test.local`;
   const adminPassword = 'Test-Pass-123!';
@@ -194,8 +85,8 @@ export async function createTestApp(): Promise<TestApp> {
   // Use cost factor 4 for fast test hashing
   await authService.ensureAdminUserWith(adminEmail, adminPassword, 4);
 
-  const contentService = new ContentService(contentRepository);
-  const exportService = new ExportService(contentRepository);
+  const contentService = new ContentService(contentRepository, rootDir);
+  const exportService = new ExportService(contentRepository, rootDir);
   const mediaService = new MediaService(mediaRepository);
   const publishService = new PublishService(exportService, publishJobRepository);
 
@@ -388,6 +279,8 @@ export async function createTestApp(): Promise<TestApp> {
     rateLimitRepository,
     adminEmail,
     adminPassword,
+    rootDir,
+    cleanup: () => fs.rmSync(rootDir, { recursive: true, force: true }),
     login,
   };
 }
