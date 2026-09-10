@@ -72,7 +72,10 @@ export class MediaController extends BaseController {
   async delete(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const params = request.params as { id: string };
-      const result = this.mediaService.deleteMedia(params.id);
+      // A-4: sin `?confirm=1`, borrar una imagen en uso se rechaza con el
+      // detalle de dónde se usa, para que la decisión sea informada.
+      const { confirm } = request.query as { confirm?: string };
+      const result = this.mediaService.deleteMedia(params.id, confirm === '1');
       this.handleSuccess(reply, { ok: true, orphanedGalleryItems: result.orphanedGalleryItems });
     } catch (error) {
       this.handleError(error, reply, 'deleteMedia');

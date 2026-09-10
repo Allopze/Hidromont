@@ -288,14 +288,37 @@ export class ContentRepository {
         .run(nextVersion, now, entryId);
       this.createRevision(entryId, nextVersion, now);
 
-      if (mediaId) {
+      // A-4: registrar qué imagen usa este campo, para poder avisar antes de
+      // borrarla. La tabla llevaba vacía desde su creación porque el overlay
+      // nunca mandaba `mediaId`, así que `usageCount` era siempre 0 y el CMS
+      // no podía decir en qué páginas estaba una foto.
+      //
+      // Si no llega, se resuelve por ruta: así queda cubierto todo el que
+      // escriba un campo de imagen (el editor inline, el formulario de
+      // colección, los scripts), no solo quien pase por el selector de medios.
+      let resolvedMediaId = mediaId;
+      if (!resolvedMediaId && field.type === 'image' && typeof value === 'string' && value) {
+        const asset = this.db
+          .prepare('SELECT id FROM media_assets WHERE path = ? ORDER BY created_at ASC LIMIT 1')
+          .get(value) as { id: string } | undefined;
+        resolvedMediaId = asset?.id;
+      }
+
+      // Un campo apunta a una sola imagen a la vez. Sin este borrado, cambiar
+      // la imagen de A a B dejaba las dos filas y `usageCount` inflaba para
+      // siempre.
+      this.db
+        .prepare('DELETE FROM media_usages WHERE entry_id = ? AND field_key = ?')
+        .run(entryId, key);
+
+      if (resolvedMediaId) {
         this.db
           .prepare(
             `INSERT INTO media_usages (media_id, entry_id, field_key, updated_at)
              VALUES (?, ?, ?, ?)
              ON CONFLICT(media_id, entry_id, field_key) DO UPDATE SET updated_at = excluded.updated_at`
           )
-          .run(mediaId, entryId, key, now);
+          .run(resolvedMediaId, entryId, key, now);
       }
     });
 

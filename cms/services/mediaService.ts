@@ -75,7 +75,10 @@ export class MediaService {
     const asset = this.mediaRepository.find(id);
     if (!asset) throw new Error(`Media asset ${id} no encontrado`);
     const usages = this.mediaRepository.getUsages(id);
-    return { ...asset, usages };
+    // A-4: los dos consumidores de una imagen son los campos de contenido y
+    // los items de galería. Devolver ambos permite avisar antes de borrar.
+    const galleryItems = this.mediaRepository.countGalleryItemsByMedia(id);
+    return { ...asset, usages, galleryItems, missing: this.isMissingOnDisk(asset.path) };
   }
 
   async syncPublicMedia(): Promise<{
@@ -228,9 +231,35 @@ export class MediaService {
    * huerfanos (media_id -> NULL tras el ON DELETE SET NULL, ver A1-004). El caller
    * puede usar este recuento para advertir al usuario en la UI.
    */
-  deleteMedia(id: string): { orphanedGalleryItems: number } {
+  /**
+   * A-4: `confirm` es obligatorio si la imagen está en uso. Antes el borrado
+   * era de un solo paso y el recuento de items huérfanos se informaba
+   * DESPUÉS de borrar, cuando ya no servía para decidir.
+   */
+  deleteMedia(id: string, confirm = false): { orphanedGalleryItems: number } {
     const asset = this.mediaRepository.find(id);
     if (!asset) throw new Error(`Media asset ${id} no encontrado`);
+
+    if (!confirm) {
+      const usages = this.mediaRepository.getUsages(id);
+      const galleryItems = this.mediaRepository.countGalleryItemsByMedia(id);
+      if (usages.length > 0 || galleryItems > 0) {
+        const partes = [];
+        if (usages.length > 0) {
+          partes.push(
+            `${usages.length} campo(s) de contenido (${usages
+              .slice(0, 5)
+              .map((u) => `${u.entryId}.${u.fieldKey}`)
+              .join(', ')}${usages.length > 5 ? '…' : ''})`
+          );
+        }
+        if (galleryItems > 0) partes.push(`${galleryItems} foto(s) de galería`);
+        throw new Error(
+          `La imagen "${asset.name}" está en uso: ${partes.join(' y ')}. ` +
+            'Reemplácela donde se usa, o repita la operación confirmando para borrarla igualmente.'
+        );
+      }
+    }
 
     // Contar items de galeria que referencian este media ANTES de borrarlo.
     // FK ON DELETE SET NULL los dejara con media_id=NULL (no se pierden).

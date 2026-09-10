@@ -54,7 +54,10 @@ describe('A1-004 — borrar media NO elimina items de galería (SET NULL)', () =
   });
 
   it('deleteMedia reporta cuántos items quedaran huerfanos', () => {
-    const result = ctx.mediaService.deleteMedia(mediaId);
+    // A-4: borrar una imagen en uso exige confirmación explícita. La
+    // intención de esta regresión no cambia — lo que se comprueba es que el
+    // borrado NO arrastra los items de galería en cascada.
+    const result = ctx.mediaService.deleteMedia(mediaId, true);
     expect(result.orphanedGalleryItems).toBe(1);
   });
 

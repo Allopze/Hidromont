@@ -121,6 +121,48 @@ describe('Media API', () => {
     });
   });
 
+  describe('A-4 — borrado en dos pasos de una imagen en uso', () => {
+    it('rechaza con 409 y dice dónde se usa; con confirm=1 la borra', async () => {
+      const now = new Date().toISOString();
+      const mediaId = nanoid();
+      ctx.db
+        .prepare(
+          `INSERT INTO media_assets (id, name, path, mime, size, alt, focal_x, focal_y, checksum, created_at, updated_at)
+           VALUES (?, 'en-uso.jpg', ?, 'image/jpeg', 1024, 'alt', 0.5, 0.5, 'chk', ?, ?)`
+        )
+        .run(mediaId, `/uploads/cms/${mediaId}.jpg`, now, now);
+      // media_usages.entry_id tiene FK contra content_entries.
+      ctx.db
+        .prepare(
+          `INSERT INTO content_entries (id, kind, slug, locale, title, status, version, created_at, updated_at)
+           VALUES ('home.hero', 'page', '/', 'es-CL', 'Hero', 'published', 1, ?, ?)`
+        )
+        .run(now, now);
+      ctx.db
+        .prepare(
+          `INSERT INTO media_usages (media_id, entry_id, field_key, updated_at) VALUES (?, ?, ?, ?)`
+        )
+        .run(mediaId, 'home.hero', 'image', now);
+
+      const rechazo = await ctx.app.inject(
+        authedMutNoBody({ method: 'DELETE', url: `/api/cms/media/${mediaId}` })
+      );
+      expect(rechazo.statusCode).toBe(409);
+      const { error } = rechazo.json<{ error: string }>();
+      expect(error).toMatch(/en uso/i);
+      expect(error).toMatch(/home\.hero\.image/);
+
+      // Sigue en la base: el rechazo no debe haber borrado nada.
+      expect(ctx.mediaService.findMedia(mediaId)).toBeDefined();
+
+      const confirmado = await ctx.app.inject(
+        authedMutNoBody({ method: 'DELETE', url: `/api/cms/media/${mediaId}?confirm=1` })
+      );
+      expect(confirmado.statusCode).toBe(200);
+      expect(ctx.mediaService.findMedia(mediaId)).toBeUndefined();
+    });
+  });
+
   describe('GET /api/cms/media pagination (H-16)', () => {
     it('returns paginated media items list', async () => {
       const res = await ctx.app.inject(

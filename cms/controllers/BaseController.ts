@@ -1,5 +1,7 @@
 import type { FastifyReply } from 'fastify';
+import { ZodError } from 'zod';
 import { captureException } from '../utils/errorTracking';
+import { fieldErrorsFromZod, summarizeZod } from '../validators/zodError';
 
 // H-15: Mensajes de error amigables para el cliente. Los errores internos (SQLite,
 // filesystem, etc.) se loguean completos server-side pero se envían genéricamente
@@ -10,6 +12,12 @@ const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] 
   // C-1: el mensaje original nombra la entrada en conflicto y su slug, que es
   // justo lo que el editor necesita para resolverlo. El genérico lo ocultaba.
   { test: /ya existe/i, status: 400, message: undefined as unknown as string },
+  // A-3: el conflicto de edición merece un 409, no un 400: el overlay lo
+  // distingue para ofrecer comparar y reintentar en vez de tratarlo como un
+  // dato mal escrito. El mensaje ya trae la versión actual y la esperada.
+  { test: /Conflicto de edición/i, status: 409, message: undefined as unknown as string },
+  // A-4: borrar una imagen en uso se rechaza con el detalle de dónde se usa.
+  { test: /está en uso/i, status: 409, message: undefined as unknown as string },
   // GAL-19: borrar un álbum con fotos se rechaza con su motivo intacto — el
   // operador necesita saber cuántas fotos hay que mover antes de reintentar.
   {
@@ -35,6 +43,17 @@ export class BaseController {
   }
 
   protected handleError(error: unknown, reply: FastifyReply, action: string): void {
+    // A-1: un fallo de validación es entrada del usuario, no un defecto. Se
+    // responde con el campo y el motivo, y no se reporta a Sentry: antes
+    // ensuciaba el monitoreo con cada tecla mal puesta y, de paso, llegaba al
+    // editor como un genérico inútil porque el `message` de un ZodError es el
+    // JSON de sus issues y ningún patrón de abajo casaba con él.
+    if (error instanceof ZodError) {
+      const details = fieldErrorsFromZod(error);
+      reply.status(400).send({ error: summarizeZod(details), details });
+      return;
+    }
+
     captureException(error, { action });
     const rawMessage = error instanceof Error ? error.message : 'Error interno';
 

@@ -538,6 +538,7 @@
     <div class="hm-cms-bar">
       <strong>Hidromont CMS</strong>
       <span class="hm-cms-badge" data-state-badge style="display:none"></span>
+      <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
       <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
       <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
       <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
@@ -589,6 +590,20 @@
 
   let lastActiveElement = null;
   let isFormDirty = false;
+
+  /**
+   * A-11: el estado sucio se marcaba pero nunca se limpiaba, ni siquiera tras
+   * guardar. El aviso del navegador al salir saltaba para siempre desde la
+   * primera tecla, así que se aprendía a ignorarlo — y era la única
+   * protección que había. Ahora se apaga en cada guardado correcto y al
+   * abrir un formulario nuevo, y enciende el punto ámbar de la barra, que
+   * tenía estilos definidos y ningún consumidor.
+   */
+  function setFormDirty(value) {
+    isFormDirty = value;
+    const indicator = shell.querySelector('[data-dirty-indicator]');
+    if (indicator) indicator.classList.toggle('visible', value);
+  }
 
   window.addEventListener('beforeunload', (event) => {
     if (isFormDirty) {
@@ -646,6 +661,9 @@
     if (document.activeElement && !panel.contains(document.activeElement)) {
       lastActiveElement = document.activeElement;
     }
+    // Cada openPanel destruye el formulario anterior: arrastrar el estado
+    // sucio de una vista a la siguiente siempre sería incorrecto.
+    setFormDirty(false);
     panelBody.innerHTML = html;
     panel.classList.add('open');
 
@@ -660,7 +678,17 @@
     }, 50);
   }
 
-  function closePanel() {
+  function closePanel(force = false) {
+    // A-11: Escape y «Cerrar» descartaban lo escrito sin preguntar, aunque el
+    // estado sucio ya se estaba registrando para el aviso del navegador.
+    if (
+      !force &&
+      isFormDirty &&
+      !window.confirm('Hay cambios sin guardar. ¿Cerrar y descartarlos?')
+    ) {
+      return;
+    }
+    setFormDirty(false);
     panel.classList.remove('open');
     state.selected = null;
     state.entry = null;
@@ -770,29 +798,9 @@
     }
 
     if (cmsType === 'list') {
-      const items = Array.isArray(current)
-        ? current
-        : typeof current === 'string' && current
-          ? [current]
-          : [];
       return `
-        <div data-list-editor>
-          <p class="hm-cms-muted" style="margin:0 0 8px">Items de la lista:</p>
-          <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
-            ${items
-              .map(
-                (item, i) => `
-              <div style="display:flex;gap:6px;align-items:center">
-                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
-                <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" style="font-weight:700">×</button>
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
-          <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(items))}" />
-        </div>
+        <p class="hm-cms-muted" style="margin:0 0 8px">Items de la lista:</p>
+        ${listEditorMarkup(asList(current), 'value')}
       `;
     }
 
@@ -827,9 +835,51 @@
     `;
   }
 
-  function syncListValue(form) {
-    const items = Array.from(form.querySelectorAll('[data-list-item]')).map((input) => input.value);
-    const hidden = form.querySelector('[name="value"]');
+  /**
+   * A-8: markup del editor de listas, reutilizado por el editor de campo
+   * suelto y por el formulario de colección. `inputName` existe porque el
+   * formulario de colección puede tener varias listas a la vez (tipos,
+   * aplicaciones, normas) y cada una necesita su propio hidden.
+   */
+  function listEditorMarkup(items, inputName) {
+    return `
+        <div data-list-editor>
+          <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
+            ${items
+              .map(
+                (item, i) => `
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" style="flex:1;border:1px solid #cbd5e1;border-radius:0px;padding:8px 10px;font:inherit" />
+                <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" style="font-weight:700">×</button>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <button type="button" data-action="add-list-item" style="border:1px dashed #cbd5e1;background:white;color:#334155;border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
+          <input name="${escapeHtml(inputName)}" type="hidden" data-field-type="list" value="${escapeHtml(JSON.stringify(items))}" />
+        </div>
+      `;
+  }
+
+  function asList(value) {
+    if (Array.isArray(value)) return value;
+    return typeof value === 'string' && value ? [value] : [];
+  }
+
+  /**
+   * A-8: se acota al `[data-list-editor]` que contiene el input tocado. Antes
+   * buscaba en todo el formulario y el hidden fijo `[name="value"]`, lo que
+   * bastaba con un solo editor por formulario pero colisiona en cuanto hay
+   * varias listas, como en el formulario de colección.
+   */
+  function syncListValue(scope) {
+    const editor = scope?.closest?.('[data-list-editor]') ?? scope;
+    if (!editor) return;
+    const items = Array.from(editor.querySelectorAll('[data-list-item]')).map(
+      (input) => input.value
+    );
+    const hidden = editor.querySelector('input[type="hidden"]');
     if (hidden) hidden.value = JSON.stringify(items);
   }
 
@@ -880,57 +930,137 @@
     }
   }
 
-  function renderMediaPicker(items, selectedPath = '') {
-    const grid = panelBody.querySelector('[data-media-grid]');
-    if (!grid) return;
+  /**
+   * A-2 — Un solo selector de medios, paginado y con búsqueda en el servidor.
+   *
+   * Antes había dos implementaciones casi idénticas y ambas pedían
+   * `/api/cms/media` sin parámetros: recibían las 100 más recientes y
+   * filtraban en memoria. Con 2.122 assets en el catálogo, 2.022 eran
+   * inalcanzables desde la interfaz — y el editor acababa subiendo
+   * duplicados de fotos que ya estaban en el sistema. El servidor ya sabía
+   * paginar y buscar sobre name/alt/path; solo faltaba usarlo.
+   */
+  const MEDIA_PAGE_SIZE = 60;
+  const mediaPicker = { query: '', page: 1, pages: 1, total: 0, loading: false, seq: 0 };
+  let mediaSearchTimer;
 
-    if (!items.length) {
-      grid.innerHTML = '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
-      return;
-    }
-
-    grid.innerHTML = items
-      .map(
-        (item) => `
+  function mediaTileMarkup(item, { action, selected }) {
+    // C-2: un asset cuyo archivo no está en disco se marca en vez de
+    // renderizarse como una miniatura rota sin explicación.
+    const cuerpo = item.missing
+      ? `<span class="hm-cms-media-name" style="display:grid;place-items:center;aspect-ratio:4/3;background:#f1f5f9;color:#991b1b;text-align:center">⚠ archivo<br />no encontrado</span>`
+      : `<img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />`;
+    return `
       <button
         type="button"
-        class="hm-cms-media-item ${item.path === selectedPath ? 'selected' : ''}"
-        data-action="select-media"
+        class="hm-cms-media-item ${selected ? 'selected' : ''}"
+        data-action="${action}"
         data-media-id="${escapeHtml(item.id)}"
+        ${item.missing ? 'disabled title="El archivo no existe en disco"' : ''}
       >
-        <img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />
+        ${cuerpo}
         <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
         ${item.usageCount > 0 ? `<span class="hm-cms-badge" style="font-size:10px;align-self:start">Usado: ${item.usageCount}</span>` : ''}
       </button>
-    `
-      )
-      .join('');
+    `;
   }
 
-  async function loadMediaPicker() {
+  /** Descriptor del selector activo: el del editor de campo o el de galería. */
+  function activeMediaPicker() {
+    const galleryGrid = panelBody.querySelector('[data-gallery-media-grid]');
+    if (galleryGrid) {
+      const form = panelBody.querySelector('[data-gallery-item-form]');
+      return {
+        grid: galleryGrid,
+        action: 'gallery-select-media',
+        selectedId: form?.querySelector('[name="mediaId"]')?.value || '',
+        selectedPath: '',
+      };
+    }
+    const grid = panelBody.querySelector('[data-media-grid]');
+    if (!grid) return null;
     const form = panelBody.querySelector('[data-edit]');
-    if (!form) return;
+    return {
+      grid,
+      action: 'select-media',
+      selectedId: '',
+      selectedPath: form?.elements.value?.value || '',
+    };
+  }
+
+  function renderMediaPicker() {
+    const picker = activeMediaPicker();
+    if (!picker) return;
+
+    if (!state.mediaItems.length) {
+      picker.grid.innerHTML = mediaPicker.loading
+        ? '<p class="hm-cms-muted">Buscando...</p>'
+        : '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
+      return;
+    }
+
+    const restantes = Math.max(0, mediaPicker.total - state.mediaItems.length);
+    picker.grid.innerHTML =
+      state.mediaItems
+        .map((item) =>
+          mediaTileMarkup(item, {
+            action: picker.action,
+            selected: picker.selectedId
+              ? item.id === picker.selectedId
+              : item.path === picker.selectedPath,
+          })
+        )
+        .join('') +
+      `<p class="hm-cms-muted" style="grid-column:1/-1;margin:4px 0 0">Mostrando ${state.mediaItems.length} de ${mediaPicker.total}.</p>` +
+      (restantes > 0
+        ? `<button type="button" class="secondary" data-action="load-more-media" style="grid-column:1/-1">${
+            mediaPicker.loading ? 'Cargando...' : `Cargar más (${restantes} restantes)`
+          }</button>`
+        : '');
+  }
+
+  async function loadMediaPicker({ reset = true } = {}) {
+    const picker = activeMediaPicker();
+    if (!picker || mediaPicker.loading) return;
+
+    if (reset) {
+      mediaPicker.page = 1;
+      state.mediaItems = [];
+    }
+    mediaPicker.loading = true;
+    const seq = ++mediaPicker.seq;
+    renderMediaPicker();
+
     try {
-      const data = await api('/api/cms/media');
-      state.mediaItems = data.items || [];
-      renderMediaPicker(state.mediaItems, form.elements.value?.value || '');
+      const params = new URLSearchParams({
+        page: String(mediaPicker.page),
+        limit: String(MEDIA_PAGE_SIZE),
+      });
+      if (mediaPicker.query) params.set('q', mediaPicker.query);
+      const data = await api(`/api/cms/media?${params}`);
+      // Descartar respuestas fuera de orden: con LIKE sobre tres columnas sin
+      // índice, escribir rápido las devuelve desordenadas.
+      if (seq !== mediaPicker.seq) return;
+
+      const nuevos = data.items || [];
+      // `state.mediaItems` es buffer acumulado a propósito: los handlers de
+      // selección resuelven el asset por id contra él.
+      state.mediaItems = reset ? nuevos : [...state.mediaItems, ...nuevos];
+      mediaPicker.total = data.total ?? state.mediaItems.length;
+      mediaPicker.pages = data.pages ?? 1;
+      mediaPicker.loading = false;
+      renderMediaPicker();
     } catch (error) {
-      const grid = panelBody.querySelector('[data-media-grid]');
-      if (grid) grid.innerHTML = `<p class="hm-cms-error">${escapeHtml(error.message)}</p>`;
+      mediaPicker.loading = false;
+      if (seq !== mediaPicker.seq) return;
+      picker.grid.innerHTML = `<p class="hm-cms-error">${escapeHtml(error.message)}</p>`;
     }
   }
 
-  function filterMediaPicker(query) {
-    const normalized = query.trim().toLowerCase();
-    const form = panelBody.querySelector('[data-edit]');
-    const selectedPath = form?.elements.value?.value || '';
-    const items = !normalized
-      ? state.mediaItems
-      : state.mediaItems.filter((item) => {
-          const haystack = `${item.name} ${item.path} ${item.alt || ''}`.toLowerCase();
-          return haystack.includes(normalized);
-        });
-    renderMediaPicker(items, selectedPath);
+  function searchMediaPicker(query) {
+    mediaPicker.query = query.trim();
+    clearTimeout(mediaSearchTimer);
+    mediaSearchTimer = setTimeout(() => loadMediaPicker({ reset: true }), 300);
   }
 
   function applyMediaSelection(asset) {
@@ -953,7 +1083,7 @@
     if (label)
       label.textContent = `${asset.name}${asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ''}`;
 
-    renderMediaPicker(state.mediaItems, asset.path);
+    renderMediaPicker();
   }
 
   function formatDate(value) {
@@ -1105,6 +1235,25 @@
     }
   }
 
+  /**
+   * A-3: pinta un conflicto de edición sin destruir lo que el editor escribió.
+   * Ofrece ver el valor que hay ahora en el servidor y, si aun así quiere
+   * imponer el suyo, reintentar contra la versión actual.
+   */
+  function renderConflict(form, entryId, field, message) {
+    const status = form.querySelector('[data-status]');
+    if (!status) return;
+    status.innerHTML = `
+      <span class="hm-cms-error">${escapeHtml(message)}</span>
+      <span class="hm-cms-actions" style="margin-top:8px">
+        <button type="button" class="secondary" data-action="show-server-value"
+          data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">Ver valor del servidor</button>
+        <button type="button" class="secondary" data-action="force-save">Guardar de todos modos</button>
+      </span>
+      <span data-server-value></span>
+    `;
+  }
+
   async function saveEdit(form) {
     const element = state.selected;
     if (!element || !state.entry) return;
@@ -1150,26 +1299,51 @@
       });
     }
 
-    const updated = await api(
-      `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value }),
+    // A-3: el servidor ya sabía detectar ediciones concurrentes
+    // (ContentRepository.updateField compara `expectedVersion` contra la
+    // versión actual y lanza un conflicto detallado), pero el overlay nunca
+    // se la enviaba: con dos pestañas abiertas ganaba la última escritura,
+    // en silencio y sin rastro visible.
+    let updated;
+    try {
+      updated = await api(
+        `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          // A-4: `mediaId` alimenta media_usages, que es lo que permite
+          // avisar de en qué páginas se usa una foto antes de borrarla.
+          body: JSON.stringify({
+            value,
+            expectedVersion: state.entry.version,
+            mediaId: form.elements.mediaId?.value || undefined,
+          }),
+        }
+      );
+    } catch (error) {
+      if (error.status === 409) {
+        // No se re-renderiza el formulario: lo que el editor escribió sigue
+        // en pantalla y puede copiarlo antes de decidir.
+        renderConflict(form, entryId, field, error.message);
+        return;
       }
-    );
+      throw error;
+    }
+    // Imprescindible: sin esto el segundo guardado del mismo panel mandaría
+    // una versión rancia y el editor entraría en conflicto consigo mismo.
+    state.entry = updated;
 
     if (element.dataset.cmsType === 'image') {
       element.setAttribute('src', value);
       const altField = element.dataset.cmsAltField;
       if (altField && form.elements.alt) {
         const altValue = form.elements.alt.value;
-        await api(
+        state.entry = await api(
           `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(altField)}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ value: altValue }),
+            body: JSON.stringify({ value: altValue, expectedVersion: state.entry.version }),
           }
         );
         element.setAttribute('alt', altValue);
@@ -1186,6 +1360,9 @@
     status.textContent =
       'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';
     setGlobalState('unsaved');
+    // A-11: este es el único guardado que no reabre el panel (los formularios
+    // de colección y galería vuelven a su listado, y openPanel ya lo limpia).
+    setFormDirty(false);
   }
 
   // ─── Gallery management ──────────────────────────────────────────────────
@@ -1528,45 +1705,10 @@
 
     // Load media picker
     try {
-      const mediaData = await api('/api/cms/media');
-      state.mediaItems = mediaData.items || [];
-      renderGalleryMediaPicker(item.mediaId);
+      await loadMediaPicker({ reset: true });
     } catch {
       /* silent */
     }
-  }
-
-  function renderGalleryMediaPicker(selectedId = '') {
-    const grid = panelBody.querySelector('[data-gallery-media-grid]');
-    if (!grid) return;
-    const searchInput = panelBody.querySelector('[data-gallery-media-search]');
-    const query = (searchInput?.value || '').trim().toLowerCase();
-    const items = !query
-      ? state.mediaItems.slice(0, 60)
-      : state.mediaItems
-          .filter((item) => `${item.name} ${item.alt || ''}`.toLowerCase().includes(query))
-          .slice(0, 60);
-
-    if (!items.length) {
-      grid.innerHTML = '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
-      return;
-    }
-
-    grid.innerHTML = items
-      .map(
-        (item) => `
-      <button
-        type="button"
-        class="hm-cms-media-item ${item.id === selectedId ? 'selected' : ''}"
-        data-action="gallery-select-media"
-        data-media-id="${escapeHtml(item.id)}"
-      >
-        <img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || item.name)}" loading="lazy" />
-        <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
-      </button>
-    `
-      )
-      .join('');
   }
 
   // ─── CRUD de colecciones ─────────────────────────────────────────────────
@@ -1675,18 +1817,24 @@
         ${
           entry
             ? Object.entries(entry.fields || {})
-                .filter(([, f]) => f.type === 'text' || f.type === 'textarea')
-                .map(
-                  ([key, f]) => `
-          <label>${escapeHtml(key)}
-            ${
-              f.type === 'textarea'
-                ? `<textarea name="field:${escapeHtml(key)}">${escapeHtml(String(f.value ?? ''))}</textarea>`
-                : `<input name="field:${escapeHtml(key)}" value="${escapeHtml(String(f.value ?? ''))}" />`
-            }
-          </label>
-        `
-                )
+                // A-8: `number` y `list` estaban excluidos, así que `orden` no
+                // era editable en ninguna parte del CMS y no había forma de
+                // reordenar servicios ni proyectos, que es justo por lo que la
+                // home y /servicios ordenan sus tarjetas.
+                .filter(([, f]) => ['text', 'textarea', 'number', 'list'].includes(f.type))
+                .map(([key, f]) => {
+                  const name = `field:${escapeHtml(key)}`;
+                  if (f.type === 'list') {
+                    return `<label>${escapeHtml(key)}</label>${listEditorMarkup(asList(f.value), name)}`;
+                  }
+                  const control =
+                    f.type === 'textarea'
+                      ? `<textarea name="${name}" data-field-type="textarea">${escapeHtml(String(f.value ?? ''))}</textarea>`
+                      : f.type === 'number'
+                        ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
+                        : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
+                  return `<label>${escapeHtml(key)}${control}</label>`;
+                })
                 .join('')
             : ''
         }
@@ -1725,24 +1873,37 @@
           body: JSON.stringify({ title, slug, status: entryStatus }),
         });
 
-        // Update text/textarea fields individually
-        const fieldUpdates = [];
+        // A-3: secuencial y SIN `expectedVersion`, a diferencia de saveEdit.
+        // Cada PATCH incrementa la versión de la misma entrada, así que en
+        // paralelo y con control de concurrencia estos guardados se
+        // conflictuarían entre sí. En serie el orden es además determinista:
+        // con Promise.all se generaban N revisiones en orden indeterminado.
         for (const [name, input] of Object.entries(form.elements)) {
           if (typeof name === 'string' && name.startsWith('field:')) {
             const key = name.slice(6);
-            fieldUpdates.push(
-              api(
-                `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
-                {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ value: input.value }),
-                }
-              )
+            // A-8: el servidor valida que el valor case con el tipo declarado
+            // del campo, así que un número no puede viajar como cadena.
+            const fieldType = input.dataset?.fieldType;
+            let value = input.value;
+            if (fieldType === 'number') {
+              value = input.value === '' ? null : Number(input.value);
+            } else if (fieldType === 'list') {
+              try {
+                value = JSON.parse(input.value || '[]');
+              } catch {
+                value = [];
+              }
+            }
+            await api(
+              `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
+              {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value }),
+              }
             );
           }
         }
-        await Promise.all(fieldUpdates);
       }
 
       if (status) status.textContent = 'Guardado correctamente.';
@@ -1770,12 +1931,25 @@
         window.location.reload();
       }
       if (action === 'export') {
-        const result = await api('/api/cms/export', { method: 'POST' });
+        // B-1: sin try/catch, un fallo aquí (el cerrojo de PublishService, la
+        // guarda anti-encogimiento de galería) moría como promesa rechazada
+        // sin manejar: el panel no cambiaba y el editor creía haber exportado.
+        const btn = target instanceof Element ? target.closest('button') : null;
         const status = panelBody.querySelector('[data-status]');
-        if (status)
-          status.textContent =
-            `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
-        setGlobalState('exported');
+        setButtonLoading(btn, true, 'Exportando...');
+        try {
+          const result = await api('/api/cms/export', { method: 'POST' });
+          if (status)
+            status.textContent =
+              `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
+          setGlobalState('exported');
+        } catch (error) {
+          if (status)
+            status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+          setGlobalState('error');
+        } finally {
+          setButtonLoading(btn, false);
+        }
       }
       if (action === 'jobs') {
         loadPublishJobs();
@@ -1888,7 +2062,7 @@
               preview.src = asset.path;
               preview.style.display = 'block';
             }
-            renderGalleryMediaPicker(asset.id);
+            renderMediaPicker();
           }
         }
         return;
@@ -1931,9 +2105,9 @@
       if (action === 'add-list-item' && target instanceof Element) {
         event.preventDefault();
         event.stopPropagation();
-        const form = target.closest('form');
-        const container = target.closest('[data-list-editor]')?.querySelector('[data-list-items]');
-        if (!container || !form) return;
+        const editor = target.closest('[data-list-editor]');
+        const container = editor?.querySelector('[data-list-items]');
+        if (!container || !editor) return;
         const idx = container.querySelectorAll('[data-list-item]').length;
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;gap:6px;align-items:center';
@@ -1943,18 +2117,18 @@
       `;
         container.appendChild(row);
         row.querySelector('input')?.focus();
-        syncListValue(form);
+        syncListValue(editor);
         return;
       }
       if (action === 'remove-list-item' && target instanceof Element) {
         event.preventDefault();
         event.stopPropagation();
-        const form = target.closest('form');
+        const editor = target.closest('[data-list-editor]');
         const row = target.closest('div');
-        if (row && form) {
+        if (row && editor) {
           row.remove();
           // Re-index remaining items
-          const container = form.querySelector('[data-list-items]');
+          const container = editor.querySelector('[data-list-items]');
           if (container) {
             container.querySelectorAll('[data-list-item]').forEach((input, i) => {
               input.setAttribute('data-list-item', String(i));
@@ -1962,7 +2136,7 @@
               if (btn) btn.setAttribute('data-index', String(i));
             });
           }
-          syncListValue(form);
+          syncListValue(editor);
         }
         return;
       }
@@ -2027,6 +2201,53 @@
         } finally {
           setButtonLoading(btn, false);
         }
+      }
+      if (action === 'load-more-media') {
+        event.preventDefault();
+        mediaPicker.page += 1;
+        await loadMediaPicker({ reset: false });
+        return;
+      }
+      // A-3 · resolución de un conflicto de edición
+      if (action === 'show-server-value' && target instanceof Element) {
+        event.preventDefault();
+        const btn = target.closest('[data-entry-id]');
+        const box = panelBody.querySelector('[data-server-value]');
+        if (!btn || !box) return;
+        setButtonLoading(btn, true, 'Cargando...');
+        try {
+          const remote = await api(`/api/cms/entries/${encodeURIComponent(btn.dataset.entryId)}`);
+          const remoteValue = remote.fields?.[btn.dataset.field]?.value ?? '';
+          box.innerHTML = `
+            <span class="hm-cms-muted" style="display:block;margin-top:8px">Valor actual en el servidor (v${escapeHtml(remote.version)}):</span>
+            <pre class="hm-cms-log">${escapeHtml(typeof remoteValue === 'string' ? remoteValue : JSON.stringify(remoteValue, null, 2))}</pre>
+          `;
+        } catch (error) {
+          box.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        } finally {
+          setButtonLoading(btn, false);
+        }
+        return;
+      }
+      if (action === 'force-save' && target instanceof Element) {
+        event.preventDefault();
+        const form = panelBody.querySelector('[data-edit]');
+        if (!form || !state.entry) return;
+        const btn = target.closest('button');
+        setButtonLoading(btn, true, 'Guardando...');
+        try {
+          // Refrescar la versión y reintentar: el editor ya vio con qué está
+          // chocando y decidió imponer su valor.
+          state.entry = await api(`/api/cms/entries/${encodeURIComponent(state.entry.id)}`);
+          await saveEdit(form);
+        } catch (error) {
+          const status = form.querySelector('[data-status]');
+          if (status)
+            status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+        } finally {
+          setButtonLoading(btn, false);
+        }
+        return;
       }
       if (action === 'select-media' && target instanceof Element) {
         event.preventDefault();
@@ -2225,14 +2446,12 @@
     if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
 
     if (target instanceof HTMLInputElement && target.matches('[data-media-search]')) {
-      filterMediaPicker(target.value);
+      searchMediaPicker(target.value);
       return;
     }
 
     if (target instanceof HTMLInputElement && target.matches('[data-gallery-media-search]')) {
-      const form = target.closest('[data-gallery-item-form]');
-      const selectedId = form?.querySelector('[name="mediaId"]')?.value || '';
-      renderGalleryMediaPicker(selectedId);
+      searchMediaPicker(target.value);
       return;
     }
   });
@@ -2271,7 +2490,7 @@
         target.form.matches('[data-entry-form]') ||
         target.form.matches('[data-gallery-item-form]'))
     ) {
-      isFormDirty = true;
+      setFormDirty(true);
     }
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
@@ -2284,12 +2503,8 @@
     }
 
     // Sync list items to hidden input on every keystroke
-    if (
-      target instanceof HTMLInputElement &&
-      target.hasAttribute('data-list-item') &&
-      target.form
-    ) {
-      syncListValue(target.form);
+    if (target instanceof HTMLInputElement && target.hasAttribute('data-list-item')) {
+      syncListValue(target);
     }
 
     // Sync link fields to hidden input
@@ -2299,7 +2514,11 @@
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closePanel();
+    if (event.key !== 'Escape') return;
+    // El sheet móvil registra su propio Escape en mobile-menu.ts; si está
+    // abierto es suyo, no del panel.
+    if (shell.querySelector('.hm-cms-mobile-sheet.open')) return;
+    closePanel();
   });
 
   ensureSession();
