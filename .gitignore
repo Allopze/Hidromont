@@ -65,3 +65,6 @@ public/fotos/curadas/whatsapp-image-*
 
 uploads/_originales/
 _retirados/
+
+# Paquetes de despliegue generados por npm run pack:deploy
+_deploy/

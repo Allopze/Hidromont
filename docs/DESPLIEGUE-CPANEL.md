@@ -93,54 +93,51 @@ nativos para la versión equivocada.
 
 ## 2. Qué subir y qué no
 
-Son **tres transferencias**, porque dos de las tres cosas no están en git a
-propósito:
+El despliegue es **por FTP**, sin `git clone` en el servidor. No arrastres la
+carpeta del proyecto con el cliente FTP: contiene ~22 GB de material de origen
+que no es la aplicación (`Pangal`, `top`, `Canal Chacayes`, vídeos, capturas).
 
-| Qué                             | Cuánto | Cómo llega al servidor                    |
-| ------------------------------- | ------ | ----------------------------------------- |
-| Código y `public/`              | 129 MB | `git clone --depth 1` (ver abajo)         |
-| `cms/data/hidromont-cms.sqlite` | 2,5 MB | `scp`, una sola vez                       |
-| `uploads/cms/`                  | 321 MB | `rsync`, una sola vez                     |
-| `.env`                          | —      | **se escribe en el servidor**, no se sube |
-
-Lo que **no** hay que subir nunca:
-
-| Qué                    | Cuánto | Por qué no                                              |
-| ---------------------- | ------ | ------------------------------------------------------- |
-| `dist/`                | 109 MB | lo genera el servidor al compilar                       |
-| `node_modules/`        | 410 MB | lo instala `npm ci` con los binarios de su Node         |
-| `uploads/_originales/` | 2,2 GB | originales de cámara previos al WebP; archívalos aparte |
-| `_retirados/`          | 80 MB  | fotos que ninguna página usa                            |
-| `cms/data/backups/`    | 20 MB  | respaldos locales; el servidor hace los suyos           |
-| `cms/data/lqip-cache/` | 840 KB | caché; se regenera en la primera exportación            |
-| `.env`                 | —      | tiene la contraseña del CMS: se escribe allí            |
-
-### El clon tiene que ser superficial
-
-**Un `git clone` normal descarga 6,2 GB.** El historial arrastra los
-originales de cámara y los `dist/` de antes de que se ignoraran, y eso no se
-arregla clonando otra vez. Con la copia superficial son 245 MB:
+En su lugar, genera los dos paquetes:
 
 ```bash
-git clone --depth 1 https://github.com/Allopze/Hidromont.git hidromont
+npm run pack:deploy
 ```
 
-Para actualizar después, `git pull --depth 1` o, más simple,
-`git fetch --depth 1 origin main && git reset --hard origin/main`.
+Deja en `_deploy/`:
 
-Si el plan no tiene git, la alternativa es `rsync` excluyendo lo generado:
+| Archivo               | Tamaño | Qué lleva                     | Cuándo se sube          |
+| --------------------- | ------ | ----------------------------- | ----------------------- |
+| `hidromont-app.zip`   | 94 MB  | código y `public/`            | en cada actualización   |
+| `hidromont-datos.zip` | 318 MB | base de datos y `uploads/cms` | **solo la primera vez** |
 
-```bash
-rsync -avz --progress \
-  --exclude node_modules --exclude dist --exclude .git \
-  --exclude uploads --exclude cms/data \
-  ./ USUARIO@SERVIDOR:~/hidromont/
-```
+Se suben por FTP a la raíz de la aplicación y se descomprimen allí con el
+gestor de archivos de cPanel (botón «Extract»). Si el de datos falla al
+descomprimir por su tamaño, sube la carpeta `uploads/cms` directamente por
+FTP: son 1.815 archivos, lento pero sin sorpresas.
 
-### Git deploy de cPanel
+**El paquete de datos, solo la primera vez.** A partir de ahí la copia buena
+es la del servidor: volver a subirlo pisaría todo lo que se haya editado en
+producción.
 
-Añadir un `.cpanel.yml` al repositorio con las tareas de despliegue. No está
-creado todavía; si eliges esta vía, dilo y lo añado.
+El contenido del paquete de aplicación lo decide `git ls-files`, así que
+refleja lo confirmado en el repositorio, no tu copia de trabajo. El script
+avisa si tienes cambios sin confirmar.
+
+### Lo que no viaja, y por qué
+
+| Qué                    | Cuánto | Por qué no                                                 |
+| ---------------------- | ------ | ---------------------------------------------------------- |
+| `node_modules/`        | 410 MB | los binarios nativos son de macOS; los instala el servidor |
+| `dist/`                | 109 MB | lo genera el servidor al compilar                          |
+| `uploads/_originales/` | 2,2 GB | originales de cámara previos al WebP; archívalos aparte    |
+| `_retirados/`          | 80 MB  | fotos que ninguna página usa                               |
+| `cms/data/backups/`    | 20 MB  | respaldos locales; el servidor hace los suyos              |
+| PDF y vídeos del raíz  | 29 MB  | ninguna página del sitio los sirve                         |
+| `.env`                 | —      | tiene la contraseña del CMS: se escribe en el servidor     |
+
+`node_modules` merece énfasis: **no se puede copiar desde tu máquina.**
+`better-sqlite3` y `sharp` traen binarios compilados para macOS arm64 y el
+servidor es Linux x64. Hay que instalarlos allí.
 
 ---
 
@@ -261,13 +258,26 @@ El correo del formulario ya viene configurado: destinatario
 
 ## 5. Instalar, verificar y compilar
 
+**Sin SSH**, se usan los botones de la propia pantalla de la aplicación Node
+en cPanel: primero «Run NPM Install», y después «Run JS script» eligiendo
+`build` de la lista.
+
+Con SSH, lo mismo por terminal:
+
 ```bash
-source /home/USUARIO/nodevenv/hidromont/20/bin/activate   # el comando que dio cPanel
+source /home4/hidrochile/nodevenv/hidromont/24/bin/activate   # el comando que dio cPanel
 cd ~/hidromont
 
 npm ci                      # instala y compila los módulos nativos
 npm run check:deploy-env    # verificación del entorno
 ```
+
+**El `.npmrc` del repositorio es imprescindible aquí.** El «Modo de
+aplicación» en `Production` pone `NODE_ENV=production`, y en ese modo npm se
+salta las `devDependencies` —comprobado con npm 11.16—. Astro y `@astrojs/*`
+están ahí, así que la instalación dejaría el servidor sin poder compilar, con
+un error que no menciona la causa. El `.npmrc` lleva `include=dev` justo para
+eso.
 
 **No uses `npm ci --omit=dev`.** Astro y `@astrojs/*` están en
 `devDependencies`, así que sin ellas no hay build posible. Las 11
