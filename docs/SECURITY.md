@@ -25,19 +25,19 @@
 
 ## Matriz de amenazas y mitigaciones
 
-| Vector | Estado | Mitigación |
-|---|---|---|
-| **XSS reflejado/almacenado** | ✅ Mitigado | Astro auto-escapa todo contenido. `set:html` solo en SVG estático (iconos ServiceCard). SVG bloqueado en uploads de usuario (stored-XSS vía `<script>` embebido). |
-| **Inyección SQL** | ✅ Mitigado | Sentencias preparadas en todos los repositories (better-sqlite3). Sin concatenación SQL. |
-| **CSRF** | ✅ Mitigado | Doble token: cookie de sesión + header `X-CSRF-Token`. `requireCsrf` en todas las mutaciones. |
-| **Path traversal (servir)** | ✅ Mitigado | `findContainedFile` en `staticSite.ts` resuelve paths absolutos y rechaza si no están bajo root. URL decodificada antes del check. |
-| **Path traversal (export/upload)** | ✅ Mitigado | Regex de slug `/^[a-z0-9/._-]+$/` + `.refine` rechaza `..`. Slugs con subdirectorio crean el dir recursivamente (no fallan). Contención de ruta en upload (`fullPath.startsWith(uploadDir)`). |
-| **AuthN/AuthZ** | ✅ Mitigado | bcrypt cost 12. `requireAuth` en todas las rutas privadas. Sesión `nanoid(48)`, cookie `httpOnly` + `sameSite: lax` + `secure` configurable. |
-| **Brute force login** | ✅ Mitigado | Rate limit: 10 intentos / 60s por IP, persistido en SQLite, con `Retry-After`. Cleanup al arranque + intervalo de 5 min. |
-| **Fuga del CMS al build público (H1)** | ✅ Mitigado | `PUBLIC_ENABLE_CMS=0` en build de producción. Test e2e `build-gate.spec.ts` verifica que `dist/` no contenga `data-cms-entry` ni `__HIDROMONT_CMS__`. CI lo ejecuta en cada PR. |
-| **Cookie insegura en LAN (H2)** | ✅ Mitigado | Guard de arranque bloquea `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0` salvo escape hatch explícito `CMS_ALLOW_INSECURE_COOKIE=1`. |
-| **Secretos en repo** | ✅ OK | `.env` en `.gitignore`, ausente del historial. `.env.example` con placeholders. |
-| **Dependencias** | ✅ OK | `npm audit --omit=dev` → 0 vulnerabilidades. `js-yaml` resuelto correctamente (gray-matter usa v3 parcheada, astro top-level v4). |
+| Vector                                 | Estado      | Mitigación                                                                                                                                                                                    |
+| -------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **XSS reflejado/almacenado**           | ✅ Mitigado | Astro auto-escapa todo contenido. `set:html` solo en SVG estático (iconos ServiceCard). SVG bloqueado en uploads de usuario (stored-XSS vía `<script>` embebido).                             |
+| **Inyección SQL**                      | ✅ Mitigado | Sentencias preparadas en todos los repositories (better-sqlite3). Sin concatenación SQL.                                                                                                      |
+| **CSRF**                               | ✅ Mitigado | Doble token: cookie de sesión + header `X-CSRF-Token`. `requireCsrf` en todas las mutaciones.                                                                                                 |
+| **Path traversal (servir)**            | ✅ Mitigado | `findContainedFile` en `staticSite.ts` resuelve paths absolutos y rechaza si no están bajo root. URL decodificada antes del check.                                                            |
+| **Path traversal (export/upload)**     | ✅ Mitigado | Regex de slug `/^[a-z0-9/._-]+$/` + `.refine` rechaza `..`. Slugs con subdirectorio crean el dir recursivamente (no fallan). Contención de ruta en upload (`fullPath.startsWith(uploadDir)`). |
+| **AuthN/AuthZ**                        | ✅ Mitigado | bcrypt cost 12. `requireAuth` en todas las rutas privadas. Sesión `nanoid(48)`, cookie `httpOnly` + `sameSite: lax` + `secure` configurable.                                                  |
+| **Brute force login**                  | ✅ Mitigado | Rate limit: 10 intentos / 60s por IP, persistido en SQLite, con `Retry-After`. Cleanup al arranque + intervalo de 5 min.                                                                      |
+| **Fuga del CMS al build público (H1)** | ✅ Mitigado | `PUBLIC_ENABLE_CMS=0` en build de producción. Test e2e `build-gate.spec.ts` verifica que `dist/` no contenga `data-cms-entry` ni `__HIDROMONT_CMS__`. CI lo ejecuta en cada PR.               |
+| **Cookie insegura en LAN (H2)**        | ✅ Mitigado | Guard de arranque bloquea `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0` salvo escape hatch explícito `CMS_ALLOW_INSECURE_COOKIE=1`.                                                              |
+| **Secretos en repo**                   | ✅ OK       | `.env` en `.gitignore`, ausente del historial. `.env.example` con placeholders.                                                                                                               |
+| **Dependencias**                       | ✅ OK       | `npm audit --omit=dev` → 0 vulnerabilidades. `js-yaml` resuelto correctamente (gray-matter usa v3 parcheada, astro top-level v4).                                                             |
 
 ## CSP (Content-Security-Policy)
 
@@ -64,13 +64,13 @@ upgrade-insecure-requests;
 
 ## Cabeceras de seguridad
 
-| Cabecera | Valor | Origen |
-|---|---|---|
-| `Content-Security-Policy` | ver arriba | `public/_headers` (Cloudflare) |
-| `X-Content-Type-Options` | `nosniff` | `_headers` + `cms/server.ts` onSend |
-| `X-Frame-Options` | `SAMEORIGIN` (`_headers`) / `DENY` (server.ts) | ambos |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | `_headers` + server.ts |
-| Cache-Control | HTML 600s revalidate; assets/fonts/img 1 año immutable | `_headers` |
+| Cabecera                  | Valor                                                  | Origen                              |
+| ------------------------- | ------------------------------------------------------ | ----------------------------------- |
+| `Content-Security-Policy` | ver arriba                                             | `public/_headers` (Cloudflare)      |
+| `X-Content-Type-Options`  | `nosniff`                                              | `_headers` + `cms/server.ts` onSend |
+| `X-Frame-Options`         | `SAMEORIGIN` (`_headers`) / `DENY` (server.ts)         | ambos                               |
+| `Referrer-Policy`         | `strict-origin-when-cross-origin`                      | `_headers` + server.ts              |
+| Cache-Control             | HTML 600s revalidate; assets/fonts/img 1 año immutable | `_headers`                          |
 
 ## Formulario de contacto
 
