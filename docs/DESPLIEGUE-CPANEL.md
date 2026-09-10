@@ -15,14 +15,43 @@ pasos de abajo incluyen lo necesario para que eso sea seguro.
 
 ## 0. Antes de empezar: qué preguntar al proveedor
 
-| Dato                       | Por qué importa                                                                     | Mínimo              |
-| -------------------------- | ----------------------------------------------------------------------------------- | ------------------- |
-| Versión de Node disponible | `better-sqlite3` y `sharp` son módulos nativos: necesitan binarios para esa versión | **20 o superior**   |
-| Acceso SSH                 | Sin él no se puede instalar dependencias ni compilar en el servidor                 | Recomendado         |
-| Cuota de disco             | El despliegue completo pesa ~1,1 GB compilando en el servidor                       | **3 GB** holgado    |
-| Memoria del proceso        | `astro check` compila TypeScript sobre 150 archivos                                 | **1 GB** o más      |
-| Tiempo de CPU por proceso  | Compilar tarda; si el plan corta procesos largos, «Publicar» fallará                | sin límite estricto |
-| HTTPS con certificado      | La cookie de sesión del CMS exige HTTPS                                             | obligatorio         |
+| Dato                       | Por qué importa                                                      | Mínimo              |
+| -------------------------- | -------------------------------------------------------------------- | ------------------- |
+| Versión de Node disponible | `better-sqlite3` solo publica binario para algunas ABI; ver abajo    | **22 o 24**         |
+| Acceso SSH                 | Sin él no se puede instalar dependencias ni compilar en el servidor  | Recomendado         |
+| Cuota de disco             | El despliegue completo pesa ~1,1 GB compilando en el servidor        | **3 GB** holgado    |
+| Memoria del proceso        | `astro check` compila TypeScript sobre 150 archivos                  | **1 GB** o más      |
+| Tiempo de CPU por proceso  | Compilar tarda; si el plan corta procesos largos, «Publicar» fallará | sin límite estricto |
+| HTTPS con certificado      | La cookie de sesión del CMS exige HTTPS                              | obligatorio         |
+
+### Qué versión de Node elegir
+
+El selector de Node de cPanel de este plan ofrece 6.17.1, 8.17.0, 9.11.2,
+10.24.1, 11.15.0, 12.22.12, 14.21.3, 16.20.2, 18.20.8, 19.9.0, 20.20.2,
+22.22.3 y 24.15.0. Solo las tres últimas cumplen el proyecto, y de esas hay
+que descartar una:
+
+| Versión        | better-sqlite3                   | Veredicto                    |
+| -------------- | -------------------------------- | ---------------------------- |
+| **24.15.0**    | binario para ABI 137             | **elegir esta**              |
+| 22.22.3        | binario para ABI 127             | alternativa válida           |
+| 20.20.2        | **sin binario** para ABI 115     | compila con node-gyp: evitar |
+| 19.9.0 o menos | fuera del `engines` del proyecto | no arranca                   |
+
+`better-sqlite3@12.10.0` publica binarios de Linux x64 solo para las ABI 127,
+137, 141 y 147 —comprobado en los assets de su release—, así que en Node 20
+el `npm ci` cae a `node-gyp rebuild` y necesita python3, make y g++, que en
+hosting compartido no suele haber. Su propio `engines` dice «20.x», pero el
+binario no está.
+
+`sharp` no entra en esta cuenta: usa N-API 9, con lo que el mismo binario
+sirve para 18, 20, 22 y 24.
+
+**Elige 24.15.0**: es la misma ABI 137 con la que se verificó todo en local
+(Node 24.18.0), así que los 246 tests unitarios, los 63 e2e y la compilación
+se ejecutaron contra la misma interfaz binaria.
+
+---
 
 Reparto del espacio en el servidor, ya compilado:
 
