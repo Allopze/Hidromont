@@ -19,26 +19,28 @@ pasos de abajo incluyen lo necesario para que eso sea seguro.
 | -------------------------- | ----------------------------------------------------------------------------------- | ------------------- |
 | Versión de Node disponible | `better-sqlite3` y `sharp` son módulos nativos: necesitan binarios para esa versión | **20 o superior**   |
 | Acceso SSH                 | Sin él no se puede instalar dependencias ni compilar en el servidor                 | Recomendado         |
-| Cuota de disco             | El despliegue completo pesa ~3 GB, casi todo imágenes originales                    | **5 GB** holgado    |
+| Cuota de disco             | El despliegue completo pesa ~1,1 GB compilando en el servidor                       | **3 GB** holgado    |
 | Memoria del proceso        | `astro check` compila TypeScript sobre 150 archivos                                 | **1 GB** o más      |
 | Tiempo de CPU por proceso  | Compilar tarda; si el plan corta procesos largos, «Publicar» fallará                | sin límite estricto |
 | HTTPS con certificado      | La cookie de sesión del CMS exige HTTPS                                             | obligatorio         |
 
-Reparto del espacio tras la optimización de imágenes:
+Reparto del espacio en el servidor, ya compilado:
 
 ```
-node_modules     410 MB   solo si se compila en el servidor
-uploads/cms      275 MB   biblioteca de medios del CMS (WebP ≤1600 px)
-dist             130 MB   lo que se sirve
-public           104 MB   solo si se compila en el servidor
-cms/data          17 MB   base de datos y respaldos
+node_modules     410 MB   el build necesita las devDependencies (Astro está ahí)
+uploads/cms      321 MB   biblioteca de medios del CMS (WebP ≤1600 px)
+dist             109 MB   lo que se sirve
+public            85 MB   fuente del build
+código + .git    129 MB   con clon superficial; ver sección 2
+cms/data           3 MB   base de datos
                  ───────
-                 ~936 MB
+                 ~1,06 GB
 ```
 
-Antes de optimizar eran ~3,0 GB: los originales de cámara pesaban 2,2 GB y
-el sitio nunca sirve más de 1.600 px de ancho. Ver
-`npm run cms:optimize-uploads` y `npm run cms:optimize-fotos`.
+Antes de optimizar las imágenes eran ~3,0 GB: los originales de cámara pesaban
+2,2 GB y el sitio nunca sirve más de 1.600 px de ancho. Ver
+`npm run cms:optimize-uploads`, `npm run cms:optimize-fotos` y
+`npm run cms:move-library-photos`.
 
 ---
 
@@ -60,19 +62,56 @@ nativos para la versión equivocada.
 
 ---
 
-## 2. Subir el código
+## 2. Qué subir y qué no
 
-Tres opciones, de mejor a peor:
+Son **tres transferencias**, porque dos de las tres cosas no están en git a
+propósito:
 
-1. **Git en el servidor** (recomendado): `git clone` y luego `git pull` para
-   cada actualización.
-2. **Git deploy de cPanel**: añadir un `.cpanel.yml` al repositorio con las
-   tareas de despliegue. No está creado todavía; si eliges esta vía, dilo y lo
-   añado.
-3. **FTP / gestor de archivos**: funciona, pero hay que subir también
-   `node_modules` o instalar por SSH, y no se puede automatizar.
+| Qué                             | Cuánto | Cómo llega al servidor                    |
+| ------------------------------- | ------ | ----------------------------------------- |
+| Código y `public/`              | 129 MB | `git clone --depth 1` (ver abajo)         |
+| `cms/data/hidromont-cms.sqlite` | 2,5 MB | `scp`, una sola vez                       |
+| `uploads/cms/`                  | 321 MB | `rsync`, una sola vez                     |
+| `.env`                          | —      | **se escribe en el servidor**, no se sube |
 
-**Nunca subas `dist/` a mano.** Lo genera el servidor al compilar.
+Lo que **no** hay que subir nunca:
+
+| Qué                    | Cuánto | Por qué no                                              |
+| ---------------------- | ------ | ------------------------------------------------------- |
+| `dist/`                | 109 MB | lo genera el servidor al compilar                       |
+| `node_modules/`        | 410 MB | lo instala `npm ci` con los binarios de su Node         |
+| `uploads/_originales/` | 2,2 GB | originales de cámara previos al WebP; archívalos aparte |
+| `_retirados/`          | 80 MB  | fotos que ninguna página usa                            |
+| `cms/data/backups/`    | 20 MB  | respaldos locales; el servidor hace los suyos           |
+| `cms/data/lqip-cache/` | 840 KB | caché; se regenera en la primera exportación            |
+| `.env`                 | —      | tiene la contraseña del CMS: se escribe allí            |
+
+### El clon tiene que ser superficial
+
+**Un `git clone` normal descarga 6,2 GB.** El historial arrastra los
+originales de cámara y los `dist/` de antes de que se ignoraran, y eso no se
+arregla clonando otra vez. Con la copia superficial son 245 MB:
+
+```bash
+git clone --depth 1 https://github.com/Allopze/Hidromont.git hidromont
+```
+
+Para actualizar después, `git pull --depth 1` o, más simple,
+`git fetch --depth 1 origin main && git reset --hard origin/main`.
+
+Si el plan no tiene git, la alternativa es `rsync` excluyendo lo generado:
+
+```bash
+rsync -avz --progress \
+  --exclude node_modules --exclude dist --exclude .git \
+  --exclude uploads --exclude cms/data \
+  ./ USUARIO@SERVIDOR:~/hidromont/
+```
+
+### Git deploy de cPanel
+
+Añadir un `.cpanel.yml` al repositorio con las tareas de despliegue. No está
+creado todavía; si eliges esta vía, dilo y lo añado.
 
 ---
 
@@ -82,7 +121,7 @@ Estos dos **no** pueden vivir dentro del árbol que se sincroniza con git,
 porque un `git pull --force` o un redespliegue los borraría:
 
 - `cms/data/` — la base de datos SQLite y los respaldos.
-- `uploads/cms/` — los originales de las imágenes subidas por el CMS (~2,2 GB).
+- `uploads/cms/` — la biblioteca de medios del CMS (321 MB).
 
 Lo más simple es dejarlos fuera y enlazarlos:
 
@@ -96,7 +135,7 @@ O apuntarlos por configuración: `CMS_DATABASE_PATH` y `CMS_UPLOAD_DIR` aceptan
 rutas absolutas.
 
 **`CMS_UPLOAD_DIR` nunca debe caer dentro de `public/`.** Astro copia `public/`
-entero a `dist/` en cada compilación, así que los 2,2 GB se duplicarían en cada
+entero a `dist/` en cada compilación, así que los 321 MB se duplicarían en cada
 build. El servidor aborta al arrancar si detecta esa configuración.
 
 ### Migrar los datos actuales
@@ -107,7 +146,7 @@ scp cms/data/hidromont-cms.sqlite USUARIO@SERVIDOR:~/hidromont-datos/cms-data/
 rsync -avz --progress uploads/cms/ USUARIO@SERVIDOR:~/hidromont-datos/uploads-cms/
 ```
 
-`rsync` es preferible a `scp` para los 2,2 GB: se puede reanudar si se corta.
+`rsync` es preferible a `scp` para los 321 MB: se puede reanudar si se corta.
 
 ---
 
@@ -153,6 +192,10 @@ cd ~/hidromont
 npm ci                      # instala y compila los módulos nativos
 npm run check:deploy-env    # verificación del entorno
 ```
+
+**No uses `npm ci --omit=dev`.** Astro y `@astrojs/*` están en
+`devDependencies`, así que sin ellas no hay build posible. Las 11
+`dependencies` son solo lo que el proceso necesita en marcha.
 
 `check:deploy-env` comprueba versión de Node, que `better-sqlite3` y `sharp`
 carguen, permisos de escritura, espacio y el perfil de `.env`. **Debe terminar
