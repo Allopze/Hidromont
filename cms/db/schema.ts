@@ -159,6 +159,7 @@ export function migrate(db: Database.Database = getDb()): void {
   migratePublishJobsUpdatedAt(db);
   migratePublishJobsAction(db);
   migrateCollectionSlugUniqueness(db);
+  migrateMediaPathUniqueness(db);
 }
 
 /**
@@ -203,6 +204,41 @@ function migrateCollectionSlugUniqueness(db: ReturnType<typeof getDb>): void {
        ON content_entries (kind, slug, locale)
        WHERE kind IN ('servicio', 'proyecto');`
   );
+}
+
+/**
+ * `media_assets.path` no tenía índice único, así que la misma foto podía
+ * registrarse dos veces —y lo estaba, seis veces—. El daño no es guardar una
+ * fila de más: el backfill de usos casa por ruta, así que un mismo campo se
+ * atribuía a varios `media_id` e inflaba el recuento de usos que el panel
+ * muestra antes de dejar borrar una imagen, y cuál de las dos filas quedaba
+ * registrada al elegir la foto era azar.
+ *
+ * Idempotente, y con el mismo criterio que el índice de slugs: si encuentra
+ * duplicados preexistentes NO crea el índice y los reporta. Abortar dejaría al
+ * operador sin CMS y sin forma de arreglarlo desde la interfaz, y aquí además
+ * existe la herramienta concreta que lo resuelve.
+ */
+function migrateMediaPathUniqueness(db: ReturnType<typeof getDb>): void {
+  const duplicados = db
+    .prepare(
+      `SELECT path, COUNT(*) AS n, GROUP_CONCAT(id, ', ') AS ids
+         FROM media_assets
+        GROUP BY path
+       HAVING n > 1`
+    )
+    .all() as Array<{ path: string; n: number; ids: string }>;
+
+  if (duplicados.length > 0) {
+    process.stderr.write(
+      `[CMS] ADVERTENCIA: ${duplicados.length} ruta(s) de la biblioteca están registradas más de una vez; no se creó el índice único.\n` +
+        duplicados.map((d) => `  - ${d.path} (${d.n}): ${d.ids}\n`).join('') +
+        '[CMS] Ejecute `npm run cms:merge-duplicate-media` para fusionarlas y reinicie.\n'
+    );
+    return;
+  }
+
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_media_assets_path ON media_assets (path);');
 }
 
 /**
