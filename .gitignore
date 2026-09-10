@@ -68,3 +68,6 @@ _retirados/
 
 # Paquetes de despliegue generados por npm run pack:deploy
 _deploy/
+
+# Credenciales de subida (npm run deploy:ftp)
+.env.deploy

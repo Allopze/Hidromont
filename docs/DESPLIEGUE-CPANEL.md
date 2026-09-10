@@ -141,6 +141,38 @@ servidor es Linux x64. Hay que instalarlos allí.
 
 ---
 
+### Subida automática
+
+Las dos subidas se pueden automatizar:
+
+```bash
+npm run pack:deploy
+npm run deploy:ftp -- --dry    # dice qué haría, sin conectarse
+npm run deploy:ftp             # sube el paquete de aplicación
+```
+
+Las credenciales van en `.env.deploy`, copiado de `.env.deploy.example`. Ese
+archivo está en `.gitignore` y **no debe compartirse por chat ni por correo**:
+si se filtra, cámbiala en cPanel → Cuentas FTP.
+
+Detalles que importan:
+
+- **Usa FTPS** (`FTP_PROTOCOL=ftps`, el valor por defecto). Con `ftp` a secas
+  la contraseña y los archivos viajan legibles por la red; el script avisa.
+- **Crea una cuenta FTP dedicada** en cPanel, limitada al directorio de la
+  aplicación, en vez de usar la cuenta principal.
+- La contraseña nunca llega a la línea de órdenes: viaja a `curl` por su
+  archivo de configuración en la entrada estándar, así que no aparece en la
+  lista de procesos. Comprobado con `ps`.
+- El paquete de datos solo se sube con `--datos`, y el script advierte antes:
+  sobrescribe la base y la biblioteca del servidor con las copias locales.
+
+Lo que FTP no puede hacer, y sigue siendo manual en cPanel: descomprimir,
+instalar y reiniciar. El script lo recuerda al terminar. Con acceso SSH esos
+tres pasos también se podrían automatizar.
+
+---
+
 ## 3. Directorios que deben sobrevivir a un redespliegue
 
 Estos dos **no** pueden vivir dentro del árbol que se sincroniza con git,
