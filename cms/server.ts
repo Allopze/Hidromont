@@ -2,6 +2,7 @@ import path from 'node:path';
 import fastify from 'fastify';
 import { config } from './config/unifiedConfig';
 import { registerCmsRoutes } from './routes/cmsRoutes';
+import { publicContentSecurityPolicy } from './security/headers';
 import { registerStaticSite } from './staticSite';
 import { captureException, initErrorTracking } from './utils/errorTracking';
 
@@ -89,31 +90,42 @@ const app = fastify({
   trustProxy: config.cms.trustProxy,
 });
 
-// Cabeceras de seguridad básicas
+// Cabeceras de seguridad.
+//
+// Fase 4 (cPanel): `public/_headers` es una convención exclusiva de Cloudflare
+// Pages y no hace nada cuando este proceso sirve el sitio, así que la CSP y la
+// Permissions-Policy del sitio público desaparecían al migrar. `.htaccess`
+// tampoco trae CSP y solo aplica si Apache sirve los archivos.
 app.addHook('onSend', async (request, reply) => {
+  const esApi = request.url.startsWith('/api/');
+
   reply.header('X-Content-Type-Options', 'nosniff');
-  reply.header('X-Frame-Options', 'DENY');
   reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // H-13: Restringir APIs del navegador no necesarias en el CMS.
   reply.header(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()'
   );
+  // La API no debe poder enmarcarse en ningún caso; el sitio público sí en su
+  // propio origen, que es lo que declaraba _headers.
+  reply.header('X-Frame-Options', esApi ? 'DENY' : 'SAMEORIGIN');
 
-  // CMS-11: CSP/HSTS solo para la API del CMS (JSON), no para el sitio estático que
-  // este mismo proceso puede servir via registerStaticSite (server.mjs/npm start) —
-  // ese HTML incluye el bootstrap inline del overlay (CmsOverlay.astro) cuando
-  // PUBLIC_ENABLE_CMS=1, y una CSP estricta aqui sin hashear ese script lo rompería.
-  // El sitio estático en producción (Cloudflare Pages) ya trae su propia CSP via
-  // public/_headers.
-  if (request.url.startsWith('/api/')) {
+  if (config.cms.cookieSecure) {
+    reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+
+  if (esApi) {
     reply.header(
       'Content-Security-Policy',
       "default-src 'none'; frame-ancestors 'none'; base-uri 'none'"
     );
-    if (config.cms.cookieSecure) {
-      reply.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    }
+    return;
+  }
+
+  // Solo el HTML necesita CSP: los assets se sirven con su propio tipo y la
+  // política no aporta nada sobre ellos.
+  const tipo = reply.getHeader('content-type');
+  if (typeof tipo === 'string' && tipo.startsWith('text/html')) {
+    reply.header('Content-Security-Policy', publicContentSecurityPolicy(config.cms.staticDir));
   }
 });
 

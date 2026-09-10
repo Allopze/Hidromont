@@ -197,10 +197,18 @@ A = `requireAuth`, C = `requireCsrf`. Ver [`CMS-GUIDE.md`](./CMS-GUIDE.md) para 
    Escritura atómica (.tmp + rename) con mkdir recursivo (slugs con subdirectorio).
 
 3. PUBLICACIÓN ("Publicar")
-   POST /publish ──► export + npm run build ──► job tracking (running→succeeded/failed)
+   POST /publish ──► export + CMS_PUBLISH_CHECK_COMMAND (npm run build)
+                 ──► job tracking (running→succeeded/failed)
+                 ──► el export devuelve además `skipped[]` (entradas con un
+                     valor fuera del vocabulario, que NO se publican) y
+                     `revertedToFallback[]` (entradas en borrador, cuyo texto
+                     vuelve al del código). Ambos se muestran en el panel.
 
 4. DESPLIEGUE
-   Manual: dist/ → Cloudflare Pages. El CMS no deploya.
+   El mismo proceso Node sirve dist/, así que el build del paso 3 deja el
+   cambio en línea. No hay paso manual.
+   Si el sitio se sirviera desde un hosting estático aparte, ahí sí habría
+   que subir dist/ y el ciclo volvería a quedar abierto.
 ```
 
 ## Testing

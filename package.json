@@ -1,6 +1,9 @@
 {
   "name": "hidromont-chile-web",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "version": "1.0.0",
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
@@ -16,7 +19,7 @@
     "cms:backup": "tsx cms/scripts/backup.ts",
     "cms:migrate-audited-content": "tsx cms/scripts/migrate-audited-content.ts",
     "cms:reset-password": "tsx cms/scripts/reset-password.ts",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && tsx scripts/sync-csp-headers.ts",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
@@ -29,6 +32,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "screenshots": "node scripts/capture-screenshots.mjs",
+    "check:deploy-env": "node scripts/check-deploy-env.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

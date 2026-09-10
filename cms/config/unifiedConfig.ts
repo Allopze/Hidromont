@@ -78,6 +78,11 @@ export const config = {
       : path.join(rootDir, 'uploads', 'cms'),
     publicUploadBase: '/uploads/cms',
     publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build',
+    // A-6: 120 s bastaban para `astro check`, pero no para un `npm run build`
+    // completo con procesado de imágenes, que es lo que hace falta para que
+    // publicar actualice de verdad el sitio servido. Configurable porque el
+    // tiempo depende de la máquina: en hosting compartido es bastante mayor.
+    publishTimeoutMs: intFromEnv('CMS_PUBLISH_TIMEOUT_MS', 600_000),
   },
   admin: {
     email: process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local',

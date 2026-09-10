@@ -4,8 +4,10 @@ import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCmsText, getCmsValue } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
 
-// A2-005: fallback al correo corporativo, no a una cuenta personal.
-const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'contacto@hidromont.cl';
+// A2-005 / A-12: fallback al buzón corporativo, nunca a una cuenta personal.
+// La variable llegó a apuntar a un gmail personal, así que el fallback es la
+// última defensa si el build de producción no la define.
+const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'hidromont@hidromont.cl';
 
 // UIUX-L5 fix: the form always POSTs via fetch to the `/ajax/` endpoint and
 // never navigates, so `/contacto/gracias` was unreachable. `action`/`_next`

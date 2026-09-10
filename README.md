@@ -174,29 +174,61 @@ Los cambios guardados en la base de datos no se reflejan automáticamente en los
 
 ## 🌍 Publicación en Producción
 
-El sitio público de Hidromont es **completamente estático** para garantizar máxima seguridad y velocidad de carga. El CMS corre únicamente de forma local o en la red local de la empresa (LAN).
+El sitio se compila estático y se sirve, junto con la API del CMS, desde un
+único proceso Node (`npm start` → `server.mjs` → `cms/server.ts`) en un cPanel
+con Node.js habilitado.
 
-Para publicar los cambios en el servidor web de producción (`hidromont.cl`):
+Con esa topología el ciclo de publicación cierra solo: **«Publicar» exporta el
+contenido, ejecuta `npm run build` y el `dist/` regenerado es el mismo que el
+proceso sirve**, así que el cambio queda en línea al terminar. No hay paso
+manual de subida.
 
-1. **Guardar y Exportar**: Asegúrate de haber realizado el paso "Exportar y validar" en el CMS para que los archivos del código fuente estén al día.
-2. **Hacer Build**: Compila el sitio estático optimizado ejecutando:
-   ```bash
-   npm run build
-   ```
-3. **Desplegar**: Sube el contenido de la carpeta `/dist` generada a Cloudflare Pages, que usa `public/_redirects` y `public/_headers` para fallback 404, cache y cabeceras de seguridad. Si se usa otro hosting, replica esas cabeceras en su configuración equivalente antes de publicar.
+### Antes del primer despliegue
 
-### ⚙️ Variables de entorno en el build de producción (Cloudflare Pages)
+```bash
+node scripts/check-deploy-env.mjs   # o: npm run check:deploy-env
+```
 
-El build de Cloudflare Pages **debe** configurar estas variables para evitar filtrar el CMS al público (H1) y asegurar las cookies (H2):
+Se ejecuta **en el servidor** y comprueba versión de Node, carga de los
+módulos nativos (`better-sqlite3`, `sharp`), permisos de escritura, espacio y
+el perfil de `.env`. Copia `.env.production.example` como `.env` y complétalo:
+lleva comentado el porqué de cada valor.
 
-| Variable               | Valor en producción          | Razón                                                                                                                                                                                 |
-| ---------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_ENABLE_CMS`    | **`0`**                      | Evita que el build incluya el overlay del CMS (66 KB JS inline + atributos `data-cms-entry`). El CI verifica con `e2e/build-gate.spec.ts` que `dist/` no contenga marcadores del CMS. |
-| `NODE_ENV`             | `production`                 | Activa los defaults de producción (cookie segura por defecto).                                                                                                                        |
-| `PUBLIC_CONTACT_EMAIL` | `contacto@hidromont.cl`      | Correo destinatario del formulario. El fallback en código ya es este valor.                                                                                                           |
-| `PUBLIC_CMS_API_BASE`  | (vacío o la URL LAN del CMS) | El frontend público no necesita contactar al CMS.                                                                                                                                     |
+Dos cosas que deben sobrevivir a un redespliegue y no pueden vivir en el árbol
+que se sincroniza con git: `cms/data/` (la base) y `uploads/cms/` (los
+originales de las imágenes, ~2 GB).
 
-> **Importante**: si en algún momento necesitas regenerar el build CON el overlay (p. ej. para editar contenido en un entorno staging), usa `PUBLIC_ENABLE_CMS=1` sólo en ese build y **nunca** lo despliegues a `hidromont.cl`. El build de producción del dominio público siempre debe llevar `0`.
+### Cabeceras y redirecciones
+
+`public/_headers` y `public/_redirects` son convenciones **exclusivas de
+Cloudflare Pages**. Al servir desde Node no hacen nada por sí solas, así que
+el propio servidor aplica el equivalente:
+
+- Las cabeceras de seguridad (CSP, `Permissions-Policy`, `X-Frame-Options`,
+  HSTS) las pone `cms/security/headers.ts`.
+- Las redirecciones las lee `cms/staticSite.ts` del propio `_redirects`, así
+  que la lista sigue siendo una sola mientras convivan los dos destinos.
+
+Los hashes de la CSP **no se mantienen a mano**: los calcula
+`scripts/sync-csp-headers.ts` como último paso de `npm run build`, y el
+servidor los recalcula del build que sirve. Se hizo así porque los que había
+escritos no correspondían a ningún script real y dejaban bloqueados —en
+silencio— los dos scripts inline del sitio.
+
+### Variables del build de producción
+
+| Variable                    | Valor                    | Razón                                                                                                                              |
+| --------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_ENABLE_CMS`         | **`1`**                  | La barra del CMS _es_ el overlay: sin él no hay interfaz de administración en el servidor. Queda inerte sin `?cms=1` y sin sesión. |
+| `NODE_ENV`                  | `production`             | Activa los defaults de producción (cookie segura).                                                                                 |
+| `PUBLIC_CONTACT_EMAIL`      | `hidromont@hidromont.cl` | Destinatario del formulario. El fallback del código es el mismo buzón.                                                             |
+| `PUBLIC_CMS_API_BASE`       | (vacío)                  | El overlay habla con el mismo origen que sirve la página.                                                                          |
+| `CMS_PUBLISH_CHECK_COMMAND` | `npm run build`          | Es lo que hace que publicar actualice el sitio servido. `npm run check` solo valida.                                               |
+| `CMS_PUBLISH_TIMEOUT_MS`    | medido en el servidor    | Un build completo tarda bastante más en hosting compartido que en local.                                                           |
+
+> Si en algún momento se vuelve a un hosting puramente estático, compila con
+> `PUBLIC_ENABLE_CMS=0`: `e2e/build-gate.spec.ts` detecta el perfil del build y
+> exige, en ese caso, que el overlay no aparezca por ningún lado.
 
 ### 🔐 Configuración del CMS en producción (si se expone en LAN)
 

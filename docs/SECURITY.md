@@ -21,7 +21,11 @@
 └─────────────────────────────────────────┘
 ```
 
-**Principio:** el sitio público es 100% estático. El CMS **nunca** se expone a internet; corre solo en la máquina del operador o LAN de la oficina. El único canal entre ambos es el export de archivos (JSON + .md) que el operador sube a Cloudflare.
+**Principio:** el sitio público es 100% estático. El CMS **nunca** se expone a internet; corre solo en la máquina del operador o LAN de la oficina. El canal entre ambos es el export de archivos (JSON + .md), que el build convierte en el `dist/` que se sirve.
+
+> **Cambio de modelo (Fase 4).** Con el despliegue en cPanel el CMS y el sitio corren en el mismo proceso Node, así que el CMS deja de ser solo local: queda accesible desde internet. Eso obliga a HTTPS con `CMS_COOKIE_SECURE=1`, contraseña fuerte y `CMS_ALLOW_INSECURE_COOKIE` sin definir — los guards de arranque de `cms/server.ts` rechazan las combinaciones peligrosas. Y obliga a compilar con `PUBLIC_ENABLE_CMS=1`, así que el overlay viaja en cada página pública: queda inerte sin `?cms=1` y sin sesión, pero expone los identificadores de entrada y un formulario de acceso. `e2e/build-gate.spec.ts` verifica que, en ese perfil, el build no arrastre credenciales ni rutas del servidor.
+>
+> Las cabeceras de seguridad ya no vienen de `public/_headers` (convención exclusiva de Cloudflare Pages, inerte fuera de él) sino de `cms/security/headers.ts`, que además calcula los hashes de la CSP leyendo el build en vez de mantenerlos a mano.
 
 ## Matriz de amenazas y mitigaciones
 

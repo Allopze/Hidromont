@@ -542,7 +542,7 @@
       <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
       <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
       <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
-      <button type="button" data-action="publish" data-auth hidden title="Exporta el contenido a los archivos del sitio y ejecuta la validación (astro check). El despliegue a hidromont.cl es un paso aparte.">Exportar y validar</button>
+      <button type="button" data-action="publish" data-auth hidden title="Exporta el contenido, compila el sitio y lo deja servido. El comando de validación es configurable (CMS_PUBLISH_CHECK_COMMAND).">Exportar y validar</button>
       <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
     </div>
     <aside class="hm-cms-panel" aria-label="Editor CMS">
@@ -1152,7 +1152,7 @@
       <section class="hm-cms-job-list">
         <p class="hm-cms-muted">Historial de exportaciones y validaciones.</p>
         <p class="hm-cms-muted" style="background:#eff8ff;border:1px solid #bae6fd;border-radius:0px;padding:8px 10px">
-          ℹ️ Exportar y validar escribe los archivos del sitio y corre <code>astro check</code>. Para que los cambios aparezcan en <strong>hidromont.cl</strong> falta compilar y desplegar (<code>npm run build</code> + deploy del hosting).
+          ℹ️ «Publicar» exporta el contenido y compila el sitio. Cuando el CMS corre en el mismo servidor que el sitio, el cambio queda en línea al terminar; si editas en local, falta subir el resultado.
         </p>
         ${items
           .map(
@@ -2291,11 +2291,19 @@
         const btn = target instanceof Element ? target.closest('button') : null;
         setButtonLoading(btn, true, 'Exportando...');
         openPanel(
-          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Exportando archivos y ejecutando validación (astro check)...</p>'
+          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Exportando archivos y compilando el sitio. Puede tardar varios minutos.</p>'
         );
         try {
           const result = await api('/api/cms/publish', { method: 'POST' });
           renderPublishJobs(result.job ? [result.job] : []);
+          // A-6: decir desde cuándo es el sitio que se está sirviendo, para
+          // que «falta desplegar» deje de ser una afirmación sin fecha.
+          if (result.siteBuiltAt) {
+            panelBody.insertAdjacentHTML(
+              'afterbegin',
+              `<p class="hm-cms-muted">Sitio servido: compilado el ${escapeHtml(formatDate(result.siteBuiltAt))}.</p>`
+            );
+          }
           const aviso = exportNoticeMarkup(result.exported);
           if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           const jobStatus = result.job?.status;

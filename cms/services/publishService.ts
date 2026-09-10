@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import { config } from '../config/unifiedConfig';
 import type { PublishJobRepository } from '../repositories/PublishJobRepository';
 import type { PublishJob } from '../types/cms';
+import { refreshPublicSecurityHeaders } from '../security/headers';
 import type { ExportService, RevertedEntry, SkippedEntry } from './exportService';
 
 type Exported = {
@@ -165,8 +166,14 @@ export class PublishService {
         const [command, ...args] = config.cms.publishCheckCommand.split(' ');
         const result = await execFileAsync(command, args, {
           cwd: config.rootDir,
-          timeout: 120000,
+          timeout: config.cms.publishTimeoutMs,
         });
+
+        // A-6: con el CMS y el sitio en el mismo proceso, `npm run build`
+        // regenera el dist/ que este servidor sirve, así que el cambio queda
+        // en línea sin más pasos. Pero el HTML nuevo puede traer otros
+        // scripts inline, y la CSP se calcula de él: hay que recalcularla.
+        refreshPublicSecurityHeaders();
         const completedAt = new Date().toISOString();
         const completed = this.publishJobRepository.finish({
           id: job.id,

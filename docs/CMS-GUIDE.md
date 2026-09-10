@@ -70,13 +70,25 @@ La escritura es **atómica** (`.tmp` + rename) y crea directorios recursivamente
 
 > **Nota:** solo se exportan entradas con `status: 'published'`. Los borradores (`draft`) nunca llegan a los archivos del sitio.
 
-### 3. Publicar ("Publicar")
+### 3. Publicar
 
-Botón que ejecuta `POST /api/cms/publish` = export + `npm run build`. El build valida que el contenido compile correctamente (schemas Zod de content collections). Si falla, el job queda `'failed'` con los logs.
+Botón que ejecuta `POST /api/cms/publish`: exporta el contenido y luego corre
+`CMS_PUBLISH_CHECK_COMMAND` (`npm run build` en producción). Como el mismo
+proceso sirve `dist/`, al terminar el cambio **ya está en línea**. El panel
+muestra la fecha de compilación de lo que se está sirviendo.
 
-### 4. Desplegar
+Si el build falla, el job queda en `'failed'` con los logs y el sitio anterior
+sigue servido intacto.
 
-Subir `dist/` a Cloudflare Pages. **El CMS no deploya**; el operador lo hace manualmente (o vía CI si se configura).
+Dos avisos que pueden aparecer al publicar, y que antes solo salían por la
+consola del servidor mientras el job se cerraba como correcto:
+
+- **«No se publicaron»** — la entrada tiene un valor fuera del vocabulario
+  (`categoria`, `tipo`, `icono`). No se escribe su archivo, así que el
+  proyecto no aparece en el sitio. El aviso trae un botón para editarla.
+- **«En borrador: el sitio muestra el texto por defecto»** — despublicar una
+  entrada de página no la oculta: el sitio vuelve al texto escrito en el
+  código. Para borrar un texto de verdad, usa «Vaciar este texto».
 
 ## Biblioteca de medios
 

@@ -23,12 +23,54 @@ const contentTypes: Record<string, string> = {
   '.xml': 'application/xml; charset=utf-8',
 };
 
+/**
+ * Fase 4 (cPanel): `public/_redirects` también es de Cloudflare Pages. Sin
+ * esto, los 301 de /proyectos/ch-dorias → /proyectos/ch-doiras se pierden al
+ * servir desde Node y las URLs antiguas empiezan a dar 404.
+ *
+ * Se leen del propio archivo del build para no duplicar la lista: sigue
+ * siendo la misma fuente que usa Cloudflare mientras convivan los dos.
+ */
+interface Redirect {
+  from: string;
+  to: string;
+  status: number;
+}
+
+let redirects: Redirect[] | undefined;
+
+function loadRedirects(): Redirect[] {
+  if (redirects) return redirects;
+  redirects = [];
+  const file = path.join(distDir, '_redirects');
+  if (!fs.existsSync(file)) return redirects;
+
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const [from, to, code] = trimmed.split(/\s+/);
+    if (!from || !to) continue;
+    // El comodín `/* /404.html 404` es el fallback de Pages; aquí ya lo cubre
+    // resolvePublicFile devolviendo 404.html, así que se ignora.
+    if (from.includes('*')) continue;
+    const status = Number(code);
+    redirects.push({ from, to, status: Number.isFinite(status) ? status : 301 });
+  }
+  return redirects;
+}
+
 export function registerStaticSite(app: FastifyInstance): void {
   app.get('/*', serveStaticSite);
 }
 
 async function serveStaticSite(request: FastifyRequest, reply: FastifyReply) {
   const pathname = getPathname(request.url);
+
+  const redirect = loadRedirects().find((r) => r.from === pathname);
+  if (redirect) {
+    return reply.status(redirect.status).header('Location', redirect.to).send();
+  }
+
   const resolved = await resolvePublicFile(pathname);
 
   if (!resolved) {

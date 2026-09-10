@@ -4,7 +4,15 @@
   Referrer-Policy: strict-origin-when-cross-origin
   # H-13: Permissions-Policy restringe el acceso a APIs del navegador no usadas por este sitio.
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
-  # M5/JS-10: CSP con hashes de los scripts inline identicos en todas las paginas:
+  # M5/JS-10: PLANTILLA. Los hashes de esta línea los reescribe
+  # scripts/sync-csp-headers.ts en dist/_headers al final de `npm run build`:
+  # NO hace falta mantenerlos aquí. Se hizo así porque mantenerlos a mano es
+  # frágil — se comprobó que los dos declarados aquí no correspondían a ningún
+  # script del build, y como CSP3 ignora unsafe-inline en cuanto hay un hash,
+  # ambos scripts inline quedaban bloqueados. src/test/csp-headers.test.ts lo
+  # verifica ahora en cada build. Al servir desde Node (cPanel) este archivo no
+  # se usa: los hashes los calcula cms/security/headers.ts leyendo el build.
+  # Hashes de los scripts inline identicos en todas las paginas:
   #   1. `.js classList` (detector de JS, BaseLayout)
   #   2. JSON-LD Organization (datos estructurados, identico en todas las paginas)
   # El hash #2 es en realidad innecesario: los bloques `type="application/json"`/
@@ -23,12 +31,12 @@
   # invalida 'unsafe-inline' para toda la directiva). Pendiente: mover el bootstrap del
   # overlay a un <script src="..."> externo (permitido por 'self' sin hash) en vez de
   # inline, o generar su hash dinamicamente en build.
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw=' 'sha256-KzHXOF/rDV03VPBunw3imiCWpJVLi2nvUNu3mxXrVd8='; frame-src https://maps.google.com https://www.google.com; form-action 'self' https://formsubmit.co https://api.web3forms.com; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-2Y3P/uZp/0mZ43cyAmBTs8z/m0b+O254N8mf8gEO0Mc=' 'sha256-sa2BD07tH4oO53uT1B5vNSLM2+gcrREM4WTXttKp6oU='; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://formsubmit.co https://api.web3forms.com; form-action 'self' https://formsubmit.co https://api.web3forms.com; upgrade-insecure-requests
 
 /*.html
   Cache-Control: public, max-age=600, must-revalidate
 
-/assets/*
+/_assets/*
   Cache-Control: public, max-age=31536000, immutable
 
 /fonts/*

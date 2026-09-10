@@ -1,4 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
+import { config } from '../config/unifiedConfig';
 import type { BackupService } from '../services/backupService';
 import type { PublishService } from '../services/publishService';
 import { captureException } from '../utils/errorTracking';
@@ -13,6 +16,20 @@ function isMissingGalleryTables(error: unknown): boolean {
   return error instanceof Error && /no such table/i.test(error.message);
 }
 
+/**
+ * A-6: fecha del build que este proceso está sirviendo. Es el dato que
+ * faltaba para que el editor supiera si lo que exportó ya está en línea: la
+ * etiqueta decía «falta desplegar» sin poder decir desde cuándo.
+ */
+function siteBuiltAt(): string | null {
+  const index = path.join(config.cms.staticDir, 'index.html');
+  try {
+    return fs.statSync(index).mtime.toISOString();
+  } catch {
+    return null;
+  }
+}
+
 export class PublishController extends BaseController {
   constructor(
     private readonly publishService: PublishService,
@@ -25,7 +42,7 @@ export class PublishController extends BaseController {
     try {
       // Use gallery-aware export if available, otherwise fallback to content-only
       const result = await this.publishService.exportContentWithGallery();
-      this.handleSuccess(reply, result);
+      this.handleSuccess(reply, { ...result, siteBuiltAt: siteBuiltAt() });
     } catch (error) {
       if (!isMissingGalleryTables(error)) {
         captureException(error, { action: 'exportContentWithGallery' });
@@ -43,7 +60,8 @@ export class PublishController extends BaseController {
 
   async publish(_request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
-      this.handleSuccess(reply, await this.publishService.publishContent());
+      const result = await this.publishService.publishContent();
+      this.handleSuccess(reply, { ...result, siteBuiltAt: siteBuiltAt() });
     } catch (error) {
       this.handleError(error, reply, 'publishContent');
     }
