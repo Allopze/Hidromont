@@ -31,8 +31,12 @@ for (const c of lista) {
 ---
 
 <PageLayout
-  title="Clientes"
-  description="Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos."
+  title={getCmsText('clientes.hero', 'seoTitle', 'Clientes')}
+  description={getCmsText(
+    'clientes.hero',
+    'seoDescription',
+    'Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos.'
+  )}
 >
   <ClientesHero
     title={getCmsText('clientes.hero', 'title', 'Clientes')}

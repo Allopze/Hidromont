@@ -11,8 +11,12 @@ import { company } from '../data/company';
 ---
 
 <PageLayout
-  title="Empresa"
-  description="Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado."
+  title={getCmsText('empresa.hero', 'seoTitle', 'Empresa')}
+  description={getCmsText(
+    'empresa.hero',
+    'seoDescription',
+    'Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado.'
+  )}
 >
   <PageHero
     title={getCmsText('empresa.hero', 'title', 'Empresa')}

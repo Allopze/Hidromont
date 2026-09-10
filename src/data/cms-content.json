@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T02:34:05.542Z",
+  "updatedAt": "2026-09-10T13:02:49.927Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -148,6 +148,14 @@
         "eyebrow": {
           "type": "text",
           "value": "Referencias"
+        },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Clientes"
         },
         "subtitle": {
           "type": "textarea",
@@ -552,6 +560,14 @@
         "infoTitle": {
           "type": "text",
           "value": "Información directa"
+        },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Contacto"
         }
       }
     },
@@ -588,6 +604,14 @@
         "imageAlt": {
           "type": "text",
           "value": "Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas"
+        },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Empresa"
         },
         "subtitle": {
           "type": "textarea",
@@ -1922,6 +1946,14 @@
           "type": "text",
           "value": "Ver proyectos"
         },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Ingeniería y Montaje de Equipos Hidromecánicos"
+        },
         "subtitle": {
           "type": "textarea",
           "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles."
@@ -2205,6 +2237,14 @@
         "searchPlaceholder": {
           "type": "text",
           "value": "Buscar proyecto..."
+        },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Galería de Proyectos"
         },
         "subtitle": {
           "type": "textarea",
@@ -2838,6 +2878,14 @@
           "type": "text",
           "value": "Bifurcación en T de gran diámetro fabricada en taller"
         },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Banco de proyectos de Hidromont Chile — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Proyectos"
+        },
         "subtitle": {
           "type": "textarea",
           "value": "Más de 40 años de proyectos hidráulicos nacionales e internacionales. Tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes electromecánicos."
@@ -3347,6 +3395,14 @@
         "imageAlt": {
           "type": "text",
           "value": "Fabricación de grandes equipos hidromecánicos en taller"
+        },
+        "seoDescription": {
+          "type": "textarea",
+          "value": "Servicios hidromecánicos de Hidromont Chile: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC."
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Servicios"
         },
         "subtitle": {
           "type": "textarea",

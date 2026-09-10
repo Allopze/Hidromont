@@ -50,8 +50,12 @@ const filterItems = [
 ---
 
 <PageLayout
-  title="Proyectos"
-  description="Banco de proyectos de Hidromont Chile — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas."
+  title={getCmsText('proyectos.index.hero', 'seoTitle', 'Proyectos')}
+  description={getCmsText(
+    'proyectos.index.hero',
+    'seoDescription',
+    'Banco de proyectos de Hidromont Chile — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas.'
+  )}
 >
   <PageHero
     title={getCmsText('proyectos.index.hero', 'title', 'Proyectos')}

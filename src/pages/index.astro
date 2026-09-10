@@ -64,8 +64,12 @@ const propuestaValor = [
 ---
 
 <PageLayout
-  title="Ingeniería y Montaje de Equipos Hidromecánicos"
-  description="Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983."
+  title={getCmsText('home.hero', 'seoTitle', 'Ingeniería y Montaje de Equipos Hidromecánicos')}
+  description={getCmsText(
+    'home.hero',
+    'seoDescription',
+    'Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983.'
+  )}
   headerOverlay={true}
 >
   <!-- Hero -->

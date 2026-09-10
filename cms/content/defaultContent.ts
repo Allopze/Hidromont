@@ -472,6 +472,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero home',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Ingeniería y Montaje de Equipos Hidromecánicos' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983.',
+      },
       eyebrow: { type: 'text', value: 'Especialistas en equipos hidromecánicos' },
       title: { type: 'text', value: 'Ingeniería, fabricación y montaje de equipos hidromecánicos' },
       subtitle: {
@@ -579,6 +588,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero empresa',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Empresa' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado.',
+      },
       eyebrow: { type: 'text', value: 'Quiénes somos' },
       title: { type: 'text', value: 'Empresa' },
       subtitle: {
@@ -600,6 +618,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero servicios',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Servicios' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Servicios hidromecánicos de Hidromont Chile: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC.',
+      },
       eyebrow: { type: 'text', value: 'Servicios' },
       title: { type: 'text', value: 'Servicios hidromecánicos' },
       subtitle: {
@@ -619,6 +646,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero proyectos',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Proyectos' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Banco de proyectos de Hidromont Chile — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas.',
+      },
       eyebrow: { type: 'text', value: 'Experiencia' },
       title: { type: 'text', value: 'Proyectos' },
       subtitle: {
@@ -662,6 +698,14 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Galería',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Galería de Proyectos' },
+      seoDescription: {
+        type: 'textarea',
+        value: 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.',
+      },
       eyebrow: { type: 'text', value: 'Nuestro trabajo' },
       title: { type: 'text', value: 'Galería' },
       subtitle: {
@@ -708,6 +752,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Secciones contacto',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Contacto' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos.',
+      },
       formEyebrow: { type: 'text', value: 'Formulario de contacto' },
       formTitle: { type: 'text', value: 'Envíe su consulta' },
       infoEyebrow: { type: 'text', value: 'Datos de contacto' },
@@ -1122,6 +1175,15 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Hero clientes',
     status: 'published',
     fields: {
+      // M-5: metadatos para buscadores. Estaban como literales en el .astro,
+      // así que ajustar un título o una descripción —trabajo de marketing, no
+      // de desarrollo— exigía un cambio de código y un despliegue.
+      seoTitle: { type: 'text', value: 'Clientes' },
+      seoDescription: {
+        type: 'textarea',
+        value:
+          'Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos.',
+      },
       eyebrow: { type: 'text', value: 'Nuestros clientes' },
       title: { type: 'text', value: 'Clientes' },
       subtitle: {

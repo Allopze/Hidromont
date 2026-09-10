@@ -9,8 +9,12 @@ import LocationCard from '../components/contact/LocationCard.astro';
 ---
 
 <PageLayout
-  title="Contacto"
-  description="Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
+  title={getCmsText('contacto.sections', 'seoTitle', 'Contacto')}
+  description={getCmsText(
+    'contacto.sections',
+    'seoDescription',
+    'Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos.'
+  )}
   hideFooterMap
 >
   {
