@@ -19,6 +19,7 @@
     "cms:move-library-photos": "tsx cms/scripts/move-library-only-photos.ts",
     "cms:merge-duplicate-media": "tsx cms/scripts/merge-duplicate-media.ts",
     "cms:backfill-media-alt": "tsx cms/scripts/backfill-media-alt.ts",
+    "cms:restore-image-originals": "tsx cms/scripts/restore-image-originals.ts",
     "cms:import-gallery": "tsx cms/scripts/import-gallery-json.ts",
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",

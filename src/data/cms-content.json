@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T14:01:50.490Z",
+  "updatedAt": "2026-09-10T15:01:49.296Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -177,7 +177,13 @@
         },
         "logo-aes-andes": {
           "type": "image",
-          "value": "/logos-clientes/aes-andes.png"
+          "value": "/logos-clientes/aes-andes.png",
+          "derived": {
+            "src": "/gallery/derived/1d8fe237-640.webp",
+            "srcset": "/gallery/derived/1d8fe237-640.webp 640w",
+            "width": 640,
+            "height": 262
+          }
         },
         "logo-alstom": {
           "type": "image",
@@ -217,11 +223,23 @@
         },
         "logo-electrica-puntilla": {
           "type": "image",
-          "value": "/logos-clientes/electrica-puntilla.png"
+          "value": "/logos-clientes/electrica-puntilla.png",
+          "derived": {
+            "src": "/gallery/derived/4eb05d08-1024.webp",
+            "srcset": "/gallery/derived/4eb05d08-640.webp 640w, /gallery/derived/4eb05d08-1024.webp 1024w",
+            "width": 1024,
+            "height": 550
+          }
         },
         "logo-endesa": {
           "type": "image",
-          "value": "/logos-clientes/endesa.png"
+          "value": "/logos-clientes/endesa.png",
+          "derived": {
+            "src": "/gallery/derived/b9271470-1600.webp",
+            "srcset": "/gallery/derived/b9271470-640.webp 640w, /gallery/derived/b9271470-1024.webp 1024w, /gallery/derived/b9271470-1600.webp 1600w",
+            "width": 1600,
+            "height": 335
+          }
         },
         "logo-engie": {
           "type": "image",
@@ -233,7 +251,13 @@
         },
         "logo-ferrovial": {
           "type": "image",
-          "value": "/logos-clientes/ferrovial.png"
+          "value": "/logos-clientes/ferrovial.png",
+          "derived": {
+            "src": "/gallery/derived/34a886ab-1600.webp",
+            "srcset": "/gallery/derived/34a886ab-640.webp 640w, /gallery/derived/34a886ab-1024.webp 1024w, /gallery/derived/34a886ab-1600.webp 1600w",
+            "width": 1600,
+            "height": 350
+          }
         },
         "logo-gas-natural-fenosa": {
           "type": "image",
@@ -241,7 +265,13 @@
         },
         "logo-gasco": {
           "type": "image",
-          "value": "/logos-clientes/gasco.png"
+          "value": "/logos-clientes/gasco.png",
+          "derived": {
+            "src": "/gallery/derived/ae09fd48-1024.webp",
+            "srcset": "/gallery/derived/ae09fd48-640.webp 640w, /gallery/derived/ae09fd48-1024.webp 1024w",
+            "width": 1024,
+            "height": 260
+          }
         },
         "logo-gpe": {
           "type": "image",
@@ -249,7 +279,13 @@
         },
         "logo-iberdrola": {
           "type": "image",
-          "value": "/logos-clientes/iberdrola.png"
+          "value": "/logos-clientes/iberdrola.png",
+          "derived": {
+            "src": "/gallery/derived/414b9702-1600.webp",
+            "srcset": "/gallery/derived/414b9702-640.webp 640w, /gallery/derived/414b9702-1024.webp 1024w, /gallery/derived/414b9702-1600.webp 1600w",
+            "width": 1600,
+            "height": 395
+          }
         },
         "logo-innergex": {
           "type": "image",
@@ -599,7 +635,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/taller-nave.webp"
+          "value": "/fotos/curadas/taller-nave.webp",
+          "derived": {
+            "src": "/gallery/derived/a37b77d0-1024.webp",
+            "srcset": "/gallery/derived/a37b77d0-640.webp 640w, /gallery/derived/a37b77d0-1024.webp 1024w",
+            "width": 1024,
+            "height": 683
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -869,7 +911,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/montaje-vertical-caverna.webp"
+          "value": "/fotos/curadas/montaje-vertical-caverna.webp",
+          "derived": {
+            "src": "/gallery/derived/dbb383a4-1024.webp",
+            "srcset": "/gallery/derived/dbb383a4-640.webp 640w, /gallery/derived/dbb383a4-1024.webp 1024w",
+            "width": 1024,
+            "height": 1365
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1033,7 +1081,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/0fc8b6b3-1600.webp",
+            "srcset": "/gallery/derived/0fc8b6b3-640.webp 640w, /gallery/derived/0fc8b6b3-1024.webp 1024w, /gallery/derived/0fc8b6b3-1600.webp 1600w",
+            "width": 1600,
+            "height": 749
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1389,7 +1443,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/7216a79a-1600.webp"
+          "value": "/fotos/galeria/ee46500c.webp",
+          "derived": {
+            "src": "/gallery/derived/7216a79a-1600.webp",
+            "srcset": "/gallery/derived/7216a79a-640.webp 640w, /gallery/derived/7216a79a-1024.webp 1024w, /gallery/derived/7216a79a-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -1397,7 +1457,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8b04c48f-1600.webp"
+          "value": "/fotos/galeria/c9499877.webp",
+          "derived": {
+            "src": "/gallery/derived/8b04c48f-1600.webp",
+            "srcset": "/gallery/derived/8b04c48f-640.webp 640w, /gallery/derived/8b04c48f-1024.webp 1024w, /gallery/derived/8b04c48f-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -1405,7 +1471,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/c4859dc0-1600.webp"
+          "value": "/fotos/proyectos/ch-los-condores/DSCI4263.webp",
+          "derived": {
+            "src": "/gallery/derived/c4859dc0-1600.webp",
+            "srcset": "/gallery/derived/c4859dc0-640.webp 640w, /gallery/derived/c4859dc0-1024.webp 1024w, /gallery/derived/c4859dc0-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -1423,7 +1495,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/9380be96-1600.webp"
+          "value": "/fotos/proyectos/ch-queltehues/20160324_114353.webp",
+          "derived": {
+            "src": "/gallery/derived/9380be96-1600.webp",
+            "srcset": "/gallery/derived/9380be96-640.webp 640w, /gallery/derived/9380be96-1024.webp 1024w, /gallery/derived/9380be96-1600.webp 1600w",
+            "width": 1600,
+            "height": 900
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -1431,7 +1509,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/20f23b02-1600.webp"
+          "value": "/fotos/proyectos/ch-queltehues/20160329_164852.webp",
+          "derived": {
+            "src": "/gallery/derived/20f23b02-1600.webp",
+            "srcset": "/gallery/derived/20f23b02-640.webp 640w, /gallery/derived/20f23b02-1024.webp 1024w, /gallery/derived/20f23b02-1600.webp 1600w",
+            "width": 1600,
+            "height": 900
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -1439,7 +1523,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/18dba00f-1600.webp"
+          "value": "/fotos/proyectos/ch-queltehues/IMG_20161206_113612.webp",
+          "derived": {
+            "src": "/gallery/derived/18dba00f-1600.webp",
+            "srcset": "/gallery/derived/18dba00f-640.webp 640w, /gallery/derived/18dba00f-1024.webp 1024w, /gallery/derived/18dba00f-1600.webp 1600w",
+            "width": 1600,
+            "height": 1187
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -1559,7 +1649,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/ed1997f7-1600.webp"
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/cupula-soldadura-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/ed1997f7-1600.webp",
+            "srcset": "/gallery/derived/ed1997f7-640.webp 640w, /gallery/derived/ed1997f7-1024.webp 1024w, /gallery/derived/ed1997f7-1600.webp 1600w",
+            "width": 1600,
+            "height": 720
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -1567,7 +1663,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8c4c856b-1600.webp"
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/montaje-cupulas-doble-pasarela.webp",
+          "derived": {
+            "src": "/gallery/derived/8c4c856b-1600.webp",
+            "srcset": "/gallery/derived/8c4c856b-640.webp 640w, /gallery/derived/8c4c856b-1024.webp 1024w, /gallery/derived/8c4c856b-1600.webp 1600w",
+            "width": 1600,
+            "height": 720
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -1575,7 +1677,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/1ffd1453-1600.webp"
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/pasarelas-terminadas-ruta.webp",
+          "derived": {
+            "src": "/gallery/derived/1ffd1453-1600.webp",
+            "srcset": "/gallery/derived/1ffd1453-640.webp 640w, /gallery/derived/1ffd1453-1024.webp 1024w, /gallery/derived/1ffd1453-1600.webp 1600w",
+            "width": 1600,
+            "height": 900
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -1593,7 +1701,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/77cc84b2-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-abierto-trabajador.webp",
+          "derived": {
+            "src": "/gallery/derived/77cc84b2-1600.webp",
+            "srcset": "/gallery/derived/77cc84b2-640.webp 640w, /gallery/derived/77cc84b2-1024.webp 1024w, /gallery/derived/77cc84b2-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -1601,7 +1715,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/13da5f4c-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-frontend.webp",
+          "derived": {
+            "src": "/gallery/derived/13da5f4c-1600.webp",
+            "srcset": "/gallery/derived/13da5f4c-640.webp 640w, /gallery/derived/13da5f4c-1024.webp 1024w, /gallery/derived/13da5f4c-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -1609,7 +1729,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/fbee1d7f-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-vista-lateral.webp",
+          "derived": {
+            "src": "/gallery/derived/fbee1d7f-1600.webp",
+            "srcset": "/gallery/derived/fbee1d7f-640.webp 640w, /gallery/derived/fbee1d7f-1024.webp 1024w, /gallery/derived/fbee1d7f-1600.webp 1600w",
+            "width": 1600,
+            "height": 2134
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -1627,7 +1753,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/5ad057cd-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-semiesferico-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/5ad057cd-1600.webp",
+            "srcset": "/gallery/derived/5ad057cd-640.webp 640w, /gallery/derived/5ad057cd-1024.webp 1024w, /gallery/derived/5ad057cd-1600.webp 1600w",
+            "width": 1600,
+            "height": 2134
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -1635,7 +1767,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8f3e1d15-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-soporte-frontal.webp",
+          "derived": {
+            "src": "/gallery/derived/8f3e1d15-1600.webp",
+            "srcset": "/gallery/derived/8f3e1d15-640.webp 640w, /gallery/derived/8f3e1d15-1024.webp 1024w, /gallery/derived/8f3e1d15-1600.webp 1600w",
+            "width": 1600,
+            "height": 2134
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -1643,7 +1781,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/1b836a2c-1600.webp"
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanque-cabezal-perspectiva.webp",
+          "derived": {
+            "src": "/gallery/derived/1b836a2c-1600.webp",
+            "srcset": "/gallery/derived/1b836a2c-640.webp 640w, /gallery/derived/1b836a2c-1024.webp 1024w, /gallery/derived/1b836a2c-1600.webp 1600w",
+            "width": 1600,
+            "height": 2134
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -1705,7 +1849,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/montaje-vertical-caverna.webp"
+          "value": "/fotos/curadas/montaje-vertical-caverna.webp",
+          "derived": {
+            "src": "/gallery/derived/dbb383a4-1024.webp",
+            "srcset": "/gallery/derived/dbb383a4-640.webp 640w, /gallery/derived/dbb383a4-1024.webp 1024w",
+            "width": 1024,
+            "height": 1365
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1749,7 +1899,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-tuberia-montana.webp"
+          "value": "/fotos/curadas/proyecto-tuberia-montana.webp",
+          "derived": {
+            "src": "/gallery/derived/f88c367a-640.webp",
+            "srcset": "/gallery/derived/f88c367a-640.webp 640w",
+            "width": 640,
+            "height": 853
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1771,7 +1927,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/bifurcacion-primer-taller.webp"
+          "value": "/fotos/curadas/bifurcacion-primer-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/2867477d-1024.webp",
+            "srcset": "/gallery/derived/2867477d-640.webp 640w, /gallery/derived/2867477d-1024.webp 1024w",
+            "width": 1024,
+            "height": 793
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1793,7 +1955,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/valvula-tunel-chironta.webp"
+          "value": "/fotos/curadas/valvula-tunel-chironta.webp",
+          "derived": {
+            "src": "/gallery/derived/1a8c1acd-1600.webp",
+            "srcset": "/gallery/derived/1a8c1acd-640.webp 640w, /gallery/derived/1a8c1acd-1024.webp 1024w, /gallery/derived/1a8c1acd-1600.webp 1600w",
+            "width": 1600,
+            "height": 740
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1815,7 +1983,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp",
+          "derived": {
+            "src": "/gallery/derived/900b92f6-1600.webp",
+            "srcset": "/gallery/derived/900b92f6-640.webp 640w, /gallery/derived/900b92f6-1024.webp 1024w, /gallery/derived/900b92f6-1600.webp 1600w",
+            "width": 1600,
+            "height": 720
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1837,7 +2011,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/tanques-glp-coyhaique.webp"
+          "value": "/fotos/curadas/tanques-glp-coyhaique.webp",
+          "derived": {
+            "src": "/gallery/derived/1622b47d-1024.webp",
+            "srcset": "/gallery/derived/1622b47d-640.webp 640w, /gallery/derived/1622b47d-1024.webp 1024w",
+            "width": 1024,
+            "height": 1365
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1859,7 +2039,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/tanques-glp-puerto-williams.webp"
+          "value": "/fotos/curadas/tanques-glp-puerto-williams.webp",
+          "derived": {
+            "src": "/gallery/derived/274fef07-1024.webp",
+            "srcset": "/gallery/derived/274fef07-640.webp 640w, /gallery/derived/274fef07-1024.webp 1024w",
+            "width": 1024,
+            "height": 1365
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1931,7 +2117,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/bifurcacion-t-taller.webp"
+          "value": "/fotos/curadas/bifurcacion-t-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/b5d93032-1024.webp",
+            "srcset": "/gallery/derived/b5d93032-640.webp 640w, /gallery/derived/b5d93032-1024.webp 1024w",
+            "width": 1024,
+            "height": 683
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2033,7 +2225,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/fotos/catalogo/limpiarrejas-patente-funcionamiento.webp"
+          "value": "/fotos/catalogo/limpiarrejas-patente-funcionamiento.webp",
+          "derived": {
+            "src": "/gallery/derived/7f8d8b52-640.webp",
+            "srcset": "/gallery/derived/7f8d8b52-640.webp 640w",
+            "width": 640,
+            "height": 382
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -2041,7 +2239,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/fotos/catalogo/limpiarrejas-patente-guiado-peine.webp"
+          "value": "/fotos/catalogo/limpiarrejas-patente-guiado-peine.webp",
+          "derived": {
+            "src": "/gallery/derived/cd68b947-640.webp",
+            "srcset": "/gallery/derived/cd68b947-640.webp 640w",
+            "width": 640,
+            "height": 382
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -2157,7 +2361,13 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/fotos/catalogo/turbinas-montaje-rotor-sobradelo.webp"
+          "value": "/fotos/catalogo/turbinas-montaje-rotor-sobradelo.webp",
+          "derived": {
+            "src": "/gallery/derived/ff528593-640.webp",
+            "srcset": "/gallery/derived/ff528593-640.webp 640w",
+            "width": 640,
+            "height": 852
+          }
         },
         "gallery1Alt": {
           "type": "text",
@@ -2165,7 +2375,13 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/fotos/catalogo/turbinas-mecanizado-brida-camara-espiral.webp"
+          "value": "/fotos/catalogo/turbinas-mecanizado-brida-camara-espiral.webp",
+          "derived": {
+            "src": "/gallery/derived/81d721f1-640.webp",
+            "srcset": "/gallery/derived/81d721f1-640.webp 640w",
+            "width": 640,
+            "height": 480
+          }
         },
         "gallery2Alt": {
           "type": "text",
@@ -2173,7 +2389,13 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/fotos/catalogo/turbinas-turboalternador-francis.webp"
+          "value": "/fotos/catalogo/turbinas-turboalternador-francis.webp",
+          "derived": {
+            "src": "/gallery/derived/2e8193e6-640.webp",
+            "srcset": "/gallery/derived/2e8193e6-640.webp 640w",
+            "width": 640,
+            "height": 435
+          }
         },
         "gallery3Alt": {
           "type": "text",
@@ -2225,7 +2447,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/compuertas.webp"
+          "value": "/fotos/curadas/compuertas.webp",
+          "derived": {
+            "src": "/gallery/derived/b31a4419-1024.webp",
+            "srcset": "/gallery/derived/b31a4419-640.webp 640w, /gallery/derived/b31a4419-1024.webp 1024w",
+            "width": 1024,
+            "height": 768
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2247,7 +2475,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp"
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp",
+          "derived": {
+            "src": "/gallery/derived/900b92f6-1600.webp",
+            "srcset": "/gallery/derived/900b92f6-640.webp 640w, /gallery/derived/900b92f6-1024.webp 1024w, /gallery/derived/900b92f6-1600.webp 1600w",
+            "width": 1600,
+            "height": 720
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2269,7 +2503,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/limpiarrejas-peine-reja-taller.webp"
+          "value": "/fotos/curadas/limpiarrejas-peine-reja-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/939e471a-1600.webp",
+            "srcset": "/gallery/derived/939e471a-640.webp 640w, /gallery/derived/939e471a-1024.webp 1024w, /gallery/derived/939e471a-1600.webp 1600w",
+            "width": 1600,
+            "height": 900
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2291,7 +2531,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/cuerpo-vapor-taller.webp"
+          "value": "/fotos/curadas/cuerpo-vapor-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/e884b493-1600.webp",
+            "srcset": "/gallery/derived/e884b493-640.webp 640w, /gallery/derived/e884b493-1024.webp 1024w, /gallery/derived/e884b493-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2313,7 +2559,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/tanque-glp-izaje-despacho.webp"
+          "value": "/fotos/curadas/tanque-glp-izaje-despacho.webp",
+          "derived": {
+            "src": "/gallery/derived/d11aa701-1600.webp",
+            "srcset": "/gallery/derived/d11aa701-640.webp 640w, /gallery/derived/d11aa701-1024.webp 1024w, /gallery/derived/d11aa701-1600.webp 1600w",
+            "width": 1600,
+            "height": 900
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2335,7 +2587,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/tuberia-forzada-tunel.webp"
+          "value": "/fotos/curadas/tuberia-forzada-tunel.webp",
+          "derived": {
+            "src": "/gallery/derived/0490bfdd-1600.webp",
+            "srcset": "/gallery/derived/0490bfdd-640.webp 640w, /gallery/derived/0490bfdd-1024.webp 1024w, /gallery/derived/0490bfdd-1600.webp 1600w",
+            "width": 1600,
+            "height": 736
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2357,7 +2615,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/turbinas-montaje-rodete.webp"
+          "value": "/fotos/curadas/turbinas-montaje-rodete.webp",
+          "derived": {
+            "src": "/gallery/derived/3d86f292-1024.webp",
+            "srcset": "/gallery/derived/3d86f292-640.webp 640w, /gallery/derived/3d86f292-1024.webp 1024w",
+            "width": 1024,
+            "height": 768
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2379,7 +2643,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/valvula-tuberia-tunel.webp"
+          "value": "/fotos/curadas/valvula-tuberia-tunel.webp",
+          "derived": {
+            "src": "/gallery/derived/f871d2e1-1024.webp",
+            "srcset": "/gallery/derived/f871d2e1-640.webp 640w, /gallery/derived/f871d2e1-1024.webp 1024w",
+            "width": 1024,
+            "height": 768
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2405,7 +2675,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp"
+          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/0fc8b6b3-1600.webp",
+            "srcset": "/gallery/derived/0fc8b6b3-640.webp 640w, /gallery/derived/0fc8b6b3-1024.webp 1024w, /gallery/derived/0fc8b6b3-1600.webp 1600w",
+            "width": 1600,
+            "height": 749
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2449,7 +2725,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.webp"
+          "value": "/fotos/curadas/otros-montajes.webp",
+          "derived": {
+            "src": "/gallery/derived/a8d6d870-640.webp",
+            "srcset": "/gallery/derived/a8d6d870-640.webp 640w",
+            "width": 640,
+            "height": 427
+          }
         },
         "imageAlt": {
           "type": "text",

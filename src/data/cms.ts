@@ -3,6 +3,18 @@ import cmsContent from './cms-content.json';
 type CmsField = {
   type: string;
   value: unknown;
+  /**
+   * Derivados responsivos que calcula el export para los campos de imagen. No
+   * es contenido editable: el editor sigue viendo y eligiendo `value`, la ruta
+   * original. Falta cuando la imagen es más pequeña que el ancho más bajo del
+   * srcset, cuando la ruta no es un asset local o cuando sharp no pudo leerla.
+   */
+  derived?: {
+    src: string;
+    srcset: string;
+    width: number;
+    height: number;
+  };
 };
 
 type CmsContent = {
@@ -80,6 +92,24 @@ export interface CmsImageData {
   alt: string;
   width: number;
   height: number;
+}
+
+/**
+ * Los derivados de un campo de imagen, si el export los calculó.
+ *
+ * `EditableImage` los resuelve por su cuenta a partir de `entry`/`field`, de
+ * modo que cada `<img>` del sitio que salga del CMS emite `srcset` sin que el
+ * llamador tenga que enterarse. Antes se pintaba la ruta tal cual: una foto de
+ * 3.840 px elegida en la biblioteca viajaba entera a una tarjeta de 400 px.
+ */
+export function getCmsImageDerived(
+  entryId: string | undefined,
+  key: string
+): { src: string; srcset: string; width: number; height: number } | undefined {
+  if (!entryId) return undefined;
+  // Sin warnIfMissing: la ausencia de derivados es normal y esperada, no un
+  // aviso que el operador deba atender.
+  return content.entries[entryId]?.fields?.[key]?.derived;
 }
 
 export function getCmsImage(entryId: string, fallback: CmsImageData): CmsImageData {

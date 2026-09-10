@@ -1,4 +1,6 @@
 ---
+import { getCmsImageDerived } from '../../data/cms';
+
 interface Props {
   entry?: string;
   field: string;
@@ -7,6 +9,14 @@ interface Props {
   alt: string;
   width?: string | number;
   height?: string | number;
+  /**
+   * Ancho que ocupará la imagen, para que el navegador elija el candidato del
+   * srcset. Sin él asume el ancho de la ventana y en una tarjeta estrecha se
+   * queda con el candidato más grande, que es la mitad del problema que
+   * resuelven los derivados. Se declara en el llamador porque solo él sabe
+   * cuánto mide su caja.
+   */
+  sizes?: string;
   loading?: 'eager' | 'lazy';
   fetchpriority?: 'high' | 'low' | 'auto';
   decoding?: 'async' | 'auto' | 'sync';
@@ -22,28 +32,55 @@ const {
   alt,
   width,
   height,
+  sizes,
   loading = 'lazy',
   fetchpriority,
   decoding = 'async',
   class: className,
   style,
 } = Astro.props;
+/**
+ * Los campos de imagen del CMS guardaban una ruta y este componente la pintaba
+ * tal cual, sin `srcset`: elegir en la biblioteca una foto de 3.840 px y 700 KB
+ * la servía entera dentro de una tarjeta de 400 px, y la biblioteca tiene 213
+ * fotos por encima de 1.600 px. El export calcula los derivados por campo y
+ * aquí se resuelven solos, así que los siete llamadores emiten imágenes
+ * responsivas sin cambiar ni una línea.
+ *
+ * El `src` que llega por props sigue siendo el respaldo: cubre la imagen más
+ * pequeña que el srcset, la ruta que no es un asset local y el campo que
+ * todavía no se ha exportado.
+ */
+const derived = getCmsImageDerived(entry, field);
+// Solo se usa el derivado si el llamador está pintando ese mismo campo. Si pasó
+// un `src` que no coincide con el valor del CMS (un fallback del código, o una
+// vista previa), el derivado no le corresponde.
+const usaDerivado = derived !== undefined && derived.srcset.length > 0;
+const finalSrc = usaDerivado ? derived.src : src;
+// El ancho y alto explícitos del llamador manda: puede estar pintando la imagen
+// recortada. Los del derivado solo rellenan si no los declaró.
+const finalWidth = width ?? (usaDerivado ? derived.width : undefined);
+const finalHeight = height ?? (usaDerivado ? derived.height : undefined);
+
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
-const editableAttrs = cmsEditingEnabled && entry
-  ? {
-      'data-cms-entry': entry,
-      'data-cms-field': field,
-      'data-cms-alt-field': altField,
-      'data-cms-type': 'image',
-    }
-  : {};
+const editableAttrs =
+  cmsEditingEnabled && entry
+    ? {
+        'data-cms-entry': entry,
+        'data-cms-field': field,
+        'data-cms-alt-field': altField,
+        'data-cms-type': 'image',
+      }
+    : {};
 ---
 
 <img
-  src={src}
+  src={finalSrc}
+  srcset={usaDerivado ? derived.srcset : undefined}
+  sizes={usaDerivado ? sizes : undefined}
   alt={alt}
-  width={width}
-  height={height}
+  width={finalWidth}
+  height={finalHeight}
   loading={loading}
   fetchpriority={fetchpriority}
   decoding={decoding}

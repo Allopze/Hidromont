@@ -42,6 +42,12 @@ const projectImageEntry = `project-image.${slug}`;
 const heroImg = projectImages[slug];
 const gallery = projectGalleries[slug];
 const galleryEntryId = `project-gallery.${slug}`;
+
+// La rejilla de la galería es de 1, 2 o 3 columnas según el ancho. Medido en el
+// navegador: 340 px con la ventana a 390 px y 371 px con la ventana a 1.440 px,
+// así que sin `sizes` el navegador pediría el candidato de 1.600 px para una
+// caja de 371 px.
+const GALLERY_SIZES = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 90vw';
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 const containedHero = [
   'ch-besaya',
@@ -256,6 +262,7 @@ const jsonLd = {
                         altField={`gallery${n}Alt`}
                         src={img.src}
                         alt={img.alt}
+                        sizes={GALLERY_SIZES}
                         class="w-full h-full object-cover"
                         loading="lazy"
                       />

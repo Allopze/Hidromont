@@ -12,6 +12,11 @@ import { getCmsText } from '../data/cms';
 import { getClienteLogoByNombre } from '../data/cliente-logos';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
+
+// Medido en el navegador: cada logo se pinta a 119 px de ancho, igual en móvil
+// que en escritorio. Sin `sizes`, el navegador asume el ancho de la ventana y
+// escoge del srcset el candidato de 1.600 px para pintar 119 px.
+const LOGO_SIZES = '119px';
 const lista = clientesEntry?.data?.items ? [...clientesEntry.data.items] : [];
 
 // Sort alphabetically by name for a neutral and orderly presentation
@@ -86,6 +91,7 @@ for (const c of lista) {
                     src={logoSrc}
                     alt={c.nombre}
                     height={56}
+                    sizes={LOGO_SIZES}
                     class="clientes-logo-img"
                     loading="lazy"
                   />

@@ -191,7 +191,7 @@ export class ExportService {
     const { entries: allEntries } = this.contentRepository.listEntries(undefined, 100000, 0);
     const entries = allEntries.filter((entry) => entry.status === 'published');
     const written = [
-      this.exportPageContent(
+      await this.exportPageContent(
         entries.filter((entry) => ['page', 'layout', 'component', 'settings'].includes(entry.kind))
       ),
       // CMS-3 fix: this used to also require `entry.version > 1` — entries are
@@ -233,7 +233,78 @@ export class ExportService {
     return { files: written, removed, skipped, revertedToFallback };
   }
 
-  private exportPageContent(entries: CmsEntry[]): string {
+  /**
+   * Solo se derivan las imágenes servidas desde `public/` o desde el directorio
+   * de subidas del CMS. Una URL externa o un data URI no son nuestros para
+   * redimensionar.
+   */
+  private static readonly LOCAL_ASSET = /^\/(?:fotos|logos-clientes|gallery|og|assets|uploads)\//;
+
+  /**
+   * Derivados responsivos de un campo de imagen del contenido.
+   *
+   * Hasta ahora solo la galería los generaba. Los campos de imagen del
+   * contenido guardaban una ruta y `EditableImage` la pintaba tal cual en un
+   * `<img>` sin `srcset`, así que elegir en la biblioteca una foto de 3.840 px
+   * y 700 KB la servía entera dentro de una tarjeta de 400 px. La biblioteca
+   * tiene 213 fotos con algún lado por encima de 1.600 px, así que no era
+   * hipotético.
+   *
+   * Se calcula en el export, no al guardar el campo, por tres razones: cubre de
+   * una vez los campos que ya existían y no solo las ediciones futuras, corre
+   * en el paso que ya precede a cada compilación, y es idempotente —los
+   * derivados se nombran por hash del contenido y no se regeneran si ya están—.
+   *
+   * El valor editable sigue siendo la ruta original: es lo que hace la foto
+   * reelegible desde la biblioteca y lo que la liga a `media_usages`. Los
+   * derivados viajan aparte, en `derived`, que el editor nunca ve.
+   */
+  /** ¿La primera ruta pesa menos en disco que la segunda? */
+  private pesaMenos(a: string, b: string): boolean {
+    try {
+      const ruta = (p: string) => path.join(this.rootDir, 'public', p.replace(/^\//, ''));
+      return fs.statSync(ruta(a)).size <= fs.statSync(ruta(b)).size;
+    } catch {
+      // Si alguno no está en public/ (una subida del CMS, por ejemplo) no se
+      // puede comparar y se conserva el derivado, que es el caso general.
+      return false;
+    }
+  }
+
+  private async deriveImageField(
+    value: unknown
+  ): Promise<{ src: string; srcset: string; width: number; height: number } | undefined> {
+    if (!this.imageService) return undefined;
+    if (typeof value !== 'string' || !ExportService.LOCAL_ASSET.test(value)) return undefined;
+    // Un SVG escala solo y suele pesar menos que cualquier rasterización, así
+    // que derivarlo lo empeora por los dos lados. Tres logos de cliente
+    // acabaron convertidos a WebP en la primera pasada.
+    if (/\.svg$/i.test(value)) return undefined;
+    try {
+      const d = await this.imageService.generateDerivatives(value);
+      // Sin candidatos distintos del original no hay nada que añadir: pasa con
+      // las imágenes más pequeñas que el ancho más bajo del srcset.
+      if (d.srcset === `${value} ${d.width}w`) return undefined;
+
+      // Y si el original ya pesa menos que el candidato más pequeño, derivar
+      // empeora el resultado. Pasa con los PNG de pocos colores, que comprimen
+      // mejor que un WebP con pérdida: `logos-clientes/dragado.png` ocupa
+      // 8 KB y su derivado de 640 px, 21 KB.
+      const menorCandidato = d.srcset.split(',')[0]?.trim().split(' ')[0];
+      if (menorCandidato && this.pesaMenos(value, menorCandidato)) return undefined;
+
+      return { src: d.src, srcset: d.srcset, width: d.width, height: d.height };
+    } catch (error) {
+      // Un archivo que falta ya lo denuncia `image-references.test.ts`; aquí no
+      // se puede tumbar el export por una imagen.
+      process.stderr.write(
+        `  ⚠ No se pudieron generar derivados de ${value}: ${error instanceof Error ? error.message : String(error)}\n`
+      );
+      return undefined;
+    }
+  }
+
+  private async exportPageContent(entries: CmsEntry[]): Promise<string> {
     const target = path.join(this.rootDir, 'src', 'data', 'cms-content.json');
     const payload = {
       // A-5: derivado del contenido, no del reloj. Con `new Date()` este
@@ -242,19 +313,31 @@ export class ExportService {
       // enterraban los cambios reales. Nadie lee este campo en src/.
       updatedAt: maxFieldUpdatedAt(entries),
       entries: Object.fromEntries(
-        entries.map((entry) => [
-          entry.id,
-          {
-            title: entry.title,
-            slug: entry.slug,
-            fields: Object.fromEntries(
-              Object.entries(entry.fields).map(([key, field]) => [
-                key,
-                { type: field.type, value: field.value },
-              ])
-            ),
-          },
-        ])
+        await Promise.all(
+          entries.map(async (entry) => [
+            entry.id,
+            {
+              title: entry.title,
+              slug: entry.slug,
+              fields: Object.fromEntries(
+                await Promise.all(
+                  Object.entries(entry.fields).map(async ([key, field]) => {
+                    if (field.type !== 'image') {
+                      return [key, { type: field.type, value: field.value }] as const;
+                    }
+                    const derived = await this.deriveImageField(field.value);
+                    return [
+                      key,
+                      derived
+                        ? { type: field.type, value: field.value, derived }
+                        : { type: field.type, value: field.value },
+                    ] as const;
+                  })
+                )
+              ),
+            },
+          ])
+        )
       ),
     };
 

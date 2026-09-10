@@ -9,6 +9,10 @@ import { getCmsText } from '../../data/cms';
 
 const cmsLogoSrc = getCmsText('layout.header', 'logoSrc', '');
 const cmsLogoAlt = getCmsText('layout.header', 'logoAlt', 'Hidromont Chile');
+// Medido en el navegador: el logo mide 107 px de ancho en móvil y 133 px en
+// escritorio. Sin `sizes`, el navegador asume el ancho de la ventana y elige
+// el candidato de 1.600 px del srcset para pintar 133 px.
+const LOGO_SIZES = '133px';
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 interface Props {
@@ -61,6 +65,7 @@ function isActive(href: string) {
               alt={cmsLogoAlt}
               width={1181}
               height={708}
+              sizes={LOGO_SIZES}
               class={[
                 'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
                 overlay ? 'logo-img' : '',
@@ -73,6 +78,7 @@ function isActive(href: string) {
               alt={cmsLogoAlt}
               width={1181}
               height={708}
+              sizes={LOGO_SIZES}
               class={[
                 'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
                 overlay ? 'logo-img' : '',
