@@ -28,9 +28,22 @@ const MAX_INPUT_PIXELS = 50_000_000;
 export class ImageService {
   private derivedDir: string;
   private derivedUrlBase = '/gallery/derived';
+  /**
+   * El LQIP no se sirve nunca: viaja incrustado como data URI en
+   * `gallery.json`, y el archivo en disco solo evita recalcularlo. Vivía en
+   * `public/gallery/derived/` junto a los candidatos del srcset, así que Astro
+   * copiaba a `dist/` 221 archivos —884 KB— que ninguna página pide. Se aparta
+   * fuera de `public/`, donde el build no lo ve.
+   *
+   * Perderlo no tiene consecuencia: regenerarlo da el mismo byte —comprobado
+   * borrando varios y reexportando, con `gallery.json` idéntico—, así que en
+   * un clon nuevo la primera exportación lo reconstruye.
+   */
+  private lqipCacheDir: string;
 
   constructor(rootDir: string = config.rootDir) {
     this.derivedDir = path.join(rootDir, 'public', 'gallery', 'derived');
+    this.lqipCacheDir = path.join(rootDir, 'cms', 'data', 'lqip-cache');
   }
 
   /**
@@ -83,7 +96,7 @@ export class ImageService {
 
     // Generate LQIP
     const lqipFilename = `${hash}-lqip.webp`;
-    const lqipPath = path.join(this.derivedDir, lqipFilename);
+    const lqipPath = path.join(this.lqipCacheDir, lqipFilename);
     let lqipBase64: string;
 
     if (fs.existsSync(lqipPath)) {
@@ -93,6 +106,7 @@ export class ImageService {
         .resize(LQIP_WIDTH, undefined, { withoutEnlargement: true })
         .webp({ quality: LQIP_QUALITY })
         .toBuffer();
+      fs.mkdirSync(this.lqipCacheDir, { recursive: true });
       fs.writeFileSync(lqipPath, lqipBuffer);
       lqipBase64 = lqipBuffer.toString('base64');
     }
