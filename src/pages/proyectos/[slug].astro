@@ -12,6 +12,11 @@ import EditableImage from '../../components/cms/EditableImage.astro';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
 import { formatDiameters } from '../../utils/format';
+// El dominio vive en `site` de astro.config.mjs y de ahí lo toman también el
+// sitemap y el canónico. Repetirlo aquí fue la causa de que ocho sitios
+// declararan hidromont.cl cuando el sitio se sirve en hidromontchile.cl.
+// Sin barra final, que es como se concatena más abajo.
+const SITIO = Astro.site!.href.replace(/\/$/, '');
 
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ data }) => data.tipo === 'destacado');
@@ -75,12 +80,12 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://hidromont.cl/' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITIO + '/' },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Proyectos',
-      item: 'https://hidromont.cl/proyectos/',
+      item: SITIO + '/proyectos/',
     },
     { '@type': 'ListItem', position: 3, name: nombre },
   ],

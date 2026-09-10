@@ -217,7 +217,18 @@ async function main() {
   log(`  conectado · ${antes.length} entradas en el directorio`);
 
   if (SOLO_PROBAR) {
-    log('\n(--probar: conexión correcta, no se subió nada)');
+    // Listar de verdad lo que hay: tras extraer un zip conviene comprobar que
+    // el contenido quedó en la raíz de la aplicación y no en una carpeta
+    // intermedia, que es el error clásico del gestor de archivos.
+    log('\nContenido del directorio:');
+    for (const entrada of antes.sort()) log(`  ${entrada}`);
+    const esperados = ['package.json', 'server.mjs', 'public', 'cms', 'src'];
+    const faltan = esperados.filter((e) => !antes.includes(e));
+    log(
+      faltan.length
+        ? `\n⚠ No se ven aquí: ${faltan.join(', ')}. ¿Se extrajo en una subcarpeta?`
+        : '\n✓ La aplicación está extraída en la raíz del directorio.'
+    );
     return;
   }
 

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/cms/
 
-Sitemap: https://hidromont.cl/sitemap-index.xml
+Sitemap: https://hidromontchile.cl/sitemap-index.xml

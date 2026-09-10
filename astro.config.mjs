@@ -3,7 +3,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://hidromont.cl',
+  site: 'https://hidromontchile.cl',
   output: 'static',
   trailingSlash: 'ignore',
   build: {

@@ -12,7 +12,7 @@ export const company = {
   ),
   telefono: getCmsText('site.company', 'telefono', '+56 43 232 8414'),
   email: getCmsText('site.company', 'email', 'hidromont@hidromont.cl'),
-  sitioWeb: getCmsText('site.company', 'sitioWeb', 'https://hidromont.cl'),
+  sitioWeb: getCmsText('site.company', 'sitioWeb', 'https://hidromontchile.cl'),
   fundacion: getCmsNumber('site.company', 'fundacion', 1983),
   chileDesde: getCmsNumber('site.company', 'chileDesde', 1997),
   descripcionCorta: getCmsText(

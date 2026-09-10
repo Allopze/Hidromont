@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T15:01:49.296Z",
+  "updatedAt": "2026-09-10T23:45:36.424Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -2875,7 +2875,7 @@
         },
         "sitioWeb": {
           "type": "link",
-          "value": "https://hidromont.cl"
+          "value": "https://hidromontchile.cl"
         },
         "telefono": {
           "type": "text",
