@@ -230,6 +230,39 @@ test.describe('CMS overlay flow', () => {
     await expect(form.locator('[data-status]')).toContainText(/contraseña actual/i);
   });
 
+  // E-3: el formulario rotulaba cada campo con su clave de la base
+  // (`aplicaciones`, `orden`, `icono`) y el desplegable de icono ofrecía
+  // `gate`/`rack`/`crane`. Quien edita el sitio no tiene por qué deducir de
+  // esos identificadores qué va en cada casilla.
+  test('el formulario de entrada rotula los campos en español', async ({ page }) => {
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+
+    await page.locator('.hm-cms-bar [data-action="collections"]').click();
+    const panel = page.locator('.hm-cms-panel.open');
+    await expect(panel).toBeVisible();
+    await panel.locator('.hm-cms-tab', { hasText: 'Servicios' }).click();
+    await panel.locator('[data-action="edit-entry"]').first().click();
+
+    const form = panel.locator('form[data-entry-form]');
+    await expect(form).toBeVisible();
+
+    // `orden` sale con su nombre legible y conserva la clave como pista,
+    // porque es la que aparece en los mensajes de error del servidor.
+    const orden = form.locator('label', { hasText: 'Orden de aparición' });
+    await expect(orden).toBeVisible();
+    await expect(orden.locator('.hm-cms-field-key')).toHaveText('orden');
+
+    // Y cuando la etiqueta es la clave capitalizada no se repite al lado.
+    const aplicaciones = form.locator('label', { hasText: /^Aplicaciones$/ });
+    await expect(aplicaciones).toHaveCount(1);
+
+    // El desplegable de icono describe el dibujo, no el identificador.
+    const opciones = await form.locator('select[name="field:icono"] option').allTextContents();
+    expect(opciones).toContain('Compuerta (compuertas)');
+    expect(opciones).not.toContain('gate');
+  });
+
   test('collections panel opens and shows entries', async ({ page }) => {
     // Login first via API
     await page.goto('/');

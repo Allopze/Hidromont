@@ -174,6 +174,13 @@
       flex-wrap: wrap;
       gap: 8px;
     }
+    /* E-3: la clave de la base, en pequeño, junto al nombre legible. */
+    .hm-cms-field-key {
+      font-weight: 400;
+      font-size: 11px;
+      color: #5B6770;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
     /* M-6: panel de administración (registro, respaldos, contraseña). */
     .hm-cms-admin {
       display: grid;
@@ -842,6 +849,26 @@
     }
   }
 
+  /**
+   * E-3: rótulo del campo. El servidor manda `label` junto al campo; la clave
+   * cruda se conserva en pequeño porque es la que aparece en los mensajes de
+   * error y la que nombra un desarrollador por teléfono.
+   */
+  function fieldLabelMarkup(key, field) {
+    const legible = field?.label || key;
+    // Cuando la etiqueta es la clave capitalizada o acentuada («Aplicaciones»
+    // de `aplicaciones`, «Título» de `titulo`), repetirla al lado solo añade
+    // ruido: la pista solo aparece cuando de verdad dice algo distinto.
+    const normalizar = (t) =>
+      t
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+    if (normalizar(legible) === normalizar(key)) return escapeHtml(legible);
+    return `${escapeHtml(legible)} <span class="hm-cms-field-key">${escapeHtml(key)}</span>`;
+  }
+
   function fieldEditor(element, entry, field) {
     setPanelTitle('Editor');
     const cmsType = element.dataset.cmsType || 'text';
@@ -1013,7 +1040,13 @@
 
     openPanel(`
       <form data-edit>
-        <p class="hm-cms-muted">${entryId}.${field}</p>
+        <!-- E-3: antes esta línea era la única pista de qué se estaba editando y
+             decía \`home.hero.eyebrow\`. Ahora encabeza el nombre legible y la
+             clave queda debajo, que es la que aparece en los errores. También
+             se escapa: venía de atributos data del HTML sin pasar por
+             escapeHtml. -->
+        <h3 style="margin:0;font-size:15px">${escapeHtml(entry.fields[field]?.label || field)}</h3>
+        <p class="hm-cms-muted">${escapeHtml(entry.title || entryId)} <span class="hm-cms-field-key">${escapeHtml(entryId)}.${escapeHtml(field)}</span></p>
         ${fieldEditor(element, entry, field)}
         <div class="hm-cms-actions">
           <button type="submit">Guardar</button>
@@ -2271,7 +2304,7 @@
                   if (enums[key]) {
                     const actual = String(f.value ?? '');
                     const conocido = enums[key].some((o) => o.value === actual);
-                    return `<label>${escapeHtml(key)}
+                    return `<label>${fieldLabelMarkup(key, f)}
                       <select name="${name}" data-field-type="text">
                         ${
                           !conocido && actual
@@ -2288,7 +2321,7 @@
                     </label>`;
                   }
                   if (f.type === 'list') {
-                    return `<label>${escapeHtml(key)}</label>${listEditorMarkup(asList(f.value), name)}`;
+                    return `<label>${fieldLabelMarkup(key, f)}</label>${listEditorMarkup(asList(f.value), name)}`;
                   }
                   const control =
                     f.type === 'textarea'
@@ -2296,7 +2329,7 @@
                       : f.type === 'number'
                         ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
                         : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
-                  return `<label>${escapeHtml(key)}${control}</label>`;
+                  return `<label>${fieldLabelMarkup(key, f)}${control}</label>`;
                 })
                 .join('')
             : ''

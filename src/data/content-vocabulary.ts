@@ -102,9 +102,26 @@ export const ENUM_FIELDS: Record<string, Record<string, readonly string[]>> = {
 };
 
 /** Etiquetas legibles por campo, para el desplegable. */
+/**
+ * E-3: el desplegable de icono ofrecía los valores crudos (`gate`, `rack`,
+ * `crane`), que solo significan algo para quien ha visto los SVG. Los rótulos
+ * describen el dibujo, y entre paréntesis va el servicio que hoy lo usa, que es
+ * la pista más rápida para reconocerlo.
+ */
+export const ICONO_SERVICIO_LABEL: Record<string, string> = {
+  pipe: 'Tubería (tuberías forzadas)',
+  gate: 'Compuerta (compuertas)',
+  valve: 'Válvula (válvulas)',
+  turbine: 'Turbina (turbinas)',
+  rack: 'Reja (limpiarrejas)',
+  crane: 'Grúa (otros montajes)',
+  infrastructure: 'Infraestructura (infraestructuras)',
+  tank: 'Tanque (tanques especiales)',
+};
+
 export const ENUM_FIELD_LABELS: Record<string, Record<string, Record<string, string>>> = {
   proyecto: { categoria: CATEGORIA_PROYECTO_LABEL, tipo: TIPO_PROYECTO_LABEL },
-  servicio: { icono: {} },
+  servicio: { icono: ICONO_SERVICIO_LABEL },
 };
 
 /** Tipos de entrada que se materializan en un archivo .md por slug. */

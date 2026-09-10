@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import type Database from 'better-sqlite3';
+import { fieldLabel } from '../../src/data/field-labels';
 import type { CmsEntry, CmsField, FieldType } from '../types/cms';
 
 interface EntryRow {
@@ -560,6 +561,7 @@ export class ContentRepository {
           {
             key: field.key,
             type: field.type,
+            label: fieldLabel(field.key),
             value: JSON.parse(field.value_json),
             sourceRef: field.source_ref_json ? JSON.parse(field.source_ref_json) : undefined,
             updatedAt: field.updated_at,

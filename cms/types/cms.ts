@@ -5,6 +5,14 @@ export interface CmsField {
   key: string;
   type: FieldType;
   value: unknown;
+  /**
+   * E-3: nombre legible del campo, derivado de la clave. Viaja con el campo
+   * para que las dos vistas del panel —el editor de un campo y el formulario
+   * de entrada— lo tengan sin duplicar el diccionario en el cliente, y para
+   * que una clave nueva salga rotulada sin volver a desplegar el overlay.
+   * El export no lo incluye: proyecta solo `type` y `value`.
+   */
+  label?: string;
   sourceRef?: Record<string, unknown>;
   updatedAt?: string;
 }

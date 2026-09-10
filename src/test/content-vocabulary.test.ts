@@ -16,7 +16,12 @@
 import { globSync, readFileSync } from 'node:fs';
 import matter from 'gray-matter';
 import { describe, expect, it } from 'vitest';
-import { CATEGORIA_PROYECTO, ICONO_SERVICIO, TIPO_PROYECTO } from '../data/content-vocabulary';
+import {
+  CATEGORIA_PROYECTO,
+  ICONO_SERVICIO,
+  TIPO_PROYECTO,
+  ICONO_SERVICIO_LABEL,
+} from '../data/content-vocabulary';
 
 function frontmatterDe(patron: string): Array<{ file: string; data: Record<string, unknown> }> {
   return globSync(patron).map((file) => ({
@@ -62,5 +67,20 @@ describe('vocabulario del contenido', () => {
     const card = readFileSync('src/components/services/ServiceCard.astro', 'utf8');
     const sinDibujo = ICONO_SERVICIO.filter((icono) => !card.includes(`\n  ${icono}: \``));
     expect(sinDibujo).toEqual([]);
+  });
+
+  /**
+   * E-3: un icono sin rótulo sale en el desplegable como `gate`, que no dice
+   * nada a quien edita. Si alguien añade un icono al vocabulario, este test
+   * obliga a nombrarlo.
+   */
+  it('todo icono de servicio tiene un rótulo legible', () => {
+    const sinRotulo = ICONO_SERVICIO.filter((icono) => !ICONO_SERVICIO_LABEL[icono]);
+    expect(sinRotulo).toEqual([]);
+    // Y ningún rótulo sobrante que ya no corresponda a un icono válido.
+    const sobrantes = Object.keys(ICONO_SERVICIO_LABEL).filter(
+      (key) => !(ICONO_SERVICIO as readonly string[]).includes(key)
+    );
+    expect(sobrantes).toEqual([]);
   });
 });
