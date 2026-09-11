@@ -27,7 +27,11 @@ import { fileURLToPath } from 'node:url';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const destino = path.join(raiz, '_build.log');
-const LIGERO = process.argv.includes('ligero');
+// El campo «Run JS script» de cPanel no pasa argumentos extra: el intento de
+// `build:log -- ligero` acabó ejecutando `build` a secas. Por eso la variante
+// también se puede pedir por variable de entorno, que es lo que usa el script
+// `build:log:ligero`.
+const LIGERO = process.argv.includes('ligero') || process.env.BUILD_LIGERO === '1';
 const guion = LIGERO ? 'build:servidor' : 'build';
 
 const salida = fs.createWriteStream(destino, { flags: 'w' });
@@ -59,6 +63,22 @@ escribir(
 // agotado.
 const opciones = LIGERO ? '--max-old-space-size=512' : '';
 if (opciones) escribir(`# NODE_OPTIONS=${opciones}\n`);
+// Sonda: cuánta memoria de WebAssembly se puede reservar de verdad. Es el
+// techo que importa, porque el compilador de Astro es Go compilado a Wasm y
+// su memoria lineal vive fuera del montón de JavaScript. En este servidor
+// `constrainedMemory()` no declara nada —CloudLinux no lo expone por cgroup—,
+// así que se mide probando.
+let techo = 0;
+for (const mb of [16, 32, 64, 128, 256, 512, 1024, 2048]) {
+  try {
+    // Una página de Wasm son 64 KiB.
+    new WebAssembly.Memory({ initial: (mb * 1024 * 1024) / 65536 });
+    techo = mb;
+  } catch {
+    break;
+  }
+}
+escribir(`# techo de memoria WebAssembly: ${techo ? `${techo} MB` : 'menos de 16 MB'}\n`);
 escribir('\n');
 
 const inicio = Date.now();
