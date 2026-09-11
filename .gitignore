@@ -77,3 +77,4 @@ _build.log
 _wasm.log
 scripts/.probar-wasm-hijo.mjs
 _cron.log
+_deps.log
