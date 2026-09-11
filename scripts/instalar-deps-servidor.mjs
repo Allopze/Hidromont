@@ -13,8 +13,11 @@
  *
  *   1. Instala en `~/build-deps`, no en el sitio definitivo. Así el sitio
  *      sigue en pie durante los diez o veinte minutos que tarda.
- *   2. Comprueba que la instalación sirve —que `astro` se resuelve— antes de
- *      tocar nada del directorio de la aplicación.
+ *   2. Comprueba que la instalación está **completa** antes de tocar nada del
+ *      directorio de la aplicación. No basta con que `astro` se resuelva: un
+ *      `npm ci` interrumpido deja los paquetes desempaquetados pero sin
+ *      enlazar, y así se resuelven igual. Se exige además `.package-lock.json`
+ *      y `.bin/astro`, que npm escribe al terminar.
  *   3. Sustituye el enlace por uno **relativo** (`../build-deps/node_modules`).
  *      Un enlace relativo resuelve igual se llame el home `/home4/hidrochile`
  *      o `/home/hidrochile`, que es justo lo que rompía el de cPanel.
@@ -45,14 +48,40 @@ const destino = path.resolve(raiz, '..', 'build-deps');
 const enlaceRelativo = path.join('..', 'build-deps', 'node_modules');
 const nodeModules = path.join(raiz, 'node_modules');
 
-/** ¿Se resuelve `astro` desde este directorio? Es la prueba que importa. */
-function astroResoluble(desde) {
+/**
+ * ¿Hay una instalación **completa** y utilizable en este directorio?
+ *
+ * No basta con que `astro` se resuelva: un `npm ci` interrumpido deja los
+ * paquetes desempaquetados pero sin enlazar, y en ese estado el paquete se
+ * resuelve igual mientras el árbol está a medias. Pasó en el servidor: 648
+ * entradas presentes, `astro` resoluble, y ni `.bin` ni la marca de npm.
+ *
+ * `.package-lock.json` lo escribe npm cuando el árbol queda cuadrado, y
+ * `.bin/astro` es el enlace que crea al final. Los dos juntos sí distinguen
+ * «terminado» de «interrumpido».
+ */
+function instalacionCompleta(desde) {
+  const nm = path.join(desde, 'node_modules');
+  if (!fs.existsSync(path.join(nm, '.package-lock.json'))) return false;
+  if (!fs.existsSync(path.join(nm, '.bin', 'astro'))) return false;
   try {
     createRequire(path.join(desde, 'package.json')).resolve('astro/package.json');
     return true;
   } catch {
     return false;
   }
+}
+
+/** Qué falta, para poder decirlo en el registro. */
+function porQueNoEstaCompleta(desde) {
+  const nm = path.join(desde, 'node_modules');
+  if (!fs.existsSync(nm)) return 'no existe node_modules';
+  const n = fs.readdirSync(nm).length;
+  if (!fs.existsSync(path.join(nm, '.package-lock.json'))) {
+    return `${n} paquetes pero sin .package-lock.json: npm no llegó a terminar`;
+  }
+  if (!fs.existsSync(path.join(nm, '.bin', 'astro'))) return `${n} paquetes pero sin .bin/astro`;
+  return 'astro no se resuelve';
 }
 
 function estadoDelEnlace() {
@@ -76,13 +105,17 @@ log(
   `# node_modules ahora: ${antes.tipo}${antes.apunta ? ` → ${antes.apunta}` : ''}${antes.roto ? ' (ROTO)' : ''}`
 );
 
-if (astroResoluble(raiz)) {
+if (instalacionCompleta(raiz)) {
   log('\n✓ Las dependencias ya son alcanzables desde aquí. No hay nada que hacer.');
   process.exit(0);
 }
 
 // ── 1. Instalar aparte ────────────────────────────────────────────────
-if (!astroResoluble(destino)) {
+if (!instalacionCompleta(destino)) {
+  if (fs.existsSync(path.join(destino, 'node_modules'))) {
+    log(`\n# Instalación previa incompleta: ${porQueNoEstaCompleta(destino)}`);
+    log('# npm ci la rehará desde cero.');
+  }
   log(`\n# Instalando en ${destino} (esto tarda; el sitio sigue en pie)`);
   if (!DRY) {
     fs.mkdirSync(destino, { recursive: true });
@@ -111,8 +144,8 @@ if (!astroResoluble(destino)) {
 }
 
 // ── 2. Comprobar antes de tocar nada ──────────────────────────────────
-if (!DRY && !astroResoluble(destino)) {
-  log('\n✖ La instalación terminó pero `astro` no se resuelve desde ahí.');
+if (!DRY && !instalacionCompleta(destino)) {
+  log(`\n✖ La instalación no quedó completa: ${porQueNoEstaCompleta(destino)}`);
   log('  No se toca el enlace: la aplicación sigue como estaba.');
   process.exit(1);
 }
@@ -129,7 +162,7 @@ if (!DRY) {
 const despues = estadoDelEnlace();
 log(`# node_modules ahora: ${despues.tipo} → ${despues.apunta ?? ''}`);
 
-if (!DRY && !astroResoluble(raiz)) {
+if (!DRY && !instalacionCompleta(raiz)) {
   log('\n✖ El enlace se cambió pero `astro` sigue sin resolverse desde la aplicación.');
   process.exit(1);
 }
