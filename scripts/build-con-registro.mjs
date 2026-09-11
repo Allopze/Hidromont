@@ -29,7 +29,7 @@
  * Uso:  npm run build:log            (build completo, con astro check)
  *       npm run build:log -- ligero  (sin astro check, para poca memoria)
  */
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import fs from 'node:fs';
@@ -150,22 +150,40 @@ const pasos = [
   { nombre: 'sync-csp-headers', args: [TSX, path.join('scripts', 'sync-csp-headers.ts')] },
 ];
 
+/**
+ * Ejecuta un paso volcando su salida al registro según llega.
+ *
+ * Antes se usaba `spawnSync`, que solo entrega la salida al terminar: cuando
+ * el servidor mató `astro check` a media ejecución, el registro se quedó en
+ * «→ astro check» y no hubo forma de saber dónde ni por qué. Con la salida en
+ * vivo, lo que haya alcanzado a imprimir queda escrito.
+ */
+function ejecutar(paso) {
+  return new Promise((resolver) => {
+    const hijo = spawn(process.execPath, paso.args, {
+      cwd: raiz,
+      env: opciones ? { ...process.env, NODE_OPTIONS: opciones } : process.env,
+    });
+    hijo.stdout.on('data', (b) => escribir(b.toString()));
+    hijo.stderr.on('data', (b) => escribir(b.toString()));
+    hijo.on('close', (status, signal) => resolver({ status, signal }));
+    hijo.on('error', (error) => resolver({ status: 1, signal: null, error }));
+  });
+}
+
 let codigoFinal = 0;
 for (const paso of pasos) {
   escribir(`\n# → ${paso.nombre}\n`);
-  const res = spawnSync(process.execPath, paso.args, {
-    cwd: raiz,
-    encoding: 'utf8',
-    env: opciones ? { ...process.env, NODE_OPTIONS: opciones } : process.env,
-    maxBuffer: 32 * 1024 * 1024,
-  });
-  if (res.stdout) escribir(res.stdout);
-  if (res.stderr) escribir(res.stderr);
+  const res = await ejecutar(paso);
+  if (res.error) {
+    escribir(`\n# no se pudo lanzar ${paso.nombre}: ${res.error.message}\n`);
+    codigoFinal = 1;
+    break;
+  }
   if (res.signal) {
-    escribir(
-      `\n# ${paso.nombre} matado por ${res.signal}: es un límite del plan, no un fallo de Astro.\n`
-    );
-    escribir('# Pruebe `build:log:ligero`, que se salta astro check.\n');
+    escribir(`\n# ${paso.nombre} matado por ${res.signal}.\n`);
+    escribir('# Es un límite del plan, no un fallo de Astro. `astro check` es el paso\n');
+    escribir('# más caro (907 MB medidos): pruebe con BUILD_LIGERO=1, que lo salta.\n');
     codigoFinal = 1;
     break;
   }
