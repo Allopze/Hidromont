@@ -5,5 +5,6 @@ cliente: Mainco S.A.
 diametro: Ø 3.200
 nombre: Sifones Canalistas Biobío Sur
 orden: 62
+servicio: tuberias-forzadas
 tipo: banco
 ---

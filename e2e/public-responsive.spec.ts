@@ -31,11 +31,20 @@ test('gallery infinite-scrolls through all photos and searches the full dataset'
 test('project bank paginates after filtering the complete list', async ({ page }) => {
   await page.goto('/proyectos');
   const rows = page.locator('tr[data-project-item]:visible');
-  const loadMore = page.getByRole('button', { name: 'Ver 12 proyectos más' });
+  // Por id y no por nombre: el rótulo cambia en cada clic, que es justo lo que
+  // este test vigila. Antes prometía 12 en el segundo clic y entregaba 6.
+  const loadMore = page.locator('#project-load-more');
 
   await expect(rows).toHaveCount(12);
+  await expect(loadMore).toHaveText('Ver 12 proyectos más');
+
   await loadMore.click();
   await expect(rows).toHaveCount(24);
+  await expect(loadMore).toHaveText('Ver 6 proyectos más');
+
+  await loadMore.click();
+  await expect(rows).toHaveCount(30);
+  await expect(page.locator('#project-load-more-wrap')).toHaveClass(/hidden/);
 
   await page.getByLabel('Buscar en el banco de proyectos').fill('ralco');
   await expect(rows).not.toHaveCount(0);

@@ -34,6 +34,7 @@ const {
   contratista,
   alcance,
   categoria,
+  servicio,
   diametro,
   longitud,
   ubicacion,
@@ -67,6 +68,9 @@ const participantSummary = contratista
     ? `Cliente: ${cliente}`
     : undefined;
 
+// Respaldo por categoría para las 34 fichas que no declaran `servicio`.
+// `estructuras` sigue cayendo aquí en Otros Montajes, que es lo correcto para
+// una estructura genérica; las seis que no lo eran ya traen el campo.
 const servicioHref: Record<string, string> = {
   tuberias: '/servicios/tuberias-forzadas',
   compuertas: '/servicios/compuertas',
@@ -74,6 +78,18 @@ const servicioHref: Record<string, string> = {
   limpiarrejas: '/servicios/limpiarrejas',
   estructuras: '/servicios/otros-montajes',
 };
+
+// El rótulo decía el nombre de la categoría («Estructuras y Tanques»), que no
+// es el nombre de ningún servicio: el enlace prometía una página que no existe
+// con ese título. Ahora dice el título real de la ficha a la que lleva.
+const serviciosPublicados = await getCollection('servicios');
+const servicioDestinoHref = servicio
+  ? `/servicios/${servicio}`
+  : (servicioHref[categoria] ?? '/servicios');
+const servicioDestino = serviciosPublicados.find(
+  (s) => `/servicios/${entrySlug(s.id)}` === servicioDestinoHref
+);
+const servicioDestinoLabel = servicioDestino?.data.titulo ?? categoriaLabels[categoria];
 
 // JSON-LD: BreadcrumbList para coherencia con las fichas de servicio (SEO-001).
 const jsonLd = {
@@ -231,10 +247,10 @@ const jsonLd = {
 
           <div>
             <a
-              href={servicioHref[categoria] ?? '/servicios'}
+              href={servicioDestinoHref}
               class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast"
             >
-              → Ver servicio relacionado: {categoriaLabels[categoria]}
+              → Ver servicio relacionado: {servicioDestinoLabel}
             </a>
           </div>
         </aside>

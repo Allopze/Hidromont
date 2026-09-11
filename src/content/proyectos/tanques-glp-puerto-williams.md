@@ -7,6 +7,7 @@ categoria: estructuras
 cliente: Gasco
 nombre: Tanques Aéreos de GLP 18.000 Galones — Puerto Williams
 orden: 62
+servicio: tanques-especiales
 tipo: destacado
 ubicacion: 'Puerto Williams, Región de Magallanes, Chile'
 ---

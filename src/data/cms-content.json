@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-10T23:45:36.424Z",
+  "updatedAt": "2026-09-11T03:25:43.689Z",
   "entries": {
     "calidad.badge": {
       "title": "Badge ISO calidad",
@@ -214,6 +214,10 @@
           "value": "/logos-clientes/constructora-renaico.svg"
         },
         "logo-dragado": {
+          "type": "image",
+          "value": "/logos-clientes/dragado.png"
+        },
+        "logo-dragados": {
           "type": "image",
           "value": "/logos-clientes/dragado.png"
         },

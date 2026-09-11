@@ -8,7 +8,6 @@ import ProjectCard from '../../components/projects/ProjectCard.astro';
 import ProjectTable from '../../components/projects/ProjectTable.astro';
 import ProjectFilters from '../../components/projects/ProjectFilters.astro';
 import CTASection from '../../components/ui/CTASection.astro';
-import Button from '../../components/ui/Button.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
@@ -20,9 +19,17 @@ const destacados = allProyectos
   .filter((p) => p.data.tipo === 'destacado')
   .sort((a, b) => a.data.orden - b.data.orden);
 
+// Un solo sitio para el tamaño de lote: antes vivía como literal 12 en el
+// marcado del botón y en tres puntos del script, y el del marcado mentía.
+const PAGE_SIZE = 12;
+
 const banco = allProyectos
   .filter((p) => p.data.tipo === 'banco')
   .sort((a, b) => a.data.orden - b.data.orden);
+
+// Rótulo del primer render, antes de que corra el JS: si mañana se despublican
+// fichas, el botón no promete un lote que no existe.
+const loteInicial = Math.max(0, Math.min(PAGE_SIZE, banco.length - PAGE_SIZE));
 
 type Categoria = 'tuberias' | 'compuertas' | 'electromecanicos' | 'limpiarrejas' | 'estructuras';
 
@@ -102,22 +109,6 @@ const filterItems = [
             {destacados.map((p) => (
               <ProjectCard proyecto={p} />
             ))}
-            {/* 8.ª celda: evita el hueco de la grilla de 4 cuando los
-               destacados no llenan la última fila (con 7 quedaba un hueco). */}
-            {destacados.length % 4 !== 0 && (
-              <div class="flex flex-col items-start justify-center gap-3 border border-dashed border-border bg-background-alt p-6 min-h-[220px]">
-                <p class="font-heading font-semibold text-primary-dark text-lg">
-                  ¿Tiene un proyecto en mente?
-                </p>
-                <p class="text-sm text-text-muted">
-                  Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
-                  montaje.
-                </p>
-                <Button href="/contacto" variant="primary" class="mt-2">
-                  Contáctenos
-                </Button>
-              </div>
-            )}
           </div>
         </Container>
       </Section>
@@ -189,20 +180,20 @@ const filterItems = [
         }
       </div>
       <p id="project-results-count" class="sr-only" aria-live="polite"></p>
-      <div id="project-load-more-wrap" class="mt-2 flex justify-center">
+      <div id="project-load-more-wrap" class="mt-2 flex justify-center" data-page-size={PAGE_SIZE}>
         <button
           type="button"
           id="project-load-more"
           class="min-h-[44px] border border-primary px-5 py-3 font-semibold text-primary-dark hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Ver 12 proyectos más
+          Ver {loteInicial} proyectos más
         </button>
       </div>
     </Container>
   </Section>
 
   <script>
-    import { paginateMatches } from '../../utils/progressiveList';
+    import { nextBatchSize, paginateMatches } from '../../utils/progressiveList';
 
     // UIUX-13 fix: real client-side filtering for the category pills — see
     // ProjectFilters.astro for the markup/a11y side of this change.
@@ -219,13 +210,16 @@ const filterItems = [
       const search = document.getElementById('project-search') as HTMLInputElement | null;
       const loadMore = document.getElementById('project-load-more');
       const loadMoreWrap = document.getElementById('project-load-more-wrap');
+      // El frontmatter no llega hasta aquí: este script se hoistea a un archivo
+      // aparte, así que el tamaño de lote viaja por atributo de datos.
+      const PAGE_SIZE = Number(loadMoreWrap?.dataset.pageSize) || 12;
       const resultsCount = document.getElementById('project-results-count');
       if (!buttons || !sections.length || !desktopItems.length) return;
 
       const btnArray = Array.from(buttons);
       let activeFilter = 'todos';
       let searchQuery = '';
-      let visibleLimit = 12;
+      let visibleLimit = PAGE_SIZE;
 
       const normalize = (value: string) =>
         value
@@ -258,6 +252,12 @@ const filterItems = [
           );
         });
         loadMoreWrap?.classList.toggle('hidden', !result.hasMore);
+        if (loadMore) {
+          // El número va en el texto visible, no en un aria-label aparte:
+          // WCAG 2.5.3 exige que el nombre accesible contenga lo que se lee.
+          const lote = nextBatchSize(result.total, result.visible.length, PAGE_SIZE);
+          loadMore.textContent = lote === 1 ? 'Ver 1 proyecto más' : `Ver ${lote} proyectos más`;
+        }
         if (resultsCount) {
           resultsCount.textContent = `Mostrando ${result.visible.length} de ${result.total} proyectos.`;
         }
@@ -265,7 +265,7 @@ const filterItems = [
 
       function activateFilter(id: string): void {
         activeFilter = id;
-        visibleLimit = 12;
+        visibleLimit = PAGE_SIZE;
         btnArray.forEach((b) => {
           const isActive = b.getAttribute('data-filter') === id;
           b.setAttribute('aria-checked', String(isActive));
@@ -308,12 +308,12 @@ const filterItems = [
 
       search?.addEventListener('input', () => {
         searchQuery = normalize(search.value.trim());
-        visibleLimit = 12;
+        visibleLimit = PAGE_SIZE;
         updateProjects();
       });
 
       loadMore?.addEventListener('click', () => {
-        visibleLimit += 12;
+        visibleLimit += PAGE_SIZE;
         updateProjects();
       });
 

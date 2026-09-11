@@ -7,5 +7,6 @@ cliente: Maestranza Iquique
 diametro: Ø 11.000 / Ø 6.000
 nombre: CELCO San José de la Mariquina
 orden: 60
+servicio: tanques-especiales
 tipo: banco
 ---

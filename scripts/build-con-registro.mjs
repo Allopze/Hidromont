@@ -30,6 +30,7 @@
  *       npm run build:log -- ligero  (sin astro check, para poca memoria)
  */
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -44,9 +45,14 @@ const destino = path.join(raiz, '_build.log');
 const LIGERO = process.argv.includes('ligero') || process.env.BUILD_LIGERO === '1';
 const guion = LIGERO ? 'build:servidor' : 'build';
 
-const salida = fs.createWriteStream(destino, { flags: 'w' });
+// Escritura síncrona, no un WriteStream. El flujo se vacía de forma
+// asíncrona, así que una salida abrupta —un `throw`, un `process.exit`, el
+// proceso matado por un límite del plan— dejaba el archivo vacío justo en los
+// casos en que hace falta leerlo. Aquí el volumen es pequeño y la durabilidad
+// vale más que el rendimiento.
+fs.writeFileSync(destino, '');
 const escribir = (texto) => {
-  salida.write(texto);
+  fs.appendFileSync(destino, texto);
   process.stdout.write(texto);
 };
 
@@ -93,21 +99,56 @@ escribir('\n');
 
 const inicio = Date.now();
 
-/** Los pasos del build, cada uno como argumentos para `node`. */
-const ASTRO = path.join(raiz, 'node_modules', 'astro', 'astro.js');
-const TSX = path.join(raiz, 'node_modules', 'tsx', 'dist', 'cli.mjs');
+/**
+ * Dónde están de verdad `astro` y `tsx`.
+ *
+ * No se componen las rutas a mano. Se intentó —`<raiz>/node_modules/astro/
+ * astro.js`— y desde cron no existe: ni siquiera FTP puede entrar ahí, aunque
+ * sí lista el directorio padre, lo que apunta a que la sesión FTP, el proceso
+ * de Passenger y el de cron no ven el mismo sistema de archivos (CageFS).
+ *
+ * El resolvedor de Node no tiene ese problema: encuentra el paquete por el
+ * mismo camino que usaría un `import`, viva donde viva.
+ */
+const requerir = createRequire(path.join(raiz, 'package.json'));
+function binarioDe(paquete, relativo) {
+  try {
+    return path.join(path.dirname(requerir.resolve(`${paquete}/package.json`)), relativo);
+  } catch {
+    return null;
+  }
+}
+
+const ASTRO = binarioDe('astro', 'astro.js');
+const TSX = binarioDe('tsx', 'dist/cli.mjs');
+
+if (!ASTRO || !TSX) {
+  // Diagnóstico, porque desde cron no hay forma de mirar a mano.
+  escribir(`\n# No se pudo resolver ${!ASTRO ? 'astro' : 'tsx'} desde ${raiz}\n`);
+  const nm = path.join(raiz, 'node_modules');
+  try {
+    const enlace = fs.lstatSync(nm).isSymbolicLink();
+    escribir(`# node_modules: ${enlace ? `enlace → ${fs.readlinkSync(nm)}` : 'directorio'}\n`);
+    escribir(`# ruta real: ${fs.realpathSync(nm)}\n`);
+    const hay = fs.readdirSync(nm);
+    escribir(
+      `# contiene ${hay.length} entradas · ¿astro? ${hay.includes('astro') ? 'sí' : 'NO'}\n`
+    );
+  } catch (error) {
+    escribir(`# no se pudo inspeccionar ${nm}: ${error.message}\n`);
+  }
+  escribir('# Si node_modules no es alcanzable desde cron, hay que instalar las\n');
+  escribir('# dependencias en una ruta que sí lo sea, o compilar fuera del servidor.\n');
+  process.exit(1);
+}
+
+escribir(`# astro: ${ASTRO}\n# tsx:   ${TSX}\n`);
+
 const pasos = [
   ...(LIGERO ? [] : [{ nombre: 'astro check', args: [ASTRO, 'check'] }]),
   { nombre: 'astro build', args: [ASTRO, 'build'] },
   { nombre: 'sync-csp-headers', args: [TSX, path.join('scripts', 'sync-csp-headers.ts')] },
 ];
-
-for (const ruta of [ASTRO, TSX]) {
-  if (!fs.existsSync(ruta)) {
-    escribir(`\n# No existe ${ruta}\n# ¿Se instalaron las dependencias? npm install\n`);
-    salida.end(() => process.exit(1));
-  }
-}
 
 let codigoFinal = 0;
 for (const paso of pasos) {
@@ -137,4 +178,4 @@ for (const paso of pasos) {
 
 const seg = ((Date.now() - inicio) / 1000).toFixed(1);
 escribir(`\n# terminó en ${seg} s · código ${codigoFinal}\n`);
-salida.end(() => process.exit(codigoFinal));
+process.exit(codigoFinal);

@@ -6,6 +6,7 @@ categoria: estructuras
 cliente: Gasco
 nombre: Tanques de GLP — Coyhaique
 orden: 63
+servicio: tanques-especiales
 tipo: destacado
 ubicacion: 'Coyhaique, Región de Aysén, Chile'
 ---

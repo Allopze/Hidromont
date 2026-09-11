@@ -27,6 +27,7 @@
     "cms:export": "tsx cms/scripts/export.ts",
     "cms:backup": "tsx cms/scripts/backup.ts",
     "cms:migrate-audited-content": "tsx cms/scripts/migrate-audited-content.ts",
+    "cms:fix-copy": "tsx cms/scripts/apply-copy-fixes.ts",
     "cms:reset-password": "tsx cms/scripts/reset-password.ts",
     "cms:preparar-produccion": "tsx cms/scripts/prepare-production-db.ts",
     "build": "astro check && astro build && tsx scripts/sync-csp-headers.ts",

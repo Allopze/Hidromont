@@ -36,15 +36,12 @@ const row2 = conLogo.slice(mid);
       ><EditableText entry="clients.strip" field="eyebrow">Clientes y referencias</EditableText
       ></Eyebrow
     >
-    <EditableText
-      as="h2"
-      entry="clients.strip"
-      field="title"
-      class="font-heading font-bold text-primary-dark"
-      style="font-size: var(--font-size-h2);"
-    >
-      {getCmsText('clients.strip', 'title', 'Empresas que confían en Hidromont')}
-    </EditableText>
+    {
+      /* Sin H2. La misma frase se retiró de /clientes por orden expresa del
+         dueño (ver el comentario en src/pages/clientes.astro), y aquí había
+         sobrevivido. No basta con vaciar el campo en el panel: getCmsText
+         devuelve '' y quedaría un <h2> vacío en el DOM. */
+    }
   </div>
 
   {

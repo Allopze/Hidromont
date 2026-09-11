@@ -9,5 +9,6 @@ longitud: 26 m
 nombre: Celulosa Santa Fe
 orden: 61
 peso: 80 t
+servicio: tanques-especiales
 tipo: banco
 ---

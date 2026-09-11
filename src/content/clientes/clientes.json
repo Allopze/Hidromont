@@ -18,7 +18,7 @@
       "sector": "construccion",
       "logo": "/logos-clientes/constructora-renaico.svg"
     },
-    { "nombre": "Dragado", "sector": "construccion", "logo": "/logos-clientes/dragado.png" },
+    { "nombre": "Dragados", "sector": "construccion", "logo": "/logos-clientes/dragado.png" },
     { "nombre": "Elecnor", "sector": "electrica", "logo": "/logos-clientes/elecnor.svg" },
     {
       "nombre": "Eléctrica Puntilla",

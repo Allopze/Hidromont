@@ -17,3 +17,14 @@ export function paginateMatches<T>(
     hasMore: matching.length > safeLimit,
   };
 }
+
+/**
+ * Cuántos elementos entrega realmente el próximo clic de «ver más».
+ *
+ * El botón de /proyectos prometía un lote fijo de 12 escrito a mano en el
+ * marcado: con 30 obras en el banco, el segundo clic entregaba 6 mientras el
+ * rótulo seguía diciendo 12. Con un filtro activo fallaba casi siempre.
+ */
+export function nextBatchSize(total: number, visibleCount: number, pageSize: number): number {
+  return Math.max(0, Math.min(pageSize, total - visibleCount));
+}

@@ -109,21 +109,19 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               )
             }
           </EditableText>
-          <!-- A tres columnas, «3.000 m²» y «5 Puentes» no caben en 320 px:
-               la rejilla pedía 300 px dentro de un contenedor de 272 y
-               desbordaba la página. Se apilan hasta 360 px. -->
-          <div class="grid grid-cols-1 min-[360px]:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+          <!-- Dos columnas, no tres: la tercera decía «Soldadura» en el mismo
+               tamaño de dato duro que las otras dos, y se leía como si se
+               hubieran acabado las cifras. A dos columnas cada una dispone de
+               ~128 px a 320 px de viewport, así que «3.000 m²» cabe sin apilar;
+               el nowrap evita que parta por el espacio antes de m². -->
+          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
             <div>
-              <p class="font-mono font-bold text-accent text-xl">3.000 m²</p>
+              <p class="font-mono font-bold text-accent text-xl whitespace-nowrap">3.000 m²</p>
               <p class="text-xs text-white/70">Taller industrial</p>
             </div>
             <div>
-              <p class="font-mono font-bold text-accent text-xl">5 Puentes</p>
-              <p class="text-xs text-white/70">Grúa 10–20 Tn</p>
-            </div>
-            <div>
-              <p class="font-mono font-bold text-accent text-xl">Soldadura</p>
-              <p class="text-xs text-white/70">Procesos en taller</p>
+              <p class="font-mono font-bold text-accent text-xl">5</p>
+              <p class="text-xs text-white/70">Puentes&nbsp;grúa de 10 a 20 t</p>
             </div>
           </div>
         </div>

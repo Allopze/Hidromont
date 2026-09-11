@@ -28,6 +28,34 @@ export const CATEGORIA_PROYECTO = [
 
 export const TIPO_PROYECTO = ['destacado', 'banco'] as const;
 
+/**
+ * Slugs de las fichas de servicio. Sirve para que una ficha de obra declare a
+ * qué servicio pertenece: la categoría sola no alcanza, porque `estructuras`
+ * mete en el mismo saco tanques de GLP, pasarelas viales y sifones, y el enlace
+ * «Ver servicio relacionado» acababa mandándolos a los tres a Otros Montajes.
+ */
+export const SERVICIO_SLUG = [
+  'compuertas',
+  'infraestructuras',
+  'limpiarrejas',
+  'otros-montajes',
+  'tanques-especiales',
+  'tuberias-forzadas',
+  'turbinas',
+  'valvulas',
+] as const;
+
+export const SERVICIO_SLUG_LABEL: Record<string, string> = {
+  compuertas: 'Compuertas',
+  infraestructuras: 'Infraestructuras',
+  limpiarrejas: 'Limpiarrejas',
+  'otros-montajes': 'Montajes y Fabricaciones Especiales',
+  'tanques-especiales': 'Tanques Especiales',
+  'tuberias-forzadas': 'Tuberías Forzadas y Blindajes',
+  turbinas: 'Turbinas Hidráulicas',
+  valvulas: 'Válvulas Hidráulicas',
+};
+
 /** Debe coincidir con las claves del mapa `icons` de ServiceCard.astro. */
 export const ICONO_SERVICIO = [
   'pipe',
@@ -109,7 +137,7 @@ export const TIPO_PROYECTO_LABEL: Record<TipoProyecto, string> = {
  * para que los tres hablen del mismo vocabulario.
  */
 export const ENUM_FIELDS: Record<string, Record<string, readonly string[]>> = {
-  proyecto: { categoria: CATEGORIA_PROYECTO, tipo: TIPO_PROYECTO },
+  proyecto: { categoria: CATEGORIA_PROYECTO, tipo: TIPO_PROYECTO, servicio: SERVICIO_SLUG },
   servicio: { icono: ICONO_SERVICIO },
 };
 
@@ -132,7 +160,11 @@ export const ICONO_SERVICIO_LABEL: Record<string, string> = {
 };
 
 export const ENUM_FIELD_LABELS: Record<string, Record<string, Record<string, string>>> = {
-  proyecto: { categoria: CATEGORIA_PROYECTO_LABEL, tipo: TIPO_PROYECTO_LABEL },
+  proyecto: {
+    categoria: CATEGORIA_PROYECTO_LABEL,
+    tipo: TIPO_PROYECTO_LABEL,
+    servicio: SERVICIO_SLUG_LABEL,
+  },
   servicio: { icono: ICONO_SERVICIO_LABEL },
 };
 
