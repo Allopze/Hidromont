@@ -1,13 +1,135 @@
 {
-  "updatedAt": "2026-09-11T00:49:42.045Z",
+  "updatedAt": "2026-09-10T23:45:36.424Z",
   "entries": {
+    "calidad.badge": {
+      "title": "Badge ISO calidad",
+      "slug": "/calidad",
+      "fields": {
+        "caption": {
+          "type": "text",
+          "value": "Sistema de gestión de calidad"
+        },
+        "line1": {
+          "type": "text",
+          "value": "ISO"
+        },
+        "line2": {
+          "type": "text",
+          "value": "9001"
+        }
+      }
+    },
+    "calidad.contenido": {
+      "title": "Contenido calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Sistema de gestión"
+        },
+        "p1": {
+          "type": "textarea",
+          "value": "Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica."
+        },
+        "p2": {
+          "type": "textarea",
+          "value": "El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "ISO 9001"
+        }
+      }
+    },
+    "calidad.cta": {
+      "title": "CTA calidad",
+      "slug": "/calidad",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar equipo técnico"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico."
+        },
+        "title": {
+          "type": "text",
+          "value": "Proyectos que exigen calidad certificada"
+        }
+      }
+    },
+    "calidad.hero": {
+      "title": "Hero calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Gestión de Calidad"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
+        },
+        "title": {
+          "type": "text",
+          "value": "Calidad y Medioambiente"
+        }
+      }
+    },
+    "calidad.principios": {
+      "title": "Principios calidad",
+      "slug": "/calidad",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Principios"
+        },
+        "p1Desc": {
+          "type": "textarea",
+          "value": "Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto."
+        },
+        "p1Title": {
+          "type": "text",
+          "value": "Satisfacción del cliente"
+        },
+        "p2Desc": {
+          "type": "textarea",
+          "value": "Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega."
+        },
+        "p2Title": {
+          "type": "text",
+          "value": "Mejora continua"
+        },
+        "p3Desc": {
+          "type": "textarea",
+          "value": "Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto."
+        },
+        "p3Title": {
+          "type": "text",
+          "value": "Cumplimiento normativo"
+        },
+        "p4Desc": {
+          "type": "textarea",
+          "value": "El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios."
+        },
+        "p4Title": {
+          "type": "text",
+          "value": "Planificación y organización"
+        },
+        "title": {
+          "type": "text",
+          "value": "Nuestros compromisos de calidad"
+        }
+      }
+    },
     "clientes.cta": {
       "title": "CTA clientes",
       "slug": "/clientes",
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Contacto"
+          "value": "Ponerse en contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -25,7 +147,7 @@
       "fields": {
         "eyebrow": {
           "type": "text",
-          "value": "Nuestros clientes"
+          "value": "Referencias"
         },
         "seoDescription": {
           "type": "textarea",
@@ -51,7 +173,7 @@
       "fields": {
         "logo-acciona": {
           "type": "image",
-          "value": "/logos-clientes/acciona.svg"
+          "value": "/logos-clientes/acciona.png"
         },
         "logo-aes-andes": {
           "type": "image",
@@ -73,11 +195,11 @@
         },
         "logo-besalco": {
           "type": "image",
-          "value": "/logos-clientes/besalco.webp"
+          "value": "/logos-clientes/besalco.png"
         },
         "logo-colbun": {
           "type": "image",
-          "value": "/logos-clientes/colbun.svg"
+          "value": "/logos-clientes/colbun.png"
         },
         "logo-comercial-creo-s-a": {
           "type": "image",
@@ -97,7 +219,7 @@
         },
         "logo-elecnor": {
           "type": "image",
-          "value": "/logos-clientes/elecnor.svg"
+          "value": "/logos-clientes/elecnor.png"
         },
         "logo-electrica-puntilla": {
           "type": "image",
@@ -119,6 +241,14 @@
             "height": 335
           }
         },
+        "logo-engie": {
+          "type": "image",
+          "value": "/logos-clientes/engie.png"
+        },
+        "logo-fcc": {
+          "type": "image",
+          "value": "/logos-clientes/fcc.png"
+        },
         "logo-ferrovial": {
           "type": "image",
           "value": "/logos-clientes/ferrovial.png",
@@ -128,6 +258,10 @@
             "width": 1600,
             "height": 350
           }
+        },
+        "logo-gas-natural-fenosa": {
+          "type": "image",
+          "value": "/logos-clientes/gas-natural-fenosa.png"
         },
         "logo-gasco": {
           "type": "image",
@@ -161,6 +295,22 @@
           "type": "image",
           "value": "/logos-clientes/mop-doh.jpeg"
         },
+        "logo-mop-doh": {
+          "type": "image",
+          "value": "/logos-clientes/mop-doh.jpeg"
+        },
+        "logo-naturener": {
+          "type": "image",
+          "value": "/logos-clientes/naturener.png"
+        },
+        "logo-navarro-sic": {
+          "type": "image",
+          "value": "/logos-clientes/navarro-sic.png"
+        },
+        "logo-norvento": {
+          "type": "image",
+          "value": "/logos-clientes/norvento.png"
+        },
         "logo-nyrstar-el-toqui": {
           "type": "image",
           "value": "/logos-clientes/nyrstar-el-toqui.png"
@@ -173,6 +323,10 @@
           "type": "image",
           "value": "/logos-clientes/pacific-hydro.png"
         },
+        "logo-plenium-partners": {
+          "type": "image",
+          "value": "/logos-clientes/plenium-partners.png"
+        },
         "logo-potencia": {
           "type": "image",
           "value": "/logos-clientes/potencia.png"
@@ -180,6 +334,10 @@
         "logo-sociedad-concesionaria-ruta-nahuelbuta": {
           "type": "image",
           "value": "/logos-clientes/ruta-nahuelbuta.jpg"
+        },
+        "logo-viesgo": {
+          "type": "image",
+          "value": "/logos-clientes/viesgo.png"
         }
       }
     },
@@ -190,6 +348,10 @@
         "eyebrow": {
           "type": "text",
           "value": "Nuestros clientes"
+        },
+        "title": {
+          "type": "text",
+          "value": "Referencias por sector"
         }
       }
     },
@@ -305,7 +467,7 @@
         },
         "serviceLabel": {
           "type": "text",
-          "value": "Servicio requerido"
+          "value": "Servicio de interés"
         },
         "servicePlaceholder": {
           "type": "text",
@@ -393,7 +555,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Mensaje enviado correctamente"
+          "value": "Mensaje enviado"
         }
       }
     },
@@ -407,7 +569,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje y mantenimiento de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
+          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
         },
         "title": {
           "type": "text",
@@ -495,7 +657,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Trayectoria desde 1983. Especialización en ingeniería hidromecánica."
+          "value": "Trayectoria desde 1983. Presencia en Chile desde 1997. Especialización exclusiva en ingeniería hidromecánica."
         },
         "title": {
           "type": "text",
@@ -513,7 +675,7 @@
         },
         "p1": {
           "type": "textarea",
-          "value": "Hidromont Chile es parte de una empresa de origen español con trayectoria desde 1983. Cuenta con sede en la Región del Biobío, Chile, desde donde participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
+          "value": "Hidromont Chile S.A. es parte de una empresa de origen español con trayectoria desde 1983. Desde 1997 tiene sede en la Región del Biobío, Chile, y participa en la construcción y rehabilitación de proyectos hidráulicos a nivel nacional e internacional."
         },
         "p2": {
           "type": "textarea",
@@ -619,7 +781,7 @@
         },
         "item4": {
           "type": "text",
-          "value": "Grupos electrógenos de 100 a 200 KVA"
+          "value": "Grupos electrógenos de 100 a 200 kVA"
         },
         "item5": {
           "type": "text",
@@ -665,31 +827,109 @@
         },
         "card2Desc": {
           "type": "text",
-          "value": "Ingeniería, fabricación y montaje"
+          "value": "Los Ángeles, Biobío"
         },
         "card2Label": {
           "type": "text",
-          "value": "Modalidad"
+          "value": "Chile desde"
         },
         "card2Value": {
           "type": "text",
-          "value": "EPC"
+          "value": "1997"
         },
         "card3Desc": {
           "type": "text",
-          "value": "Sistema de gestión"
+          "value": "Llave en mano"
         },
         "card3Label": {
           "type": "text",
-          "value": "Calidad"
+          "value": "Modalidad"
         },
         "card3Value": {
+          "type": "text",
+          "value": "EPC"
+        },
+        "card4Desc": {
+          "type": "text",
+          "value": "Sistema de gestión"
+        },
+        "card4Label": {
+          "type": "text",
+          "value": "Calidad"
+        },
+        "card4Value": {
           "type": "text",
           "value": "ISO 9001"
         },
         "ubicacionTitle": {
           "type": "text",
           "value": "Ubicación"
+        }
+      }
+    },
+    "galeria.config": {
+      "title": "Config galería",
+      "slug": "/galeria",
+      "fields": {
+        "allItemsLabel": {
+          "type": "text",
+          "value": "Todas"
+        },
+        "emptyLabel": {
+          "type": "text",
+          "value": "No hay imágenes en esta categoría."
+        },
+        "lightboxCloseLabel": {
+          "type": "text",
+          "value": "Cerrar"
+        },
+        "lightboxNextLabel": {
+          "type": "text",
+          "value": "Siguiente"
+        },
+        "lightboxPrevLabel": {
+          "type": "text",
+          "value": "Anterior"
+        },
+        "resultsLabel": {
+          "type": "text",
+          "value": "Mostrando {n} imágenes"
+        },
+        "showFilters": {
+          "type": "text",
+          "value": "true"
+        }
+      }
+    },
+    "galeria.hero": {
+      "title": "Hero galería",
+      "slug": "/galeria",
+      "fields": {
+        "eyebrow": {
+          "type": "text",
+          "value": "Portafolio visual"
+        },
+        "image": {
+          "type": "image",
+          "value": "/fotos/curadas/montaje-vertical-caverna.webp",
+          "derived": {
+            "src": "/gallery/derived/dbb383a4-1024.webp",
+            "srcset": "/gallery/derived/dbb383a4-640.webp 640w, /gallery/derived/dbb383a4-1024.webp 1024w",
+            "width": 1024,
+            "height": 1365
+          }
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Montaje vertical de tubería forzada en caverna subterránea"
+        },
+        "subtitle": {
+          "type": "textarea",
+          "value": "Más de 40 años de proyectos hidromecánicos documentados en imágenes: tuberías forzadas, compuertas, válvulas, turbinas y montajes en terreno."
+        },
+        "title": {
+          "type": "text",
+          "value": "Galería de obras y montajes"
         }
       }
     },
@@ -745,7 +985,7 @@
         },
         "primaryLabel": {
           "type": "text",
-          "value": "Contacto"
+          "value": "Ponerse en contacto"
         },
         "secondaryLabel": {
           "type": "text",
@@ -859,7 +1099,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Instalaciones en Los Ángeles, Biobío"
+          "value": "Taller en Los Ángeles, Biobío"
         }
       }
     },
@@ -891,7 +1131,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Cubrimos toda la cadena de valor de los proyectos hidromecánicos: desde ingeniería y fabricación hasta montaje y mantenimiento."
+          "value": "Cada línea cubre la ingeniería, la fabricación en taller y el montaje en terreno, además del mantenimiento y la rehabilitación de instalaciones existentes."
         },
         "title": {
           "type": "text",
@@ -905,7 +1145,7 @@
       "fields": {
         "brand": {
           "type": "text",
-          "value": "Hidromont Chile"
+          "value": "Hidromont Chile S.A."
         },
         "description": {
           "type": "textarea",
@@ -928,6 +1168,10 @@
         "ctaLabel": {
           "type": "text",
           "value": "Contáctenos"
+        },
+        "hrefCalidad": {
+          "type": "text",
+          "value": "/calidad"
         },
         "hrefClientes": {
           "type": "text",
@@ -991,7 +1235,7 @@
         },
         "logoAlt": {
           "type": "text",
-          "value": "Hidromont Chile"
+          "value": "Hidromont Chile S.A."
         },
         "logoAriaLabel": {
           "type": "text",
@@ -1004,6 +1248,10 @@
         "mobileMenuOpenLabel": {
           "type": "text",
           "value": "Abrir menú de navegación"
+        },
+        "navCalidad": {
+          "type": "text",
+          "value": "Calidad"
         },
         "navClientes": {
           "type": "text",
@@ -1055,7 +1303,7 @@
         },
         "navServiciosTuberias": {
           "type": "text",
-          "value": "Tuberías Forzadas"
+          "value": "Tuberías y Blindajes"
         },
         "navServiciosTurbinas": {
           "type": "text",
@@ -1071,7 +1319,7 @@
         },
         "wordmarkSub": {
           "type": "text",
-          "value": "Chile"
+          "value": "Chile S.A."
         }
       }
     },
@@ -1148,6 +1396,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1178,6 +1430,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1187,24 +1443,24 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/7216a79a-1600.webp",
+          "value": "/fotos/galeria/ee46500c.webp",
           "derived": {
-            "src": "/gallery/derived/6820210d-1600.webp",
-            "srcset": "/gallery/derived/6820210d-640.webp 640w, /gallery/derived/6820210d-1024.webp 1024w, /gallery/derived/6820210d-1600.webp 1600w",
+            "src": "/gallery/derived/7216a79a-1600.webp",
+            "srcset": "/gallery/derived/7216a79a-640.webp 640w, /gallery/derived/7216a79a-1024.webp 1024w, /gallery/derived/7216a79a-1600.webp 1600w",
             "width": 1600,
             "height": 1200
           }
         },
         "gallery1Alt": {
           "type": "text",
-          "value": "Vista a través de la brida abierta de la válvula: un trabajador esmerilando dentro del conducto da la escala de la pieza"
+          "value": "Montaje vertical de blindaje en caverna subterránea de Los Cóndores"
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8b04c48f-1600.webp",
+          "value": "/fotos/galeria/c9499877.webp",
           "derived": {
-            "src": "/gallery/derived/3381a0da-1600.webp",
-            "srcset": "/gallery/derived/3381a0da-640.webp 640w, /gallery/derived/3381a0da-1024.webp 1024w, /gallery/derived/3381a0da-1600.webp 1600w",
+            "src": "/gallery/derived/8b04c48f-1600.webp",
+            "srcset": "/gallery/derived/8b04c48f-640.webp 640w, /gallery/derived/8b04c48f-1024.webp 1024w, /gallery/derived/8b04c48f-1600.webp 1600w",
             "width": 1600,
             "height": 1200
           }
@@ -1215,10 +1471,10 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/c4859dc0-1600.webp",
+          "value": "/fotos/proyectos/ch-los-condores/DSCI4263.webp",
           "derived": {
-            "src": "/gallery/derived/38a586b1-1600.webp",
-            "srcset": "/gallery/derived/38a586b1-640.webp 640w, /gallery/derived/38a586b1-1024.webp 1024w, /gallery/derived/38a586b1-1600.webp 1600w",
+            "src": "/gallery/derived/c4859dc0-1600.webp",
+            "srcset": "/gallery/derived/c4859dc0-640.webp 640w, /gallery/derived/c4859dc0-1024.webp 1024w, /gallery/derived/c4859dc0-1600.webp 1600w",
             "width": 1600,
             "height": 1200
           }
@@ -1226,6 +1482,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Válvula azul ya instalada en línea con la tubería del túnel, con el destello de una soldadura en la base"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1235,10 +1495,10 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/9380be96-1600.webp",
+          "value": "/fotos/proyectos/ch-queltehues/20160324_114353.webp",
           "derived": {
-            "src": "/gallery/derived/7a2d8ea5-1600.webp",
-            "srcset": "/gallery/derived/7a2d8ea5-640.webp 640w, /gallery/derived/7a2d8ea5-1024.webp 1024w, /gallery/derived/7a2d8ea5-1600.webp 1600w",
+            "src": "/gallery/derived/9380be96-1600.webp",
+            "srcset": "/gallery/derived/9380be96-640.webp 640w, /gallery/derived/9380be96-1024.webp 1024w, /gallery/derived/9380be96-1600.webp 1600w",
             "width": 1600,
             "height": 900
           }
@@ -1249,10 +1509,10 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/20f23b02-1600.webp",
+          "value": "/fotos/proyectos/ch-queltehues/20160329_164852.webp",
           "derived": {
-            "src": "/gallery/derived/e0c8a7f3-1600.webp",
-            "srcset": "/gallery/derived/e0c8a7f3-640.webp 640w, /gallery/derived/e0c8a7f3-1024.webp 1024w, /gallery/derived/e0c8a7f3-1600.webp 1600w",
+            "src": "/gallery/derived/20f23b02-1600.webp",
+            "srcset": "/gallery/derived/20f23b02-640.webp 640w, /gallery/derived/20f23b02-1024.webp 1024w, /gallery/derived/20f23b02-1600.webp 1600w",
             "width": 1600,
             "height": 900
           }
@@ -1263,10 +1523,10 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/18dba00f-1600.webp",
+          "value": "/fotos/proyectos/ch-queltehues/IMG_20161206_113612.webp",
           "derived": {
-            "src": "/gallery/derived/5bd4ed07-1600.webp",
-            "srcset": "/gallery/derived/5bd4ed07-640.webp 640w, /gallery/derived/5bd4ed07-1024.webp 1024w, /gallery/derived/5bd4ed07-1600.webp 1600w",
+            "src": "/gallery/derived/18dba00f-1600.webp",
+            "srcset": "/gallery/derived/18dba00f-640.webp 640w, /gallery/derived/18dba00f-1024.webp 1024w, /gallery/derived/18dba00f-1600.webp 1600w",
             "width": 1600,
             "height": 1187
           }
@@ -1274,6 +1534,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": "El canal ya con agua, con la compuerta y su pasarela de rejilla instaladas en la desembocadura"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1304,6 +1568,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1334,6 +1602,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1364,6 +1636,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1373,10 +1649,10 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/ed1997f7-1600.webp",
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/cupula-soldadura-taller.webp",
           "derived": {
-            "src": "/gallery/derived/76f3ed77-1600.webp",
-            "srcset": "/gallery/derived/76f3ed77-640.webp 640w, /gallery/derived/76f3ed77-1024.webp 1024w, /gallery/derived/76f3ed77-1600.webp 1600w",
+            "src": "/gallery/derived/ed1997f7-1600.webp",
+            "srcset": "/gallery/derived/ed1997f7-640.webp 640w, /gallery/derived/ed1997f7-1024.webp 1024w, /gallery/derived/ed1997f7-1600.webp 1600w",
             "width": 1600,
             "height": 720
           }
@@ -1387,10 +1663,10 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8c4c856b-1600.webp",
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/montaje-cupulas-doble-pasarela.webp",
           "derived": {
-            "src": "/gallery/derived/1b5c71fa-1600.webp",
-            "srcset": "/gallery/derived/1b5c71fa-640.webp 640w, /gallery/derived/1b5c71fa-1024.webp 1024w, /gallery/derived/1b5c71fa-1600.webp 1600w",
+            "src": "/gallery/derived/8c4c856b-1600.webp",
+            "srcset": "/gallery/derived/8c4c856b-640.webp 640w, /gallery/derived/8c4c856b-1024.webp 1024w, /gallery/derived/8c4c856b-1600.webp 1600w",
             "width": 1600,
             "height": 720
           }
@@ -1401,10 +1677,10 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/1ffd1453-1600.webp",
+          "value": "/fotos/proyectos/ruta-nahuelbuta-pasarelas/pasarelas-terminadas-ruta.webp",
           "derived": {
-            "src": "/gallery/derived/dc741e3a-1600.webp",
-            "srcset": "/gallery/derived/dc741e3a-640.webp 640w, /gallery/derived/dc741e3a-1024.webp 1024w, /gallery/derived/dc741e3a-1600.webp 1600w",
+            "src": "/gallery/derived/1ffd1453-1600.webp",
+            "srcset": "/gallery/derived/1ffd1453-640.webp 640w, /gallery/derived/1ffd1453-1024.webp 1024w, /gallery/derived/1ffd1453-1600.webp 1600w",
             "width": 1600,
             "height": 900
           }
@@ -1412,6 +1688,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1421,10 +1701,10 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/77cc84b2-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-abierto-trabajador.webp",
           "derived": {
-            "src": "/gallery/derived/25e6828f-1600.webp",
-            "srcset": "/gallery/derived/25e6828f-640.webp 640w, /gallery/derived/25e6828f-1024.webp 1024w, /gallery/derived/25e6828f-1600.webp 1600w",
+            "src": "/gallery/derived/77cc84b2-1600.webp",
+            "srcset": "/gallery/derived/77cc84b2-640.webp 640w, /gallery/derived/77cc84b2-1024.webp 1024w, /gallery/derived/77cc84b2-1600.webp 1600w",
             "width": 1600,
             "height": 1200
           }
@@ -1435,10 +1715,10 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/13da5f4c-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/cabezal-frontend.webp",
           "derived": {
-            "src": "/gallery/derived/55a0f12e-1600.webp",
-            "srcset": "/gallery/derived/55a0f12e-640.webp 640w, /gallery/derived/55a0f12e-1024.webp 1024w, /gallery/derived/55a0f12e-1600.webp 1600w",
+            "src": "/gallery/derived/13da5f4c-1600.webp",
+            "srcset": "/gallery/derived/13da5f4c-640.webp 640w, /gallery/derived/13da5f4c-1024.webp 1024w, /gallery/derived/13da5f4c-1600.webp 1600w",
             "width": 1600,
             "height": 1200
           }
@@ -1449,10 +1729,10 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/fbee1d7f-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-vista-lateral.webp",
           "derived": {
-            "src": "/gallery/derived/67cba83d-1600.webp",
-            "srcset": "/gallery/derived/67cba83d-640.webp 640w, /gallery/derived/67cba83d-1024.webp 1024w, /gallery/derived/67cba83d-1600.webp 1600w",
+            "src": "/gallery/derived/fbee1d7f-1600.webp",
+            "srcset": "/gallery/derived/fbee1d7f-640.webp 640w, /gallery/derived/fbee1d7f-1024.webp 1024w, /gallery/derived/fbee1d7f-1600.webp 1600w",
             "width": 1600,
             "height": 2134
           }
@@ -1460,6 +1740,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1469,10 +1753,10 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": "/gallery/derived/5ad057cd-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-semiesferico-taller.webp",
           "derived": {
-            "src": "/gallery/derived/2621ae4f-1600.webp",
-            "srcset": "/gallery/derived/2621ae4f-640.webp 640w, /gallery/derived/2621ae4f-1024.webp 1024w, /gallery/derived/2621ae4f-1600.webp 1600w",
+            "src": "/gallery/derived/5ad057cd-1600.webp",
+            "srcset": "/gallery/derived/5ad057cd-640.webp 640w, /gallery/derived/5ad057cd-1024.webp 1024w, /gallery/derived/5ad057cd-1600.webp 1600w",
             "width": 1600,
             "height": 2134
           }
@@ -1483,10 +1767,10 @@
         },
         "gallery2": {
           "type": "image",
-          "value": "/gallery/derived/8f3e1d15-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/cabezal-soporte-frontal.webp",
           "derived": {
-            "src": "/gallery/derived/59cb083c-1600.webp",
-            "srcset": "/gallery/derived/59cb083c-640.webp 640w, /gallery/derived/59cb083c-1024.webp 1024w, /gallery/derived/59cb083c-1600.webp 1600w",
+            "src": "/gallery/derived/8f3e1d15-1600.webp",
+            "srcset": "/gallery/derived/8f3e1d15-640.webp 640w, /gallery/derived/8f3e1d15-1024.webp 1024w, /gallery/derived/8f3e1d15-1600.webp 1600w",
             "width": 1600,
             "height": 2134
           }
@@ -1497,10 +1781,10 @@
         },
         "gallery3": {
           "type": "image",
-          "value": "/gallery/derived/1b836a2c-1600.webp",
+          "value": "/fotos/proyectos/tanques-glp-puerto-williams/tanque-cabezal-perspectiva.webp",
           "derived": {
-            "src": "/gallery/derived/58fc7449-1600.webp",
-            "srcset": "/gallery/derived/58fc7449-640.webp 640w, /gallery/derived/58fc7449-1024.webp 1024w, /gallery/derived/58fc7449-1600.webp 1600w",
+            "src": "/gallery/derived/1b836a2c-1600.webp",
+            "srcset": "/gallery/derived/1b836a2c-640.webp 640w, /gallery/derived/1b836a2c-1024.webp 1024w, /gallery/derived/1b836a2c-1600.webp 1600w",
             "width": 1600,
             "height": 2134
           }
@@ -1508,6 +1792,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1517,7 +1805,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-montaje-tuberia.jpg"
+          "value": "/fotos/curadas/proyecto-montaje-tuberia.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -1525,11 +1813,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 640
+          "value": 491
         },
         "imageWidth": {
           "type": "number",
-          "value": 481
+          "value": 429
         }
       }
     },
@@ -1539,7 +1827,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-bifurcacion-obra.jpg"
+          "value": "/fotos/curadas/proyecto-bifurcacion-obra.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -1547,11 +1835,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 354
+          "value": 259
         },
         "imageWidth": {
           "type": "number",
-          "value": 473
+          "value": 441
         }
       }
     },
@@ -1589,7 +1877,7 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-tuberia-terreno.jpg"
+          "value": "/fotos/curadas/tuberia-terreno-queltehues.webp"
         },
         "imageAlt": {
           "type": "text",
@@ -1597,11 +1885,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 480
+          "value": 310
         },
         "imageWidth": {
           "type": "number",
-          "value": 639
+          "value": 605
         }
       }
     },
@@ -1625,11 +1913,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 697
+          "value": 1280
         },
         "imageWidth": {
           "type": "number",
-          "value": 467
+          "value": 960
         }
       }
     },
@@ -1667,7 +1955,13 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/proyecto-valvula-tunel.jpg"
+          "value": "/fotos/curadas/valvula-tunel-chironta.webp",
+          "derived": {
+            "src": "/gallery/derived/1a8c1acd-1600.webp",
+            "srcset": "/gallery/derived/1a8c1acd-640.webp 640w, /gallery/derived/1a8c1acd-1024.webp 1024w, /gallery/derived/1a8c1acd-1600.webp 1600w",
+            "width": 1600,
+            "height": 740
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -1675,11 +1969,11 @@
         },
         "imageHeight": {
           "type": "number",
-          "value": 768
+          "value": 740
         },
         "imageWidth": {
           "type": "number",
-          "value": 1024
+          "value": 1600
         }
       }
     },
@@ -1791,7 +2085,7 @@
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Contacto"
+          "value": "Ponerse en contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -1880,6 +2174,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1919,27 +2217,43 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-instalado-rozadio.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Limpiarrejas de husillos instalado sobre la reja inclinada de una bocatoma"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-patente-funcionamiento.webp",
+          "derived": {
+            "src": "/gallery/derived/7f8d8b52-640.webp",
+            "srcset": "/gallery/derived/7f8d8b52-640.webp 640w",
+            "width": 640,
+            "height": 382
+          }
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Esquema del modelo de utilidad patentado: peine, husillos laterales y carriles de guiado"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/limpiarrejas-patente-guiado-peine.webp",
+          "derived": {
+            "src": "/gallery/derived/cd68b947-640.webp",
+            "srcset": "/gallery/derived/cd68b947-640.webp 640w",
+            "width": 640,
+            "height": 382
+          }
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Detalle del guiado del peine y de las tuercas de bronce accionadas por los husillos"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -1970,6 +2284,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -2030,6 +2348,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -2039,27 +2361,49 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-montaje-rotor-sobradelo.webp",
+          "derived": {
+            "src": "/gallery/derived/ff528593-640.webp",
+            "srcset": "/gallery/derived/ff528593-640.webp 640w",
+            "width": 640,
+            "height": 852
+          }
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Izaje del rotor del alternador con el puente grúa de la casa de máquinas"
         },
         "gallery2": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-mecanizado-brida-camara-espiral.webp",
+          "derived": {
+            "src": "/gallery/derived/81d721f1-640.webp",
+            "srcset": "/gallery/derived/81d721f1-640.webp 640w",
+            "width": 640,
+            "height": 480
+          }
         },
         "gallery2Alt": {
           "type": "text",
-          "value": ""
+          "value": "Mecanizado in situ de la brida de la cámara espiral de una turbina"
         },
         "gallery3": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/turbinas-turboalternador-francis.webp",
+          "derived": {
+            "src": "/gallery/derived/2e8193e6-640.webp",
+            "srcset": "/gallery/derived/2e8193e6-640.webp 640w",
+            "width": 640,
+            "height": 435
+          }
         },
         "gallery3Alt": {
           "type": "text",
-          "value": ""
+          "value": "Montaje de un turboalternador Francis"
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -2069,11 +2413,11 @@
       "fields": {
         "gallery1": {
           "type": "image",
-          "value": ""
+          "value": "/fotos/catalogo/obturador-bureau-patente-cupula.webp"
         },
         "gallery1Alt": {
           "type": "text",
-          "value": ""
+          "value": "Esquema del sistema tablero-cúpula patentado para mantenimiento de válvulas Bureau con carga de agua"
         },
         "gallery2": {
           "type": "image",
@@ -2090,6 +2434,10 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
+        },
+        "images": {
+          "type": "list",
+          "value": []
         }
       }
     },
@@ -2127,19 +2475,25 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/pasarela-ruta-nahuelbuta.webp",
+          "derived": {
+            "src": "/gallery/derived/900b92f6-1600.webp",
+            "srcset": "/gallery/derived/900b92f6-640.webp 640w, /gallery/derived/900b92f6-1024.webp 1024w, /gallery/derived/900b92f6-1600.webp 1600w",
+            "width": 1600,
+            "height": 720
+          }
         },
         "imageAlt": {
           "type": "text",
-          "value": "Estructuras metálicas y obras civiles de infraestructura"
+          "value": "Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta"
         },
         "imageHeight": {
           "type": "number",
-          "value": 629
+          "value": 720
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1600
         }
       }
     },
@@ -2159,7 +2513,7 @@
         },
         "imageAlt": {
           "type": "text",
-          "value": "Peine del limpiarrejas recorriendo la reja durante las pruebas en taller"
+          "value": "Peine del limpiarrejas recorriendo la reja durante las pruebas en taller, con el eje de transmisión y el reenvío angular a la vista"
         },
         "imageHeight": {
           "type": "number",
@@ -2177,19 +2531,25 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/cuerpo-vapor-taller.webp",
+          "derived": {
+            "src": "/gallery/derived/e884b493-1600.webp",
+            "srcset": "/gallery/derived/e884b493-640.webp 640w, /gallery/derived/e884b493-1024.webp 1024w, /gallery/derived/e884b493-1600.webp 1600w",
+            "width": 1600,
+            "height": 1200
+          }
         },
         "imageAlt": {
           "type": "text",
-          "value": "Montaje de gran componente hidromecánico"
+          "value": "Cuerpo de vapor de gran diámetro fabricado por Hidromont sobre cama baja en el taller"
         },
         "imageHeight": {
           "type": "number",
-          "value": 629
+          "value": 1200
         },
         "imageWidth": {
           "type": "number",
-          "value": 471
+          "value": 1600
         }
       }
     },
@@ -2199,25 +2559,25 @@
       "fields": {
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/fabricacion-tuberias-taller.webp",
+          "value": "/fotos/curadas/tanque-glp-izaje-despacho.webp",
           "derived": {
-            "src": "/gallery/derived/0fc8b6b3-1600.webp",
-            "srcset": "/gallery/derived/0fc8b6b3-640.webp 640w, /gallery/derived/0fc8b6b3-1024.webp 1024w, /gallery/derived/0fc8b6b3-1600.webp 1600w",
+            "src": "/gallery/derived/d11aa701-1600.webp",
+            "srcset": "/gallery/derived/d11aa701-640.webp 640w, /gallery/derived/d11aa701-1024.webp 1024w, /gallery/derived/d11aa701-1600.webp 1600w",
             "width": 1600,
-            "height": 749
+            "height": 900
           }
         },
         "imageAlt": {
           "type": "text",
-          "value": "Fabricación y cilindrado de estanques y recipientes especiales en taller"
+          "value": "Tanque de GLP pintado izado con pórtico grúa durante su despacho desde el taller de Hidromont"
         },
         "imageHeight": {
           "type": "number",
-          "value": 800
+          "value": 900
         },
         "imageWidth": {
           "type": "number",
-          "value": 1200
+          "value": 1600
         }
       }
     },
@@ -2343,7 +2703,7 @@
       "fields": {
         "buttonLabel": {
           "type": "text",
-          "value": "Contacto"
+          "value": "Ponerse en contacto"
         },
         "subtitle": {
           "type": "textarea",
@@ -2365,7 +2725,13 @@
         },
         "image": {
           "type": "image",
-          "value": "/fotos/curadas/otros-montajes.jpg"
+          "value": "/fotos/curadas/otros-montajes.webp",
+          "derived": {
+            "src": "/gallery/derived/a8d6d870-640.webp",
+            "srcset": "/gallery/derived/a8d6d870-640.webp 640w",
+            "width": 640,
+            "height": 427
+          }
         },
         "imageAlt": {
           "type": "text",
@@ -2427,7 +2793,7 @@
         },
         "item4Title": {
           "type": "text",
-          "value": "Mantenimiento de turbinas"
+          "value": "Rehabilitación de turbinas"
         },
         "item5Desc": {
           "type": "textarea",
@@ -2481,7 +2847,7 @@
         },
         "domicilio": {
           "type": "text",
-          "value": "Av. Las Industrias N° 10.950"
+          "value": "Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513"
         },
         "email": {
           "type": "text",
@@ -2497,19 +2863,19 @@
         },
         "modalidad": {
           "type": "text",
-          "value": "Proyectos EPC"
+          "value": "Proyectos llave en mano / EPC"
         },
         "nombre": {
           "type": "text",
-          "value": "Hidromont Chile"
+          "value": "Hidromont Chile S.A."
         },
         "razonSocial": {
           "type": "text",
-          "value": "Hidromont Chile"
+          "value": "Hidromont Chile S.A."
         },
         "sitioWeb": {
           "type": "link",
-          "value": "https://hidromont.cl"
+          "value": "https://hidromontchile.cl"
         },
         "telefono": {
           "type": "text",

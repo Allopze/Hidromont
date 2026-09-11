@@ -204,71 +204,71 @@ const projectGallerySlugs = [
 const projectGalleryImageSeeds: Record<string, Array<{ src: string; alt: string }>> = {
   'ch-los-condores': [
     {
-      src: '/gallery/derived/7216a79a-1600.webp',
+      src: '/fotos/galeria/ee46500c.webp',
       alt: 'Vista a través de la brida abierta de la válvula: un trabajador esmerilando dentro del conducto da la escala de la pieza',
     },
     {
-      src: '/gallery/derived/8b04c48f-1600.webp',
+      src: '/fotos/galeria/c9499877.webp',
       alt: 'Soldadura de tubería forzada en túnel de C.H. Los Cóndores',
     },
     {
-      src: '/gallery/derived/c4859dc0-1600.webp',
+      src: '/fotos/proyectos/ch-los-condores/DSCI4263.webp',
       alt: 'Válvula azul ya instalada en línea con la tubería del túnel, con el destello de una soldadura en la base',
     },
   ],
   'ch-queltehues': [
     {
-      src: '/gallery/derived/9380be96-1600.webp',
+      src: '/fotos/proyectos/ch-queltehues/20160324_114353.webp',
       alt: 'Armado de una compuerta plana de gran tamaño dentro del canal de hormigón, con sus vigas y planchas apuntaladas',
     },
     {
-      src: '/gallery/derived/20f23b02-1600.webp',
+      src: '/fotos/proyectos/ch-queltehues/20160329_164852.webp',
       alt: 'Vista cenital del tablero de la compuerta con soldadores trabajando sobre la viga principal',
     },
     {
-      src: '/gallery/derived/18dba00f-1600.webp',
+      src: '/fotos/proyectos/ch-queltehues/IMG_20161206_113612.webp',
       alt: 'El canal ya con agua, con la compuerta y su pasarela de rejilla instaladas en la desembocadura',
     },
   ],
   'ruta-nahuelbuta-pasarelas': [
     {
-      src: '/gallery/derived/ed1997f7-1600.webp',
+      src: '/uploads/cms/whatsapp-image-2026-07-03-at-15.25.49.webp',
       alt: 'Dos operarios sueldan los arcos galvanizados de una cúpula sobre una plataforma dentro de la nave del taller, entre chispas',
     },
     {
-      src: '/gallery/derived/8c4c856b-1600.webp',
+      src: '/uploads/cms/whatsapp-image-2026-07-03-at-15.25.47-3-.webp',
       alt: 'Camión pluma montando cúpulas sobre las dos pasarelas peatonales que cruzan la carretera, visto desde la mediana entre calzadas',
     },
     {
-      src: '/gallery/derived/1ffd1453-1600.webp',
+      src: '/uploads/cms/whatsapp-image-2026-07-03-at-15.25.47-2-.webp',
       alt: 'Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol',
     },
   ],
   'tanques-glp-coyhaique': [
     {
-      src: '/gallery/derived/77cc84b2-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-coyhaique/cabezal-abierto-trabajador.webp',
       alt: 'Especialista técnico inspeccionando ensamble interno de cabezal semiesférico',
     },
     {
-      src: '/gallery/derived/13da5f4c-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-coyhaique/cabezal-frontend.webp',
       alt: 'Vista frontal de cabezal de tanque con elementos estructurales de apoyo',
     },
     {
-      src: '/gallery/derived/fbee1d7f-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-coyhaique/tanque-completo-vista-lateral.webp',
       alt: 'Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural',
     },
   ],
   'tanques-glp-puerto-williams': [
     {
-      src: '/gallery/derived/5ad057cd-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-puerto-williams/cabezal-semiesferico-taller.webp',
       alt: 'Conformado de cabezal semiesférico para recipiente a presión',
     },
     {
-      src: '/gallery/derived/8f3e1d15-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-puerto-williams/cabezal-soporte-frontal.webp',
       alt: 'Ensamblaje de plinto y soporte frontal para estanque horizontal',
     },
     {
-      src: '/gallery/derived/1b836a2c-1600.webp',
+      src: '/fotos/proyectos/tanques-glp-puerto-williams/tanque-cabezal-perspectiva.webp',
       alt: 'Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial',
     },
   ],

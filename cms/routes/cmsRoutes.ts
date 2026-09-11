@@ -626,11 +626,33 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   );
 
   // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
+  const estabaVacia =
+    (db.prepare('SELECT COUNT(*) n FROM content_entries').get() as { n: number }).n === 0;
   const { inserted, fieldsInserted } = contentService.importMissingEntries();
   if (inserted > 0 || fieldsInserted > 0) {
     app.log.info(
       `[CMS] seed: ${inserted} entrada(s) y ${fieldsInserted} campo(s) nuevo(s) importado(s).`
     );
+
+    // Exportar aquí tiene sentido cuando se han sembrado campos nuevos sobre
+    // una base que ya era la fuente de verdad. No lo tiene cuando la base
+    // estaba vacía: entonces lo recién sembrado es `defaultContent.ts`, y los
+    // archivos del repositorio llevan el contenido bueno, más nuevo. Exportar
+    // ahí sobreescribe meses de ediciones con la semilla.
+    //
+    // Pasó de verdad: los tests de arranque levantan el servidor contra una
+    // base temporal vacía y dejaron `src/data/cms-content.json` con los
+    // valores de la semilla. En el servidor el efecto habría sido el mismo si
+    // se arrancaba antes de subir la base.
+    if (estabaVacia) {
+      process.stderr.write(
+        '[CMS] La base estaba vacía y se ha sembrado desde defaultContent.ts.\n' +
+          '[CMS] NO se exporta: los archivos del sitio son más nuevos que la semilla.\n' +
+          '[CMS] Si esta es una instalación nueva de verdad, ejecute `npm run cms:export`\n' +
+          '[CMS] a mano. Si esperaba encontrar contenido, revise CMS_DATABASE_PATH.\n'
+      );
+      return;
+    }
     await exportService.exportContent();
   }
 }
