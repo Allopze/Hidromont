@@ -31,6 +31,7 @@
     "cms:preparar-produccion": "tsx cms/scripts/prepare-production-db.ts",
     "build": "astro check && astro build && tsx scripts/sync-csp-headers.ts",
     "build:servidor": "astro build && tsx scripts/sync-csp-headers.ts",
+    "build:log": "node scripts/build-con-registro.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",

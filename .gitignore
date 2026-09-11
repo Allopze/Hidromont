@@ -71,3 +71,6 @@ _deploy/
 
 # Credenciales de subida (npm run deploy:ftp)
 .env.deploy
+
+# Registro del build generado por npm run build:log
+_build.log
