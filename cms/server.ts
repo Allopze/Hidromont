@@ -170,7 +170,43 @@ app.addHook('onSend', async (request, reply) => {
   }
 });
 
+/**
+ * El guarda de la contraseña por defecto de más arriba mira el `.env`, y eso
+ * deja fuera el caso que de verdad pasó: una base traída de desarrollo cuyo
+ * usuario `admin@hidromont.local` conservaba el hash de la contraseña por
+ * defecto. El `.env` de producción puede estar impecable y aun así haber una
+ * cuenta con credencial pública dentro de la base.
+ *
+ * Se comprueba contra el hash almacenado, que es donde vive la verdad. Cuesta
+ * una comparación bcrypt por usuario —unos 250 ms— solo al arrancar y solo en
+ * producción.
+ */
+async function rechazarCuentasConContrasenaPorDefecto(): Promise<void> {
+  if (process.env.NODE_ENV !== 'production') return;
+  const { getDb } = await import('./db/connection');
+  const bcrypt = (await import('bcryptjs')).default;
+
+  const usuarios = getDb().prepare('SELECT email, password_hash FROM users').all() as Array<{
+    email: string;
+    password_hash: string;
+  }>;
+  const comprometidas: string[] = [];
+  for (const u of usuarios) {
+    if (await bcrypt.compare(DEFAULT_PASSWORD, u.password_hash)) comprometidas.push(u.email);
+  }
+  if (!comprometidas.length) return;
+
+  process.stderr.write(
+    `[CMS] ERROR: ${comprometidas.length} cuenta(s) con la contraseña por defecto en la base:\n` +
+      comprometidas.map((e) => `[CMS]   - ${e}\n`).join('') +
+      '[CMS] Esa contraseña es pública: está en el repositorio y en la documentación.\n' +
+      '[CMS] Ejecute `npm run cms:preparar-produccion` sobre la base antes de desplegarla.\n'
+  );
+  process.exit(1);
+}
+
 try {
+  await rechazarCuentasConContrasenaPorDefecto();
   await registerCmsRoutes(app);
   registerStaticSite(app);
   await app.listen({ host: config.cms.host, port: config.cms.port });

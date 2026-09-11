@@ -146,6 +146,19 @@ function main() {
     }
   }
 
+  // La base de desarrollo puede llevar dentro cosas que no deben publicarse y
+  // que no se ven: una cuenta con la contraseña por defecto —que está en el
+  // repositorio— o sesiones abiertas. Aquí no se arregla nada, solo se impide
+  // empaquetarlo; arreglarlo es de `cms:preparar-produccion`.
+  const aviso = execFileSync(
+    process.execPath,
+    ['--experimental-strip-types', path.join(raiz, 'scripts', 'audit-db-for-deploy.mjs')],
+    { cwd: raiz, encoding: 'utf8' }
+  ).trim();
+  if (aviso) {
+    throw new Error(`${aviso}\n  Ejecute: npm run cms:preparar-produccion`);
+  }
+
   const medios = [];
   const dirMedios = path.join(raiz, 'uploads', 'cms');
   if (fs.existsSync(dirMedios)) {
@@ -178,4 +191,9 @@ function resumen() {
   log('Ver docs/DESPLIEGUE-CPANEL.md, sección 2.');
 }
 
-main();
+try {
+  main();
+} catch (error) {
+  process.stderr.write(`\n✖ ${error instanceof Error ? error.message : String(error)}\n`);
+  process.exit(1);
+}

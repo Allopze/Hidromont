@@ -12,11 +12,51 @@
  * donde de verdad importaba, con el CMS publicado en el dominio.
  */
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import bcrypt from 'bcryptjs';
+import Database from 'better-sqlite3';
+import { nanoid } from 'nanoid';
+import { afterEach, describe, expect, it } from 'vitest';
+import { migrate } from '../db/schema';
 
 const RAIZ = path.resolve(import.meta.dirname, '../..');
 const CONTRASENA_POR_DEFECTO = 'Hidromont-Admin-ChangeMe';
+
+/**
+ * Cada caso usa su propia base en un temporal. Antes apuntaban a la de
+ * desarrollo, así que el resultado dependía de qué cuentas tuviera: el guarda
+ * que rechaza una contraseña por defecto *almacenada* hizo fallar el caso
+ * feliz en cuanto se añadió, porque la base real tiene una.
+ */
+const temporales: string[] = [];
+function baseTemporal(conCuentaPorDefecto = false): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hidromont-guards-'));
+  temporales.push(dir);
+  const ruta = path.join(dir, 'cms.sqlite');
+  const db = new Database(ruta);
+  migrate(db);
+  if (conCuentaPorDefecto) {
+    const ahora = new Date().toISOString();
+    db.prepare(
+      'INSERT INTO users (id, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+    ).run(
+      nanoid(),
+      'admin@hidromont.local',
+      // Coste 4: aquí solo importa que el hash valide, no que sea lento.
+      bcrypt.hashSync(CONTRASENA_POR_DEFECTO, 4),
+      ahora,
+      ahora
+    );
+  }
+  db.close();
+  return ruta;
+}
+
+afterEach(() => {
+  for (const dir of temporales.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+});
 
 /**
  * Arranca el servidor con un entorno controlado y devuelve cómo terminó.
@@ -35,6 +75,7 @@ function arrancar(entorno: Record<string, string>, plazoMs = 2_500) {
     env: {
       ...process.env,
       CMS_PORT: '8917',
+      CMS_DATABASE_PATH: baseTemporal(),
       NODE_ENV: '',
       CMS_HOST: '127.0.0.1',
       CMS_COOKIE_SECURE: '',
@@ -87,6 +128,22 @@ describe('guardas de arranque del servidor', () => {
     });
     expect(r.code).toBe(1);
     expect(r.salida).toMatch(/CMS_COOKIE_SECURE=0/);
+  });
+
+  it('se niega a arrancar si una cuenta de la base tiene la contraseña por defecto', () => {
+    // El guarda de más arriba mira el .env, y eso dejaba fuera el caso que de
+    // verdad ocurrió: una base traída de desarrollo con `admin@hidromont.local`
+    // intacto. El .env puede estar impecable y aun así haber una credencial
+    // pública dentro de la base.
+    const r = arrancar({
+      NODE_ENV: 'production',
+      CMS_ADMIN_PASSWORD: 'una-contrasena-larga-y-propia',
+      CMS_COOKIE_SECURE: '1',
+      CMS_DATABASE_PATH: baseTemporal(true),
+    });
+    expect(r.code).toBe(1);
+    expect(r.salida).toMatch(/cuenta\(s\) con la contraseña por defecto en la base/);
+    expect(r.salida).toMatch(/admin@hidromont\.local/);
   });
 
   it('arranca en producción con contraseña propia y cookie segura', () => {
