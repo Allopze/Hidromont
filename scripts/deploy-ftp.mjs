@@ -40,9 +40,12 @@ const SOLO_VER = process.argv.includes('--ver');
 // solo dice «error desconocido».
 const TRAER = process.argv[process.argv.indexOf('--traer') + 1];
 const SOLO_TRAER = process.argv.includes('--traer');
-// `--enviar <ruta local>` sube un archivo suelto a la raíz de la aplicación.
-// Para corregir un `.npmrc` o un `.env` sin rehacer y resubir 99 MB.
+// `--enviar <ruta local> [destino remoto]` sube un archivo suelto. Sin
+// destino va a la raíz de la aplicación; con él, a donde se diga —hace falta
+// para `~/.npmrc`, que vive fuera de la aplicación—. Sirve para corregir un
+// archivo de configuración sin rehacer y resubir 99 MB.
 const ENVIAR = process.argv[process.argv.indexOf('--enviar') + 1];
+const ENVIAR_A = process.argv[process.argv.indexOf('--enviar') + 2];
 const SOLO_ENVIAR = process.argv.includes('--enviar');
 const CON_DATOS = process.argv.includes('--datos');
 const CON_ENV = process.argv.includes('--env');
@@ -211,10 +214,24 @@ async function main() {
   if (SOLO_ENVIAR) {
     const local = path.resolve(raiz, ENVIAR ?? '');
     if (!fs.existsSync(local)) throw new Error(`No existe ${ENVIAR}`);
-    log(`\nSubiendo ${path.relative(raiz, local)} → ${cred.dir}/${path.basename(local)}`);
-    subir(cred, local);
-    const hay = listar(cred).includes(path.basename(local));
-    log(hay ? '\n✓ Verificado en el servidor.' : '\n⚠ Subido pero no aparece en el listado.');
+    const destino =
+      ENVIAR_A && !ENVIAR_A.startsWith('--')
+        ? `${ENVIAR_A.replace(/\/+$/, '')}/${path.basename(local)}`
+        : `${cred.dir}/${path.basename(local)}`;
+    log(`\nSubiendo ${path.relative(raiz, local)} → ${destino}`);
+    execFileSync('curl', ['--config', '-', '--upload-file', local, '--progress-bar'], {
+      input:
+        [
+          `user = "${cred.FTP_USER}:${cred.FTP_PASSWORD}"`,
+          ...(cred.protocolo === 'ftps' ? ['ssl-reqd'] : []),
+          'connect-timeout = 20',
+          'show-error',
+          'fail',
+          `url = "${ESQUEMA}://${cred.FTP_HOST}${destino}"`,
+        ].join('\n') + '\n',
+      stdio: ['pipe', 'inherit', 'inherit'],
+    });
+    log('\n✓ Subido.');
     return;
   }
 

@@ -43,7 +43,7 @@
     "format:check": "prettier --check .",
     "screenshots": "node scripts/capture-screenshots.mjs",
     "check:deploy-env": "node scripts/check-deploy-env.mjs",
-    "prepare": "husky"
+    "prepare": "husky || echo '[hooks] husky no disponible: se omiten los hooks de git (normal en el servidor)'"
   },
   "lint-staged": {
     "*.{js,ts,astro}": [
