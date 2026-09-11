@@ -231,8 +231,36 @@ async function main() {
     // Listar de verdad lo que hay: tras extraer un zip conviene comprobar que
     // el contenido quedó en la raíz de la aplicación y no en una carpeta
     // intermedia, que es el error clásico del gestor de archivos.
+    // Listado detallado (LIST en vez de NLST): tamaños y fechas, que es lo que
+    // permite comprobar que una subida llegó entera. El gestor de archivos de
+    // cPanel oculta por defecto los que empiezan por punto, así que este
+    // listado es a menudo la única forma de ver el `.env`.
     log('\nContenido del directorio:');
-    for (const entrada of antes.sort()) log(`  ${entrada}`);
+    const detalle = curl(cred, [`url = "${ESQUEMA}://${cred.FTP_HOST}${cred.dir}/"`]);
+    for (const linea of detalle.split('\n').filter(Boolean)) log(`  ${linea.trimEnd()}`);
+    // Las dos rutas que deciden si el servidor puede arrancar bien. Si la base
+    // no está, el CMS siembra desde `defaultContent.ts` al arrancar, y aunque
+    // ya no exporte encima del contenido, el panel no tendría lo editado.
+    log('\nDatos persistentes:');
+    for (const [ruta, que] of [
+      ['cms/data', 'base de datos'],
+      ['uploads/cms', 'biblioteca de medios'],
+    ]) {
+      let entradas = [];
+      try {
+        entradas = curl(cred, [
+          `url = "${ESQUEMA}://${cred.FTP_HOST}${cred.dir}/${ruta}/"`,
+          'list-only',
+        ])
+          .split('\n')
+          .filter((n) => n && n !== '.' && n !== '..');
+      } catch {
+        log(`  ${ruta.padEnd(14)} NO EXISTE (${que})`);
+        continue;
+      }
+      log(`  ${ruta.padEnd(14)} ${entradas.length} archivo(s) — ${que}`);
+    }
+
     const esperados = ['package.json', 'server.mjs', 'public', 'cms', 'src'];
     const faltan = esperados.filter((e) => !antes.includes(e));
     log(
