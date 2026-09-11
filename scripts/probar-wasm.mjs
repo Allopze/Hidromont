@@ -23,12 +23,23 @@
  * Uso:  npm run probar:wasm
  */
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const log = (m) => process.stdout.write(`${m}\n`);
+
+// El informe se escribe desde aquí, con ruta absoluta, en vez de por
+// redirección del shell: el primer intento en el servidor terminó con SIGABRT
+// y no dejó ningún archivo, probablemente porque la redirección dependía del
+// directorio de trabajo o de cómo invoca el panel al script.
+const informe = path.join(raiz, '_wasm.log');
+fs.writeFileSync(informe, '');
+const log = (m) => {
+  fs.appendFileSync(informe, `${m}\n`);
+  process.stdout.write(`${m}\n`);
+};
 
 /** Compila un fragmento .astro mínimo: fuerza la instanciación del Wasm. */
 const PRUEBA = `

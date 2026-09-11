@@ -33,7 +33,7 @@
     "build:servidor": "astro build && tsx scripts/sync-csp-headers.ts",
     "build:log": "node scripts/build-con-registro.mjs",
     "build:log:ligero": "BUILD_LIGERO=1 node scripts/build-con-registro.mjs",
-    "probar:wasm": "node scripts/probar-wasm.mjs > _wasm.log 2>&1 || true",
+    "probar:wasm": "node scripts/probar-wasm.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",

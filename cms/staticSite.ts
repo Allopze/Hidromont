@@ -39,11 +39,22 @@ interface Redirect {
 
 let redirects: Redirect[] | undefined;
 
+/**
+ * Se memoriza el resultado, pero solo cuando el archivo existía: memorizar la
+ * ausencia dejaba el sitio sin redirecciones hasta el siguiente reinicio.
+ *
+ * Pasó en el primer despliegue. El proceso arrancó antes de que `dist`
+ * estuviera extraído, la primera petición cacheó «no hay redirecciones», y al
+ * aparecer `dist` las páginas empezaron a servirse bien —eso se lee del disco
+ * en cada petición— mientras los 301 seguían devolviendo 404. Un fallo que
+ * solo se nota en la ruta que menos se prueba.
+ */
 function loadRedirects(): Redirect[] {
   if (redirects) return redirects;
-  redirects = [];
+  const acumulado: Redirect[] = [];
   const file = path.join(distDir, '_redirects');
-  if (!fs.existsSync(file)) return redirects;
+  if (!fs.existsSync(file)) return acumulado;
+  redirects = acumulado;
 
   for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
     const trimmed = line.trim();
@@ -54,9 +65,9 @@ function loadRedirects(): Redirect[] {
     // resolvePublicFile devolviendo 404.html, así que se ignora.
     if (from.includes('*')) continue;
     const status = Number(code);
-    redirects.push({ from, to, status: Number.isFinite(status) ? status : 301 });
+    acumulado.push({ from, to, status: Number.isFinite(status) ? status : 301 });
   }
-  return redirects;
+  return acumulado;
 }
 
 export function registerStaticSite(app: FastifyInstance): void {

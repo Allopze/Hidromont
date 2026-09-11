@@ -486,7 +486,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles, Región del Biobío.',
+          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles, Región del Biobío.',
       },
       primaryLabel: { type: 'text', value: 'Conocer nuestros servicios' },
       secondaryLabel: { type: 'text', value: 'Ver proyectos' },
@@ -558,7 +558,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value: 'Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont',
       },
       eyebrow: { type: 'text', value: 'Instalaciones y medios productivos' },
-      title: { type: 'text', value: 'Taller propio en Los Ángeles, Biobío' },
+      title: { type: 'text', value: 'Taller en Los Ángeles, Biobío' },
       subtitle: {
         type: 'textarea',
         value:
@@ -995,7 +995,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Infraestructura' },
-      title: { type: 'text', value: 'Taller propio en Biobío' },
+      title: { type: 'text', value: 'El taller' },
       subtitle: {
         type: 'textarea',
         value:
