@@ -16,10 +16,20 @@
  * de que falló, y `CMS_PUBLISH_CHECK_COMMAND` depende de ello para no dar por
  * buena una publicación rota.
  *
+ * No invoca `npm run build`, sino cada paso con la ruta absoluta de su
+ * binario. Desde cron, `npm` sí arranca pero el script muere en
+ * «sh: astro: command not found»: npm añade `node_modules/.bin` al PATH de sus
+ * scripts, y aquí eso no ocurre porque `node_modules` es un enlace al
+ * virtualenv de cPanel. Añadir ese directorio al PATH a mano tampoco bastó.
+ * Llamar a `node <ruta>/astro.js` no depende del PATH en absoluto.
+ *
+ * El precio es duplicar la definición del build que vive en `package.json`.
+ * Lo cubre `src/test/build-pasos.test.ts`, que compara ambas listas.
+ *
  * Uso:  npm run build:log            (build completo, con astro check)
  *       npm run build:log -- ligero  (sin astro check, para poca memoria)
  */
-import { spawn } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -82,44 +92,49 @@ escribir(`# techo de memoria WebAssembly: ${techo ? `${techo} MB` : 'menos de 16
 escribir('\n');
 
 const inicio = Date.now();
-const hijo = spawn('npm', ['run', guion], {
-  cwd: raiz,
-  shell: false,
-  env: {
-    ...process.env,
-    // Desde cron el PATH no trae nada de esto y el build muere antes de
-    // empezar. Hicieron falta dos añadidos, cada uno por un fallo distinto:
-    //
-    //   dirname(execPath)      `node` y `npm` — «sh: node: command not found»
-    //   node_modules/.bin      `astro` y `tsx` — «sh: astro: command not found»
-    //
-    // Lo segundo lo suele poner npm al ejecutar un script, pero aquí
-    // `node_modules` es un enlace al virtualenv de cPanel y no lo hace.
-    PATH: [
-      path.dirname(process.execPath),
-      path.join(raiz, 'node_modules', '.bin'),
-      process.env.PATH ?? '',
-    ].join(':'),
-    ...(opciones ? { NODE_OPTIONS: opciones } : {}),
-  },
-});
 
-hijo.stdout.on('data', (b) => escribir(b.toString()));
-hijo.stderr.on('data', (b) => escribir(b.toString()));
+/** Los pasos del build, cada uno como argumentos para `node`. */
+const ASTRO = path.join(raiz, 'node_modules', 'astro', 'astro.js');
+const TSX = path.join(raiz, 'node_modules', 'tsx', 'dist', 'cli.mjs');
+const pasos = [
+  ...(LIGERO ? [] : [{ nombre: 'astro check', args: [ASTRO, 'check'] }]),
+  { nombre: 'astro build', args: [ASTRO, 'build'] },
+  { nombre: 'sync-csp-headers', args: [TSX, path.join('scripts', 'sync-csp-headers.ts')] },
+];
 
-hijo.on('close', (codigo, senal) => {
-  const seg = ((Date.now() - inicio) / 1000).toFixed(1);
-  escribir(`\n# terminó en ${seg} s · código ${codigo}${senal ? ` · señal ${senal}` : ''}\n`);
-  // Una señal en vez de un código es la firma de un proceso matado por el
-  // límite de memoria o de tiempo del hosting, no de un error del build.
-  if (senal) {
-    escribir(`# matado por ${senal}: casi seguro un límite del plan, no un fallo de Astro.\n`);
-    escribir('# Pruebe `npm run build:log -- ligero`, que acota el montón de JS.\n');
+for (const ruta of [ASTRO, TSX]) {
+  if (!fs.existsSync(ruta)) {
+    escribir(`\n# No existe ${ruta}\n# ¿Se instalaron las dependencias? npm install\n`);
+    salida.end(() => process.exit(1));
   }
-  salida.end(() => process.exit(codigo ?? 1));
-});
+}
 
-hijo.on('error', (error) => {
-  escribir(`\n# no se pudo lanzar npm: ${error.message}\n`);
-  salida.end(() => process.exit(1));
-});
+let codigoFinal = 0;
+for (const paso of pasos) {
+  escribir(`\n# → ${paso.nombre}\n`);
+  const res = spawnSync(process.execPath, paso.args, {
+    cwd: raiz,
+    encoding: 'utf8',
+    env: opciones ? { ...process.env, NODE_OPTIONS: opciones } : process.env,
+    maxBuffer: 32 * 1024 * 1024,
+  });
+  if (res.stdout) escribir(res.stdout);
+  if (res.stderr) escribir(res.stderr);
+  if (res.signal) {
+    escribir(
+      `\n# ${paso.nombre} matado por ${res.signal}: es un límite del plan, no un fallo de Astro.\n`
+    );
+    escribir('# Pruebe `build:log:ligero`, que se salta astro check.\n');
+    codigoFinal = 1;
+    break;
+  }
+  if (res.status !== 0) {
+    escribir(`\n# ${paso.nombre} terminó con código ${res.status}\n`);
+    codigoFinal = res.status ?? 1;
+    break;
+  }
+}
+
+const seg = ((Date.now() - inicio) / 1000).toFixed(1);
+escribir(`\n# terminó en ${seg} s · código ${codigoFinal}\n`);
+salida.end(() => process.exit(codigoFinal));
