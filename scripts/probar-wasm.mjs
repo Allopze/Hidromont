@@ -41,7 +41,15 @@ const log = (m) => {
   process.stdout.write(`${m}\n`);
 };
 
-/** Compila un fragmento .astro mínimo: fuerza la instanciación del Wasm. */
+/**
+ * Compila un fragmento .astro mínimo: fuerza la instanciación del Wasm.
+ *
+ * Se escribe a un archivo dentro del proyecto en vez de pasarse con `node -e`.
+ * Con `-e` el módulo padre es `[eval1]` y desde cron no resuelve
+ * `@astrojs/compiler`, porque aquí `node_modules` es un enlace al virtualenv
+ * de cPanel y la resolución solo funcionaba gracias al NODE_PATH que activa el
+ * panel. Un archivo real resuelve por el camino normal, venga de donde venga.
+ */
 const PRUEBA = `
   const { transform } = await import('@astrojs/compiler');
   const r = await transform('<h1>hola</h1>', { filename: 'p.astro' });
@@ -73,17 +81,18 @@ const limite = process.constrainedMemory?.();
 log(`límite declarado por cgroup: ${limite ? `${Math.round(limite / 1048576)} MB` : 'ninguno'}`);
 log('');
 
+const guionHijo = path.join(raiz, 'scripts', '.probar-wasm-hijo.mjs');
+fs.writeFileSync(guionHijo, PRUEBA);
+
 let ganadora = null;
 for (const candidato of CANDIDATOS) {
-  const res = spawnSync(
-    process.execPath,
-    [...candidato.flags, '--input-type=module', '-e', PRUEBA],
-    {
-      cwd: raiz,
-      encoding: 'utf8',
-      timeout: 60_000,
-    }
-  );
+  const res = spawnSync(process.execPath, [...candidato.flags, guionHijo], {
+    cwd: raiz,
+    encoding: 'utf8',
+    timeout: 60_000,
+    // Node y npm viven en el mismo directorio; desde cron el PATH no los trae.
+    env: { ...process.env, PATH: `${path.dirname(process.execPath)}:${process.env.PATH ?? ''}` },
+  });
   const ok = res.status === 0 && (res.stdout ?? '').includes('OK');
   log(`${ok ? '✓' : '✗'} ${candidato.nombre}`);
   if (!ok) {
@@ -95,6 +104,8 @@ for (const candidato of CANDIDATOS) {
   }
   if (ok && !ganadora) ganadora = candidato;
 }
+
+fs.rmSync(guionHijo, { force: true });
 
 log('');
 if (ganadora) {

@@ -85,7 +85,14 @@ const inicio = Date.now();
 const hijo = spawn('npm', ['run', guion], {
   cwd: raiz,
   shell: false,
-  env: opciones ? { ...process.env, NODE_OPTIONS: opciones } : process.env,
+  env: {
+    ...process.env,
+    // Desde cron el PATH no trae ni `node` ni `npm`, y el primer intento murió
+    // con «sh: node: command not found» sin llegar a compilar. Los dos viven
+    // junto al ejecutable actual, así que basta con anteponer su directorio.
+    PATH: `${path.dirname(process.execPath)}:${process.env.PATH ?? ''}`,
+    ...(opciones ? { NODE_OPTIONS: opciones } : {}),
+  },
 });
 
 hijo.stdout.on('data', (b) => escribir(b.toString()));

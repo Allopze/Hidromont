@@ -75,3 +75,5 @@ _deploy/
 # Registro del build generado por npm run build:log
 _build.log
 _wasm.log
+scripts/.probar-wasm-hijo.mjs
+_cron.log
