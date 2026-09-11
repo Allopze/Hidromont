@@ -87,10 +87,19 @@ const hijo = spawn('npm', ['run', guion], {
   shell: false,
   env: {
     ...process.env,
-    // Desde cron el PATH no trae ni `node` ni `npm`, y el primer intento murió
-    // con «sh: node: command not found» sin llegar a compilar. Los dos viven
-    // junto al ejecutable actual, así que basta con anteponer su directorio.
-    PATH: `${path.dirname(process.execPath)}:${process.env.PATH ?? ''}`,
+    // Desde cron el PATH no trae nada de esto y el build muere antes de
+    // empezar. Hicieron falta dos añadidos, cada uno por un fallo distinto:
+    //
+    //   dirname(execPath)      `node` y `npm` — «sh: node: command not found»
+    //   node_modules/.bin      `astro` y `tsx` — «sh: astro: command not found»
+    //
+    // Lo segundo lo suele poner npm al ejecutar un script, pero aquí
+    // `node_modules` es un enlace al virtualenv de cPanel y no lo hace.
+    PATH: [
+      path.dirname(process.execPath),
+      path.join(raiz, 'node_modules', '.bin'),
+      process.env.PATH ?? '',
+    ].join(':'),
     ...(opciones ? { NODE_OPTIONS: opciones } : {}),
   },
 });
