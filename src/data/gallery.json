@@ -2935,22 +2935,6 @@
       "lqip": "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAABwBACdASogABMAPu1sq1EppaOiqAqpMB2JQAAEto/0BaSR11ljgaSwN4D0AAD+w9perh+g9AAO6J+EmSs/rpmUYgFTQZveo1iBQP8e1Ak3IBhOv6CNrSrfvGtdnGM0kF9ZAi7hJj7HuLIXTZ+RXdNAfMuFvvNnfbnSkoITDpUtt7ds4lym+qZhtZkJ0SpGcpNzwNSiwAA=",
       "focalX": 0.5,
       "focalY": 0.5
-    },
-    {
-      "id": "VNXSW_fKhoKb2EJvtKN0Z",
-      "alt": "Foto E2E Test 1789083023580",
-      "categorySlug": null,
-      "categoryName": null,
-      "projectSlug": null,
-      "featured": false,
-      "position": 212,
-      "src": "/gallery/derived/7f8d8b52-640.webp",
-      "width": 640,
-      "height": 382,
-      "srcset": "/gallery/derived/7f8d8b52-640.webp 640w",
-      "lqip": "data:image/webp;base64,UklGRowAAABXRUJQVlA4IIAAAAAwBACdASogABMAPu1mq08ppaOiKA1RMB2JYwDN/AgC7pRxOxWuEc+/MYAA/rMw6lwznpp7bSN9wVSzEObVSTheTrKtu0tGE9HkDWWrnIPg2my3CKqhirLna5so2364FAnsERGoancP5DOG/5b/JaQov/Jvp3gmXA3ncGVb60MAAA==",
-      "focalX": 0.5,
-      "focalY": 0.5
     }
   ]
 }

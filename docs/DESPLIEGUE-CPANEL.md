@@ -77,7 +77,7 @@ Antes de optimizar las imágenes eran ~3,0 GB: los originales de cámara pesaban
 
 En **Setup Node.js App**:
 
-- **Node.js version**: la más alta disponible que sea ≥ 20.
+- **Node.js version**: la más alta disponible que sea ≥ 22 (ej. 22.x o 24.x; `better-sqlite3` requiere Node ≥ 22 para binarios precompilados).
 - **Application mode**: `Production`.
 - **Application root**: la carpeta donde vivirá el repositorio, por ejemplo
   `hidromont`. Conviene que **no** sea `public_html`.
