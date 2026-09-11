@@ -30,6 +30,7 @@
     "cms:reset-password": "tsx cms/scripts/reset-password.ts",
     "cms:preparar-produccion": "tsx cms/scripts/prepare-production-db.ts",
     "build": "astro check && astro build && tsx scripts/sync-csp-headers.ts",
+    "build:servidor": "astro build && tsx scripts/sync-csp-headers.ts",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
