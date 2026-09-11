@@ -14,6 +14,9 @@
  * Uso:
  *   npm run deploy:ftp -- --dry     ensayo: dice qué haría, sin conectarse
  *   npm run deploy:ftp -- --probar  conecta y lista, pero no sube nada
+ *   npm run deploy:ftp -- --ver /    lista una carpeta cualquiera del servidor
+ *   npm run deploy:ftp -- --traer <ruta>   descarga un archivo del servidor
+ *   npm run deploy:ftp -- --enviar <ruta>  sube un archivo suelto
  *   npm run deploy:ftp              sube el paquete de aplicación
  *   npm run deploy:ftp -- --datos   sube además la base y la biblioteca
  *   npm run deploy:ftp -- --env     sube _deploy/.env como .env del servidor
@@ -27,6 +30,20 @@ import { fileURLToPath } from 'node:url';
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DRY = process.argv.includes('--dry');
 const SOLO_PROBAR = process.argv.includes('--probar');
+// `--ver <ruta>` lista cualquier carpeta del servidor, absoluta o relativa a
+// la de la aplicación. Para responder preguntas del tipo «¿existe ~/logs?»
+// sin abrir cPanel.
+const VER = process.argv[process.argv.indexOf('--ver') + 1];
+const SOLO_VER = process.argv.includes('--ver');
+// `--traer <ruta>` descarga un archivo del servidor a `_deploy/descargas/`.
+// Para leer los registros de npm o de Passenger cuando algo falla y el panel
+// solo dice «error desconocido».
+const TRAER = process.argv[process.argv.indexOf('--traer') + 1];
+const SOLO_TRAER = process.argv.includes('--traer');
+// `--enviar <ruta local>` sube un archivo suelto a la raíz de la aplicación.
+// Para corregir un `.npmrc` o un `.env` sin rehacer y resubir 99 MB.
+const ENVIAR = process.argv[process.argv.indexOf('--enviar') + 1];
+const SOLO_ENVIAR = process.argv.includes('--enviar');
 const CON_DATOS = process.argv.includes('--datos');
 const CON_ENV = process.argv.includes('--env');
 const log = (m) => process.stdout.write(`${m}\n`);
@@ -188,6 +205,48 @@ async function main() {
 
   if (DRY) {
     log('\n(--dry: no se conectó ni se subió nada)');
+    return;
+  }
+
+  if (SOLO_ENVIAR) {
+    const local = path.resolve(raiz, ENVIAR ?? '');
+    if (!fs.existsSync(local)) throw new Error(`No existe ${ENVIAR}`);
+    log(`\nSubiendo ${path.relative(raiz, local)} → ${cred.dir}/${path.basename(local)}`);
+    subir(cred, local);
+    const hay = listar(cred).includes(path.basename(local));
+    log(hay ? '\n✓ Verificado en el servidor.' : '\n⚠ Subido pero no aparece en el listado.');
+    return;
+  }
+
+  if (SOLO_TRAER) {
+    const ruta = TRAER?.startsWith('/') ? TRAER : `${cred.dir}/${TRAER ?? ''}`;
+    const destinoDir = path.join(raiz, '_deploy', 'descargas');
+    fs.mkdirSync(destinoDir, { recursive: true });
+    const destino = path.join(destinoDir, path.basename(ruta));
+    log(`\nDescargando ${ruta}...`);
+    execFileSync('curl', ['--config', '-', '--output', destino], {
+      input:
+        [
+          `user = "${cred.FTP_USER}:${cred.FTP_PASSWORD}"`,
+          ...(cred.protocolo === 'ftps' ? ['ssl-reqd'] : []),
+          'connect-timeout = 20',
+          'show-error',
+          'fail',
+          'silent',
+          `url = "${ESQUEMA}://${cred.FTP_HOST}${ruta}"`,
+        ].join('\n') + '\n',
+    });
+    log(`  → ${path.relative(raiz, destino)} · ${mb(fs.statSync(destino).size)}`);
+    return;
+  }
+
+  if (SOLO_VER) {
+    const ruta = VER?.startsWith('/') ? VER : `${cred.dir}/${VER ?? ''}`;
+    log(`\nContenido de ${ruta}:`);
+    const detalle = curl(cred, [
+      `url = "${ESQUEMA}://${cred.FTP_HOST}${ruta.replace(/\/+$/, '')}/"`,
+    ]);
+    for (const linea of detalle.split('\n').filter(Boolean)) log(`  ${linea.trimEnd()}`);
     return;
   }
 
