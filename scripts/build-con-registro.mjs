@@ -26,6 +26,13 @@
  * El precio es duplicar la definición del build que vive en `package.json`.
  * Lo cubre `src/test/build-pasos.test.ts`, que compara ambas listas.
  *
+ * **Compila a un directorio aparte y solo sustituye `dist` si termina bien.**
+ * Astro vacía su directorio de salida antes de generar, así que un build que
+ * falle a mitad deja el sitio sin páginas. Pasó en producción: un fallo al
+ * lanzar un proceso dejó `dist` con lo copiado de `public/` y nada más, y la
+ * web estuvo devolviendo 500 hasta restaurarla a mano. Con el ciclo
+ * automático eso lo dispararía un editor pulsando «Publicar», sin saberlo.
+ *
  * Uso:  npm run build:log            (build completo, con astro check)
  *       npm run build:log -- ligero  (sin astro check, para poca memoria)
  */
@@ -144,10 +151,19 @@ if (!ASTRO || !TSX) {
 
 escribir(`# astro: ${ASTRO}\n# tsx:   ${TSX}\n`);
 
+// Se compila aquí y solo al final se pone en su sitio.
+const DIST = path.join(raiz, 'dist');
+const NUEVO = path.join(raiz, 'dist.nuevo');
+const VIEJO = path.join(raiz, 'dist.anterior');
+fs.rmSync(NUEVO, { recursive: true, force: true });
+
 const pasos = [
   ...(LIGERO ? [] : [{ nombre: 'astro check', args: [ASTRO, 'check'] }]),
-  { nombre: 'astro build', args: [ASTRO, 'build'] },
-  { nombre: 'sync-csp-headers', args: [TSX, path.join('scripts', 'sync-csp-headers.ts')] },
+  { nombre: 'astro build', args: [ASTRO, 'build', '--outDir', NUEVO] },
+  {
+    nombre: 'sync-csp-headers',
+    args: [TSX, path.join('scripts', 'sync-csp-headers.ts'), NUEVO],
+  },
 ];
 
 /**
@@ -162,7 +178,15 @@ function ejecutar(paso) {
   return new Promise((resolver) => {
     const hijo = spawn(process.execPath, paso.args, {
       cwd: raiz,
-      env: opciones ? { ...process.env, NODE_OPTIONS: opciones } : process.env,
+      env: {
+        ...process.env,
+        // El servidor falló con `pthread_create: Resource temporarily
+        // unavailable`: la cuenta tiene un tope de hilos que no aparece en
+        // /proc/limits porque lo aplica LVE aparte. Acotar el grupo de hilos
+        // de libuv reduce cuántos pide sharp al procesar imágenes.
+        UV_THREADPOOL_SIZE: process.env.UV_THREADPOOL_SIZE ?? '2',
+        ...(opciones ? { NODE_OPTIONS: opciones } : {}),
+      },
     });
     hijo.stdout.on('data', (b) => escribir(b.toString()));
     hijo.stderr.on('data', (b) => escribir(b.toString()));
@@ -192,6 +216,25 @@ for (const paso of pasos) {
     codigoFinal = res.status ?? 1;
     break;
   }
+}
+
+// ── Sustitución, solo si todo fue bien ────────────────────────────────
+if (codigoFinal === 0) {
+  if (!fs.existsSync(path.join(NUEVO, 'index.html'))) {
+    escribir('\n# El build dijo que sí pero no hay index.html: no se sustituye nada.\n');
+    codigoFinal = 1;
+  } else {
+    // Dos renombrados dentro del mismo sistema de archivos: instantáneos. El
+    // sitio no llega a quedarse sin páginas.
+    fs.rmSync(VIEJO, { recursive: true, force: true });
+    if (fs.existsSync(DIST)) fs.renameSync(DIST, VIEJO);
+    fs.renameSync(NUEVO, DIST);
+    fs.rmSync(VIEJO, { recursive: true, force: true });
+    escribir('\n# dist sustituido.\n');
+  }
+} else {
+  escribir('\n# El build falló: dist NO se ha tocado, el sitio sigue como estaba.\n');
+  fs.rmSync(NUEVO, { recursive: true, force: true });
 }
 
 const seg = ((Date.now() - inicio) / 1000).toFixed(1);
