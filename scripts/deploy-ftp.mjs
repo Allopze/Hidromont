@@ -16,6 +16,7 @@
  *   npm run deploy:ftp -- --probar  conecta y lista, pero no sube nada
  *   npm run deploy:ftp              sube el paquete de aplicación
  *   npm run deploy:ftp -- --datos   sube además la base y la biblioteca
+ *   npm run deploy:ftp -- --env     sube _deploy/.env como .env del servidor
  */
 import { execFileSync } from 'node:child_process';
 import dns from 'node:dns/promises';
@@ -27,6 +28,7 @@ const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DRY = process.argv.includes('--dry');
 const SOLO_PROBAR = process.argv.includes('--probar');
 const CON_DATOS = process.argv.includes('--datos');
+const CON_ENV = process.argv.includes('--env');
 const log = (m) => process.stdout.write(`${m}\n`);
 const mb = (b) => `${(b / 1048576).toFixed(1)} MB`;
 
@@ -146,10 +148,19 @@ async function main() {
   if (CON_DATOS) {
     paquetes.push({ archivo: path.join(raiz, '_deploy', 'hidromont-datos.zip'), nombre: 'datos' });
   }
+  if (CON_ENV) {
+    // Va como `.env` en el servidor, no como `_deploy/.env`: el nombre remoto
+    // es el del archivo, así que se sube tal cual desde esa ruta.
+    paquetes.push({ archivo: path.join(raiz, '_deploy', '.env'), nombre: 'configuración' });
+  }
 
   for (const p of paquetes) {
     if (!fs.existsSync(p.archivo)) {
-      throw new Error(`No existe ${path.relative(raiz, p.archivo)}. Ejecute npm run pack:deploy.`);
+      const comando =
+        path.basename(p.archivo) === '.env'
+          ? 'npm run env:produccion -- --correo tu@correo.cl'
+          : 'npm run pack:deploy';
+      throw new Error(`No existe ${path.relative(raiz, p.archivo)}. Ejecute ${comando}.`);
     }
   }
 
@@ -246,6 +257,11 @@ async function main() {
     throw new Error(`Subida terminada pero no aparecen en el servidor: ${faltantes.join(', ')}`);
   }
   log(`\n✓ Verificado: ${paquetes.length} archivo(s) presentes en el servidor.`);
+
+  if (CON_ENV) {
+    log('\n⚠ El .env viajó por FTP. Si el servidor no admitiera TLS habría ido en');
+    log('  claro con la contraseña dentro; con FTPS va cifrado.');
+  }
 
   log('\nFalta el paso que FTP no puede hacer, desde cPanel:');
   log('  1. Gestor de archivos → seleccionar el zip → Extract');

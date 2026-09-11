@@ -18,6 +18,7 @@
     "cms:optimize-fotos": "tsx cms/scripts/optimize-public-photos.ts",
     "cms:move-library-photos": "tsx cms/scripts/move-library-only-photos.ts",
     "pack:deploy": "node scripts/pack-deploy.mjs",
+    "env:produccion": "node scripts/make-env.mjs",
     "deploy:ftp": "node scripts/deploy-ftp.mjs",
     "cms:merge-duplicate-media": "tsx cms/scripts/merge-duplicate-media.ts",
     "cms:backfill-media-alt": "tsx cms/scripts/backfill-media-alt.ts",

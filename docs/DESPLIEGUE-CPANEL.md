@@ -264,6 +264,32 @@ no sobreescribe lo que ya está en el entorno). Lo práctico:
 
 ## 4. Configuración
 
+**No subas tu `.env` local.** Está configurado para desarrollo y en producción
+dejaría el CMS con la cookie de sesión en claro (`CMS_COOKIE_SECURE=0` y
+`CMS_ALLOW_INSECURE_COOKIE=1`), el panel desactivado (`PUBLIC_ENABLE_CMS=0`) y
+las llamadas del navegador apuntando a `localhost`.
+
+El de producción se genera:
+
+```bash
+npm run env:produccion -- --correo tu@correo.cl
+npm run deploy:ftp -- --env
+```
+
+Parte de `.env.production.example` y solo rellena el correo y una contraseña
+nueva de 24 caracteres. **La contraseña no se imprime**: queda en
+`_deploy/.env`, con permisos 0600 y fuera del control de versiones. Ábrelo
+para copiarla a tu gestor de contraseñas (`open -e _deploy/.env`), así no pasa
+por el historial de la terminal.
+
+Volver a ejecutarlo no cambia la contraseña; para eso está `--rehacer`.
+
+Se hace con un script porque el archivo tiene 22 claves y varias fallan en
+silencio: un `CMS_ALLOWED_ORIGINS` mal escrito no rompe el arranque, solo hace
+que el panel rechace cada petición del dominio real sin decir por qué.
+
+### Qué significan las claves
+
 ```bash
 cd ~/hidromont
 cp .env.production.example .env
