@@ -16,7 +16,7 @@ interface Props {
 
 const { theme = 'light', class: className = '', showDirections = true } = Astro.props;
 
-const destino = 'Hidromont Chile S.A., Avenida Las Industrias 10950, Los Angeles, Chile';
+const destino = 'Hidromont Chile S.A., Avenida Las Industrias 10950, Los Ángeles, Chile';
 const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
 // Forma sin clave del embed de Google Maps: no requiere API key ni facturación.
 // El dominio ya está autorizado en el CSP de public/_headers (frame-src).

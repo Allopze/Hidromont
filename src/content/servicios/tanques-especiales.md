@@ -34,7 +34,7 @@ tipos:
 titulo: Tanques Especiales
 ---
 
-En el taller de Los Ángeles se ejecutan el rolado de mantos y tapas, la soldadura, los controles definidos para cada proyecto y la pintura industrial.
+En taller propio se ejecutan el rolado de mantos y tapas, la soldadura, los controles definidos para cada proyecto y la pintura industrial.
 
 ## Proyectos destacados en tanques
 

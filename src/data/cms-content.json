@@ -617,7 +617,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Cuéntenos el alcance de su obra y revisamos qué parte podemos ejecutar en el taller de Los Ángeles y qué parte en terreno."
+          "value": "Cuéntenos el alcance de su obra y revisamos qué podemos fabricar y montar nosotros."
         },
         "title": {
           "type": "text",
@@ -705,7 +705,7 @@
         },
         "title": {
           "type": "text",
-          "value": "El taller de Los Ángeles"
+          "value": "Taller propio en Biobío"
         }
       }
     },
@@ -1027,7 +1027,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles."
+          "value": "Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles, Región del Biobío."
         },
         "title": {
           "type": "text",
@@ -1099,7 +1099,7 @@
         },
         "title": {
           "type": "text",
-          "value": "Taller en Los Ángeles, Biobío"
+          "value": "Taller propio en Los Ángeles, Biobío"
         }
       }
     },
@@ -2689,7 +2689,7 @@
         },
         "subtitle": {
           "type": "textarea",
-          "value": "En Los Ángeles contamos con terreno para acopio y premontaje, además de talleres de calderería, mecanizado y pintura industrial."
+          "value": "Contamos con terreno para acopio y premontaje, además de taller de calderería, mecanizado y pintura industrial."
         },
         "title": {
           "type": "text",

@@ -146,6 +146,30 @@ describe('guardas de arranque del servidor', () => {
     expect(r.salida).toMatch(/admin@hidromont\.local/);
   });
 
+  it('Passenger puede cargarlo con require(): sin await de nivel superior', () => {
+    // Passenger arranca la aplicación haciendo `require()` del archivo de
+    // inicio desde su `node-loader.js`, y Node rechaza `require()` sobre un
+    // grafo ESM asíncrono. `server.mjs` tenía `await import(...)`, y ese await
+    // bastaba para que el arranque muriera con ERR_REQUIRE_ASYNC_MODULE antes
+    // de ejecutar una línea del CMS: la web solo mostraba la página de error
+    // genérica de Passenger.
+    const res = spawnSync(process.execPath, ['-e', "require('./server.mjs')"], {
+      cwd: RAIZ,
+      encoding: 'utf8',
+      timeout: 2_500,
+      env: {
+        ...process.env,
+        CMS_PORT: '8918',
+        CMS_DATABASE_PATH: baseTemporal(),
+        CMS_ADMIN_PASSWORD: 'una-contrasena-larga-y-propia',
+      },
+    });
+    const salida = `${res.stderr ?? ''}${res.stdout ?? ''}`;
+    expect(salida).not.toMatch(/ERR_REQUIRE_ASYNC_MODULE/);
+    // Sigue vivo al agotarse el plazo: cargó y se puso a escuchar.
+    expect(res.signal).not.toBeNull();
+  }, 15_000);
+
   it('arranca en producción con contraseña propia y cookie segura', () => {
     const r = arrancar({
       NODE_ENV: 'production',

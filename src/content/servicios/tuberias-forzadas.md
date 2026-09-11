@@ -52,7 +52,7 @@ Hidromont Chile ejecuta trabajos de ingeniería, fabricación y montaje de tuber
 
 ## Capacidad de fabricación
 
-Nuestro taller en Los Ángeles, Región del Biobío, cuenta con equipamiento especializado para fabricar tuberías de gran diámetro: cilindradora hidráulica de hasta 65 mm de espesor, máquinas de arco sumergido ESAB y mesa de corte de plasma y oxicorte de 12 m × 3 m.
+Nuestro taller cuenta con equipamiento especializado para fabricar tuberías de gran diámetro: cilindradora hidráulica de hasta 65 mm de espesor, máquinas de arco sumergido ESAB y mesa de corte de plasma y oxicorte de 12 m × 3 m.
 
 ## Proyectos destacados en tuberías forzadas y blindajes
 

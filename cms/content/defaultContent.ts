@@ -486,7 +486,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller en Los Ángeles.',
+          'Tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para embalses y centrales hidroeléctricas. En España desde 1983 y en Chile desde 1997, con taller propio en Los Ángeles, Región del Biobío.',
       },
       primaryLabel: { type: 'text', value: 'Conocer nuestros servicios' },
       secondaryLabel: { type: 'text', value: 'Ver proyectos' },
@@ -558,7 +558,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value: 'Fabricación de tuberías forzadas de gran diámetro en el taller de Hidromont',
       },
       eyebrow: { type: 'text', value: 'Instalaciones y medios productivos' },
-      title: { type: 'text', value: 'Instalaciones en Los Ángeles, Biobío' },
+      title: { type: 'text', value: 'Taller propio en Los Ángeles, Biobío' },
       subtitle: {
         type: 'textarea',
         value:
@@ -712,7 +712,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'En Los Ángeles contamos con terreno para acopio y premontaje, además de talleres de calderería, mecanizado y pintura industrial.',
+          'Contamos con terreno para acopio y premontaje, además de taller de calderería, mecanizado y pintura industrial.',
       },
       image: { type: 'image', value: '/fotos/curadas/fabricacion-tuberias-taller.webp' },
       imageAlt: {
@@ -995,7 +995,7 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Infraestructura' },
-      title: { type: 'text', value: 'El taller de Los Ángeles' },
+      title: { type: 'text', value: 'Taller propio en Biobío' },
       subtitle: {
         type: 'textarea',
         value:
@@ -1071,7 +1071,7 @@ export const defaultContentEntries: EntrySeed[] = [
       subtitle: {
         type: 'textarea',
         value:
-          'Cuéntenos el alcance de su obra y revisamos qué parte podemos ejecutar en el taller de Los Ángeles y qué parte en terreno.',
+          'Cuéntenos el alcance de su obra y revisamos qué podemos fabricar y montar nosotros.',
       },
       buttonLabel: { type: 'text', value: 'Contactar equipo técnico' },
     },
