@@ -22,13 +22,13 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
     <div
       class={`grid grid-cols-1 md:grid-cols-2 ${hideMap ? 'lg:grid-cols-5' : 'lg:grid-cols-6'} gap-10`}
     >
-      {/* Brand & Map (Spans 3 columns on desktop) — hidden when hideMap */}
+      {/* Brand & location panel (Spans 3 columns on desktop) — hidden when hideMap */}
       {
         !hideMap && (
           <div class="lg:col-span-3">
             {/* La dirección vive solo en LocationCard: repetirla en la columna
                 de al lado la mostraba dos veces en el mismo pie. */}
-            <LocationCard theme="dark" showDirections={false} />
+            <LocationCard theme="dark" showDirections={false} showEmbeddedMap={false} />
           </div>
         )
       }

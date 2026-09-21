@@ -32,6 +32,11 @@ function isActive(href: string) {
   if (href === '/') return currentPath === '/';
   return currentPath.startsWith(href);
 }
+
+function isCurrent(href: string) {
+  const normalizedPath = (path: string) => (path.length > 1 ? path.replace(/\/+$/, '') : path);
+  return normalizedPath(currentPath) === normalizedPath(href);
+}
 ---
 
 <!--
@@ -113,6 +118,7 @@ function isActive(href: string) {
                 >
                   <a
                     href={item.href}
+                    aria-current={isCurrent(item.href) ? 'page' : undefined}
                     class={`pl-4 pr-1 py-2 text-sm font-semibold font-body no-underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${overlay ? 'hover:text-white' : 'hover:text-primary-dark'}`}
                   >
                     <EditableText entry="layout.header" field={item.cmsField}>
@@ -146,7 +152,8 @@ function isActive(href: string) {
                   {item.children.map((child) => (
                     <a
                       href={child.href}
-                      class={`block px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
+                      aria-current={isCurrent(child.href) ? 'page' : undefined}
+                      class={`flex min-h-11 items-center px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
                     >
                       <EditableText entry="layout.header" field={child.cmsField}>
                         {child.label}
@@ -158,6 +165,7 @@ function isActive(href: string) {
             ) : (
               <a
                 href={item.href}
+                aria-current={isCurrent(item.href) ? 'page' : undefined}
                 class={[
                   'px-4 py-2 text-sm font-semibold font-body rounded-none transition-colors duration-fast ease-standard no-underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary',
                   overlay
@@ -243,10 +251,18 @@ function isActive(href: string) {
                 </svg>
               </summary>
               <div class="mt-1 ml-3 space-y-1 border-l-2 border-primary-light pl-3">
+                <a
+                  href={item.href}
+                  aria-current={isCurrent(item.href) ? 'page' : undefined}
+                  class="flex min-h-11 items-center px-3 py-2 text-sm font-semibold font-body text-primary no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  Todos los servicios
+                </a>
                 {item.children.map((child) => (
                   <a
                     href={child.href}
-                    class={`block px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
+                    aria-current={isCurrent(child.href) ? 'page' : undefined}
+                    class={`flex min-h-11 items-center px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
                   >
                     <EditableText entry="layout.header" field={child.cmsField}>
                       {child.label}
@@ -258,6 +274,7 @@ function isActive(href: string) {
           ) : (
             <a
               href={item.href}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
               class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
             >
               <EditableText entry="layout.header" field={item.cmsField}>
@@ -289,8 +306,6 @@ function isActive(href: string) {
     visibility: hidden;
   }
 
-  .group:hover .dropdown-panel,
-  .group:focus-within .dropdown-panel,
   .dropdown-panel.is-open {
     opacity: 1;
     visibility: visible;
@@ -304,8 +319,6 @@ function isActive(href: string) {
     transition: transform var(--motion-fast) var(--ease-standard);
   }
 
-  .group:hover .dropdown-chevron,
-  .group:focus-within .dropdown-chevron,
   .dropdown-toggle-btn[aria-expanded='true'] .dropdown-chevron {
     transform: rotate(180deg);
   }
@@ -313,26 +326,51 @@ function isActive(href: string) {
 
 <script>
   /* ── Desktop dropdown disclosure (UIUX-4) ────────────────────
-     `.dropdown-toggle-btn` is a real, separate control (not the nav link)
-     so click/Enter/Space toggle the submenu without navigating away.
-     Hover/focus-within opening is handled purely in CSS above; this script
-     only owns the deliberate open/close state that drives aria-expanded. */
+     `.dropdown-toggle-btn` is separate from the navigation link. Pointer
+     entry, keyboard focus, click, and Escape all update `.is-open` through
+     this script, keeping the visible panel and aria-expanded in sync. */
   document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]').forEach((toggleBtn) => {
     const group = toggleBtn.closest<HTMLElement>('[data-dropdown-group]');
     const panel = group?.querySelector<HTMLElement>('.dropdown-panel');
     if (!group || !panel) return;
+
+    let pointerInside = false;
+    let focusInside = false;
+    let clickPinnedOpen = false;
+    let escapeDismissed = false;
 
     function setOpen(open: boolean): void {
       panel!.classList.toggle('is-open', open);
       toggleBtn.setAttribute('aria-expanded', String(open));
     }
 
+    group.addEventListener('pointerenter', () => {
+      pointerInside = true;
+      if (!escapeDismissed) setOpen(true);
+    });
+
+    group.addEventListener('pointerleave', () => {
+      pointerInside = false;
+      escapeDismissed = false;
+      if (!focusInside && !clickPinnedOpen) setOpen(false);
+    });
+
+    group.addEventListener('focusin', () => {
+      focusInside = true;
+      if (!escapeDismissed) setOpen(true);
+    });
+
     toggleBtn.addEventListener('click', () => {
-      setOpen(!panel!.classList.contains('is-open'));
+      const opening = !panel!.classList.contains('is-open');
+      clickPinnedOpen = opening;
+      escapeDismissed = false;
+      setOpen(opening);
     });
 
     group.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && panel!.classList.contains('is-open')) {
+        clickPinnedOpen = false;
+        escapeDismissed = true;
         setOpen(false);
         toggleBtn.focus();
       }
@@ -340,11 +378,17 @@ function isActive(href: string) {
 
     group.addEventListener('focusout', (e: FocusEvent) => {
       const next = e.relatedTarget as HTMLElement | null;
-      if (!next || !group.contains(next)) setOpen(false);
+      if (!next || !group.contains(next)) {
+        focusInside = false;
+        escapeDismissed = false;
+        if (!pointerInside && !clickPinnedOpen) setOpen(false);
+      }
     });
 
     document.addEventListener('click', (e: MouseEvent) => {
       if (panel!.classList.contains('is-open') && !group.contains(e.target as Node)) {
+        clickPinnedOpen = false;
+        escapeDismissed = false;
         setOpen(false);
       }
     });

@@ -179,6 +179,23 @@ const filterItems = [
           ))
         }
       </div>
+      <div
+        id="project-no-results"
+        class="hidden border border-border bg-white px-6 py-10 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <p class="mb-4 font-semibold text-primary-dark">
+          No encontramos proyectos con estos criterios.
+        </p>
+        <button
+          type="button"
+          id="project-reset-filters"
+          class="min-h-[44px] border border-primary px-5 py-3 font-semibold text-primary-dark hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Limpiar búsqueda y filtros
+        </button>
+      </div>
       <p id="project-results-count" class="sr-only" aria-live="polite"></p>
       <div id="project-load-more-wrap" class="mt-2 flex justify-center" data-page-size={PAGE_SIZE}>
         <button
@@ -208,6 +225,8 @@ const filterItems = [
         document.querySelectorAll<HTMLElement>('[data-project-item]')
       );
       const search = document.getElementById('project-search') as HTMLInputElement | null;
+      const noResults = document.getElementById('project-no-results');
+      const resetFilters = document.getElementById('project-reset-filters');
       const loadMore = document.getElementById('project-load-more');
       const loadMoreWrap = document.getElementById('project-load-more-wrap');
       // El frontmatter no llega hasta aquí: este script se hoistea a un archivo
@@ -251,6 +270,7 @@ const filterItems = [
             !section.querySelector('[data-project-item]:not([hidden])')
           );
         });
+        noResults?.classList.toggle('hidden', result.total > 0);
         loadMoreWrap?.classList.toggle('hidden', !result.hasMore);
         if (loadMore) {
           // El número va en el texto visible, no en un aria-label aparte:
@@ -310,6 +330,13 @@ const filterItems = [
         searchQuery = normalize(search.value.trim());
         visibleLimit = PAGE_SIZE;
         updateProjects();
+      });
+
+      resetFilters?.addEventListener('click', () => {
+        if (search) search.value = '';
+        searchQuery = '';
+        activateFilter('todos');
+        search?.focus();
       });
 
       loadMore?.addEventListener('click', () => {

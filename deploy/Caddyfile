@@ -1,0 +1,47 @@
+# Caddy delante del proceso Node de Hidromont.
+#
+# Caddy pide y renueva el certificado de Let's Encrypt solo: no hay cron de
+# certbot que se pueda olvidar. Instalar con:
+#   sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# Requisito previo: los registros A de hidromontchile.cl y www ya apuntan a la
+# IP del VPS. Caddy valida por HTTP-01 y sin DNS correcto el arranque falla.
+
+# El sitio declara site: 'https://hidromontchile.cl' en astro.config.mjs, así
+# que las URLs canónicas son sin www. Servir ambos dominios con contenido
+# idéntico dividiría las señales de SEO; www redirige.
+www.hidromontchile.cl {
+	redir https://hidromontchile.cl{uri} permanent
+}
+
+hidromontchile.cl {
+	encode zstd gzip
+
+	# CMS_UPLOAD_MAX_BYTES son 8 MiB. Este límite va algo por encima para que
+	# un archivo demasiado grande lo rechace el CMS con su mensaje propio, y
+	# no Caddy con un 413 seco.
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy 127.0.0.1:8787 {
+		# Caddy ya envía X-Forwarded-For/-Proto por defecto. Por eso el .env
+		# lleva CMS_TRUST_PROXY=1: sin esa correspondencia, el limitador de
+		# intentos de login vería todas las peticiones como una sola IP.
+		#
+		# «Publicar» recompila el sitio entero; el proxy no debe cortar la
+		# respuesta mientras tanto.
+		transport http {
+			read_timeout 660s
+			write_timeout 660s
+		}
+	}
+
+	log {
+		output file /var/log/caddy/hidromont.log {
+			roll_size 20MiB
+			roll_keep 10
+		}
+	}
+}

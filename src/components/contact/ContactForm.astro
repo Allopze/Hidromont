@@ -79,7 +79,6 @@ const validationMessages = {
   method="POST"
   class="space-y-6"
   data-ajax-action={ajaxAction}
-  novalidate
 >
   <!-- FormSubmit.co config -->
   <input
@@ -302,13 +301,22 @@ const validationMessages = {
   role="alert"
   aria-live="assertive"
 >
-  {
-    getCmsText(
-      'contact.form',
-      'errorBody',
-      'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.'
-    )
-  }
+  <span id="contacto-error-message">
+    {
+      getCmsText(
+        'contact.form',
+        'errorBody',
+        'Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente.'
+      )
+    }
+  </span>
+  {' '}
+  <a
+    href={`mailto:${contactEmail}?subject=${encodeURIComponent('Consulta desde Hidromont.cl')}`}
+    class="font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error"
+  >
+    Contactar por correo ({contactEmail})
+  </a>
 </div>
 
 <script
@@ -368,6 +376,7 @@ const validationMessages = {
     const requiredFields = Array.from(
       form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')
     );
+    let isSubmitting = false;
 
     requiredFields.forEach((field) => {
       field.addEventListener('blur', () => validateField(field));
@@ -376,8 +385,14 @@ const validationMessages = {
       });
     });
 
+    // Use the custom inline errors only after this script has initialized. If
+    // JavaScript never loads, the browser's native required/type/minlength
+    // validation remains active for the native POST fallback.
+    form.noValidate = true;
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isSubmitting) return;
 
       // A2-004: anti-spam ligero del lado del cliente. Limita a 3 envíos por ventana
       // de 5 minutos (persistente en sessionStorage para sobrevivir recargas dentro de
@@ -385,13 +400,16 @@ const validationMessages = {
       // server-side real lo provee FormSubmit.co.
       const RATE_LIMIT_MAX = 3;
       const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
-      const RATE_KEY = 'hidromont:contact:submits';
+      // Store only provider-accepted submissions. Transport failures and
+      // provider rejections remain retryable and do not consume this allowance.
+      const RATE_KEY = 'hidromont:contact:accepted-submits';
       const errorBanner = document.getElementById('contacto-error');
+      const errorMessage = document.getElementById('contacto-error-message');
       // JS-L2 fix: captured once, before any mutation, so the generic-error
       // path can restore it — previously a rate-limit message overwrote this
       // banner's text, and a later network failure just re-showed the banner
       // without resetting it, leaving the stale rate-limit copy on screen.
-      const defaultErrorText = errorBanner?.textContent ?? '';
+      const defaultErrorText = errorMessage?.textContent?.trim() ?? '';
       const now = Date.now();
       let timestamps: number[] = [];
       try {
@@ -403,8 +421,8 @@ const validationMessages = {
       }
       if (timestamps.length >= RATE_LIMIT_MAX) {
         const retrySec = Math.ceil((RATE_LIMIT_WINDOW_MS - (now - timestamps[0])) / 1000);
-        if (errorBanner) {
-          errorBanner.textContent = `Demasiados envíos. Intente nuevamente en ${retrySec} segundos.`;
+        if (errorBanner && errorMessage) {
+          errorMessage.textContent = `Ya se aceptaron varios envíos desde este navegador. Intente nuevamente en ${retrySec} segundos o use el correo indicado.`;
           errorBanner.classList.remove('hidden');
         }
         return;
@@ -424,18 +442,11 @@ const validationMessages = {
         return;
       }
 
-      // Registro del envío dentro de la ventana de rate-limit (sólo si pasó validación).
-      timestamps.push(now);
-      try {
-        sessionStorage.setItem(RATE_KEY, JSON.stringify(timestamps));
-      } catch {
-        /* ignore quota */
-      }
-
       const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
       const submitText = document.getElementById('contacto-submit-text');
       const submitLoading = document.getElementById('contacto-submit-loading');
       if (submitBtn) submitBtn.disabled = true;
+      isSubmitting = true;
       if (submitText) submitText.classList.add('invisible');
       if (submitLoading) submitLoading.classList.remove('invisible');
       if (errorBanner) errorBanner.classList.add('hidden');
@@ -455,8 +466,15 @@ const validationMessages = {
           body: new FormData(form as HTMLFormElement),
           headers: { Accept: 'application/json' },
         });
+        if (!res.ok) throw new Error('provider-error');
         const json = (await res.json()) as { success: string | boolean };
         if (json.success === 'true' || json.success === true) {
+          timestamps.push(Date.now());
+          try {
+            sessionStorage.setItem(RATE_KEY, JSON.stringify(timestamps));
+          } catch {
+            /* The server remains responsible for rate limiting if storage is unavailable. */
+          }
           (form as HTMLFormElement).classList.add('hidden');
           if (statusEl) statusEl.textContent = '';
           // UIUX-10 fix: previously focus stayed on the now-hidden submit
@@ -470,14 +488,15 @@ const validationMessages = {
         }
       } catch {
         if (statusEl) statusEl.textContent = '';
-        if (errorBanner) {
-          errorBanner.textContent = defaultErrorText;
+        if (errorBanner && errorMessage) {
+          errorMessage.textContent = defaultErrorText;
           errorBanner.classList.remove('hidden');
         }
         if (submitBtn) submitBtn.disabled = false;
         if (submitText) submitText.classList.remove('invisible');
         if (submitLoading) submitLoading.classList.add('invisible');
       } finally {
+        isSubmitting = false;
         submitBtn?.removeAttribute('aria-busy');
       }
     });

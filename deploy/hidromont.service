@@ -1,0 +1,57 @@
+# Servicio del sitio + CMS de Hidromont Chile.
+#
+# Un solo proceso: server.mjs levanta Fastify, que sirve dist/ (el sitio
+# estático) y la API del CMS en el mismo puerto. Escucha solo en 127.0.0.1;
+# quien lo publica en internet es Caddy (ver deploy/Caddyfile).
+#
+# Instalar con:
+#   sudo cp deploy/hidromont.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now hidromont
+
+[Unit]
+Description=Hidromont Chile — sitio público y CMS
+Documentation=file:///srv/hidromont/docs/DESPLIEGUE-VPS.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hidromont
+Group=hidromont
+WorkingDirectory=/srv/hidromont
+
+# Las variables reales viven en /srv/hidromont/.env, que el propio proceso
+# carga con process.loadEnvFile(). No se usa EnvironmentFile= porque systemd
+# no acepta la misma sintaxis (comillas, valores con espacios) y un fallo ahí
+# no arranca el servicio sin explicar por qué.
+Environment=NODE_ENV=production
+Environment=HOME=/srv/hidromont
+# «Publicar» en el CMS lanza `npm run build:servidor` como proceso hijo: sin
+# npm en el PATH, el botón falla con ENOENT y el panel solo muestra un error
+# genérico.
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+ExecStart=/usr/bin/node server.mjs
+
+Restart=always
+RestartSec=5
+# El build que dispara «Publicar» puede tardar minutos; no lo matemos a mitad.
+TimeoutStopSec=30
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hidromont
+
+# Endurecimiento. ReadWritePaths es obligatorio: el proceso escribe la base
+# SQLite, los uploads y dist/ (lo regenera al publicar).
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+ReadWritePaths=/srv/hidromont
+
+[Install]
+WantedBy=multi-user.target

@@ -5,16 +5,20 @@ interface Props {
   theme?: 'light' | 'dark';
   class?: string;
   /**
-   * Enlace a las indicaciones. En el pie se omite: aparece en las 24 páginas,
-   * ahí la tarjeta solo tiene que decir dónde está la empresa, y el propio
-   * embed ya ofrece su botón "Abrir en Maps". En /contacto sí se muestra,
-   * porque es donde alguien puede estar planificando la visita y el enlace
-   * lleva a la ruta y no a la ficha del lugar.
+   * Enlace a las indicaciones. En el pie se omite para evitar repetir una
+   * acción en todas las páginas; en /contacto ayuda a planificar la visita.
    */
   showDirections?: boolean;
+  /** Use a local location panel in the footer; reserve the embedded map for /contacto desktop. */
+  showEmbeddedMap?: boolean;
 }
 
-const { theme = 'light', class: className = '', showDirections = true } = Astro.props;
+const {
+  theme = 'light',
+  class: className = '',
+  showDirections = true,
+  showEmbeddedMap = true,
+} = Astro.props;
 
 const destino = 'Hidromont Chile S.A., Avenida Las Industrias 10950, Los Ángeles, Chile';
 const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
@@ -31,13 +35,66 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
   ]}
   aria-labelledby="location-card-title"
 >
-  <div class="relative min-h-[260px] flex-1 bg-background-alt">
-    <iframe
-      src={embedUrl}
-      title="Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío"
-      class:list={['absolute inset-0 h-full w-full border-0', theme === 'dark' && 'map-dark']}
-      loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"></iframe>
+  <div
+    class:list={[
+      'relative flex min-h-[160px] flex-1 items-stretch bg-background-alt',
+      showEmbeddedMap && 'md:min-h-[260px]',
+    ]}
+  >
+    {
+      showEmbeddedMap && (
+        <iframe
+          src={embedUrl}
+          title="Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío"
+          class:list={[
+            'absolute inset-0 hidden h-full w-full border-0 md:block',
+            theme === 'dark' && 'map-dark',
+          ]}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        />
+      )
+    }
+    <div
+      class:list={[
+        'absolute inset-0 flex flex-col items-center justify-center gap-3 px-5 py-6 text-center',
+        theme === 'dark' ? 'bg-white/5 text-white' : 'bg-background-alt text-primary-dark',
+        showEmbeddedMap && 'md:hidden',
+      ]}
+    >
+      <svg
+        class="h-8 w-8 text-accent"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M19 10.2c0 5.2-7 11-7 11s-7-5.8-7-11a7 7 0 1 1 14 0Z"></path>
+        <circle cx="12" cy="10" r="2.2"></circle>
+      </svg>
+      <p class="font-heading text-base font-bold">Ubicación de Hidromont Chile</p>
+      <p class:list={['text-sm', theme === 'dark' ? 'text-white/75' : 'text-text-muted']}>
+        Los Ángeles, Región del Biobío
+      </p>
+      {
+        !showEmbeddedMap && (
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class:list={[
+              'inline-flex min-h-[44px] items-center justify-center border px-3 text-xs font-semibold no-underline transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-accent',
+              theme === 'dark'
+                ? 'border-white/30 text-white hover:bg-white/10'
+                : 'border-primary text-primary-dark hover:bg-white',
+            ]}
+          >
+            Abrir en Google Maps
+          </a>
+        )
+      }
+    </div>
   </div>
 
   <div class="p-4 md:p-5">

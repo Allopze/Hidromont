@@ -211,6 +211,35 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
             )}
           </div>
 
+          {videoSrc && (
+            <button
+              type="button"
+              class="absolute bottom-4 right-4 z-20 inline-flex min-h-[44px] items-center gap-2 border border-white/40 bg-background-strong/90 px-3 text-sm font-semibold text-white transition-colors hover:bg-background-strong focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-white"
+              data-hero-video-control
+              aria-label="Pausar video"
+            >
+              <svg
+                data-video-pause-icon
+                class="h-4 w-4"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M4 3h3v10H4zM9 3h3v10H9z" />
+              </svg>
+              <svg
+                data-video-play-icon
+                class="hidden h-4 w-4"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M4 2.8v10.4c0 .6.7 1 1.2.7l8-5.2a.8.8 0 0 0 0-1.4l-8-5.2C4.7 1.8 4 2.2 4 2.8Z" />
+              </svg>
+              <span data-video-control-label>Pausar video</span>
+            </button>
+          )}
+
           {/* Left-edge atmospheric scrim */}
           <div
             class="absolute inset-y-0 left-0 w-40 pointer-events-none z-10"
@@ -322,5 +351,41 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
     [data-hero-video-poster] {
       display: block;
     }
+
+    [data-hero-video-control] {
+      display: none;
+    }
   }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-hero-video-control]').forEach((button) => {
+    const video = button
+      .closest('div[data-reveal-cinematic]')
+      ?.querySelector<HTMLVideoElement>('video');
+    const label = button.querySelector<HTMLElement>('[data-video-control-label]');
+    const pauseIcon = button.querySelector<SVGElement>('[data-video-pause-icon]');
+    const playIcon = button.querySelector<SVGElement>('[data-video-play-icon]');
+    if (!video || !label || !pauseIcon || !playIcon) return;
+
+    const setPaused = (paused: boolean) => {
+      const nextLabel = paused ? 'Reproducir video' : 'Pausar video';
+      label.textContent = nextLabel;
+      button.setAttribute('aria-label', nextLabel);
+      pauseIcon.classList.toggle('hidden', paused);
+      playIcon.classList.toggle('hidden', !paused);
+    };
+
+    button.addEventListener('click', () => {
+      if (video.paused) {
+        void video.play().catch(() => setPaused(true));
+      } else {
+        video.pause();
+      }
+    });
+
+    video.addEventListener('play', () => setPaused(false));
+    video.addEventListener('pause', () => setPaused(true));
+    setPaused(video.paused);
+  });
+</script>

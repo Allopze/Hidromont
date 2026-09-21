@@ -135,7 +135,7 @@ const filters = [
                 id="gallery-search"
                 placeholder={getCmsText('page.galeria', 'searchPlaceholder', 'Buscar proyecto...')}
                 aria-label="Buscar proyecto en galería"
-                class="w-full bg-transparent text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 pr-9 focus:outline-none focus:bg-background transition-colors font-mono"
+                class="min-h-[44px] w-full bg-transparent text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 pr-12 focus:outline-none focus:bg-background transition-colors font-mono"
               />
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +156,7 @@ const filters = [
                 type="button"
                 id="gallery-search-clear"
                 aria-label="Limpiar búsqueda"
-                class="hidden absolute right-2 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] p-1 text-text-muted hover:text-text transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -181,7 +181,7 @@ const filters = [
                 aria-haspopup="listbox"
                 aria-expanded="false"
                 aria-controls="filter-menu"
-                class="w-full h-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-text hover:bg-background transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+                class="min-h-[44px] w-full h-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-text hover:bg-background transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
                 <span id="filter-trigger-label" class="truncate">
                   Todas las Categorías
@@ -210,7 +210,7 @@ const filters = [
                     role="option"
                     aria-selected={filter.slug === 'all' ? 'true' : 'false'}
                     data-filter={filter.slug}
-                    class={`gallery-filter-option w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-left cursor-pointer border-b border-border last:border-b-0 transition-colors ${
+                    class={`gallery-filter-option min-h-[44px] w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-left cursor-pointer border-b border-border last:border-b-0 transition-colors ${
                       filter.slug === 'all'
                         ? 'bg-primary text-white'
                         : 'text-text-muted hover:bg-background-alt hover:text-text'
@@ -233,7 +233,7 @@ const filters = [
             {mixedItems.slice(0, 24).map((item) => (
               <button
                 type="button"
-                class="gallery-card group relative block w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                class="gallery-card group relative block min-h-[44px] w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                 data-item-id={item.id}
                 data-search={gallerySearchText(item)}
                 aria-label={item.alt}
@@ -373,7 +373,7 @@ const filters = [
           const button = document.createElement('button');
           button.type = 'button';
           button.className =
-            'gallery-card group relative block w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
+            'gallery-card group relative block min-h-[44px] w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
           button.dataset.itemId = item.id;
           button.dataset.search = item.searchText;
           button.setAttribute('aria-label', item.alt);
