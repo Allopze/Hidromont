@@ -109,12 +109,12 @@ Las referencias de línea en este bloque corresponden a la versión auditada ini
 
 Los nueve hallazgos de la auditoría base ya tienen cambios asociados:
 
-- **Navegación:** el menú móvil incluye “Todos los servicios”; enlaces de subservicios tienen área táctil mínima de 44 px; las rutas exactas actuales usan `aria-current="page"`; el dropdown desktop refleja en `aria-expanded` el estado visual al usar puntero, teclado o clic.
+- **Navegación:** el menú móvil incluye “Todos los servicios” y sus controles tienen área táctil mínima de 44 px; las rutas exactas actuales usan `aria-current="page"`; el dropdown desktop refleja en `aria-expanded` el estado visual al usar puntero, teclado o clic. Sin JavaScript, los subservicios quedan visibles como lista.
 - **Proyectos:** se muestra un estado vacío con una acción para limpiar filtros y devolver el foco a búsqueda; el estado se anuncia como `status`.
 - **Contacto:** fallos de red o de proveedor ya no consumen el límite local; hay protección contra doble envío, enlace de correo en el aviso y validación nativa si el script no carga.
 - **Galería:** campo, desplegable, opciones, botón de limpiar y tarjetas tienen área táctil mínima de 44 px.
 - **Video:** Limpiarrejas incorpora control accesible de pausa/reproducción, oculto cuando está activa la preferencia de movimiento reducido.
-- **Ubicación:** contacto mantiene el mapa incrustado en desktop y muestra un panel local con ubicación en móvil; el pie usa siempre el panel local para evitar áreas vacías dependientes del iframe. La tarjeta móvil de contacto es más compacta.
+- **Ubicación:** contacto mantiene el mapa incrustado en desktop y muestra un panel local con ubicación en móvil; el pie usa siempre el panel local y un enlace a Maps para evitar áreas vacías dependientes del iframe. La tarjeta móvil de contacto es más compacta. Los títulos de ambas tarjetas ahora tienen identificadores únicos.
 
 No ejecuté pruebas ni build. La validación visual de los cambios queda pendiente porque el servicio local de imágenes de Astro no encontró Sharp en este entorno.
 

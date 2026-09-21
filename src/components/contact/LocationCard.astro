@@ -4,6 +4,7 @@ import { company } from '../../data/company';
 interface Props {
   theme?: 'light' | 'dark';
   class?: string;
+  titleId?: string;
   /**
    * Enlace a las indicaciones. En el pie se omite para evitar repetir una
    * acción en todas las páginas; en /contacto ayuda a planificar la visita.
@@ -16,6 +17,7 @@ interface Props {
 const {
   theme = 'light',
   class: className = '',
+  titleId = 'location-card-title',
   showDirections = true,
   showEmbeddedMap = true,
 } = Astro.props;
@@ -33,7 +35,7 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
     theme === 'dark' ? 'border-white/15 bg-white/5 text-white' : 'border-border bg-white',
     className,
   ]}
-  aria-labelledby="location-card-title"
+  aria-labelledby={titleId}
 >
   <div
     class:list={[
@@ -99,7 +101,7 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
 
   <div class="p-4 md:p-5">
     <h2
-      id="location-card-title"
+      id={titleId}
       class:list={[
         'font-heading text-base font-bold leading-tight',
         theme === 'dark' ? 'text-white' : 'text-primary-dark',

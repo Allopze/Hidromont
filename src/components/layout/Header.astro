@@ -147,7 +147,7 @@ function isCurrent(href: string) {
                 </div>
                 <div
                   id={`dropdown-panel-${item.cmsField}`}
-                  class="dropdown-panel absolute top-full left-0 mt-1 w-56 bg-white border border-border rounded-none shadow-md transition-[opacity,visibility] duration-base ease-standard z-dropdown"
+                  class="dropdown-panel absolute top-full left-0 w-56 bg-white border border-border rounded-none shadow-md transition-[opacity,visibility] duration-base ease-standard z-dropdown"
                 >
                   {item.children.map((child) => (
                     <a
@@ -235,7 +235,7 @@ function isCurrent(href: string) {
           item.children ? (
             <details class="group">
               <summary
-                class={`flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}
+                class={`flex min-h-11 items-center justify-between w-full px-3 py-2.5 text-sm font-semibold font-body rounded-none cursor-pointer list-none transition-colors hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary' : 'text-text'}`}
               >
                 <EditableText entry="layout.header" field={item.cmsField}>
                   {item.label}
@@ -275,7 +275,7 @@ function isCurrent(href: string) {
             <a
               href={item.href}
               aria-current={isCurrent(item.href) ? 'page' : undefined}
-              class={`block px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
+              class={`flex min-h-11 items-center px-3 py-2.5 text-sm font-semibold font-body rounded-none no-underline transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(item.href) ? 'text-primary bg-primary-light' : 'text-text'}`}
             >
               <EditableText entry="layout.header" field={item.cmsField}>
                 {item.label}
@@ -309,6 +309,26 @@ function isCurrent(href: string) {
   .dropdown-panel.is-open {
     opacity: 1;
     visibility: visible;
+  }
+
+  /* Without the dropdown script, show the service links as a regular list and
+     hide the inactive disclosure button. The parent link still opens /servicios. */
+  html:not(.js) .dropdown-panel {
+    position: static;
+    width: auto;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  html:not(.js) .dropdown-panel a {
+    padding-left: 2rem;
+  }
+
+  html:not(.js) .dropdown-toggle-btn {
+    display: none;
   }
 
   .dropdown-toggle-btn:hover {
