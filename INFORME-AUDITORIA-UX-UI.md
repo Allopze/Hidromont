@@ -1,15 +1,15 @@
 # Informe de auditoría UX/UI — Hidromont Chile
 
-**Fecha de auditoría:** 21 de septiembre de 2026  
-**Veredicto de la auditoría base:** **Necesita mejoras**  
-**Estado de fixes:** implementados en código; pendientes de validación automatizada y visual.  
-**Alcance:** páginas públicas, navegación, contacto, búsqueda/filtros, accesibilidad y adaptación móvil. Revisión estática de componentes y fuentes más inspección de capturas del repositorio.
+- **Fecha de auditoría:** 21 de septiembre de 2026
+- **Veredicto de la auditoría base:** **Necesita mejoras**
+- **Estado de fixes:** implementados; build y revalidación visual local completados.
+- **Alcance:** páginas públicas, navegación, contacto, búsqueda/filtros, accesibilidad y adaptación móvil. Revisión estática de componentes y fuentes más inspección de capturas del repositorio.
 
 ## Resumen
 
 La interfaz mantiene una jerarquía visual consistente y presenta bien los servicios y proyectos. El formulario tiene etiquetas y estados de envío, y hay varios controles de 44 px, foco visible y soporte para movimiento reducido. La revisión encontró brechas de recuperación, navegación móvil y estado accesible; los fixes correspondientes están detallados abajo.
 
-No encontré bloqueos P1. Los cinco hallazgos P2 y los cuatro P3 quedaron implementados en el código; la validación automatizada y visual está pendiente.
+No encontré bloqueos P1. Los cinco hallazgos P2 y los cuatro P3 quedaron implementados en el código; la build y la revalidación visual local terminaron correctamente.
 
 ## Hallazgos priorizados
 
@@ -116,7 +116,21 @@ Los nueve hallazgos de la auditoría base ya tienen cambios asociados:
 - **Video:** Limpiarrejas incorpora control accesible de pausa/reproducción, oculto cuando está activa la preferencia de movimiento reducido.
 - **Ubicación:** contacto mantiene el mapa incrustado en desktop y muestra un panel local con ubicación en móvil; el pie usa siempre el panel local y un enlace a Maps para evitar áreas vacías dependientes del iframe. La tarjeta móvil de contacto es más compacta. Los títulos de ambas tarjetas ahora tienen identificadores únicos.
 
-No ejecuté pruebas ni build. La validación visual de los cambios queda pendiente porque el servicio local de imágenes de Astro no encontró Sharp en este entorno.
+La build local con `npm run build` terminó correctamente: Astro Check reportó 0 errores y 0 advertencias; Astro generó 27 páginas. No ejecuté la suite de tests. La revalidación visual se hizo con Playwright sobre la vista previa del build y cubrió las páginas indicadas abajo y sus estados interactivos; no representa una comprobación del sitio en producción.
+
+### Evidencia de revalidación
+
+Las capturas posteriores a los fixes están en [screenshots/revalidacion-ux-ui-2026-09-21](screenshots/revalidacion-ux-ui-2026-09-21). Las rutas capturadas respondieron HTTP 200.
+
+- [Inicio — desktop](screenshots/revalidacion-ux-ui-2026-09-21/inicio-desktop.png) · [móvil](screenshots/revalidacion-ux-ui-2026-09-21/inicio-mobile.png)
+- [Proyectos — desktop](screenshots/revalidacion-ux-ui-2026-09-21/proyectos-desktop.png) · [móvil](screenshots/revalidacion-ux-ui-2026-09-21/proyectos-mobile.png)
+- [Sin resultados — proyectos, móvil](screenshots/revalidacion-ux-ui-2026-09-21/proyectos-sin-resultados-mobile.png) · [limpieza de filtros](screenshots/revalidacion-ux-ui-2026-09-21/proyectos-restablecidos-mobile.png)
+- [Contacto — desktop, mapa cargado](screenshots/revalidacion-ux-ui-2026-09-21/contacto-desktop.png) · [móvil](screenshots/revalidacion-ux-ui-2026-09-21/contacto-mobile.png)
+- [Galería — móvil](screenshots/revalidacion-ux-ui-2026-09-21/galeria-mobile.png) · [estado sin resultados](screenshots/revalidacion-ux-ui-2026-09-21/galeria-sin-resultados-mobile.png)
+- [Servicios — desktop](screenshots/revalidacion-ux-ui-2026-09-21/servicio-limpiarrejas-desktop.png) · [móvil](screenshots/revalidacion-ux-ui-2026-09-21/servicio-limpiarrejas-mobile.png) · [video pausado](screenshots/revalidacion-ux-ui-2026-09-21/video-pausado-desktop.png)
+- [Menú móvil abierto](screenshots/revalidacion-ux-ui-2026-09-21/menu-movil-servicios-abierto.png) · [menú desktop abierto](screenshots/revalidacion-ux-ui-2026-09-21/menu-desktop-servicios-abierto.png)
+
+También se comprobó que el estado vacío de proyectos queda en pantalla y que el botón restablece búsqueda/filtros en desktop y móvil; el enlace “Todos los servicios” aparece en el menú móvil; el dropdown desktop sincroniza apertura por puntero/clic y cierre con Escape; y el control del video pausa y reanuda actualizando su etiqueta accesible. El iframe de Google Maps carga en la captura desktop al activar su carga diferida antes de capturar.
 
 ## Capturas revisadas
 
@@ -125,7 +139,7 @@ No ejecuté pruebas ni build. La validación visual de los cambios queda pendien
 - [Proyectos — desktop](screenshots/desktop/public/proyectos.png) · [Proyectos — móvil](screenshots/mobile/public/proyectos.png)
 - [Contacto — desktop](screenshots/desktop/public/contacto.png) · [Contacto — móvil](screenshots/mobile/public/contacto.png)
 
-Las capturas del repositorio tienen fecha de modificación **7 de septiembre de 2026**, así que se usan como evidencia visual archivada, no como confirmación del despliegue actual. Intenté generar capturas locales; Playwright no tenía su Chromium instalado y, al usar Chrome del equipo, Astro devolvió HTTP 500 en `/_image` porque el servicio de imágenes no encontró Sharp en este entorno. No atribuyo ese fallo local al sitio publicado.
+Las capturas originales del repositorio tienen fecha de modificación **7 de septiembre de 2026** y se conservan como evidencia archivada. Las nuevas capturas corresponden al build local actual, no al dominio publicado. El detalle de rutas y estados validados está en [resumen.txt](screenshots/revalidacion-ux-ui-2026-09-21/resumen.txt).
 
 ## Aspectos que ya funcionan bien
 
