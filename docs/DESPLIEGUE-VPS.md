@@ -115,8 +115,13 @@ La base SQLite y `uploads/cms` están en `.gitignore`, así que el clon llega
 vacío. Desde tu máquina:
 
 ```bash
-./scripts/sync-datos-vps.sh hidromont@IP
+./scripts/sync-datos-vps.sh hidromont@IP -p PUERTO_SSH
 ```
+
+`-p` solo hace falta si SSH no está en el 22 (muchos VPS lo mueven). Hay
+también `-d` para cambiar el directorio remoto, que por defecto es
+`/srv/hidromont`. La primera vez, cuando el servicio aún no existe, el script
+avisa y sigue: es lo esperado.
 
 El script hace la copia con `npm run cms:backup` en vez de un `rsync` directo
 del `.sqlite`: la base va en modo WAL y copiar solo ese archivo deja fuera las
@@ -171,8 +176,14 @@ sudo journalctl -u caddy -f      # debe emitir el certificado sin errores
 El puerto 8787 no se abre nunca: el proceso escucha en loopback.
 
 ```bash
-sudo ufw allow OpenSSH && sudo ufw allow 80,443/tcp && sudo ufw enable
+sudo ufw allow 80,443/tcp
+sudo ufw allow 22/tcp          # o el puerto real de tu SSH, p. ej. 52607/tcp
+sudo ufw enable
 ```
+
+Abre el puerto de SSH **antes** del `enable` y compruébalo desde otra terminal
+ya conectada. Si tu SSH no está en el 22 y habilitas ufw con la regla
+`OpenSSH`, te quedas fuera del servidor.
 
 Para que `scripts/sync-datos-vps.sh` pueda parar y arrancar el servicio sin
 pedir contraseña:
