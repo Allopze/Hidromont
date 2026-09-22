@@ -19,17 +19,36 @@ import { describe, expect, it } from 'vitest';
  */
 const LITERALES_PERMITIDOS = new Set(['#fff', '#039']);
 
+/**
+ * El overlay dejó de ser un archivo y pasó a ser el directorio
+ * `src/scripts/cms/overlay/`. El guarda recorre todos sus módulos, no solo la
+ * hoja de estilos: los colores también pueden colarse en un `style="..."`
+ * escrito dentro de una plantilla de cualquiera de ellos.
+ */
+function fuenteDelOverlay(): string {
+  return globSync('src/scripts/cms/overlay/*.{js,ts}')
+    .sort()
+    .map((archivo) => readFileSync(archivo, 'utf8'))
+    .join('\n');
+}
+
 /** El bloque `:root` de la hoja del overlay es donde SÍ viven los literales. */
 function sinBloqueDeVariables(fuente: string): string {
-  const inicio = fuente.indexOf('    :root {');
-  if (inicio === -1) return fuente;
-  const fin = fuente.indexOf('\n    }', inicio);
-  return fuente.slice(0, inicio) + fuente.slice(fin);
+  // Sin sangría fija: al pasar el overlay de un IIFE a módulos, el CSS perdió
+  // dos espacios y el recorte dejó de encajar en silencio. Un guarda que no
+  // recorta nada sigue en verde mientras mira el archivo entero, así que el
+  // fallo solo se vio al ampliar la búsqueda.
+  const apertura = /^(\s*):root \{$/m.exec(fuente);
+  if (!apertura) return fuente;
+  const inicio = apertura.index;
+  const cierre = fuente.indexOf(`\n${apertura[1]}}`, inicio);
+  if (cierre === -1) return fuente;
+  return fuente.slice(0, inicio) + fuente.slice(cierre);
 }
 
 describe('sistema de color', () => {
   it('el overlay del CMS no tiene colores escritos a mano fuera de su bloque de variables', () => {
-    const fuente = readFileSync('src/scripts/cms-overlay.js', 'utf8');
+    const fuente = fuenteDelOverlay();
     // Guarda anti-vacío: si el bloque cambiara de forma, el recorte podría
     // dejar el archivo entero fuera y el test pasaría por no mirar nada.
     expect(fuente).toContain('--hm-cms-primary: var(--color-primary');
@@ -53,7 +72,7 @@ describe('sistema de color', () => {
   });
 
   it('las nueve variables que el sitio ya declara leen su token', () => {
-    const fuente = readFileSync('src/scripts/cms-overlay.js', 'utf8');
+    const fuente = fuenteDelOverlay();
     const esperadas: Array<[string, string]> = [
       ['--hm-cms-primary', '--color-primary'],
       ['--hm-cms-primary-dark', '--color-primary-dark'],

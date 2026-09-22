@@ -92,7 +92,13 @@ describe('vocabulario del contenido', () => {
    * es el patrón que ya usan los demás guardas contra deriva de este archivo.
    */
   it('el overlay sabe rotular exactamente los estados que acepta el servidor', () => {
-    const overlay = readFileSync('src/scripts/cms-overlay.js', 'utf8');
+    // El overlay es ahora un directorio de módulos; los rótulos de estado y el
+    // desplegable viven en `collections.js`, pero se leen todos por si se
+    // mueven de módulo.
+    const overlay = globSync('src/scripts/cms/overlay/*.{js,ts}')
+      .sort()
+      .map((archivo) => readFileSync(archivo, 'utf8'))
+      .join('\n');
     const mapa = /\{ draft: 'Borrador'[^}]*\}/.exec(overlay);
     expect(mapa).not.toBeNull();
     const rotulados = [...(mapa?.[0].matchAll(/([a-z_]+):\s*'/g) ?? [])].map((m) => m[1]);

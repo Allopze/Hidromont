@@ -39,6 +39,25 @@ function listHtmlFiles(dir: string, acc: string[] = []): string[] {
 const htmlFiles = () => listHtmlFiles(DIST_DIR);
 const readAll = () => htmlFiles().map((file) => ({ file, content: readFileSync(file, 'utf8') }));
 
+/**
+ * El editor dejó de ir incrustado en el HTML y pasó a ser un módulo que Astro
+ * empaqueta, así que mirar solo las páginas ya no basta: el perfil público
+ * llegó a emitir el fragmento del editor —sin que ninguna página lo enlazara,
+ * pero descargable por URL— y este guarda seguía en verde.
+ */
+function listJsFiles(dir: string, acc: string[] = []): string[] {
+  if (!existsSync(dir)) return acc;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) listJsFiles(full, acc);
+    else if (entry.endsWith('.js')) acc.push(full);
+  }
+  return acc;
+}
+
+const readAllJs = () =>
+  listJsFiles(DIST_DIR).map((file) => ({ file, content: readFileSync(file, 'utf8') }));
+
 /** El build lleva el overlay si aparece su bootstrap. */
 function cmsProfile(): boolean {
   return readAll().some(({ content }) => content.includes('__HIDROMONT_CMS__'));
@@ -105,6 +124,17 @@ test.describe('Build gate — perfil público (sin CMS)', () => {
       .map(({ file }) => file);
     expect(conMarcas).toEqual([]);
   });
+
+  test('el editor tampoco viaja en el JavaScript empaquetado', () => {
+    // Un chunk huérfano sigue siendo descargable: revela la superficie de la
+    // API de administración a quien mire `dist/_assets/`. La guarda de verdad
+    // está en `overlay/index.ts`, que deja el `import()` inalcanzable para que
+    // Rollup no emita el fragmento; esto comprueba que sigue funcionando.
+    const conMarcas = readAllJs()
+      .filter(({ content }) => /hm-cms-|__HIDROMONT_CMS__|data-richtext/.test(content))
+      .map(({ file }) => file);
+    expect(conMarcas).toEqual([]);
+  });
 });
 
 test.describe('Build gate — perfil con CMS (sitio y editor en el mismo proceso)', () => {
@@ -113,9 +143,23 @@ test.describe('Build gate — perfil con CMS (sitio y editor en el mismo proceso
   test('el overlay sigue detrás de su interruptor', () => {
     // El overlay no debe activarse por el mero hecho de estar presente: exige
     // `?cms=1` o la marca en localStorage, y sin sesión solo muestra el login.
+    //
+    // La comprobación cambia de sitio, no de intención: el interruptor ya no
+    // está en el HTML —donde iba cuando el editor se incrustaba entero en cada
+    // página— sino en el módulo que Astro empaqueta.
+    const js = readAllJs().map(({ content }) => content);
+    const conInterruptor = js.filter(
+      (c) => c.includes('hidromont:cms') && c.includes('get("cms")')
+    );
+    expect(conInterruptor.length, 'ningún módulo comprueba ?cms=1').toBeGreaterThan(0);
+  });
+
+  test('el editor no se incrusta en el HTML de cada página', () => {
+    // Lo que motivó separarlo: con el editor inline, las 27 páginas sumaban
+    // 5,5 MB de HTML que todo visitante descargaba para no usarlo nunca.
     const index = readFileSync(join(DIST_DIR, 'index.html'), 'utf8');
-    expect(index).toContain('hidromont:cms');
-    expect(index).toContain("params.get('cms')");
+    expect(index).not.toContain('hm-cms-rt-bar');
+    expect(index.length, 'index.html volvió a llevar el editor dentro').toBeLessThan(150_000);
   });
 
   test('la CSP declarada cubre los scripts inline de este build', () => {

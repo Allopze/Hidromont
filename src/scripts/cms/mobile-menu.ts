@@ -16,9 +16,11 @@ type Sheet = AttributeTarget & {
 export function createMobileMenuController({
   launcher,
   sheet,
+  onOpen,
 }: {
   launcher: Launcher;
   sheet: Sheet;
+  onOpen?: () => void;
 }) {
   let isOpen = false;
 
@@ -27,6 +29,10 @@ export function createMobileMenuController({
     sheet.classList[nextOpen ? 'add' : 'remove']('open');
     launcher.setAttribute('aria-expanded', String(nextOpen));
     sheet.setAttribute('aria-hidden', String(!nextOpen));
+    // Al abrir, el foco entra en el panel; al cerrar con Escape, vuelve al
+    // lanzador. `onOpen` es opcional para que las pruebas del controlador
+    // puedan construirlo con dos objetos mínimos, sin DOM.
+    if (nextOpen) onOpen?.();
     if (!nextOpen && restoreFocus) launcher.focus();
   }
 
@@ -153,81 +159,88 @@ export const mobileMenuStyles = `
   }
 `;
 
-export function getMobileMenuRuntime() {
-  return `(() => {
-    const shell = document.querySelector('.hm-cms-shell');
-    const bar = shell?.querySelector('.hm-cms-bar');
-    if (!shell || !bar || shell.dataset.mobileMenuReady === 'true') return;
-    shell.dataset.mobileMenuReady = 'true';
+/**
+ * Monta el menú móvil del CMS: lanzador flotante y panel de acciones.
+ *
+ * Antes esto devolvía su propio runtime como cadena, que se inyectaba en un
+ * segundo `<script is:inline>`. Esa forma obligaba a reimplementar dentro del
+ * string la misma lógica de apertura que `createMobileMenuController` ya
+ * tenía probada, y las dos copias llevaban tiempo divergiendo. Ahora es una
+ * función normal que usa el controlador de verdad.
+ */
+export function mountMobileMenu(): void {
+  const shell = document.querySelector<HTMLElement>('.hm-cms-shell');
+  const bar = shell?.querySelector('.hm-cms-bar');
+  if (!shell || !bar || shell.dataset.mobileMenuReady === 'true') return;
+  shell.dataset.mobileMenuReady = 'true';
 
-    const style = document.createElement('style');
-    style.textContent = ${JSON.stringify(mobileMenuStyles)};
-    document.head.appendChild(style);
+  const style = document.createElement('style');
+  style.textContent = mobileMenuStyles;
+  document.head.appendChild(style);
 
-    const launcher = document.createElement('button');
-    launcher.type = 'button';
-    launcher.className = 'hm-cms-mobile-launcher';
-    launcher.textContent = 'CMS';
-    launcher.setAttribute('aria-label', 'Abrir menú CMS');
-    launcher.setAttribute('aria-expanded', 'false');
-    launcher.setAttribute('aria-controls', 'hm-cms-mobile-sheet');
-    launcher.setAttribute('data-auth', '');
-    launcher.hidden = true;
+  const launcher = document.createElement('button');
+  launcher.type = 'button';
+  launcher.className = 'hm-cms-mobile-launcher';
+  launcher.textContent = 'CMS';
+  launcher.setAttribute('aria-label', 'Abrir menú CMS');
+  launcher.setAttribute('aria-expanded', 'false');
+  launcher.setAttribute('aria-controls', 'hm-cms-mobile-sheet');
+  launcher.setAttribute('data-auth', '');
+  launcher.hidden = true;
 
-    const sheet = document.createElement('section');
-    sheet.id = 'hm-cms-mobile-sheet';
-    sheet.className = 'hm-cms-mobile-sheet';
-    sheet.setAttribute('role', 'dialog');
-    sheet.setAttribute('aria-label', 'Acciones del CMS');
-    sheet.setAttribute('aria-hidden', 'true');
-    sheet.innerHTML = \`
-      <div class="hm-cms-mobile-sheet-header">
-        <strong>Hidromont CMS</strong>
-        <button type="button" class="secondary" data-mobile-close aria-label="Cerrar menú CMS">Cerrar</button>
-      </div>
-      <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state></span>
-      <div class="hm-cms-mobile-sheet-actions">
-        <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
-        <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
-        <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
-        <button type="button" class="secondary" data-action="admin" data-auth hidden>Administrar</button>
-        <button type="button" data-action="publish" data-auth hidden>Exportar y validar</button>
-        <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
-      </div>
-    \`;
-    shell.append(launcher, sheet);
+  const sheet = document.createElement('section');
+  sheet.id = 'hm-cms-mobile-sheet';
+  sheet.className = 'hm-cms-mobile-sheet';
+  sheet.setAttribute('role', 'dialog');
+  sheet.setAttribute('aria-label', 'Acciones del CMS');
+  sheet.setAttribute('aria-hidden', 'true');
+  sheet.innerHTML = `
+    <div class="hm-cms-mobile-sheet-header">
+      <strong>Hidromont CMS</strong>
+      <button type="button" class="secondary" data-mobile-close aria-label="Cerrar menú CMS">Cerrar</button>
+    </div>
+    <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state></span>
+    <div class="hm-cms-mobile-sheet-actions">
+      <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
+      <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
+      <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
+      <button type="button" class="secondary" data-action="admin" data-auth hidden>Administrar</button>
+      <button type="button" data-action="publish" data-auth hidden>Exportar y validar</button>
+      <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
+    </div>
+  `;
+  shell.append(launcher, sheet);
 
-    let open = false;
-    const setOpen = (next, restoreFocus = false) => {
-      open = next;
-      sheet.classList.toggle('open', next);
-      launcher.setAttribute('aria-expanded', String(next));
-      sheet.setAttribute('aria-hidden', String(!next));
-      if (next) sheet.querySelector('[data-mobile-close]')?.focus();
-      if (!next && restoreFocus) launcher.focus();
-    };
+  const controller = createMobileMenuController({
+    launcher,
+    sheet,
+    onOpen: () => sheet.querySelector<HTMLElement>('[data-mobile-close]')?.focus(),
+  });
 
-    launcher.addEventListener('click', () => setOpen(!open));
-    sheet.querySelector('[data-mobile-close]')?.addEventListener('click', () => setOpen(false, true));
-    sheet.addEventListener('click', (event) => {
-      if (event.target.closest('[data-action]')) setOpen(false);
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && open) setOpen(false, true);
-    });
+  launcher.addEventListener('click', () => controller.toggle());
+  sheet
+    .querySelector('[data-mobile-close]')
+    ?.addEventListener('click', () => controller.close(true));
+  sheet.addEventListener('click', (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest('[data-action]')) controller.close();
+  });
+  document.addEventListener('keydown', (event) => controller.handleKeydown(event));
 
-    const sourceState = bar.querySelector('[data-state-badge]');
-    const mobileState = sheet.querySelector('[data-mobile-state]');
-    const syncState = () => {
-      mobileState.textContent = sourceState?.textContent || '';
-      mobileState.className = sourceState?.className || 'hm-cms-badge hm-cms-mobile-state';
-      mobileState.classList.add('hm-cms-mobile-state');
-    };
-    syncState();
-    if (sourceState) new MutationObserver(syncState).observe(sourceState, {
+  const sourceState = bar.querySelector('[data-state-badge]');
+  const mobileState = sheet.querySelector('[data-mobile-state]');
+  const syncState = () => {
+    if (!mobileState) return;
+    mobileState.textContent = sourceState?.textContent || '';
+    mobileState.className = sourceState?.className || 'hm-cms-badge hm-cms-mobile-state';
+    mobileState.classList.add('hm-cms-mobile-state');
+  };
+  syncState();
+  if (sourceState) {
+    new MutationObserver(syncState).observe(sourceState, {
       attributes: true,
       childList: true,
       subtree: true,
     });
-  })();`;
+  }
 }

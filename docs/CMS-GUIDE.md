@@ -40,16 +40,41 @@ Al arrancar, el CMS:
 
 Definidos en `cms/controllers/ContentController.ts` y el schema (`GET /api/cms/schema`):
 
-| Tipo       | Uso                                   | Widget                            |
-| ---------- | ------------------------------------- | --------------------------------- |
-| `text`     | Títulos, labels, textos cortos        | Input de una línea                |
-| `textarea` | Párrafos, descripciones               | Textarea multi-línea              |
-| `richtext` | Contenido con formato                 | Textarea (sin editor WYSIWYG aún) |
-| `image`    | Imágenes (sube o elige de biblioteca) | Picker de medios + upload         |
-| `link`     | Enlaces con label + href              | Dos inputs                        |
-| `number`   | Métricas, años, cantidades            | Input numérico                    |
-| `list`     | Listas de strings (bullets, normas)   | Editor de items dinámico          |
-| `object`   | Estructuras complejas                 | JSON                              |
+| Tipo       | Uso                                         | Widget                                     |
+| ---------- | ------------------------------------------- | ------------------------------------------ |
+| `text`     | Títulos, labels, textos cortos              | Input de una línea                         |
+| `textarea` | Párrafos, descripciones                     | Textarea multi-línea                       |
+| `richtext` | Cuerpo en Markdown de servicios y proyectos | Editor con barra de formato y vista previa |
+| `image`    | Imágenes (sube o elige de biblioteca)       | Picker de medios + upload                  |
+| `link`     | Enlaces con label + href                    | Dos inputs                                 |
+| `number`   | Métricas, años, cantidades                  | Input numérico                             |
+| `list`     | Listas de strings (bullets, normas)         | Editor de items dinámico                   |
+| `object`   | Estructuras complejas                       | JSON                                       |
+
+### El editor de texto con formato
+
+Los campos `richtext` son el **cuerpo de cada ficha** de servicio y proyecto: el
+texto largo que el visitante lee bajo la ficha técnica. Se editan desde
+**Colecciones → (un servicio o proyecto) → Contenido**.
+
+La barra aplica negrita, cursiva, títulos, listas, cita, código y enlaces, con
+`Ctrl+B`, `Ctrl+I` y `Ctrl+K` como atajos. Pulsar dos veces el mismo botón
+quita el formato en vez de acumularlo. «Vista previa» muestra cómo queda sin
+cambiar nada de lo escrito.
+
+> **Se guarda en Markdown, no en HTML.** Es deliberado: estos campos van y
+> vienen de `src/content/servicios/*.md` y `src/content/proyectos/*.md`, así que
+> guardar Markdown hace que el viaje de ida y vuelta sea exacto. Un editor
+> WYSIWYG tendría que convertir HTML→Markdown en cada guardado, y ahí es donde
+> se degradan las tablas y el HTML embebido de las 48 fichas que ya existen.
+>
+> La vista previa es orientativa: se parece al sitio pero no lo copia. El
+> aspecto final lo da Astro al compilar.
+
+**Hasta sep-2026 estos 48 campos no eran editables desde ninguna parte del
+panel**: el formulario de colección filtraba el tipo `richtext` y ningún
+componente lo exponía con `data-cms-type`. Existían en la base y se exportaban,
+pero solo se podían cambiar editando los `.md` a mano.
 
 ## Flujo de publicación
 

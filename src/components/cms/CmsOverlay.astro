@@ -1,37 +1,48 @@
 ---
 /**
- * El overlay se inyecta como script inline (`set:html`), no como módulo ES: por
- * eso `cms-overlay.js` se importa con `?raw` y es un IIFE autocontenido.
+ * El editor del CMS.
  *
- * Existió un intento de partirlo en `src/scripts/cms/{ui,styles,editor,
- * collections,state-api}.js` que quedó a medias (cubría ~1/3 de los estilos y
- * la mitad de las funciones, sin la galería ni el selector de medios) y que
- * nadie llegó a importar. Se eliminó en sep-2026: al no estar conectado se
- * desactualizaba en silencio mientras el monolito avanzaba, y arreglar un bug
- * ahí no tenía ningún efecto sobre el sitio.
+ * Hasta sep-2026 esto inyectaba `src/scripts/cms-overlay.js` —3.500 líneas en
+ * un solo archivo— como un IIFE incrustado con `set:html`, y el menú móvil
+ * como un segundo script inline. Esa forma era la causa del monolito: un
+ * string no admite `import`, así que todo tenía que vivir en el mismo archivo,
+ * y el intento de modularizarlo con fragmentos de string quedó a medias y se
+ * desactualizó en silencio.
  *
- * Si se retoma la modularización, el patrón correcto es el de `mobile-menu.ts`:
- * autorlo como módulo TypeScript que exporta una función devolviendo el runtime
- * como string, para que siga entrando por `set:html` y quede cubierto por tests.
+ * Ahora es un módulo ES normal en `src/scripts/cms/overlay/`, que Astro
+ * empaqueta. Dos consecuencias que importan:
+ *
+ *  - La lógica pura (`markdown.ts`) se prueba con vitest, sin navegador.
+ *  - `startOverlay()` carga el resto con `import()` dinámico y solo si el
+ *    overlay corresponde. En el VPS el sitio se sirve con PUBLIC_ENABLE_CMS=1,
+ *    así que antes CADA visitante descargaba y parseaba el editor entero
+ *    dentro del HTML para no usarlo nunca. Ahora vive en su propio archivo y
+ *    solo se pide con `?cms=1`.
+ *
+ * El `<script>` de abajo va en el nivel superior de la plantilla a propósito:
+ * Astro solo eleva y empaqueta los scripts que están ahí. Dentro de un
+ * `{condición && ...}` el compilador lo descarta en silencio —el build salía
+ * sin editor y sin ningún aviso— así que quien decide si este componente
+ * existe es `BaseLayout`, no una condición aquí dentro.
+ *
+ * La CSP no necesita cambios: `script-src 'self'` ya cubre los archivos que
+ * emite Astro. El único script inline que queda es el de configuración, que
+ * necesita `define:vars` para recibir valores del entorno y cuyo hash sigue
+ * calculando `cms/security/headers.ts` al leer el build.
  */
-import overlayScript from '../../scripts/cms-overlay.js?raw';
-import { getMobileMenuRuntime } from '../../scripts/cms/mobile-menu';
-
-const enabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 const apiBase = import.meta.env.PUBLIC_CMS_API_BASE;
 const isDev = import.meta.env.DEV;
-const mobileMenuScript = getMobileMenuRuntime();
 ---
 
-{enabled && (
-  <>
-    <script is:inline define:vars={{ apiBase, isDev }}>
-      window.__HIDROMONT_CMS__ = {
-        apiBase: apiBase || (isDev ? `${location.protocol}//${location.hostname}:8787` : location.origin),
-        isDev,
-      };
-    </script>
-    <script is:inline set:html={overlayScript}></script>
-    <script is:inline set:html={mobileMenuScript}></script>
-  </>
-)}
+<script is:inline define:vars={{ apiBase, isDev }}>
+  window.__HIDROMONT_CMS__ = {
+    apiBase: apiBase || (isDev ? `${location.protocol}//${location.hostname}:8787` : location.origin),
+    isDev,
+  };
+</script>
+
+<script>
+  import { startOverlay } from '../../scripts/cms/overlay/index';
+
+  startOverlay();
+</script>
