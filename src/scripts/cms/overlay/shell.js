@@ -95,7 +95,7 @@ export function setGlobalState(stateKey) {
     return;
   }
   // Etiquetas honestas: el CMS exporta y valida, pero NO despliega a producción.
-  // «Exportado» no significa «visible en hidromont.cl» — eso requiere build+deploy.
+  // «Exportado» no significa «visible en hidromontchile.cl» — eso requiere build+deploy.
   const map = {
     unsaved: { label: '● Sin exportar', cls: 'failed' },
     exported: { label: '✓ Exportado · falta desplegar', cls: 'succeeded' },

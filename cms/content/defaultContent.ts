@@ -415,7 +415,7 @@ export const defaultContentEntries: EntrySeed[] = [
       casillaPostal: { type: 'text', value: 'Casilla 48 — Los Ángeles, Región del Biobío' },
       telefono: { type: 'text', value: '+56 43 232 8414' },
       email: { type: 'text', value: 'hidromont@hidromont.cl' },
-      sitioWeb: { type: 'link', value: 'https://hidromont.cl' },
+      sitioWeb: { type: 'link', value: 'https://hidromontchile.cl' },
       fundacion: { type: 'number', value: 1983 },
       chileDesde: { type: 'number', value: 1997 },
       descripcionCorta: {
@@ -827,7 +827,7 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'Formulario de contacto',
     status: 'published',
     fields: {
-      subject: { type: 'text', value: 'Nuevo contacto desde hidromont.cl' },
+      subject: { type: 'text', value: 'Nuevo contacto desde hidromontchile.cl' },
       fromName: { type: 'text', value: 'Sitio web Hidromont Chile' },
       nameLabel: { type: 'text', value: 'Nombre' },
       namePlaceholder: { type: 'text', value: 'Su nombre completo' },

@@ -21,12 +21,36 @@ async function generateOgImage() {
 
   const W = 1200, H = 630;
 
-  // Cargamos el logo y lo escalamos a 320px de ancho
+  // Cargamos el logo y lo escalamos a 320px de ancho.
+  //
+  // El logo está dibujado para fondo claro (azul oscuro con el rótulo), y este
+  // fondo es un degradado azul noche: compuesto tal cual quedaba azul sobre
+  // azul, casi ilegible. Se pasa a blanco conservando la transparencia, que es
+  // exactamente lo que hace la cabecera del sitio sobre el hero oscuro con
+  // `filter: brightness(0) invert(1)` (Header.astro).
   const logoPath = path.join(PUBLIC, 'logo.png');
-  const logoBuffer = await sharp(logoPath)
+  const { data: logoRaw, info: logoInfo } = await sharp(logoPath)
     .resize({ width: 320, withoutEnlargement: true })
-    .png()
-    .toBuffer();
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < logoRaw.length; i += 4) {
+    logoRaw[i] = logoRaw[i + 1] = logoRaw[i + 2] = 255;
+  }
+  // logo.png trae en su borde izquierdo una columna de 1 px casi transparente
+  // (alpha máx. 34), sobrante del archivo. Sobre fondo claro no se ve; en
+  // blanco sobre azul se asoma como una raya vertical junto al logo. Se vacían
+  // las columnas que no tienen ningún píxel realmente visible: el suavizado de
+  // los trazos vive en columnas que sí lo tienen, así que no se toca.
+  const VISIBLE = 40;
+  const { width: lw, height: lh } = logoInfo;
+  for (let x = 0; x < lw; x++) {
+    let max = 0;
+    for (let y = 0; y < lh; y++) max = Math.max(max, logoRaw[(y * lw + x) * 4 + 3]);
+    if (max >= VISIBLE) continue;
+    for (let y = 0; y < lh; y++) logoRaw[(y * lw + x) * 4 + 3] = 0;
+  }
+  const logoBuffer = await sharp(logoRaw, { raw: logoInfo }).png().toBuffer();
   const logoMeta = await sharp(logoBuffer).metadata();
   const logoH = logoMeta.height ?? 100;
 
@@ -51,7 +75,7 @@ async function generateOgImage() {
     fill="rgba(255,255,255,0.65)">Ingeniería · Fabricación · Montaje de equipos hidromecánicos</text>
   <!-- Año -->
   <text x="60" y="${H - 48}" font-family="Arial,Helvetica,sans-serif" font-size="16"
-    fill="rgba(255,255,255,0.35)">Desde 1983 · Los Ángeles, Chile · hidromont.cl</text>
+    fill="rgba(255,255,255,0.35)">Desde 1983 · Los Ángeles, Chile · hidromontchile.cl</text>
 </svg>`;
 
   const base = await sharp(Buffer.from(svgBg)).png().toBuffer();

@@ -110,7 +110,7 @@ export function registerEvents() {
           if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           if (status)
             status.textContent =
-              `Exportado a los archivos del sitio. Para que aparezca en hidromont.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
+              `Exportado a los archivos del sitio. Para que aparezca en hidromontchile.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
           setGlobalState('exported');
         } catch (error) {
           if (status)

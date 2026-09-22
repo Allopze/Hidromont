@@ -188,7 +188,7 @@ Si cambias `CMS_ADMIN_PASSWORD` en `.env` tras el primer arranque, el hash almac
 ```bash
 npm run cms:reset-password
 # o con credenciales explícitas:
-npm run cms:reset-password -- admin@hidromont.cl NuevaPasswordSegura123
+npm run cms:reset-password -- tu-correo@ejemplo.cl NuevaPasswordSegura123
 ```
 
 Esto re-hashea, actualiza la fila del admin e invalida todas las sesiones activas.
