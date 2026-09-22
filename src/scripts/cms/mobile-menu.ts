@@ -158,6 +158,11 @@ export const mobileMenuStyles = `
     .hm-cms-mobile-state:empty {
       display: none;
     }
+    .hm-cms-mobile-help {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.88);
+      font: 500 12px/1.45 Inter, system-ui, sans-serif;
+    }
   }
 `;
 
@@ -183,8 +188,8 @@ export function mountMobileMenu(): void {
   const launcher = document.createElement('button');
   launcher.type = 'button';
   launcher.className = 'hm-cms-mobile-launcher';
-  launcher.textContent = 'CMS';
-  launcher.setAttribute('aria-label', 'Abrir menú CMS');
+  launcher.textContent = 'Editar sitio';
+  launcher.setAttribute('aria-label', 'Abrir menú para editar el sitio');
   launcher.setAttribute('aria-expanded', 'false');
   launcher.setAttribute('aria-controls', 'hm-cms-mobile-sheet');
   launcher.setAttribute('data-auth', '');
@@ -201,7 +206,8 @@ export function mountMobileMenu(): void {
       <strong>Hidromont CMS</strong>
       <button type="button" class="secondary" data-mobile-close aria-label="Cerrar menú CMS">Cerrar</button>
     </div>
-    <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state></span>
+    <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state role="status" aria-live="polite" aria-atomic="true"></span>
+    <p class="hm-cms-mobile-help">Guardar conserva el cambio en el CMS. «Publicar cambios» actualiza el sitio en producción; en local compila aquí y luego debes desplegarlo.</p>
     <div class="hm-cms-mobile-sheet-actions">
       ${botonesDeBarra({ conTitulo: false })}
     </div>

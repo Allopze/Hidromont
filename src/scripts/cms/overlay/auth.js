@@ -13,6 +13,7 @@ import { escapeHtml } from './html';
 import { panel, panelBody, setAuthenticatedUI } from './shell';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
+import { setInlineEditAccessibility } from './inline-edit-accessibility';
 
 export function loginView(error = '', email = '') {
   // Si el formulario ya está en pantalla y no hay un error nuevo que mostrar,
@@ -49,14 +50,17 @@ export async function ensureSession() {
     const session = await api('/api/cms/session');
     if (!session.authenticated) {
       setAuthenticatedUI(false);
+      setInlineEditAccessibility(false);
       loginView();
       return false;
     }
     state.csrfToken = session.csrfToken;
     setAuthenticatedUI(true);
+    setInlineEditAccessibility(true);
     return true;
   } catch (error) {
     setAuthenticatedUI(false);
+    setInlineEditAccessibility(false);
     loginView(error.message);
     return false;
   }

@@ -4,7 +4,7 @@
  * Estaban escritas dos veces: en `shell.js` (la barra de escritorio) y en
  * `mobile-menu.ts` (el panel flotante). Nada ataba las dos copias, y ya habían
  * divergido: la barra lleva `title` con explicaciones —qué hace exactamente
- * «Exportar y validar», qué incluye «Administrar»— y el panel móvil las había
+ * «Publicar cambios», qué incluye «Administrar»— y el panel móvil las había
  * perdido. Añadir un botón obligaba a tocar dos archivos y nada avisaba si se
  * olvidaba uno.
  *
@@ -34,9 +34,9 @@ export const ACCIONES_BARRA: readonly AccionBarra[] = [
   },
   {
     accion: 'publish',
-    etiqueta: 'Exportar y validar',
+    etiqueta: 'Publicar cambios',
     titulo:
-      'Exporta el contenido, compila el sitio y lo deja servido. El comando de validación es configurable (CMS_PUBLISH_CHECK_COMMAND).',
+      'Exporta el contenido y compila este sitio. Si trabajas en local, debes desplegarlo para actualizar producción.',
   },
   { accion: 'logout', etiqueta: 'Salir', secundario: true },
 ];

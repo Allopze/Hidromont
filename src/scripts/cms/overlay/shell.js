@@ -22,7 +22,7 @@ shell.className = 'hm-cms-shell';
 shell.innerHTML = `
   <div class="hm-cms-bar">
     <strong>Hidromont CMS</strong>
-    <span class="hm-cms-badge" data-state-badge style="display:none"></span>
+    <span class="hm-cms-badge" data-state-badge role="status" aria-live="polite" aria-atomic="true" style="display:none"></span>
     <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
     ${botonesDeBarra()}
   </div>
@@ -94,12 +94,25 @@ export function setGlobalState(stateKey) {
     stateBadge.style.display = 'none';
     return;
   }
-  // Etiquetas honestas: el CMS exporta y valida, pero NO despliega a producción.
-  // «Exportado» no significa «visible en hidromontchile.cl» — eso requiere build+deploy.
   const map = {
-    unsaved: { label: '● Sin exportar', cls: 'failed' },
-    exported: { label: '✓ Exportado · falta desplegar', cls: 'succeeded' },
-    warning: { label: '⚠ Exportado con omisiones', cls: 'failed' },
+    unsaved: { label: '● Cambios pendientes de publicar', cls: 'failed' },
+    exported: { label: '✓ Archivos preparados · falta publicar', cls: 'succeeded' },
+    'exported-warning': { label: '⚠ Archivos preparados con omisiones', cls: 'failed' },
+    published: { label: '✓ Sitio actualizado', cls: 'succeeded' },
+    'published-warning': { label: '⚠ Publicación con omisiones · revisar', cls: 'failed' },
+    'local-built': { label: '✓ Compilado en local · falta desplegar', cls: 'succeeded' },
+    'local-warning': {
+      label: '⚠ Compilación local con omisiones · falta desplegar',
+      cls: 'failed',
+    },
+    'other-built': {
+      label: '✓ Compilado en este entorno · producción no confirmada',
+      cls: 'succeeded',
+    },
+    'other-warning': {
+      label: '⚠ Compilación con omisiones · producción no confirmada',
+      cls: 'failed',
+    },
     error: { label: '✗ Error', cls: 'failed' },
   };
   const s = map[stateKey] || { label: stateKey, cls: '' };

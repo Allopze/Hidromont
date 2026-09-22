@@ -334,10 +334,10 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
               ${visibles
                 .map(
                   (item) => `
-                <div class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}" title="${escapeHtml(item.alt)}">
-                  <img src="${escapeHtml(item.mediaPath)}" alt="${escapeHtml(item.alt)}" loading="lazy" />
+                <button type="button" class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}" aria-label="Editar imagen: ${escapeHtml(item.alt || 'sin descripción')}" title="${escapeHtml(item.alt)}">
+                  <img src="${escapeHtml(item.mediaPath)}" alt="" loading="lazy" />
                   ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
-                </div>
+                </button>
               `
                 )
                 .join('')}

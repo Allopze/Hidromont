@@ -78,6 +78,19 @@ export const overlayStyles = `
     outline: 2px solid var(--hm-cms-primary);
     box-shadow: 0 0 0 4px rgba(0,101,169,0.2);
   }
+  [data-cms-editable-ready]:focus-visible {
+    outline: 3px solid var(--hm-cms-primary);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.95);
+  }
+  /* En pantallas táctiles no existe :hover para descubrir qué se puede editar. */
+  @media (hover: none) {
+    [data-cms-editable-ready] {
+      outline: 2px dashed var(--hm-cms-primary);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 4px rgba(0,101,169,0.14);
+    }
+  }
   .hm-cms-shell {
     position: fixed;
     z-index: 99999;
@@ -626,6 +639,16 @@ export const overlayStyles = `
     min-height: 120px;
     resize: vertical;
   }
+  .hm-cms-panel-body .hm-cms-entry-form > .hm-cms-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin: 0 -18px -18px;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--hm-cms-line);
+    background: var(--hm-cms-alt);
+    box-shadow: 0 -8px 20px rgba(15,36,51,0.1);
+  }
   .hm-cms-badge.draft { background: var(--hm-cms-badge-draft-bg); color: var(--hm-cms-badge-draft-ink); }
   .hm-cms-badge.published { background: var(--hm-cms-badge-published-bg); color: var(--hm-cms-badge-published-ink); }
   .hm-cms-gallery-grid {
@@ -642,12 +665,36 @@ export const overlayStyles = `
     cursor: pointer;
     background: var(--hm-cms-line-softer);
   }
+  .hm-cms-panel .hm-cms-gallery-thumb {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 0;
+    background: var(--hm-cms-line-softer);
+    color: inherit;
+    font-weight: 400;
+    line-height: normal;
+    text-align: left;
+    transition: none;
+  }
   .hm-cms-gallery-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .hm-cms-gallery-thumb:hover { border-color: var(--hm-cms-primary); }
+  .hm-cms-panel .hm-cms-gallery-thumb:hover {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-panel .hm-cms-gallery-thumb:focus-visible {
+    outline: 3px solid var(--hm-cms-primary);
+    outline-offset: 2px;
+    border-color: var(--hm-cms-primary);
+    box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
+  }
   .hm-cms-gallery-thumb .hm-cms-gallery-featured {
     position: absolute;
     top: 3px;

@@ -14,6 +14,12 @@ import { offerDraft } from './drafts';
 
 let lastActiveElement = null;
 
+// El panel sigue montado cuando está cerrado. aria-hidden quita su contenido
+// del árbol accesible e inert evita que sus campos reciban foco por Tab.
+panel.inert = true;
+panel.setAttribute('aria-hidden', 'true');
+panel.tabIndex = -1;
+
 /**
  * @param autofocus Mover el foco al primer control del panel. Se desactiva
  *   al repintar una lista filtrada: el foco debe quedarse en el buscador que
@@ -36,6 +42,8 @@ export function openPanel(html, { autofocus = true } = {}) {
     offerDraft(form);
   }
   panel.classList.add('open');
+  panel.inert = false;
+  panel.removeAttribute('aria-hidden');
   // B-2: solo mientras está abierto. Marcarlo siempre haría que un lector
   // de pantalla anunciara un diálogo que no está en pantalla.
   panel.setAttribute('role', 'dialog');
@@ -44,9 +52,19 @@ export function openPanel(html, { autofocus = true } = {}) {
   // H-02: Mover el foco al primer elemento interactivo del panel
   if (!autofocus) return;
   setTimeout(() => {
-    const firstFocusable = panel.querySelector(
-      'input:not([type="hidden"]), textarea, select, button, [tabindex]:not([tabindex="-1"])'
-    );
+    if (!panel.classList.contains('open') || panel.inert) return;
+
+    // Prioriza el campo que la persona vino a editar. En las vistas sin
+    // campos (por ejemplo, una lista) enfoca el primer control de su contenido,
+    // nunca el botón «Cerrar» del encabezado.
+    const firstFocusable =
+      panelBody.querySelector(
+        'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled])'
+      ) ||
+      panelBody.querySelector(
+        'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ) ||
+      panel;
     if (firstFocusable && typeof firstFocusable.focus === 'function') {
       firstFocusable.focus();
     }
@@ -131,6 +149,8 @@ export function closePanel(force = false) {
   }
   setFormDirty(false);
   panel.classList.remove('open');
+  panel.inert = true;
+  panel.setAttribute('aria-hidden', 'true');
   panel.removeAttribute('role');
   panel.removeAttribute('aria-modal');
   state.selected = null;

@@ -17,13 +17,14 @@ import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
 import { applyMediaSelection, loadMediaPicker } from './media';
 import { richtextMarkup } from './richtext';
+import { publishEnvironment } from './publish';
 
 /**
  * E-3: rótulo del campo. El servidor manda `label` junto al campo; la clave
  * cruda se conserva en pequeño porque es la que aparece en los mensajes de
  * error y la que nombra un desarrollador por teléfono.
  */
-export function fieldLabelMarkup(key, field) {
+export function fieldLabelMarkup(key, field, incluirClave = true) {
   const legible = field?.label || key;
   // Cuando la etiqueta es la clave capitalizada o acentuada («Aplicaciones»
   // de `aplicaciones`, «Título» de `titulo`), repetirla al lado solo añade
@@ -34,7 +35,7 @@ export function fieldLabelMarkup(key, field) {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '');
-  if (normalizar(legible) === normalizar(key)) return escapeHtml(legible);
+  if (!incluirClave || normalizar(legible) === normalizar(key)) return escapeHtml(legible);
   return `${escapeHtml(legible)} <span class="hm-cms-field-key">${escapeHtml(key)}</span>`;
 }
 
@@ -48,10 +49,12 @@ function fieldEditor(element, entry, field) {
     : '';
 
   if (cmsType === 'image') {
+    const imagenPredeterminada = !current;
+    const vistaPrevia = current || element.currentSrc || element.src;
     return `
       <div class="hm-cms-image-preview">
-        <img src="${escapeHtml(String(current))}" alt="${escapeHtml(String(altValue))}" data-image-preview />
-        <p class="hm-cms-muted" data-selected-media-label>Imagen actual</p>
+        <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview />
+        <p class="hm-cms-muted" data-selected-media-label>${imagenPredeterminada ? 'Imagen predeterminada' : 'Imagen actual'}</p>
       </div>
       <label>Ruta de imagen
         <input name="value" value="${escapeHtml(String(current))}" />
@@ -192,6 +195,13 @@ export async function selectElement(element) {
   const entry = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
   state.selected = element;
   state.entry = entry;
+  const entorno = publishEnvironment();
+  const publishHint =
+    entorno === 'production'
+      ? 'Exportar solo prepara archivos. «Publicar cambios» compila y actualiza el sitio.'
+      : entorno === 'local'
+        ? 'Exportar solo prepara archivos. «Publicar cambios» compila aquí; luego debes desplegarlo para actualizar producción.'
+        : 'Exportar solo prepara archivos. «Publicar cambios» compila este entorno; no confirma una actualización de producción.';
 
   openPanel(`
     <form data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
@@ -210,9 +220,10 @@ export async function selectElement(element) {
             ? ''
             : `<button type="button" class="secondary destructive" data-action="clear-field">Vaciar este texto</button>`
         }
-        <button type="button" class="secondary" data-action="export">Exportar</button>
+        <button type="button" class="secondary" data-action="export" title="Prepara los archivos del sitio; no los compila ni publica.">Exportar</button>
         <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
       </div>
+      <p class="hm-cms-muted">${publishHint}</p>
       <p class="hm-cms-muted" role="status" aria-live="polite" data-status>Sin cambios guardados.</p>
     </form>
   `);
@@ -305,6 +316,7 @@ export async function saveEdit(form) {
     form.elements.value.value = value;
     form.elements.mediaId.value = uploaded.id;
     state.mediaItems = [uploaded, ...state.mediaItems.filter((item) => item.id !== uploaded.id)];
+    setGlobalState('unsaved');
     applyMediaSelection(uploaded);
   }
 
@@ -318,6 +330,7 @@ export async function saveEdit(form) {
         focalY: Number.parseFloat(form.elements.focalY?.value || '0.5'),
       }),
     });
+    setGlobalState('unsaved');
   }
 
   // A-3: el servidor ya sabía detectar ediciones concurrentes
@@ -353,9 +366,10 @@ export async function saveEdit(form) {
   // Imprescindible: sin esto el segundo guardado del mismo panel mandaría
   // una versión rancia y el editor entraría en conflicto consigo mismo.
   state.entry = updated;
+  setGlobalState('unsaved');
 
   if (element.dataset.cmsType === 'image') {
-    element.setAttribute('src', value);
+    if (value) element.setAttribute('src', value);
     const altField = element.dataset.cmsAltField;
     if (altField && form.elements.alt) {
       const altValue = form.elements.alt.value;
@@ -378,8 +392,13 @@ export async function saveEdit(form) {
     updateEditableText(element, newValue);
   }
 
+  const entorno = publishEnvironment();
   status.textContent =
-    'Guardado en la base de datos. Usa «Exportar y validar» para escribir los archivos del sitio.';
+    entorno === 'production'
+      ? 'Guardado en CMS. Cambios pendientes; «Publicar cambios» actualizará el sitio.'
+      : entorno === 'local'
+        ? 'Guardado en CMS. «Publicar cambios» compila aquí; falta desplegar para actualizar producción.'
+        : 'Guardado en CMS. «Publicar cambios» compila este entorno; producción no está confirmada.';
   setGlobalState('unsaved');
   // A-11: este es el único guardado que no reabre el panel (los formularios
   // de colección y galería vuelven a su listado, y openPanel ya lo limpia).

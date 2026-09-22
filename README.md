@@ -1,6 +1,6 @@
 # Hidromont Chile S.A. — Sitio Web y CMS
 
-Este repositorio contiene el código fuente del sitio web corporativo de **Hidromont Chile S.A.** (desarrollado con Astro y Tailwind CSS) junto con su **CMS Visual Local** (desarrollado con Fastify y SQLite).
+Este repositorio contiene el código fuente del sitio web corporativo de **Hidromont Chile S.A.** (desarrollado con Astro y Tailwind CSS) junto con su CMS visual (Fastify y SQLite), que puede ejecutarse en local/LAN o integrado al servidor Node de producción.
 
 El sitio web está diseñado con un registro visual industrial y de alta precisión para transmitir la trayectoria (desde 1983) y credibilidad técnica de la empresa en el diseño, fabricación e instalación de equipos hidromecánicos (tuberías de presión, compuertas, válvulas, turbinas, etc.).
 
@@ -16,10 +16,10 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
      frontmatter de proyectos y servicios se valida contra Zod al compilar.
    - **Tailwind CSS 3**: Framework de utilidades CSS integrado con variables y tokens de diseño.
    - **Fuentes auto-hospedadas**: Inter (cuerpo de texto), Roboto Condensed (encabezados) y Roboto Mono (datos/métricas).
-2. **CMS Local (Backend + Edición Visual)**:
+2. **CMS (Backend + Edición Visual)**:
    - **Fastify 5**: API Server en Node.js que corre en el puerto `8787` (por defecto).
    - **Better-SQLite3**: Persistencia local ultrarrápida mediante base de datos SQLite.
-   - **CMS Overlay**: Script JS inyectado visualmente en el frontend (`src/scripts/cms-overlay.js`) **únicamente cuando `PUBLIC_ENABLE_CMS=1`** (o en `import.meta.env.DEV`). El build de producción **debe** llevar `PUBLIC_ENABLE_CMS=0` para que el `dist/` no incluya código administrativo; el CI (`e2e/build-gate.spec.ts`) verifica que `dist/` no contenga marcadores del CMS.
+   - **CMS Overlay**: Interfaz visual incluida con `PUBLIC_ENABLE_CMS=1` (o en `import.meta.env.DEV`). El build público de Cloudflare usa `PUBLIC_ENABLE_CMS=0`; la instalación integrada de Node en cPanel usa `1` para habilitar la edición protegida. El CI verifica que el perfil estático no incluya marcadores del CMS.
 
 ---
 
@@ -143,16 +143,13 @@ Esto levantará el sitio web en `http://localhost:4321` y el backend en `http://
 
 ### Paso 2: Activar el Overlay del CMS
 
-1. Abre tu navegador y dirígete a: **`http://localhost:4321?cms=1`**
+1. Abre tu navegador y dirígete a: **`http://localhost:4321/?cms=1`**
 2. Se almacenará un flag en el almacenamiento local de tu navegador y aparecerá una barra flotante en la esquina inferior izquierda con la etiqueta **Hidromont CMS**.
 3. Se desplegará el panel lateral derecho con el formulario de inicio de sesión.
 
 ### Paso 3: Iniciar sesión
 
-Utiliza las credenciales configuradas en tu `.env`:
-
-- **Email**: `admin@hidromont.local`
-- **Contraseña**: `Hidromont-Admin-ChangeMe`
+Utiliza el usuario y la contraseña entregados por la persona que administra el CMS. La configuración técnica está en `.env` (`CMS_ADMIN_EMAIL` y `CMS_ADMIN_PASSWORD`).
 
 ### Paso 4: Edición en pantalla
 
@@ -163,16 +160,15 @@ Utiliza las credenciales configuradas en tu `.env`:
    - **Listas**: Permite agregar, reordenar y eliminar elementos de listas (por ejemplo, especificaciones de maquinaria o metodologías).
    - **Enlaces**: Campos independientes para el texto del enlace y la URL.
    - **Imágenes**: Permite subir un archivo nuevo, seleccionar una imagen existente de la biblioteca de medios local, definir el texto alternativo (`alt`) y ajustar el punto focal de recorte.
-4. Presiona el botón **Guardar** en el panel para guardar temporalmente tus cambios en la base de datos SQLite local.
+4. Presiona **Guardar** para registrar los cambios en la base SQLite de esta instalación. El CMS actualiza la vista previa de esta página; los visitantes todavía no ven el cambio.
 
-### Paso 5: Sincronizar y Exportar los cambios
+### Paso 5: Preparar y publicar los cambios
 
-Los cambios guardados en la base de datos no se reflejan automáticamente en los archivos fuente del proyecto hasta que se exportan.
+**Exportar** prepara los archivos fuente, pero no compila ni publica el sitio.
 
-1. En la barra inferior del CMS, haz clic en **Exportar y validar** (o ejecuta `npm run cms:export` en la terminal).
-2. Esto escribirá los datos en `src/data/cms-content.json` y actualizará las colecciones Markdown de Astro.
-3. El CMS ejecutará una validación automática (`npm run check`) para asegurar que los archivos exportados no rompen la integridad tipográfica o estructural del sitio.
-4. Una vez validado correctamente, el estado en la barra cambiará a `✓ Exportado · falta desplegar`.
+1. En el editor, usa **Exportar** o ejecuta `npm run cms:export`. Esto escribe los datos en `src/data/cms-content.json` y actualiza las colecciones Markdown de Astro.
+2. En la barra del CMS, haz clic en **Publicar cambios**. La acción exporta y compila el sitio con el comando configurado en `CMS_PUBLISH_CHECK_COMMAND`.
+3. Si estás en local, esto solo compila esa instalación y aún debes desplegar el resultado para actualizar producción. En `hidromontchile.cl`, el mismo proceso sirve el `dist/` regenerado y el sitio queda actualizado al terminar.
 
 ---
 

@@ -9,7 +9,7 @@
  */
 
 import { asList, escapeHtml } from './html';
-import { panelBody } from './shell';
+import { panelBody, setGlobalState } from './shell';
 import { clearDraft } from './drafts';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
@@ -132,6 +132,48 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
  */
 let schemaCache = null;
 
+function slugDesdeTitulo(titulo) {
+  return titulo
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function mostrarRutaSugerida(kind, slug) {
+  const ruta = panelBody.querySelector('[data-suggested-path]');
+  if (!ruta) return;
+  const coleccion = { servicio: 'servicios', proyecto: 'proyectos' }[kind];
+  ruta.hidden = !coleccion || !slug;
+  ruta.textContent = coleccion && slug ? `Ruta sugerida: /${coleccion}/${slug}` : '';
+}
+
+function sugerirIdentificadores(kind) {
+  const form = panelBody.querySelector('[data-entry-form]');
+  const titulo = form?.elements.title;
+  const id = form?.elements.id;
+  const slug = form?.elements.slug;
+  if (!titulo || !id || !slug) return;
+
+  const prefijo = { servicio: 'servicio', proyecto: 'proyecto', page: 'page' }[kind] || kind;
+  let mantenerSugerencia = true;
+  const actualizar = () => {
+    if (!mantenerSugerencia) return;
+    slug.value = slugDesdeTitulo(titulo.value);
+    id.value = slug.value ? `${prefijo}.${slug.value}` : '';
+    mostrarRutaSugerida(kind, slug.value);
+  };
+
+  titulo.addEventListener('input', actualizar);
+  id.addEventListener('input', () => (mantenerSugerencia = false));
+  slug.addEventListener('input', () => {
+    mantenerSugerencia = false;
+    mostrarRutaSugerida(kind, slug.value);
+  });
+  actualizar();
+}
+
 async function getSchema() {
   if (schemaCache) return schemaCache;
   try {
@@ -164,31 +206,36 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
   setPanelTitle(entry ? 'Editar entrada' : 'Nueva entrada');
   openPanel(`
     <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-kind="${escapeHtml(kind)}">
-      ${
-        !entryId
-          ? `<label>ID (ej: servicio.bombeo)
-        <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
-      </label>`
-          : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`
-      }
       <label>Título
         <input name="title" value="${escapeHtml(entry?.title || '')}" required />
       </label>
-      <label>Slug (URL)
+      <details>
+        <summary>URL y publicación</summary>
+      ${
+        !entryId
+          ? `<label>ID interno
+        <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
+        <span class="hm-cms-muted">Se sugiere según el título y el tipo de entrada.</span>
+      </label>`
+          : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`
+      }
+      <label>URL corta
         <input name="slug" value="${escapeHtml(entry?.slug || '')}" required />
       </label>
-      <label>Estado
+      <p class="hm-cms-muted" data-suggested-path hidden></p>
+      <label>Estado de publicación
         <select name="status" data-initial-status="${escapeHtml(entry?.status || 'published')}">
           <option value="published" ${!entry || entry.status === 'published' ? 'selected' : ''}>Publicado</option>
           <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>${escapeHtml(draft.label)}</option>
         </select>
       </label>
       <p class="hm-cms-muted" data-draft-warning hidden style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">${escapeHtml(draft.warning)}</p>
+      </details>
       ${
         !entryId && (kind === 'servicio' || kind === 'proyecto')
           ? `
         <p class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">
-          Se crearán campos obligatorios con valores de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Edítalos luego haciendo clic en los elementos de la página antes de exportar.
+          Al crearla, se abrirá aquí el formulario con campos de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Complétalos y guarda antes de «Publicar cambios».
         </p>`
           : ''
       }
@@ -216,7 +263,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                 if (enums[key]) {
                   const actual = String(f.value ?? '');
                   const conocido = enums[key].some((o) => o.value === actual);
-                  return `<label>${fieldLabelMarkup(key, f)}
+                  return `<label>${fieldLabelMarkup(key, f, false)}
                     <select name="${name}" data-field-type="text">
                       ${
                         !conocido && actual
@@ -233,13 +280,13 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                   </label>`;
                 }
                 if (f.type === 'list') {
-                  return `<label>${fieldLabelMarkup(key, f)}</label>${listEditorMarkup(asList(f.value), name)}`;
+                  return `<label>${fieldLabelMarkup(key, f, false)}</label>${listEditorMarkup(asList(f.value), name)}`;
                 }
                 // El cuerpo va a ancho completo y con su propia barra, no
                 // dentro de un <label> como el resto: es el campo donde se
                 // escriben párrafos, no un dato de una línea.
                 if (f.type === 'richtext') {
-                  return richtextMarkup(f.value, name, fieldLabelMarkup(key, f));
+                  return richtextMarkup(f.value, name, fieldLabelMarkup(key, f, false));
                 }
                 const control =
                   f.type === 'textarea'
@@ -247,7 +294,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                     : f.type === 'number'
                       ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
                       : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
-                return `<label>${fieldLabelMarkup(key, f)}${control}</label>`;
+                return `<label>${fieldLabelMarkup(key, f, false)}${control}</label>`;
               })
               .join('')
           : ''
@@ -260,6 +307,12 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
+  const slug = panelBody.querySelector('[data-entry-form] [name="slug"]');
+  if (slug) {
+    slug.addEventListener('input', () => mostrarRutaSugerida(kind, slug.value));
+    mostrarRutaSugerida(kind, slug.value);
+  }
+  if (!entry) sugerirIdentificadores(kind);
 }
 
 export async function saveEntryForm(form) {
@@ -291,12 +344,23 @@ export async function saveEntryForm(form) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, kind, slug, title, status: entryStatus }),
       });
+      setGlobalState('unsaved');
+      await showEntryForm(id, kind);
+      const nuevoEstado = panelBody.querySelector('[data-status]');
+      if (nuevoEstado)
+        nuevoEstado.textContent =
+          'Entrada creada. Completa estos detalles y guarda antes de publicar.';
+      clearDraft(form);
+      return;
     } else {
       await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, slug, status: entryStatus }),
       });
+      // Los metadatos ya quedaron guardados aunque un PATCH de campo posterior
+      // falle. Reflejarlo en la barra evita dejar un estado «publicado» falso.
+      setGlobalState('unsaved');
 
       // A-3: secuencial y SIN `expectedVersion`, a diferencia de saveEdit.
       // Cada PATCH incrementa la versión de la misma entrada, así que en
@@ -342,9 +406,9 @@ export async function saveEntryForm(form) {
       }
     }
 
-    if (status) status.textContent = 'Guardado correctamente.';
+    if (status) status.textContent = 'Guardado. Cambios pendientes de publicar.';
+    setGlobalState('unsaved');
     clearDraft(form);
-    setTimeout(() => loadCollections(kind), 800);
   } catch (error) {
     if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
   }

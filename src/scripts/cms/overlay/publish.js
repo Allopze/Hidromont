@@ -33,7 +33,7 @@ export function exportNoticeMarkup(exported) {
       : '';
 
   return `
-    <div class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:10px 12px;margin-bottom:10px">
+    <div class="hm-cms-muted" role="alert" aria-live="assertive" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:10px 12px;margin-bottom:10px">
       ${lista(
         'No se publicaron (corrige el campo y vuelve a exportar):',
         omitidas.map(
@@ -51,25 +51,39 @@ export function exportNoticeMarkup(exported) {
   `;
 }
 
+export function publishEnvironment() {
+  const host = window.location.hostname.toLowerCase();
+  if (host === 'hidromontchile.cl' || host === 'www.hidromontchile.cl') return 'production';
+  if (['localhost', '127.0.0.1', '::1', '[::1]'].includes(host)) return 'local';
+  return 'other';
+}
+
 export function renderPublishJobs(items) {
   if (!items.length) {
     openPanel('<p class="hm-cms-muted">Aun no hay publicaciones registradas.</p>');
     return;
   }
+  const entorno = publishEnvironment();
+  const avisoEntorno =
+    entorno === 'production'
+      ? 'Esta pantalla está en el dominio oficial; una publicación terminada sin avisos actualiza el sitio.'
+      : entorno === 'local'
+        ? 'Esta pantalla está en local; la compilación no actualiza el sitio público y hace falta desplegarla.'
+        : 'Esta pantalla no está en el dominio oficial; el historial confirma solo el resultado de este entorno.';
 
   openPanel(`
     <section class="hm-cms-job-list">
-      <p class="hm-cms-muted">Historial de exportaciones y validaciones.</p>
+      <p class="hm-cms-muted">Historial de preparación de archivos y publicaciones.</p>
       <p class="hm-cms-muted" style="background:var(--hm-cms-info-bg);border:1px solid var(--hm-cms-info-line);border-radius:0px;padding:8px 10px">
-        ℹ️ «Publicar» exporta el contenido y compila el sitio. Cuando el CMS corre en el mismo servidor que el sitio, el cambio queda en línea al terminar; si editas en local, falta subir el resultado.
+        ℹ️ «Exportar» solo prepara archivos. «Publicar cambios» también compila este sitio. ${avisoEntorno}
       </p>
       ${items
         .map(
           (job) => `
         <article class="hm-cms-job">
           <div class="hm-cms-job-title">
-            <span>${escapeHtml(job.action === 'export' ? 'Exportacion' : 'Publicacion')}</span>
-            <span class="hm-cms-badge ${escapeHtml(job.status)}">${escapeHtml(job.status)}</span>
+            <span>${escapeHtml(job.action === 'export' ? 'Preparación de archivos' : 'Publicación')}</span>
+            <span class="hm-cms-badge ${escapeHtml(job.status)}">${escapeHtml({ queued: 'En cola', running: 'En curso', succeeded: 'Completada', failed: 'Fallida', cancelled: 'Cancelada', canceled: 'Cancelada' }[job.status] || job.status)}</span>
           </div>
           <p class="hm-cms-muted">${escapeHtml(formatDate(job.createdAt))}${job.completedAt ? ` - ${escapeHtml(formatDate(job.completedAt))}` : ''}</p>
           <p class="hm-cms-muted">${escapeHtml(job.id)}</p>

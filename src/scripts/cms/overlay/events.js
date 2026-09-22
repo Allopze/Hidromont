@@ -32,7 +32,12 @@ import {
   refrescarPrevisualizacion,
 } from './richtext';
 import { saveEdit, selectElement, syncLinkValue, syncListValue } from './fields';
-import { exportNoticeMarkup, loadPublishJobs, renderPublishJobs } from './publish';
+import {
+  exportNoticeMarkup,
+  loadPublishJobs,
+  publishEnvironment,
+  renderPublishJobs,
+} from './publish';
 import { ADMIN_AUDIT_PAGE, adminState, loadAdmin, loadRevisions, renderAdmin } from './admin';
 import {
   GALLERY_PAGE_SIZE,
@@ -103,15 +108,21 @@ export function registerEvents() {
         // sin manejar: el panel no cambiaba y el editor creía haber exportado.
         const btn = target instanceof Element ? target.closest('button') : null;
         const status = panelBody.querySelector('[data-status]');
-        setButtonLoading(btn, true, 'Exportando...');
+        setButtonLoading(btn, true, 'Preparando...');
         try {
           const result = await api('/api/cms/export', { method: 'POST' });
           const aviso = exportNoticeMarkup(result.exported);
           if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
-          if (status)
+          const conOmisiones =
+            (result.exported?.skipped || []).length > 0 ||
+            (result.exported?.revertedToFallback || []).length > 0;
+          if (status && !conOmisiones)
             status.textContent =
-              `Exportado a los archivos del sitio. Para que aparezca en hidromontchile.cl falta compilar y desplegar (npm run build + deploy). Job ${result.job?.id || ''}`.trim();
-          setGlobalState('exported');
+              `Archivos preparados. El sitio todavía no muestra estos cambios; usa «Publicar cambios» para compilarlo. Si este CMS está en local, después debes desplegar el resultado. Job ${result.job?.id || ''}`.trim();
+          if (status && conOmisiones)
+            status.textContent =
+              'Archivos preparados con omisiones. Revisa los avisos antes de publicar.';
+          setGlobalState(conOmisiones ? 'exported-warning' : 'exported');
         } catch (error) {
           if (status)
             status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
@@ -189,6 +200,7 @@ export function registerEvents() {
           const r = await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
             method: 'DELETE',
           });
+          setGlobalState('unsaved');
           loadGalleryCategories();
           ofrecerDeshacer(r.undo, () => loadGalleryCategories());
         } catch (error) {
@@ -201,6 +213,7 @@ export function registerEvents() {
                 `/api/cms/gallery/categories/${encodeURIComponent(catId)}?confirm=1`,
                 { method: 'DELETE' }
               );
+              setGlobalState('unsaved');
               loadGalleryCategories();
               ofrecerDeshacer(forzado.undo, () => loadGalleryCategories());
               return;
@@ -235,6 +248,7 @@ export function registerEvents() {
           const r = await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
             method: 'DELETE',
           });
+          setGlobalState('unsaved');
           loadGalleryAlbums();
           ofrecerDeshacer(r.undo, () => loadGalleryAlbums());
         } catch (error) {
@@ -262,6 +276,7 @@ export function registerEvents() {
           const r = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, {
             method: 'DELETE',
           });
+          setGlobalState('unsaved');
           loadGalleryItemsList();
           ofrecerDeshacer(r.undo, () => loadGalleryItemsList());
         } catch (error) {
@@ -328,6 +343,7 @@ export function registerEvents() {
           const r = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
             method: 'DELETE',
           });
+          setGlobalState('unsaved');
           loadCollections(activeCollectionKind);
           ofrecerDeshacer(r.undo, () => loadCollections(activeCollectionKind));
         } catch (error) {
@@ -410,6 +426,7 @@ export function registerEvents() {
               method: 'POST',
             }
           );
+          setGlobalState('unsaved');
           // Reload revisions view to reflect the new current version
           await loadRevisions(entryId);
         } catch (error) {
@@ -422,9 +439,9 @@ export function registerEvents() {
       if (action === 'publish') {
         if (!(await ensureSession())) return;
         const btn = target instanceof Element ? target.closest('button') : null;
-        setButtonLoading(btn, true, 'Exportando...');
+        setButtonLoading(btn, true, 'Publicando...');
         openPanel(
-          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Exportando archivos y compilando el sitio. Puede tardar varios minutos.</p>'
+          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Preparando archivos y compilando el sitio. Puede tardar varios minutos.</p>'
         );
         try {
           const result = await api('/api/cms/publish', { method: 'POST' });
@@ -437,17 +454,52 @@ export function registerEvents() {
               `<p class="hm-cms-muted">Sitio servido: compilado el ${escapeHtml(formatDate(result.siteBuiltAt))}.</p>`
             );
           }
-          const aviso = exportNoticeMarkup(result.exported);
-          if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           const jobStatus = result.job?.status;
+          const entorno = publishEnvironment();
           const conOmisiones =
             (result.exported?.skipped || []).length > 0 ||
             (result.exported?.revertedToFallback || []).length > 0;
+          if (jobStatus === 'succeeded') {
+            const mensaje = conOmisiones
+              ? entorno === 'production'
+                ? 'El proceso terminó con omisiones. Revisa los avisos antes de confirmar que el sitio quedó actualizado.'
+                : entorno === 'local'
+                  ? 'La compilación local terminó con omisiones. Revisa los avisos; aún falta desplegarla para actualizar hidromontchile.cl.'
+                  : 'La compilación terminó con omisiones. Revisa los avisos; no se confirma una actualización de hidromontchile.cl.'
+              : entorno === 'production'
+                ? 'Sitio actualizado en hidromontchile.cl.'
+                : entorno === 'local'
+                  ? 'Compilación local completada. Aún falta desplegarla para actualizar hidromontchile.cl.'
+                  : 'Compilación completada en este entorno. No se confirma una actualización de hidromontchile.cl; despliega los cambios en producción.';
+            panelBody.insertAdjacentHTML(
+              'afterbegin',
+              `<p class="hm-cms-muted" role="status" aria-live="polite" aria-atomic="true">${escapeHtml(mensaje)}</p>`
+            );
+          } else {
+            panelBody.insertAdjacentHTML(
+              'afterbegin',
+              '<p class="hm-cms-error" role="alert">La publicación no terminó correctamente. Revisa el registro de abajo antes de volver a intentar.</p>'
+            );
+          }
+          const aviso = exportNoticeMarkup(result.exported);
+          if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
           setGlobalState(
-            jobStatus !== 'succeeded' ? 'error' : conOmisiones ? 'warning' : 'exported'
+            jobStatus !== 'succeeded'
+              ? 'error'
+              : entorno === 'production'
+                ? conOmisiones
+                  ? 'published-warning'
+                  : 'published'
+                : entorno === 'local'
+                  ? conOmisiones
+                    ? 'local-warning'
+                    : 'local-built'
+                  : conOmisiones
+                    ? 'other-warning'
+                    : 'other-built'
           );
         } catch (error) {
-          openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
+          openPanel(`<p class="hm-cms-error" role="alert">${escapeHtml(error.message)}</p>`);
           setGlobalState('error');
         } finally {
           setButtonLoading(btn, false);
@@ -669,6 +721,7 @@ export function registerEvents() {
                 body: JSON.stringify(body),
               });
             }
+            setGlobalState('unsaved');
             loadGalleryCategories();
           } catch (error) {
             if (status)
@@ -705,6 +758,7 @@ export function registerEvents() {
                 }),
               });
             }
+            setGlobalState('unsaved');
             loadGalleryAlbums();
           } catch (error) {
             if (status)
@@ -745,6 +799,7 @@ export function registerEvents() {
                 return data;
               });
               currentMediaId = uploaded.id;
+              setGlobalState('unsaved');
               form.elements.mediaId.value = uploaded.id;
               if (!form.elements.alt.value) {
                 // El alt del media si lo trae; si no, el nombre del archivo, que al
@@ -776,6 +831,7 @@ export function registerEvents() {
                 body: JSON.stringify(body),
               });
             }
+            setGlobalState('unsaved');
             clearDraft(form);
             loadGalleryItemsList();
           } catch (error) {

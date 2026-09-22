@@ -1,11 +1,22 @@
 # Guía del CMS
 
-> Cómo editar contenido del sitio Hidromont Chile usando el CMS visual local.
+> Cómo editar contenido del sitio Hidromont Chile usando el CMS visual.
 > Para arquitectura técnica, ver [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Qué es el CMS
 
-El CMS es un **backend Fastify + SQLite** que corre en local o LAN (puerto `8787`) y permite editar el contenido del sitio sin tocar código. Su output son archivos JSON + Markdown que Astro consume en build time. **El CMS nunca se despliega a producción**; es una herramienta de edición offline.
+El CMS es un **backend Fastify + SQLite** que puede correr en local o LAN para preparar cambios, o junto al sitio en el servidor Node de producción. Su salida son archivos JSON y Markdown que Astro consume al compilar. Exportar prepara esos archivos; publicar también compila el sitio que sirve esa instalación.
+
+## Entrar al CMS
+
+Abre el enlace que te dio la persona responsable del CMS. Si la edición está
+habilitada en producción, el enlace puede ser
+`https://hidromontchile.cl/?cms=1`; para una instalación local es
+`http://localhost:4321/?cms=1`.
+
+Inicia sesión con el usuario y la contraseña que te entregó esa persona. Si no
+los tienes, pídelos al responsable del CMS. La configuración técnica está en
+`.env` (`CMS_ADMIN_EMAIL` y `CMS_ADMIN_PASSWORD`); esta guía no publica claves.
 
 ## Arranque
 
@@ -30,11 +41,11 @@ Al arrancar, el CMS:
 
 1. Arranca `npm run dev:cms` (requiere `PUBLIC_ENABLE_CMS=1` en `.env`).
 2. Abre `http://localhost:4321/?cms=1` (o cualquier página con `?cms=1`).
-3. Inicia sesión con las credenciales de `.env` (`CMS_ADMIN_EMAIL` / `CMS_ADMIN_PASSWORD`).
+3. Inicia sesión con el usuario y la contraseña configurados por quien administra el CMS.
 4. Los elementos editables muestran un cursor de cruz al hacer hover. Click → panel lateral con el editor del campo.
-5. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la página.
+5. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la vista previa de esta página; los visitantes todavía no lo ven.
 
-> **⚠️ Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. El build de producción de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0` para que `dist/` no contenga el editor. El CI verifica esto con `e2e/build-gate.spec.ts`.
+> **⚠️ Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. El hosting estático público de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada de cPanel lleva `PUBLIC_ENABLE_CMS=1` para que el administrador pueda entrar. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
 
 ## Tipos de campo editables
 
@@ -91,8 +102,8 @@ sobre la barra con un botón **Deshacer** durante 12 segundos.
   de actividad conserva el evento.
 
 Lo restaurado vuelve a la base de datos, no a los archivos del sitio: hay que
-usar **«Exportar y validar»** para que se refleje. El distintivo de la barra
-pasa a «● Sin exportar» para recordarlo.
+usar **«Publicar cambios»** para que se refleje. El distintivo de la barra
+indica que hay cambios pendientes de publicar.
 
 > **Los medios no son deshacibles.** Borrar un archivo de la biblioteca lo
 > elimina del disco. Sigue protegido —exige confirmación explícita y se rechaza
@@ -102,11 +113,11 @@ pasa a «● Sin exportar» para recordarlo.
 
 ### 1. Editar
 
-Edita campos en el overlay. Los cambios se guardan en SQLite al instante (PATCH `/api/cms/entries/:id/fields/:key`), pero **no aparecen en el sitio** hasta el export.
+Edita campos en el overlay. Los cambios se guardan en la base SQLite de esta instalación (PATCH `/api/cms/entries/:id/fields/:key`). El editor actualiza la vista previa en pantalla, pero los visitantes no ven el cambio hasta publicar.
 
-### 2. Exportar ("Exportar y validar")
+### 2. Exportar archivos
 
-Botón en el panel del overlay. Ejecuta `POST /api/cms/export` que escribe:
+El botón **Exportar** del editor ejecuta `POST /api/cms/export`. Solo prepara estos archivos; no compila ni actualiza el sitio:
 
 - `src/data/cms-content.json` — entradas page/layout/component/settings.
 - `src/data/gallery.json` — items + categorías de galería con derivadas de imagen.
@@ -117,12 +128,15 @@ La escritura es **atómica** (`.tmp` + rename) y crea directorios recursivamente
 
 > **Nota:** solo se exportan entradas con `status: 'published'`. Los borradores (`draft`) nunca llegan a los archivos del sitio.
 
-### 3. Publicar
+### 3. Publicar cambios
 
-Botón que ejecuta `POST /api/cms/publish`: exporta el contenido y luego corre
-`CMS_PUBLISH_CHECK_COMMAND` (`npm run build` en producción). Como el mismo
-proceso sirve `dist/`, al terminar el cambio **ya está en línea**. El panel
-muestra la fecha de compilación de lo que se está sirviendo.
+El botón **Publicar cambios** ejecuta `POST /api/cms/publish`: exporta el
+contenido y luego corre `CMS_PUBLISH_CHECK_COMMAND` (en producción,
+`npm run build`). Si estás editando en local, esto compila localmente; todavía
+hay que desplegar el resultado para actualizar el sitio público. Si abriste el
+CMS en `hidromontchile.cl`, el mismo proceso Node sirve el `dist/` regenerado,
+así que el cambio queda en línea al completar la publicación. El panel muestra
+la fecha de compilación cuando el servidor la informa.
 
 Si el build falla, el job queda en `'failed'` con los logs y el sitio anterior
 sigue servido intacto.
@@ -197,12 +211,12 @@ Esto re-hashea, actualiza la fila del admin e invalida todas las sesiones activa
 
 Ver [`.env.example`](../.env.example) para todas las variables. Las críticas:
 
-| Variable             | Default                    | Nota                                                                                                                          |
-| -------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `CMS_HOST`           | `127.0.0.1`                | `0.0.0.0` para LAN. Si no es local + `CMS_COOKIE_SECURE=0`, el guard bloquea el arranque salvo `CMS_ALLOW_INSECURE_COOKIE=1`. |
-| `CMS_COOKIE_SECURE`  | auto (prod=1)              | `1` exige HTTPS.                                                                                                              |
-| `PUBLIC_ENABLE_CMS`  | —                          | `1` para editar (dev/staging). `0` para build público.                                                                        |
-| `CMS_ADMIN_PASSWORD` | `Hidromont-Admin-ChangeMe` | Cambiar obligatoriamente si se expone en LAN.                                                                                 |
+| Variable             | Default               | Nota                                                                                                                          |
+| -------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `CMS_HOST`           | `127.0.0.1`           | `0.0.0.0` para LAN. Si no es local + `CMS_COOKIE_SECURE=0`, el guard bloquea el arranque salvo `CMS_ALLOW_INSECURE_COOKIE=1`. |
+| `CMS_COOKIE_SECURE`  | auto (prod=1)         | `1` exige HTTPS.                                                                                                              |
+| `PUBLIC_ENABLE_CMS`  | —                     | `1` para editar (dev/staging). `0` para build público.                                                                        |
+| `CMS_ADMIN_PASSWORD` | Configurada en `.env` | Cambiar antes de exponer el CMS en LAN.                                                                                       |
 
 ## Solución de problemas
 
@@ -212,7 +226,7 @@ El guard H2 detectó `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0`. Opciones: HTTPS
 
 ### Cambios no aparecen en el sitio
 
-Recordar: editar → SQLite, pero el sitio lee `src/data/cms-content.json`. Hay que "Exportar y validar" (y reconstruir si se quiere ver en `dist/`).
+Editar guarda en SQLite. **Exportar** prepara los archivos fuente, pero no los compila. Usa **Publicar cambios**; si el CMS está en local, despliega luego el resultado para actualizar el sitio público.
 
 ### Clave CMS falta (warn en consola de dev)
 
