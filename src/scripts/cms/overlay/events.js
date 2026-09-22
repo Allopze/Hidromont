@@ -13,6 +13,7 @@ import { escapeHtml, formatDate } from './html';
 import { panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
 import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
 import { api, ejecutarUnaVez, setButtonLoading } from './api';
+import { deshacer, ofrecerDeshacer } from './undo';
 import { closePanel, openPanel } from './panel';
 import { ensureSession, loginView } from './auth';
 import {
@@ -83,6 +84,11 @@ export function registerEvents() {
         event.preventDefault();
         const boton = target.closest('[data-action="rt-preview"]');
         if (boton) alternarPrevisualizacion(boton);
+        return;
+      }
+      if (action === 'undo') {
+        event.preventDefault();
+        await deshacer();
         return;
       }
       if (action === 'close') closePanel();
@@ -179,23 +185,24 @@ export function registerEvents() {
         const btn = target.closest('[data-cat-id]');
         if (!btn) return;
         const catId = btn.dataset.catId;
-        const name = btn.dataset.catName || catId;
-        if (!window.confirm(`¿Eliminar la categoría "${name}"?`)) return;
         try {
-          await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
+          const r = await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
             method: 'DELETE',
           });
           loadGalleryCategories();
+          ofrecerDeshacer(r.undo, () => loadGalleryCategories());
         } catch (error) {
           // M-3: el servidor rechaza con 409 si la categoría tiene fotos, y
           // dice cuántas. Antes la confirmación no mencionaba ninguna
           // consecuencia y las fotos quedaban sin categoría en silencio.
           if (error.status === 409 && window.confirm(`${error.message}\n\n¿Borrarla igualmente?`)) {
             try {
-              await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}?confirm=1`, {
-                method: 'DELETE',
-              });
+              const forzado = await api(
+                `/api/cms/gallery/categories/${encodeURIComponent(catId)}?confirm=1`,
+                { method: 'DELETE' }
+              );
               loadGalleryCategories();
+              ofrecerDeshacer(forzado.undo, () => loadGalleryCategories());
               return;
             } catch (segundo) {
               openPanel(`<p class="hm-cms-error">${escapeHtml(segundo.message)}</p>`);
@@ -222,13 +229,14 @@ export function registerEvents() {
         const btn = target.closest('[data-album-slug]');
         if (!btn) return;
         const albumSlug = btn.dataset.albumSlug;
-        const name = btn.dataset.albumName || albumSlug;
-        if (!window.confirm(`¿Eliminar el álbum "${name}"?`)) return;
+        // Solo se borran álbumes vacíos (lo valida el servidor), así que el
+        // riesgo era ya mínimo; con deshacer, la confirmación sobra.
         try {
-          await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
+          const r = await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
             method: 'DELETE',
           });
           loadGalleryAlbums();
+          ofrecerDeshacer(r.undo, () => loadGalleryAlbums());
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         }
@@ -247,11 +255,15 @@ export function registerEvents() {
         const btn = target.closest('[data-item-id]');
         if (!btn) return;
         const itemId = btn.dataset.itemId;
-        const title = btn.dataset.itemTitle || itemId;
-        if (!window.confirm(`¿Eliminar "${title}" de la galería?`)) return;
+        // Sin confirmación: el deshacer devuelve la foto entera —posición,
+        // categoría, álbum, destacado— así que preguntar antes solo añadía un
+        // paso a la operación correcta para protegerse de la equivocada.
         try {
-          await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+          const r = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, {
+            method: 'DELETE',
+          });
           loadGalleryItemsList();
+          ofrecerDeshacer(r.undo, () => loadGalleryItemsList());
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         }
@@ -305,13 +317,19 @@ export function registerEvents() {
         const entryId = btn.dataset.entryId;
         const title = btn.dataset.entryTitle || entryId;
         if (!entryId) return;
+        // Se mantiene la confirmación porque aquí el deshacer NO es íntegro: el
+        // historial de revisiones se pierde con la entrada y no vuelve. El
+        // texto anterior decía «no se puede deshacer», que ya es falso.
         const confirmed = window.confirm(
-          `¿Eliminar la entrada "${title}"?\nEsta acción no se puede deshacer.`
+          `¿Eliminar la entrada "${title}"?\n\nPodrá deshacerlo durante unos segundos, pero su historial de revisiones no se recupera.`
         );
         if (!confirmed) return;
         try {
-          await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, { method: 'DELETE' });
+          const r = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
+            method: 'DELETE',
+          });
           loadCollections(activeCollectionKind);
+          ofrecerDeshacer(r.undo, () => loadCollections(activeCollectionKind));
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         }

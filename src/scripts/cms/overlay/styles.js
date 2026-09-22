@@ -825,6 +825,71 @@ export const overlayStyles = `
     font-family: ui-monospace, monospace;
   }
 
+  /*
+   * Aviso de deshacer. Se ancla encima de la barra, que es fija abajo a la
+   * izquierda. "pointer-events: auto" porque el shell entero es "none".
+   *
+   * Sin transición ni animación: no hay ningún bloque prefers-reduced-motion en
+   * esta hoja, y no es este el cambio donde abrir esa deuda.
+   */
+  .hm-cms-undo {
+    pointer-events: auto;
+    position: fixed;
+    left: 16px;
+    bottom: 76px;
+    max-width: min(420px, calc(100vw - 32px));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--hm-cms-dark);
+    color: #fff;
+    border: 1px solid var(--hm-cms-line);
+    border-radius: 0px;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow: 0 6px 20px rgba(15, 36, 51, 0.28);
+  }
+  .hm-cms-undo[hidden] { display: none; }
+  .hm-cms-undo-texto { flex: 1; }
+  .hm-cms-undo-aviso {
+    display: block;
+    margin-top: 2px;
+    color: var(--hm-cms-warn-ink);
+    font-size: 12px;
+  }
+  .hm-cms-undo-cuenta {
+    font-variant-numeric: tabular-nums;
+    color: var(--hm-cms-line-soft);
+    font-size: 12px;
+  }
+  .hm-cms-panel .hm-cms-undo-btn,
+  .hm-cms-undo-btn {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+    border-radius: 0px;
+    padding: 6px 12px;
+    min-height: 36px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .hm-cms-undo-btn:hover { background: rgba(255, 255, 255, 0.14); }
+  .hm-cms-undo-btn:focus-visible {
+    outline: 2px solid var(--hm-cms-accent);
+    outline-offset: 2px;
+  }
+  @media (max-width: 640px) {
+    .hm-cms-undo {
+      left: 8px;
+      right: 8px;
+      bottom: 68px;
+      max-width: none;
+    }
+  }
+
   /* H-08: indicador de cambios sin guardar */
   .hm-cms-autosave-indicator {
     display: inline-block;

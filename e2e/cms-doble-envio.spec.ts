@@ -67,22 +67,32 @@ test.describe('Doble envío', () => {
     await apiLogin(page);
     const panel = await abrirPrimerServicio(page);
 
-    const estados: string[] = [];
-    const status = panel.locator('[data-entry-form] [data-status]');
-    // Se muestrea mientras guarda: antes el texto era un «Guardando...» fijo
-    // durante las nueve peticiones.
-    const muestreo = setInterval(async () => {
-      const t = await status.textContent().catch(() => null);
-      if (t && !estados.includes(t)) estados.push(t);
-    }, 60);
+    // Se observa el nodo en vez de muestrearlo: con nueve PATCH que pueden
+    // resolverse en menos de un intervalo de sondeo, muestrear se pierde
+    // estados y la prueba se vuelve intermitente.
+    await page.evaluate(() => {
+      const w = window as unknown as { __estados?: string[] };
+      w.__estados = [];
+      const nodo = document.querySelector('[data-entry-form] [data-status]');
+      if (!nodo) return;
+      new MutationObserver(() => {
+        const t = nodo.textContent?.trim();
+        if (t && !w.__estados!.includes(t)) w.__estados!.push(t);
+      }).observe(nodo, { childList: true, characterData: true, subtree: true });
+    });
 
     await panel.locator('button[type="submit"]').click();
     await expect(panel.locator('[data-action="edit-entry"]').first()).toBeVisible({
       timeout: 15_000,
     });
-    clearInterval(muestreo);
 
-    expect(estados.some((t) => /Guardando campo \d+ de \d+/.test(t))).toBe(true);
+    const estados = await page.evaluate(
+      () => (window as unknown as { __estados: string[] }).__estados
+    );
+    expect(
+      estados.some((t) => /Guardando campo \d+ de \d+/.test(t)),
+      `estados observados: ${JSON.stringify(estados)}`
+    ).toBe(true);
   });
 
   test('los avisos de estado son regiones vivas', async ({ page }) => {

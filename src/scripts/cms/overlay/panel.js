@@ -63,21 +63,42 @@ export function openPanel(html, { autofocus = true } = {}) {
 const FOCUSABLES =
   'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-panel.addEventListener('keydown', (event) => {
+/*
+ * El ciclo se recorre explícitamente en vez de interceptar solo en los
+ * extremos.
+ *
+ * Con el aviso de deshacer fuera del panel, el enfoque anterior —«si estoy en
+ * el último, salta al primero»— dejaba de funcionar: el «último» pasaba a ser
+ * un botón que el Tab nativo nunca alcanzaba desde dentro del panel, así que
+ * la trampa se abría sola y el foco se iba a la página.
+ */
+panel.addEventListener('keydown', manejarTab);
+
+function manejarTab(event) {
   if (event.key !== 'Tab' || !panel.classList.contains('open')) return;
-  const focusables = [...panel.querySelectorAll(FOCUSABLES)].filter(
-    (el) => el.offsetParent !== null || el === document.activeElement
-  );
-  if (focusables.length === 0) return;
-  const primero = focusables[0];
-  const ultimo = focusables[focusables.length - 1];
-  if (event.shiftKey && document.activeElement === primero) {
-    event.preventDefault();
-    ultimo.focus();
-  } else if (!event.shiftKey && document.activeElement === ultimo) {
-    event.preventDefault();
-    primero.focus();
-  }
+
+  const avisoDeshacer = shell.querySelector('[data-undo-host]:not([hidden])');
+  const ciclo = [
+    ...panel.querySelectorAll(FOCUSABLES),
+    ...(avisoDeshacer ? avisoDeshacer.querySelectorAll(FOCUSABLES) : []),
+  ].filter((el) => el.offsetParent !== null || el === document.activeElement);
+  if (ciclo.length === 0) return;
+
+  const actual = ciclo.indexOf(document.activeElement);
+  if (actual === -1) return;
+
+  const siguiente = event.shiftKey
+    ? (actual - 1 + ciclo.length) % ciclo.length
+    : (actual + 1) % ciclo.length;
+  event.preventDefault();
+  ciclo[siguiente].focus();
+}
+
+// El aviso vive fuera del panel, así que sus pulsaciones no burbujean hasta
+// él: se escucha también ahí para que el ciclo funcione en los dos sentidos.
+shell.addEventListener('keydown', (event) => {
+  if (!event.target.closest?.('[data-undo-host]')) return;
+  manejarTab(event);
 });
 
 export function closePanel(force = false) {

@@ -27,6 +27,16 @@ shell.innerHTML = `
     ${botonesDeBarra()}
   </div>
   <!--
+    El aviso de deshacer vive aquí, hermano de la barra, y NO dentro del panel:
+    los cuatro borradores llaman acto seguido a un cargador que pasa por
+    openPanel, que hace panelBody.innerHTML = html. Un aviso dentro del panel
+    se destruiría milisegundos después de nacer.
+
+    Existe desde el montaje, vacío: una región viva insertada y rellenada en el
+    mismo fotograma no se anuncia de forma fiable.
+  -->
+  <div class="hm-cms-undo" data-undo-host role="status" aria-live="polite" aria-atomic="true" hidden></div>
+  <!--
     Ni <aside> ni <header> ni <main>: el overlay se inyecta en TODAS las
     páginas del sitio, así que esas etiquetas añadían un segundo landmark
     "main" y un segundo "banner" al documento —dos avisos de axe en cada
