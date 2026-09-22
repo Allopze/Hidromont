@@ -11,7 +11,9 @@ El sitio web está diseñado con un registro visual industrial y de alta precisi
 El proyecto está dividido en dos partes integradas pero desacopladas para mantener el sitio público extremadamente rápido y estático:
 
 1. **Sitio Web (Frontend)**:
-   - **Astro 4**: Generador de sitios estáticos (`output: 'static'`).
+   - **Astro 5**: Generador de sitios estáticos (`output: 'static'`). Las
+     colecciones usan el Content Layer (`src/content.config.ts`), así que el
+     frontmatter de proyectos y servicios se valida contra Zod al compilar.
    - **Tailwind CSS 3**: Framework de utilidades CSS integrado con variables y tokens de diseño.
    - **Fuentes auto-hospedadas**: Inter (cuerpo de texto), Roboto Condensed (encabezados) y Roboto Mono (datos/métricas).
 2. **CMS Local (Backend + Edición Visual)**:

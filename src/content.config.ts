@@ -59,10 +59,28 @@ const servicios = defineCollection({
     }),
 });
 
+/**
+ * El loader `file()` interpreta el JSON raíz como una colección de entradas:
+ * un array cuyos elementos llevan su propio `id`, o un objeto cuyas claves son
+ * los ids. El archivo era un único objeto `{id, items}`, así que `file()` leía
+ * dos entradas —«id» e «items»— y la primera tenía una cadena por datos.
+ *
+ * No se notaba porque este config nunca se cargaba: estaba en la ruta de Astro
+ * 5 mientras el proyecto corría Astro 4, que infería las colecciones del
+ * directorio y trataba cada `.json` como una entrada. Al activar el config, el
+ * desajuste salió a la primera compilación.
+ *
+ * El archivo pasa a ser `[{id: 'clientes', items: [...]}]`, que produce una
+ * sola entrada con id `clientes` — justo lo que piden los dos consumidores,
+ * `getEntry('clientes', 'clientes')` en `clientes.astro` e `index.astro`.
+ *
+ * `id` va opcional porque el loader lo consume como identificador de la
+ * entrada y no está garantizado que lo deje también dentro de `data`.
+ */
 const clientes = defineCollection({
   loader: file('src/content/clientes/clientes.json'),
   schema: z.object({
-    id: z.string(),
+    id: z.string().optional(),
     items: z.array(
       z.object({
         nombre: z.string(),
