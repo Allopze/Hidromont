@@ -8,6 +8,7 @@
  * está activo (`?cms=1`), de modo que un visitante normal no descarga nada.
  */
 
+import { botonesDeBarra } from './actions';
 import { overlayStyles } from './styles';
 
 const hojaDeEstilos = document.createElement('style');
@@ -23,12 +24,7 @@ shell.innerHTML = `
     <strong>Hidromont CMS</strong>
     <span class="hm-cms-badge" data-state-badge style="display:none"></span>
     <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
-    <button type="button" class="secondary" data-action="collections" data-auth hidden>Colecciones</button>
-    <button type="button" class="secondary" data-action="gallery" data-auth hidden>Galería</button>
-    <button type="button" class="secondary" data-action="jobs" data-auth hidden>Historial</button>
-    <button type="button" class="secondary" data-action="admin" data-auth hidden title="Registro de actividad, respaldos de la base y cambio de contraseña.">Administrar</button>
-    <button type="button" data-action="publish" data-auth hidden title="Exporta el contenido, compila el sitio y lo deja servido. El comando de validación es configurable (CMS_PUBLISH_CHECK_COMMAND).">Exportar y validar</button>
-    <button type="button" class="secondary" data-action="logout" data-auth hidden>Salir</button>
+    ${botonesDeBarra()}
   </div>
   <!--
     Ni <aside> ni <header> ni <main>: el overlay se inyecta en TODAS las
