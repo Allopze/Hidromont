@@ -239,8 +239,46 @@ sitio **antes** del paso 6. Corrige y recompila.
 
 **Actualizar el código**
 
+Desde tu máquina, con todo commiteado y empujado:
+
 ```bash
-sudo -u hidromont -H bash -c 'cd /srv/hidromont && git pull && npm ci && npm run build:servidor'
+npm run deploy
+```
+
+Usa el alias `hidromont` de `~/.ssh/config`. Trae los commits, instala,
+compila y reinicia, y verifica que el servicio quedó en pie de verdad.
+
+Antes de tocar el servidor comprueba en local que no queda nada sin commitear
+ni sin publicar, y que tu rama no va por detrás del remoto. El motivo es que lo
+que corre en producción tiene que ser siempre un commit al que se pueda volver:
+si el despliegue sale mal, `git log` del servidor dice exactamente qué hay.
+
+| Argumento                             | Para qué                                             |
+| ------------------------------------- | ---------------------------------------------------- |
+| `npm run deploy -- otro-alias`        | otro destino                                         |
+| `npm run deploy -- root@IP -p PUERTO` | sin alias en `~/.ssh/config`                         |
+| `npm run deploy -- -d /otra/ruta`     | otro directorio (por defecto `/srv/hidromont`)       |
+| `npm run deploy -- --ligero`          | compila sin `astro check`, el paso más caro (907 MB) |
+
+**No toca la base del CMS ni `uploads/cms`.** Esos datos viven en el servidor y
+los edita el operador desde el panel; pisarlos desde tu máquina borraría su
+trabajo. Para subirlos en la otra dirección está `scripts/sync-datos-vps.sh`.
+
+Compila con `npm run build:log`, que genera en `dist.nuevo` y sustituye `dist`
+solo si termina bien. `build:servidor` y `build` dejan que Astro vacíe `dist`
+antes de generar, así que un build que muera a mitad deja el sitio sin páginas.
+
+> **Revisa `CMS_PUBLISH_CHECK_COMMAND` en el `.env` del servidor.** Es lo que
+> ejecuta el botón «Exportar y validar» del panel, y durante un tiempo apuntó a
+> `npm run build:servidor`, que no es atómico. Un build que muriera a mitad —y
+> pasó: ver el commit `0fea84b`— tiraba el sitio, disparado por un editor
+> pulsando «Publicar». Debe decir `npm run build:log`. `npm run deploy` avisa si
+> no es así, pero no lo cambia solo.
+
+Si prefieres hacerlo a mano, el equivalente es:
+
+```bash
+sudo -u hidromont -H bash -c 'cd /srv/hidromont && git pull && npm ci && npm run build:log'
 sudo systemctl restart hidromont
 ```
 
