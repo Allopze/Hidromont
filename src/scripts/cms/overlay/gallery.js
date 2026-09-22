@@ -123,7 +123,7 @@ export async function showGalleryCategoryForm(catId = null) {
         <button type="submit">${catId ? 'Guardar cambios' : 'Crear categoría'}</button>
         <button type="button" class="secondary" data-action="gallery-cats">Cancelar</button>
       </div>
-      <p class="hm-cms-muted" data-status></p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 
@@ -214,7 +214,7 @@ export async function showGalleryAlbumForm(albumSlug = null) {
         <button type="submit">${albumSlug ? 'Guardar cambios' : 'Crear álbum'}</button>
         <button type="button" class="secondary" data-action="gallery-albums">Cancelar</button>
       </div>
-      <p class="hm-cms-muted" data-status></p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 
@@ -454,7 +454,7 @@ export async function showGalleryItemForm(itemId = null) {
         ${itemId ? `<button type="button" class="secondary destructive" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.alt)}">Eliminar</button>` : ''}
         <button type="button" class="secondary" data-action="gallery-items">Cancelar</button>
       </div>
-      <p class="hm-cms-muted" data-status></p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 

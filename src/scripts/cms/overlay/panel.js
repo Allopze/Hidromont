@@ -81,6 +81,20 @@ panel.addEventListener('keydown', (event) => {
 });
 
 export function closePanel(force = false) {
+  /*
+   * Mientras hay una escritura en curso, cerrar no es una opción.
+   *
+   * `saveEntryForm` manda hasta nueve PATCH en serie. Cerrar o navegar a media
+   * tanda aborta los que faltan SIN ningún aviso: los primeros campos quedan
+   * escritos, el resto no, y el panel vuelve a la lista como si todo hubiera
+   * ido bien. Reproducido al escribir las pruebas del editor de texto.
+   *
+   * La confirmación de «cambios sin guardar» de abajo no cubre esto: ahí lo
+   * escrito sigue a salvo en el borrador local, aquí se perdería a medias.
+   */
+  const ocupado = panelBody.querySelector('[data-busy="true"]');
+  if (ocupado) return;
+
   // A-11: Escape y «Cerrar» descartaban lo escrito sin preguntar, aunque el
   // estado sucio ya se estaba registrando para el aviso del navegador.
   if (

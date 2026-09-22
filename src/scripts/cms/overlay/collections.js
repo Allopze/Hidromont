@@ -257,7 +257,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
         <button type="button" class="secondary" data-action="back-to-collections">← Volver</button>
         ${entry ? `<button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>` : ''}
       </div>
-      <p class="hm-cms-muted" data-status></p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 }
@@ -303,8 +303,17 @@ export async function saveEntryForm(form) {
       // paralelo y con control de concurrencia estos guardados se
       // conflictuarían entre sí. En serie el orden es además determinista:
       // con Promise.all se generaban N revisiones en orden indeterminado.
-      for (const [name, input] of Object.entries(form.elements)) {
-        if (typeof name === 'string' && name.startsWith('field:')) {
+      // El bucle ya sabe cuántos campos va a mandar, así que puede decirlo.
+      // Antes eran hasta nueve peticiones en serie bajo un único «Guardando...»
+      // que no cambiaba nunca: sin señal de avance y sin forma de saber si
+      // seguía vivo. Es el único flujo largo del panel que no informaba.
+      const campos = Object.entries(form.elements).filter(
+        ([name]) => typeof name === 'string' && name.startsWith('field:')
+      );
+      let hechos = 0;
+
+      for (const [name, input] of campos) {
+        {
           const key = name.slice(6);
           // A-8: el servidor valida que el valor case con el tipo declarado
           // del campo, así que un número no puede viajar como cadena.
@@ -327,6 +336,8 @@ export async function saveEntryForm(form) {
               body: JSON.stringify({ value }),
             }
           );
+          hechos += 1;
+          if (status) status.textContent = `Guardando campo ${hechos} de ${campos.length}...`;
         }
       }
     }

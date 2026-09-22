@@ -9,30 +9,9 @@
  */
 
 import { apiBase, state } from './context';
-import { escapeHtml } from './html';
-
-export function setButtonLoading(button, isLoading, loadingText = '') {
-  if (!button || !(button instanceof Element)) return;
-  const btn = button.closest('button');
-  if (!btn) return;
-  if (isLoading) {
-    if (!btn.hasAttribute('data-orig-html')) {
-      btn.setAttribute('data-orig-html', btn.innerHTML);
-    }
-    btn.setAttribute('data-loading', 'true');
-    btn.disabled = true;
-    const label = loadingText || btn.textContent.trim();
-    btn.innerHTML = `<span class="hm-cms-spinner"></span>${escapeHtml(label)}`;
-  } else {
-    btn.removeAttribute('data-loading');
-    btn.disabled = false;
-    const orig = btn.getAttribute('data-orig-html');
-    if (orig) {
-      btn.innerHTML = orig;
-      btn.removeAttribute('data-orig-html');
-    }
-  }
-}
+// Reexportado por comodidad: el estado de los botones vive en `submit.js`,
+// que no depende de `window` y por eso sí se puede probar en Node.
+export { ejecutarUnaVez, estaOcupado, setButtonLoading } from './submit';
 
 export async function api(path, options = {}) {
   const headers = options.headers || {};

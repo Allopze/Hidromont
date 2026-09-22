@@ -159,7 +159,7 @@ export function renderAdmin({ autofocus } = {}) {
         <span class="hm-cms-actions">
           <button type="submit">Cambiar contraseña</button>
         </span>
-        <p class="hm-cms-muted" data-status></p>
+        <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
       </form>
 
     </section>

@@ -12,7 +12,7 @@ import { apiBase, state } from './context';
 import { escapeHtml, formatDate } from './html';
 import { panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
 import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
-import { api, setButtonLoading } from './api';
+import { api, ejecutarUnaVez, setButtonLoading } from './api';
 import { closePanel, openPanel } from './panel';
 import { ensureSession, loginView } from './auth';
 import {
@@ -566,20 +566,30 @@ export function registerEvents() {
 
     if (form.matches('[data-edit]')) {
       event.preventDefault();
-      saveEdit(form).catch((error) => {
-        const status = form.querySelector('[data-status]');
-        if (status)
-          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
-      });
+      ejecutarUnaVez(
+        form,
+        () =>
+          saveEdit(form).catch((error) => {
+            const status = form.querySelector('[data-status]');
+            if (status)
+              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+          }),
+        { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
+      );
     }
 
     if (form.matches('[data-entry-form]')) {
       event.preventDefault();
-      saveEntryForm(form).catch((error) => {
-        const status = form.querySelector('[data-status]');
-        if (status)
-          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
-      });
+      ejecutarUnaVez(
+        form,
+        () =>
+          saveEntryForm(form).catch((error) => {
+            const status = form.querySelector('[data-status]');
+            if (status)
+              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+          }),
+        { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
+      );
     }
 
     if (form.matches('[data-password-form]')) {
@@ -617,128 +627,146 @@ export function registerEvents() {
 
     if (form.matches('[data-gallery-cat-form]')) {
       event.preventDefault();
-      const status = form.querySelector('[data-status]');
-      const catId = form.dataset.catId;
-      try {
-        if (status) status.textContent = 'Guardando...';
-        const body = {
-          name: form.elements.name.value,
-          slug: form.elements.slug.value || undefined,
-        };
-        if (catId) {
-          await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-        } else {
-          await api('/api/cms/gallery/categories', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-        }
-        loadGalleryCategories();
-      } catch (error) {
-        if (status)
-          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
-      }
+      await ejecutarUnaVez(
+        form,
+        async () => {
+          const status = form.querySelector('[data-status]');
+          const catId = form.dataset.catId;
+          try {
+            if (status) status.textContent = 'Guardando...';
+            const body = {
+              name: form.elements.name.value,
+              slug: form.elements.slug.value || undefined,
+            };
+            if (catId) {
+              await api(`/api/cms/gallery/categories/${encodeURIComponent(catId)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+            } else {
+              await api('/api/cms/gallery/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+            }
+            loadGalleryCategories();
+          } catch (error) {
+            if (status)
+              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+          }
+        },
+        { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
+      );
     }
 
     if (form.matches('[data-gallery-album-form]')) {
       event.preventDefault();
-      const status = form.querySelector('[data-status]');
-      const albumSlug = form.dataset.albumSlug;
-      try {
-        if (status) status.textContent = 'Guardando...';
-        if (albumSlug) {
-          // El slug es inmutable: solo viaja el nombre.
-          await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: form.elements.name.value }),
-          });
-        } else {
-          await api('/api/cms/gallery/albums', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: form.elements.name.value,
-              slug: form.elements.slug.value || undefined,
-            }),
-          });
-        }
-        loadGalleryAlbums();
-      } catch (error) {
-        if (status)
-          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
-      }
+      await ejecutarUnaVez(
+        form,
+        async () => {
+          const status = form.querySelector('[data-status]');
+          const albumSlug = form.dataset.albumSlug;
+          try {
+            if (status) status.textContent = 'Guardando...';
+            if (albumSlug) {
+              // El slug es inmutable: solo viaja el nombre.
+              await api(`/api/cms/gallery/albums/${encodeURIComponent(albumSlug)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: form.elements.name.value }),
+              });
+            } else {
+              await api('/api/cms/gallery/albums', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: form.elements.name.value,
+                  slug: form.elements.slug.value || undefined,
+                }),
+              });
+            }
+            loadGalleryAlbums();
+          } catch (error) {
+            if (status)
+              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+          }
+        },
+        { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
+      );
     }
 
     if (form.matches('[data-gallery-item-form]')) {
       event.preventDefault();
-      const status = form.querySelector('[data-status]');
-      const itemId = form.dataset.itemId;
-      try {
-        if (status) status.textContent = 'Guardando...';
+      await ejecutarUnaVez(
+        form,
+        async () => {
+          const status = form.querySelector('[data-status]');
+          const itemId = form.dataset.itemId;
+          try {
+            if (status) status.textContent = 'Guardando...';
 
-        // Upload file if selected
-        const fileInput = form.elements.file;
-        const file = fileInput?.files?.[0];
-        let currentMediaId = form.elements.mediaId.value;
+            // Upload file if selected
+            const fileInput = form.elements.file;
+            const file = fileInput?.files?.[0];
+            let currentMediaId = form.elements.mediaId.value;
 
-        if (file && !currentMediaId) {
-          if (status) status.textContent = 'Subiendo imagen...';
-          const payload = new FormData();
-          payload.append('file', file);
-          const uploaded = await fetch(`${apiBase}/api/cms/media`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'X-CSRF-Token': state.csrfToken },
-            body: payload,
-          }).then(async (response) => {
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Error al subir imagen');
-            return data;
-          });
-          currentMediaId = uploaded.id;
-          form.elements.mediaId.value = uploaded.id;
-          if (!form.elements.alt.value) {
-            // El alt del media si lo trae; si no, el nombre del archivo, que al
-            // menos es mejor que dejar la foto sin texto alternativo.
-            form.elements.alt.value =
-              uploaded.alt || uploaded.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+            if (file && !currentMediaId) {
+              if (status) status.textContent = 'Subiendo imagen...';
+              const payload = new FormData();
+              payload.append('file', file);
+              const uploaded = await fetch(`${apiBase}/api/cms/media`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'X-CSRF-Token': state.csrfToken },
+                body: payload,
+              }).then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Error al subir imagen');
+                return data;
+              });
+              currentMediaId = uploaded.id;
+              form.elements.mediaId.value = uploaded.id;
+              if (!form.elements.alt.value) {
+                // El alt del media si lo trae; si no, el nombre del archivo, que al
+                // menos es mejor que dejar la foto sin texto alternativo.
+                form.elements.alt.value =
+                  uploaded.alt || uploaded.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
+              }
+            }
+
+            if (!currentMediaId) throw new Error('Selecciona o sube una imagen primero');
+            const body = {
+              mediaId: currentMediaId,
+              alt: form.elements.alt.value,
+              categoryId: form.elements.categoryId.value || null,
+              projectSlug: form.elements.projectSlug.value || null,
+              featured: form.elements.featured.checked,
+              status: form.elements.status.value,
+            };
+            if (itemId) {
+              await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+            } else {
+              await api('/api/cms/gallery/items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+              });
+            }
+            clearDraft(form);
+            loadGalleryItemsList();
+          } catch (error) {
+            if (status)
+              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
           }
-        }
-
-        if (!currentMediaId) throw new Error('Selecciona o sube una imagen primero');
-        const body = {
-          mediaId: currentMediaId,
-          alt: form.elements.alt.value,
-          categoryId: form.elements.categoryId.value || null,
-          projectSlug: form.elements.projectSlug.value || null,
-          featured: form.elements.featured.checked,
-          status: form.elements.status.value,
-        };
-        if (itemId) {
-          await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-        } else {
-          await api('/api/cms/gallery/items', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-        }
-        clearDraft(form);
-        loadGalleryItemsList();
-      } catch (error) {
-        if (status)
-          status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
-      }
+        },
+        { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
+      );
     }
   });
 

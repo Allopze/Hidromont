@@ -213,7 +213,7 @@ export async function selectElement(element) {
         <button type="button" class="secondary" data-action="export">Exportar</button>
         <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
       </div>
-      <p class="hm-cms-muted" data-status>Sin cambios guardados.</p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status>Sin cambios guardados.</p>
     </form>
   `);
 
