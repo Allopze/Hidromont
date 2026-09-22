@@ -342,6 +342,42 @@ test.describe('CMS overlay flow', () => {
   });
 });
 
+test.describe('CMS acceso por teclado', () => {
+  /**
+   * El overlay se montaba al final del `<body>`, así que quien navega con
+   * teclado recorría la página pública entera —56 pulsaciones de Tab, medidas—
+   * antes de alcanzar sus propios controles. Como el shell es
+   * `position: fixed`, moverlo al principio del DOM no cambia nada visual y
+   * deja la administración a una sola pulsación.
+   */
+  test('la primera tabulación de la página cae dentro del overlay', async ({ page }) => {
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+    await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
+
+    await page.evaluate(() => document.body.focus());
+    await page.keyboard.press('Tab');
+
+    const dentro = await page.evaluate(() => !!document.activeElement?.closest('.hm-cms-shell'));
+    expect(dentro, 'el primer Tab debería llegar al editor, no a la página').toBe(true);
+  });
+
+  test('el panel abierto sigue confinando el foco', async ({ page }) => {
+    // La trampa de foco ya existía; mover el shell no debe haberla alterado.
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+    await page.locator('.hm-cms-bar [data-action="collections"]').click();
+    await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
+
+    for (let i = 0; i < 30; i++) await page.keyboard.press('Tab');
+
+    const dentroDelPanel = await page.evaluate(
+      () => !!document.activeElement?.closest('.hm-cms-panel')
+    );
+    expect(dentroDelPanel, 'tabular en bucle no debe escapar del panel').toBe(true);
+  });
+});
+
 test.describe('CMS mobile navigation', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 

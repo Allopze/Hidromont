@@ -52,7 +52,18 @@ shell.innerHTML = `
   </div>
 `;
 
-document.body.appendChild(shell);
+/*
+ * `prepend`, no `appendChild`: el shell es `position: fixed; inset: 0`, así que
+ * su sitio en el DOM no cambia nada de lo que se ve, pero sí el orden de
+ * tabulación. Montado al final había que atravesar la página pública entera
+ * —56 pulsaciones de Tab, medidas— antes de alcanzar la barra del editor, y 62
+ * antes del panel. Al principio son 0.
+ *
+ * El coste es que los 7 controles de la barra van ahora antes del contenido de
+ * la página. Es el orden correcto para quien viene a editar, que es la única
+ * persona que ve esto: el overlay solo existe con `?cms=1`.
+ */
+document.body.prepend(shell);
 
 document.body.classList.add('hm-cms-active');
 
