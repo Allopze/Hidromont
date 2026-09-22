@@ -231,6 +231,81 @@ export class GalleryRepository {
   }
 
   /** M-3: cuántas fotos quedarían sin categoría al borrarla. */
+  /**
+   * Los ids de las fotos de una categoría.
+   *
+   * `countItemsByCategory` solo dice cuántas; para poder devolverlas a su
+   * categoría al deshacer hace falta saber cuáles, porque el
+   * `ON DELETE SET NULL` las deja indistinguibles de las que nunca tuvieron.
+   */
+  listItemIdsByCategory(categoryId: string): string[] {
+    return (
+      this.db
+        .prepare('SELECT id FROM gallery_items WHERE category_id = ? ORDER BY position ASC')
+        .all(categoryId) as Array<{ id: string }>
+    ).map((r) => r.id);
+  }
+
+  /** Devuelve una foto a su categoría, solo si sigue sin ninguna. */
+  relinkItemCategory(itemId: string, categoryId: string, now: string): boolean {
+    // El `AND category_id IS NULL` importa: si el operador recategorizó la
+    // foto durante la ventana de deshacer, su decisión es más nueva y manda.
+    const r = this.db
+      .prepare(
+        'UPDATE gallery_items SET category_id = ?, updated_at = ? WHERE id = ? AND category_id IS NULL'
+      )
+      .run(categoryId, now, itemId);
+    return r.changes > 0;
+  }
+
+  /** La fila cruda de un álbum, con sus fechas. `getAlbum` no las expone. */
+  getAlbumRow(
+    slug: string
+  ):
+    | { slug: string; name: string; position: number; createdAt: string; updatedAt: string }
+    | undefined {
+    const row = this.db
+      .prepare(
+        'SELECT slug, name, position, created_at, updated_at FROM gallery_albums WHERE slug = ?'
+      )
+      .get(slug) as
+      | { slug: string; name: string; position: number; created_at: string; updated_at: string }
+      | undefined;
+    return row
+      ? {
+          slug: row.slug,
+          name: row.name,
+          position: row.position,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        }
+      : undefined;
+  }
+
+  /** Reinserta un álbum tal como estaba. */
+  restoreAlbum(input: {
+    slug: string;
+    name: string;
+    position: number;
+    createdAt: string;
+    updatedAt: string;
+  }): void {
+    this.db
+      .prepare(
+        'INSERT INTO gallery_albums (slug, name, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
+      )
+      .run(input.slug, input.name, input.position, input.createdAt, input.updatedAt);
+  }
+
+  /** ¿Sigue existiendo este medio? Al restaurar una foto puede haber volado. */
+  mediaExists(mediaId: string): boolean {
+    return !!this.db.prepare('SELECT 1 FROM media_assets WHERE id = ?').get(mediaId);
+  }
+
+  categoryExists(categoryId: string): boolean {
+    return !!this.db.prepare('SELECT 1 FROM gallery_categories WHERE id = ?').get(categoryId);
+  }
+
   countItemsByCategory(categoryId: string): number {
     return (
       this.db

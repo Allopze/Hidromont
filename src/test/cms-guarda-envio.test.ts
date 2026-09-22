@@ -120,7 +120,7 @@ describe('ejecutarUnaVez', () => {
 
   it('un ámbito ausente no ejecuta nada', async () => {
     const tarea = vi.fn();
-    await expect(ejecutarUnaVez(null as unknown as HTMLElement, tarea)).resolves.toBeUndefined();
+    await expect(ejecutarUnaVez(null, tarea)).resolves.toBeUndefined();
     expect(tarea).not.toHaveBeenCalled();
   });
 });

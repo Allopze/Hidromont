@@ -57,6 +57,12 @@ export function setButtonLoading(button, isLoading, loadingText = '') {
  * siempre.
  *
  * Devuelve `undefined` sin llegar a ejecutar si ya había una operación viva.
+ *
+ * @template T
+ * @param {{ dataset: Record<string, string> } | null | undefined} ambito
+ * @param {() => Promise<T>} tarea
+ * @param {{ boton?: unknown, textoCarga?: string }} [opciones]
+ * @returns {Promise<T | undefined>}
  */
 export async function ejecutarUnaVez(ambito, tarea, { boton, textoCarga = '' } = {}) {
   if (!ambito || ambito.dataset.busy === 'true') return undefined;
@@ -72,7 +78,11 @@ export async function ejecutarUnaVez(ambito, tarea, { boton, textoCarga = '' } =
   }
 }
 
-/** ¿Hay una escritura en curso dentro de este ámbito? */
+/**
+ * ¿Hay una escritura en curso dentro de este ámbito?
+ *
+ * @param {{ dataset?: Record<string, string> } | null | undefined} ambito
+ */
 export function estaOcupado(ambito) {
   return ambito?.dataset?.busy === 'true';
 }

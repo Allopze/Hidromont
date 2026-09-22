@@ -11,9 +11,15 @@ import {
   updateFieldSchema,
 } from '../validators/cms.schema';
 import { BaseController } from './BaseController';
+import type { AuditRepository } from '../repositories/AuditRepository';
+import { UndoService } from '../services/undoService';
 
 export class ContentController extends BaseController {
-  constructor(private readonly contentService: ContentService) {
+  /** Ver GalleryController: el evento se escribe antes de responder. */
+  constructor(
+    private readonly contentService: ContentService,
+    private readonly auditRepository: AuditRepository
+  ) {
     super();
   }
 
@@ -158,8 +164,23 @@ export class ContentController extends BaseController {
   async deleteEntry(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const params = entryParamsSchema.parse(request.params);
-      this.contentService.deleteEntry(params.id);
-      this.handleSuccess(reply, { ok: true });
+      const snapshot = this.contentService.deleteEntry(params.id);
+      const token = snapshot.entry
+        ? this.auditRepository.log({
+            action: 'entry.delete',
+            userId: request.cmsSession?.user.id,
+            entityType: 'entry',
+            entityId: params.id,
+            data: {
+              undo: UndoService.sobre('entry', `la entrada «${snapshot.entry.title}»`, snapshot),
+            },
+            ip: request.ip,
+          })
+        : null;
+      this.handleSuccess(reply, {
+        ok: true,
+        undo: UndoService.oferta(token, `la entrada «${snapshot.entry?.title ?? params.id}»`),
+      });
     } catch (error) {
       this.handleError(error, reply, 'deleteEntry');
     }

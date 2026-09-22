@@ -12,10 +12,42 @@ import {
   updateGalleryItemSchema,
 } from '../validators/cms.schema';
 import { BaseController } from './BaseController';
+import type { AuditRepository } from '../repositories/AuditRepository';
+import { UndoService, type TipoDeshacer } from '../services/undoService';
 
 export class GalleryController extends BaseController {
-  constructor(private readonly galleryService: GalleryService) {
+  /**
+   * `auditRepository` llega aquí y no se queda en la ruta porque el evento
+   * tiene que escribirse ANTES de responder: su id es el token de deshacer y
+   * viaja en el cuerpo. Los `log()` de las rutas corren después de
+   * `reply.send()`, cuando ya no hay dónde meterlo.
+   */
+  constructor(
+    private readonly galleryService: GalleryService,
+    private readonly auditRepository: AuditRepository
+  ) {
     super();
+  }
+
+  /** Registra el borrado con su copia y devuelve la oferta de deshacer. */
+  private ofrecerDeshacer(
+    request: FastifyRequest,
+    accion: string,
+    entityType: string,
+    entityId: string,
+    kind: TipoDeshacer,
+    etiqueta: string,
+    snapshot: unknown
+  ) {
+    const token = this.auditRepository.log({
+      action: accion,
+      userId: request.cmsSession?.user.id,
+      entityType,
+      entityId,
+      data: { undo: UndoService.sobre(kind, etiqueta, snapshot) },
+      ip: request.ip,
+    });
+    return UndoService.oferta(token, etiqueta);
   }
 
   // ── Albums (GAL-19) ─────────────────────────────────────────
@@ -50,8 +82,19 @@ export class GalleryController extends BaseController {
   deleteAlbum(request: FastifyRequest, reply: FastifyReply): void {
     try {
       const params = albumParamsSchema.parse(request.params);
-      this.galleryService.deleteAlbum(params.slug);
-      this.handleSuccess(reply, { ok: true });
+      const snapshot = this.galleryService.deleteAlbum(params.slug);
+      const undo = snapshot
+        ? this.ofrecerDeshacer(
+            request,
+            'gallery.album.delete',
+            'gallery_album',
+            params.slug,
+            'gallery_album',
+            `el álbum «${snapshot.name}»`,
+            snapshot
+          )
+        : undefined;
+      this.handleSuccess(reply, { ok: true, undo });
     } catch (error) {
       this.handleError(error, reply, 'deleteGalleryAlbum');
     }
@@ -99,11 +142,22 @@ export class GalleryController extends BaseController {
   deleteCategory(request: FastifyRequest, reply: FastifyReply): void {
     try {
       const params = request.params as { id: string };
-      this.galleryService.deleteCategory(
+      const snapshot = this.galleryService.deleteCategory(
         params.id,
         (request.query as { confirm?: string }).confirm === '1'
       );
-      this.handleSuccess(reply, { ok: true });
+      this.handleSuccess(reply, {
+        ok: true,
+        undo: this.ofrecerDeshacer(
+          request,
+          'gallery.category.delete',
+          'gallery_category',
+          params.id,
+          'gallery_category',
+          `la categoría «${snapshot.category.name}»`,
+          snapshot
+        ),
+      });
     } catch (error) {
       this.handleError(error, reply, 'deleteGalleryCategory');
     }
@@ -166,8 +220,19 @@ export class GalleryController extends BaseController {
   deleteItem(request: FastifyRequest, reply: FastifyReply): void {
     try {
       const params = request.params as { id: string };
-      this.galleryService.deleteItem(params.id);
-      this.handleSuccess(reply, { ok: true });
+      const snapshot = this.galleryService.deleteItem(params.id);
+      this.handleSuccess(reply, {
+        ok: true,
+        undo: this.ofrecerDeshacer(
+          request,
+          'gallery.item.delete',
+          'gallery_item',
+          params.id,
+          'gallery_item',
+          `la foto «${snapshot.title || snapshot.alt}»`,
+          snapshot
+        ),
+      });
     } catch (error) {
       this.handleError(error, reply, 'deleteGalleryItem');
     }
