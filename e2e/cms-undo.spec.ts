@@ -123,14 +123,23 @@ test.describe('Deshacer', () => {
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
     await expect(page.locator('[data-undo-host]')).toBeVisible();
 
-    let alcanzado = false;
-    for (let i = 0; i < 60 && !alcanzado; i++) {
-      await page.keyboard.press('Tab');
-      alcanzado = await page.evaluate(
-        () => document.activeElement?.getAttribute('data-action') === 'undo'
+    // Se coloca el foco en el último control del panel y se pulsa Tab UNA vez.
+    // Recorrer el orden a fuerza de pulsaciones tardaba más que los 12 s de la
+    // ventana y hacía la prueba intermitente: competía con su propio
+    // temporizador. El ciclo es panel → deshacer → panel, así que una
+    // pulsación desde el final del panel basta para demostrarlo.
+    await page.evaluate(() => {
+      const enfocables = document.querySelectorAll<HTMLElement>(
+        '.hm-cms-panel a[href], .hm-cms-panel button:not([disabled]), .hm-cms-panel input:not([type="hidden"]):not([disabled]), .hm-cms-panel textarea:not([disabled]), .hm-cms-panel select:not([disabled])'
       );
-    }
-    expect(alcanzado, 'tabulando debería llegarse al botón Deshacer').toBe(true);
+      enfocables[enfocables.length - 1]?.focus();
+    });
+    await page.keyboard.press('Tab');
+
+    expect(
+      await page.evaluate(() => document.activeElement?.getAttribute('data-action')),
+      'desde el final del panel, Tab debería llegar a Deshacer'
+    ).toBe('undo');
 
     await page.keyboard.press('Enter');
     await expect(page.locator('[data-undo-host]')).toContainText('Restaurado');
