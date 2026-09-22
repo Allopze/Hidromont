@@ -54,6 +54,11 @@ export interface TestApp {
   rootDir: string;
   /** Borra la raíz temporal. Llamar junto a app.close(). */
   cleanup(): void;
+  /**
+   * Las rutas que monta esta tabla, como `MÉTODO /url`. Existe para que
+   * cmsRoutes.test.ts compruebe que no prueba rutas que producción no tiene.
+   */
+  routes: string[];
   /** Login and return { csrfToken, cookieHeader } for subsequent requests */
   login(): Promise<{ csrfToken: string; cookieHeader: string }>;
 }
@@ -103,6 +108,12 @@ export async function createTestApp(): Promise<TestApp> {
   const publishController = new PublishController(publishService);
 
   const app = fastify({ logger: false });
+  const routes: string[] = [];
+  app.addHook('onRoute', (r) => {
+    for (const m of ([] as string[]).concat(r.method)) {
+      if (m !== 'HEAD') routes.push(`${m} ${r.url}`);
+    }
+  });
   await app.register(cookie);
   await app.register(multipart, { limits: { fileSize: 8 * 1024 * 1024, files: 1 } });
 
@@ -309,6 +320,7 @@ export async function createTestApp(): Promise<TestApp> {
     adminEmail,
     adminPassword,
     rootDir,
+    routes,
     cleanup: () => fs.rmSync(rootDir, { recursive: true, force: true }),
     login,
   };
