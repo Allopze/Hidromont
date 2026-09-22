@@ -262,7 +262,10 @@ function enLinea(texto: string): string {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
 
-  html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, (completo, rotulo, href) => {
+  // `_completo` es la coincidencia entera, que `String.replace` pasa siempre y
+  // aquí no se usa: se reconstruye el enlace desde el rótulo y el destino. El
+  // prefijo `_` es el convenio que ya siguen ESLint y TypeScript en este repo.
+  html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, (_completo, rotulo, href) => {
     const destino = enlaceSeguro(href);
     if (!destino) return rotulo;
     return `<a href="${escapar(destino)}" rel="noopener noreferrer" target="_blank">${rotulo}</a>`;
