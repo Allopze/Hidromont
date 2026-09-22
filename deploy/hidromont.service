@@ -16,8 +16,20 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=hidromont
-Group=hidromont
+# Decisión explícita del operador (sep-2026): el proceso corre como root.
+#
+# Conviene saber lo que implica, porque este servicio publica un panel de
+# administración a internet: un fallo explotable en el CMS pasa de comprometer
+# una cuenta sin privilegios a comprometer la máquina entera. La alternativa
+# —un usuario de sistema sin login, que es lo que había— sigue documentada en
+# docs/DESPLIEGUE-VPS.md por si se quiere volver.
+#
+# Por eso el endurecimiento de abajo NO es opcional aquí: ProtectSystem=full
+# deja /usr, /boot y /etc en solo lectura, y ReadWritePaths acota la escritura
+# al directorio de la aplicación. Es lo que impide que «root» signifique
+# «cualquier cosa». No los quites.
+User=root
+Group=root
 WorkingDirectory=/srv/hidromont
 
 # Las variables reales viven en /srv/hidromont/.env, que el propio proceso

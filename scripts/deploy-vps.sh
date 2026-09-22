@@ -19,7 +19,6 @@ set -euo pipefail
 DESTINO="hidromont"   # el alias de ~/.ssh/config; ver docs/DESPLIEGUE-VPS.md
 PUERTO=""
 RUTA_REMOTA=/srv/hidromont
-USUARIO_APP=hidromont # el User= de deploy/hidromont.service
 LIGERO=""
 DESTINO_EXPLICITO=""
 
@@ -119,20 +118,22 @@ USUARIO="$("${SSH[@]}" -G "$DESTINO" 2>/dev/null | awk '$1=="user"{print $2; exi
 if [[ "$USUARIO" == "root" ]]; then SUDO=""; else SUDO="sudo "; fi
 verde "  conectado como ${USUARIO:-?}"
 
-# Todo lo que toca el directorio de la aplicación corre como el usuario del
-# servicio. Hacerlo como root deja archivos que `hidromont` luego no puede
-# leer, que es el fallo documentado en «Problemas conocidos» de la guía.
-como_app() {
-  "${SSH[@]}" "$DESTINO" "${SUDO}sudo -u $USUARIO_APP -H bash -lc 'cd $RUTA_REMOTA && $1'"
+# El servicio corre como root (User=root en hidromont.service), así que el
+# despliegue también: no hay cambio de usuario y los archivos que deja npm ci
+# o el build son los mismos que el proceso va a leer. Si algún día se vuelve a
+# un usuario sin privilegios, esto tiene que volver a envolverse en
+# `sudo -u <usuario> -H`, o el servicio dejará de poder leer lo que instale.
+en_servidor() {
+  "${SSH[@]}" "$DESTINO" "${SUDO}bash -lc 'cd $RUTA_REMOTA && $1'"
 }
 
 paso "Comprobando el estado del servidor"
-como_app 'git rev-parse --is-inside-work-tree >/dev/null' || {
+en_servidor 'git rev-parse --is-inside-work-tree >/dev/null' || {
   rojo "$RUTA_REMOTA no es un clon de git. ¿Primer despliegue? Sigue docs/DESPLIEGUE-VPS.md."
   exit 1
 }
 
-SUCIO_REMOTO="$(como_app 'git status --porcelain --untracked-files=no' || true)"
+SUCIO_REMOTO="$(en_servidor 'git status --porcelain --untracked-files=no' || true)"
 if [[ -n "$SUCIO_REMOTO" ]]; then
   rojo 'El servidor tiene cambios locales sin commitear; git pull los pisaría.'
   echo "$SUCIO_REMOTO" >&2
@@ -140,7 +141,7 @@ if [[ -n "$SUCIO_REMOTO" ]]; then
   exit 1
 fi
 
-ANTES="$(como_app 'git rev-parse --short HEAD')"
+ANTES="$(en_servidor 'git rev-parse --short HEAD')"
 verde "  el servidor está en $ANTES"
 if [[ "$ANTES" == "$COMMIT" ]]; then
   verde "  ya tiene este commit; se recompila igualmente por si cambió .env o los datos"
@@ -150,7 +151,7 @@ fi
 # si apunta a un build no atómico un fallo a mitad deja el sitio sin páginas.
 # Pasó en producción (commit 0fea84b). Solo se lee esa clave: el .env tiene
 # además la contraseña de administración.
-COMANDO_PUBLICAR="$(como_app "grep -m1 '^CMS_PUBLISH_CHECK_COMMAND=' .env | cut -d= -f2-" 2>/dev/null || true)"
+COMANDO_PUBLICAR="$(en_servidor "grep -m1 '^CMS_PUBLISH_CHECK_COMMAND=' .env | cut -d= -f2-" 2>/dev/null || true)"
 if [[ -n "$COMANDO_PUBLICAR" && "$COMANDO_PUBLICAR" != *"build:log"* ]]; then
   printf '\033[33m  aviso: el panel publica con «%s», que no es atómico.\033[0m\n' "$COMANDO_PUBLICAR"
   printf '\033[33m         Si ese build muere a mitad, el sitio se queda sin páginas.\033[0m\n'
@@ -165,12 +166,12 @@ REINICIOS_ANTES="$("${SSH[@]}" "$DESTINO" "systemctl show hidromont -p NRestarts
 # ── Despliegue ───────────────────────────────────────────────────────────────
 
 paso "Trayendo el código"
-como_app "git pull --ff-only"
+en_servidor "git pull --ff-only"
 
 paso "Instalando dependencias"
 # `npm ci` instala también las devDependencies: Astro vive ahí y sin ellas ni
 # este build ni el botón «Exportar y validar» del panel pueden compilar.
-como_app "npm ci"
+en_servidor "npm ci"
 
 paso "Compilando"
 # `build:log` y no `build:servidor`: compila en `dist.nuevo` y solo sustituye
@@ -179,9 +180,9 @@ paso "Compilando"
 # —pasó en producción con un tope de hilos— deja el sitio sin páginas.
 if [[ -n "$LIGERO" ]]; then
   echo "    (modo ligero: sin astro check)"
-  como_app "BUILD_LIGERO=1 npm run build:log"
+  en_servidor "BUILD_LIGERO=1 npm run build:log"
 else
-  como_app "npm run build:log"
+  en_servidor "npm run build:log"
 fi
 
 paso "Reiniciando el servicio"
@@ -219,7 +220,7 @@ ESTADO_HOME="$("${SSH[@]}" "$DESTINO" "curl -fsS -o /dev/null -w '%{http_code}' 
   exit 1
 }
 
-DESPUES="$(como_app 'git rev-parse --short HEAD')"
+DESPUES="$(en_servidor 'git rev-parse --short HEAD')"
 paso "Listo"
 verde "  $ANTES → $DESPUES   ·   servicio activo   ·   portada 200"
 echo "  La base y los medios no se han tocado."

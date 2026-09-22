@@ -46,13 +46,41 @@ HTTP-01 y sin DNS correcto no arranca.
 
 ## 1. Usuario y directorio de la aplicación
 
-El proceso no debe correr como root: publica un panel de administración a
-internet.
+**Esta instalación corre como root**, por decisión del operador (sep-2026).
+
+```bash
+sudo mkdir -p /srv/hidromont
+```
+
+Lo que eso implica, para que quede dicho: el servicio publica un panel de
+administración a internet, así que un fallo explotable en el CMS deja de
+comprometer una cuenta sin privilegios y pasa a comprometer la máquina.
+
+Lo que lo acota es el endurecimiento de `deploy/hidromont.service`, y por eso
+ahí **no es opcional**: `ProtectSystem=full` deja `/usr`, `/boot` y `/etc` en
+solo lectura, `ReadWritePaths=/srv/hidromont` limita la escritura al directorio
+de la aplicación, y `PrivateTmp` y `ProtectHome` cierran `/tmp` y `/root`. Sin
+esas líneas, «root» significa literalmente cualquier cosa.
+
+<details>
+<summary>Volver a un usuario sin privilegios</summary>
+
+Sigue siendo la opción recomendable. Para volver:
 
 ```bash
 sudo adduser --system --group --home /srv/hidromont --shell /bin/bash hidromont
-sudo mkdir -p /srv/hidromont && sudo chown hidromont:hidromont /srv/hidromont
+sudo chown -R hidromont:hidromont /srv/hidromont
+sudo sed -i 's/^User=root/User=hidromont/; s/^Group=root/Group=hidromont/' \
+  /etc/systemd/system/hidromont.service
+sudo systemctl daemon-reload && sudo systemctl restart hidromont
 ```
+
+Y en `scripts/deploy-vps.sh`, `en_servidor()` tiene que volver a envolver sus
+comandos en `sudo -u hidromont -H`: si no, `npm ci` y el build dejarán archivos
+de root que el servicio no podrá leer. Es el fallo `ENOENT`/`EACCES` de
+«Problemas conocidos».
+
+</details>
 
 ## 2. Node 24
 
@@ -70,9 +98,11 @@ Comprueba que `better-sqlite3` y `sharp` traen binario y no intentan compilar
 ## 3. Código y dependencias
 
 ```bash
-sudo -u hidromont -H bash
 cd /srv/hidromont
 git clone https://github.com/Allopze/Hidromont.git .
+# git se niega a operar en un repositorio de otro dueño; con todo en root no
+# hace falta, pero si algún día no coinciden:
+#   git config --global --add safe.directory /srv/hidromont
 npm ci
 ```
 
@@ -153,7 +183,7 @@ Si hiciste los pasos anteriores conectado como `root` —lo normal—, todo
 no puede leer ni el `.env` ni la base. Corrígelo antes de arrancar:
 
 ```bash
-sudo chown -R hidromont:hidromont /srv/hidromont
+sudo chown -R root:root /srv/hidromont
 sudo chmod 600 /srv/hidromont/.env
 ```
 
@@ -278,8 +308,8 @@ antes de generar, así que un build que muera a mitad deja el sitio sin páginas
 Si prefieres hacerlo a mano, el equivalente es:
 
 ```bash
-sudo -u hidromont -H bash -c 'cd /srv/hidromont && git pull && npm ci && npm run build:log'
-sudo systemctl restart hidromont
+cd /srv/hidromont && git pull && npm ci && npm run build:log
+systemctl restart hidromont
 ```
 
 **Ver qué pasa**
@@ -292,7 +322,7 @@ journalctl -u caddy -f              # TLS y peticiones
 **Backups automáticos** (diario a las 3:00, en el servidor):
 
 ```bash
-sudo -u hidromont crontab -e
+sudo crontab -e
 # 0 3 * * * cd /srv/hidromont && /usr/bin/npm run cms:backup >> /srv/hidromont/_cron.log 2>&1
 ```
 
@@ -306,11 +336,15 @@ backup que vive solo en el mismo disco que la base no es un backup.
 **`Error: ENOENT ... open '/srv/hidromont/.env'` con el archivo ahí delante** —
 es un mensaje engañoso: `process.loadEnvFile()` de Node reporta como `ENOENT`
 cualquier fallo al abrir, incluido `EACCES`. El archivo existe, pero el usuario
-`hidromont` no puede leerlo. Compruébalo y arréglalo:
+del servicio no puede leerlo.
+
+Con el servicio corriendo como root esto no debería ocurrir. Si aparece, es que
+algo cambió el dueño del directorio:
 
 ```bash
-sudo -u hidromont cat /srv/hidromont/.env >/dev/null   # «Permission denied»
-sudo chown -R hidromont:hidromont /srv/hidromont
+ls -l /srv/hidromont/.env        # debe ser del mismo usuario que el User= del servicio
+sudo chown -R root:root /srv/hidromont
+sudo chmod 600 /srv/hidromont/.env
 ```
 
 **El servicio no arranca y el log dice «cuenta(s) con la contraseña por
