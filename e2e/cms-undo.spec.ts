@@ -6,6 +6,7 @@
  * álbum y destacado de un clic.
  */
 import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -132,6 +133,30 @@ test.describe('Deshacer', () => {
     expect(alcanzado, 'tabulando debería llegarse al botón Deshacer').toBe(true);
 
     await page.keyboard.press('Enter');
+    await expect(page.locator('[data-undo-host]')).toContainText('Restaurado');
+  });
+
+  test('el overlay sigue sin violaciones de axe con el aviso abierto', async ({ page }) => {
+    // El shell tiene historial de problemas de landmarks, y el aviso añade un
+    // elemento nuevo a esa superficie. Las ocho escenas del panel están en 0
+    // violaciones; esta es la novena.
+    const csrf = await apiLogin(page);
+    const nombre = `Axe ${Date.now()}`;
+    await crearCategoria(page, csrf, nombre);
+
+    await abrirCategorias(page);
+    page.on('dialog', (d) => d.accept());
+    await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
+    await expect(page.locator('[data-undo-host]')).toBeVisible();
+
+    const r = await new AxeBuilder({ page }).include('.hm-cms-shell').analyze();
+    const graves = r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    expect(
+      graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) })),
+      'el aviso de deshacer introdujo violaciones'
+    ).toEqual([]);
+
+    await page.locator('[data-undo-host] [data-action="undo"]').click();
     await expect(page.locator('[data-undo-host]')).toContainText('Restaurado');
   });
 

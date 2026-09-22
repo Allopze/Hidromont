@@ -76,6 +76,28 @@ panel**: el formulario de colección filtraba el tipo `richtext` y ningún
 componente lo exponía con `data-cms-type`. Existían en la base y se exportaban,
 pero solo se podían cambiar editando los `.md` a mano.
 
+### Deshacer un borrado
+
+Al eliminar una foto, un álbum, una categoría o una entrada aparece un aviso
+sobre la barra con un botón **Deshacer** durante 12 segundos.
+
+- Fotos, álbumes y categorías vuelven enteros: posición, categoría, álbum,
+  destacado, texto alternativo. Por eso ya **no** se pide confirmación antes.
+- Las entradas siguen pidiendo confirmación, porque su deshacer no es íntegro:
+  el **historial de revisiones no se recupera**.
+- Una foto recategorizada durante esos 12 segundos conserva la categoría nueva:
+  esa decisión es más reciente y manda. El aviso lo dice.
+- Un segundo borrado reemplaza el aviso. Lo anterior no se pierde: el registro
+  de actividad conserva el evento.
+
+Lo restaurado vuelve a la base de datos, no a los archivos del sitio: hay que
+usar **«Exportar y validar»** para que se refleje. El distintivo de la barra
+pasa a «● Sin exportar» para recordarlo.
+
+> **Los medios no son deshacibles.** Borrar un archivo de la biblioteca lo
+> elimina del disco. Sigue protegido —exige confirmación explícita y se rechaza
+> si la imagen está en uso—, pero es definitivo.
+
 ## Flujo de publicación
 
 ### 1. Editar
