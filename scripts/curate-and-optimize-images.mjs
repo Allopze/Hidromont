@@ -3,6 +3,7 @@ import path from 'path';
 import sharp from 'sharp';
 
 const PROJECT_ROOT = process.cwd();
+const ORIGINALS_ROOT = path.join(PROJECT_ROOT, 'assets', 'originales');
 
 // Destination base directory for optimized web photos
 const DEST_BASE = path.join(PROJECT_ROOT, 'public', 'fotos', 'proyectos');
@@ -14,9 +15,9 @@ const CURATION_CONFIG = [
     slug: 'ch-pangal',
     prefix: 'ch-pangal',
     sources: [
-      { dir: path.join(PROJECT_ROOT, 'Pangal', 'Helicóptero'), tag: 'helicoptero', max: 10 },
-      { dir: path.join(PROJECT_ROOT, 'Pangal'), tag: 'terreno', max: 15 },
-      { dir: path.join(PROJECT_ROOT, 'Pangal', 'Whatsapp'), tag: 'obra', max: 10 }
+      { dir: path.join(ORIGINALS_ROOT, 'Pangal', 'Helicóptero'), tag: 'helicoptero', max: 10 },
+      { dir: path.join(ORIGINALS_ROOT, 'Pangal'), tag: 'terreno', max: 15 },
+      { dir: path.join(ORIGINALS_ROOT, 'Pangal', 'Whatsapp'), tag: 'obra', max: 10 }
     ]
   },
   {
@@ -24,10 +25,10 @@ const CURATION_CONFIG = [
     slug: 'ch-chacayes',
     prefix: 'ch-chacayes',
     sources: [
-      { dir: path.join(PROJECT_ROOT, 'Canal Chacayes', '1'), tag: 'fase1', max: 6 },
-      { dir: path.join(PROJECT_ROOT, 'Canal Chacayes', '2'), tag: 'fase2', max: 6 },
-      { dir: path.join(PROJECT_ROOT, 'Canal Chacayes', '3'), tag: 'fase3', max: 15 },
-      { dir: path.join(PROJECT_ROOT, 'Canal Chacayes', '4'), tag: 'fase4', max: 5 }
+      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '1'), tag: 'fase1', max: 6 },
+      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '2'), tag: 'fase2', max: 6 },
+      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '3'), tag: 'fase3', max: 15 },
+      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '4'), tag: 'fase4', max: 5 }
     ]
   },
   {

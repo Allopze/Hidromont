@@ -5,7 +5,7 @@
  * Sin SSH no hay `git clone`, así que la alternativa es arrastrar carpetas con
  * un cliente FTP — y ahí es fácil equivocarse por exceso o por defecto. La
  * carpeta del proyecto tiene ~22 GB de material de origen que nunca va al
- * servidor (`Pangal`, `top`, `Canal Chacayes`, vídeos, capturas), y a la vez
+ * servidor (`assets/originales`, vídeos, capturas), y a la vez
  * dos cosas imprescindibles que están fuera del control de versiones: la base
  * de datos y la biblioteca de medios.
  *
@@ -20,7 +20,7 @@
  *
  * Qué entra en el de aplicación lo decide `git ls-files`, no una lista a mano:
  * lo que está bajo control de versiones es exactamente la aplicación. Se
- * restan los archivos que el sitio no sirve (los PDF y documentos del raíz) y
+ * restan los documentos de referencia que el sitio no sirve y
  * lo que el servidor genera o instala por su cuenta.
  *
  * Uso:  npm run pack:deploy [-- --solo-app]
@@ -37,14 +37,17 @@ const log = (m) => process.stdout.write(`${m}\n`);
 const mb = (bytes) => `${(bytes / 1048576).toFixed(1)} MB`;
 
 /**
- * Lo que está en git pero no hace falta en el servidor. Los PDF y el material
- * de referencia del raíz no los sirve ninguna página —comprobado: no aparecen
- * en `src/`, `public/` ni en el build— y suman 29 MB en cada subida.
+ * Lo que está en git pero no hace falta en el servidor. La documentación y el
+ * material de referencia no los sirve ninguna página —comprobado: no aparecen
+ * en `src/`, `public/` ni en el build— y no deben viajar en cada subida.
  */
 const FUERA = [
+  /^docs\//,
+  // Compatibilidad mientras una reorganización local aún no está confirmada:
+  // git ls-files sigue mostrando temporalmente las rutas antiguas.
   /^[^/]+\.pdf$/i,
   /^[^/]+\.mp4$/i,
-  /^(ANALISIS-GASCO|AUDITORIA_UI_UX|PROMPT_AUDITORIA_CMS)\.md$/,
+  /^(ANALISIS-GASCO|AUDITORIA_UI_UX|INFORME-AUDITORIA-UX-UI|PROMPT_AUDITORIA_CMS)\.md$/,
   /^\.github\//,
   /^e2e\//,
   /^screenshots\//,

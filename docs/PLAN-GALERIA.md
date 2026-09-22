@@ -58,7 +58,7 @@ Para que nadie destruya el contenido en el intervalo entre hoy y el fin de la Fa
 
 ### GAL-3 · Resolver el origen de las fotos derivadas
 
-50 fotos de `gallery.json` apuntan a `/gallery/derived/<hash>-<w>.webp` en vez de a un archivo fuente. Rastreo hecho sobre 5.802 archivos de `public/fotos`, `public/uploads` y `top/`:
+50 fotos de `gallery.json` apuntan a `/gallery/derived/<hash>-<w>.webp` en vez de a un archivo fuente. Rastreo hecho sobre 5.802 archivos de `public/fotos`, `public/uploads` y `assets/originales/top/`:
 
 | Situación                                              | Cantidad | Tratamiento                                                                                             |
 | ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
@@ -69,7 +69,7 @@ Para que nadie destruya el contenido en el intervalo entre hoy y el fin de la Fa
 Los hashes de `process-top-photos.mjs` (md5 de la **ruta**) y los de `ImageService` (md5 de los **bytes**) son incompatibles, por eso no hay un mapeo genérico posible. La promoción de la variante mayor es la salida limpia: pierde resolución respecto al original perdido, pero deja el pipeline coherente y reversible si el original reaparece.
 
 **Aceptación:** los 50 items derivados tienen un `media_id` válido que apunta a un archivo existente en disco.
-**⚠️ requiere decisión:** confirmar si los originales de esas 40 fotos existen en algún respaldo (carpetas `Pangal/`, `Canal Chacayes/`, `Dron Rio Colorado/`, `GASCO/` del working tree, o fuera del repo). Si aparecen, se saltan las filas 2 y 3 de la tabla.
+**⚠️ requiere decisión:** confirmar si los originales de esas 40 fotos existen en algún respaldo (carpetas `assets/originales/Pangal/`, `assets/originales/Canal Chacayes/`, `assets/originales/Dron Rio Colorado/`, `assets/originales/GASCO/` del working tree, o fuera del repo). Si aparecen, se saltan las filas 2 y 3 de la tabla.
 
 ### GAL-4 · Importar categorías y álbumes a la DB
 

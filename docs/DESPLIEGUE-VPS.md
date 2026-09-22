@@ -148,12 +148,34 @@ al swap del paso 0.
 
 ## 7. El servicio
 
+Si hiciste los pasos anteriores conectado como `root` —lo normal—, todo
+`/srv/hidromont` pertenece a root y el servicio, que corre como `hidromont`,
+no puede leer ni el `.env` ni la base. Corrígelo antes de arrancar:
+
+```bash
+sudo chown -R hidromont:hidromont /srv/hidromont
+sudo chmod 600 /srv/hidromont/.env
+```
+
 ```bash
 sudo cp /srv/hidromont/deploy/hidromont.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now hidromont
-systemctl status hidromont
-curl -I http://127.0.0.1:8787/     # 200
+
+# tsx transpila el CMS al arrancar: tarda unos 6 s en escuchar. Un curl
+# inmediato da «Connection refused» aunque todo esté bien.
+sleep 10
+systemctl is-active hidromont          # active
+systemctl show hidromont -p NRestarts --value   # debe quedarse quieto
+curl -I http://127.0.0.1:8787/         # 200
+```
+
+`active` no basta como prueba: con `Restart=always`, un proceso que muere y
+revive cada 5 s también aparece como `active`. Si `NRestarts` sigue subiendo,
+mira el log:
+
+```bash
+journalctl -u hidromont -n 40 --no-pager
 ```
 
 ## 8. Caddy y HTTPS
@@ -242,6 +264,16 @@ backup que vive solo en el mismo disco que la base no es un backup.
 ---
 
 ## Problemas conocidos
+
+**`Error: ENOENT ... open '/srv/hidromont/.env'` con el archivo ahí delante** —
+es un mensaje engañoso: `process.loadEnvFile()` de Node reporta como `ENOENT`
+cualquier fallo al abrir, incluido `EACCES`. El archivo existe, pero el usuario
+`hidromont` no puede leerlo. Compruébalo y arréglalo:
+
+```bash
+sudo -u hidromont cat /srv/hidromont/.env >/dev/null   # «Permission denied»
+sudo chown -R hidromont:hidromont /srv/hidromont
+```
 
 **El servicio no arranca y el log dice «cuenta(s) con la contraseña por
 defecto»** — falta el paso 5. Ejecuta `npm run cms:preparar-produccion`.

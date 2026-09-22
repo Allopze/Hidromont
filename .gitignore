@@ -39,16 +39,8 @@ playwright-report/
 blob-report/
 .playwright/
 
-GASCO/
-Canal Chacayes/
-Dron Rio Colorado/
-Pangal/
-Fotos_Hidromont_mejoradas/
-archivos_hidromont/
-top/
-Video_Hidromont_mejorado_*.mp4
-ChatGPT Image *.png
-Imagen de WhatsApp *.jpg
+# Material original y de trabajo local (ver docs/ORIGINALES.md)
+assets/originales/
 
 # Raw/uncurated image dumps
 public/fotos/curadas/whatsapp-image-*

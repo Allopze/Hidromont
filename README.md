@@ -33,6 +33,8 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
 │   ├── test/                # Suite de pruebas unitarias y de API del CMS
 │   └── server.ts            # Punto de entrada del servidor Fastify
 ├── e2e/                     # Pruebas integrales de flujo (Playwright)
+├── assets/originales/       # Material local de trabajo, ignorado por Git
+├── docs/                    # Guías, auditorías y referencias técnicas
 ├── src/                     # Código fuente de la web Astro
 │   ├── assets/              # Imágenes fuentes y assets de diseño
 │   ├── components/          # Componentes Astro (Layouts, UI, formularios, etc.)

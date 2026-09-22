@@ -1,5 +1,5 @@
 /**
- * Process photos from top/ folder for service pages.
+ * Process photos from assets/originales/top/ for service pages.
  *
  * Phase 1: Optimize selected photos for service galleries → public/fotos/curadas/
  * Phase 2: Update cms-content.json with the resulting paths
@@ -20,12 +20,12 @@ import path from 'path';
 import sharp from 'sharp';
 
 const ROOT = process.cwd();
-const TOP = path.join(ROOT, 'top');
+const TOP = path.join(ROOT, 'assets', 'originales', 'top');
 const CURADAS_DIR = path.join(ROOT, 'public', 'fotos', 'curadas');
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
-/** Parse score from top/ filename format: RANK_SCORE_name.ext */
+/** Parse score from assets/originales/top/ filename format: RANK_SCORE_name.ext */
 function parseScore(filename) {
   const m = filename.match(/^(\d+)_([\d.]+)_(.+)$/);
   if (!m) return { rank: 9999, score: 0, name: filename };
@@ -57,7 +57,7 @@ async function optimizeToWebp(srcPath, destPath, maxWidth = 1600) {
 // ─── Phase 1: Service Gallery Photos ──────────────────────────────
 
 /**
- * For each service, select and optimize photos from top/ and curadas.
+ * For each service, select and optimize photos from assets/originales/top/ and curadas.
  * Returns map of service slug → array of { src, alt } for cms-content.json.
  */
 async function processServiceGalleryPhotos() {
@@ -225,7 +225,7 @@ function updateCmsContent(servicePhotos) {
 // ─── Main ──────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('🖼  Processing top/ photos for Hidromont web\n');
+  console.log('🖼  Processing assets/originales/top/ photos for Hidromont web\n');
 
   // Ensure output dirs exist
   fs.mkdirSync(CURADAS_DIR, { recursive: true });

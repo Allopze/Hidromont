@@ -19,7 +19,7 @@ Antes de reescribir, hay dos datos que no deben seguir visibles sin confirmació
 
 ## Correcciones implementadas
 
-- Se eliminó el marcador `[Por definir]` de Los Cóndores. La ficha ahora usa los antecedentes del catálogo y del procedimiento de montaje entregados en `archivos_hidromont`: blindaje DN 2.200, ramales DN 1.600, 1.200 m de blindaje, 132 m de ramales y 2.448 t para el conjunto de blindaje, bifurcación y ramales.
+- Se eliminó el marcador `[Por definir]` de Los Cóndores. La ficha ahora usa los antecedentes del catálogo y del procedimiento de montaje entregados en `assets/originales/archivos_hidromont`: blindaje DN 2.200, ramales DN 1.600, 1.200 m de blindaje, 132 m de ramales y 2.448 t para el conjunto de blindaje, bifurcación y ramales.
 - Se retiraron de Puerto Williams las dimensiones, espesores, accesorios, ensayos y certificaciones duplicados del caso Coyhaique. Los archivos entregados no incluyen un dossier técnico de ese proyecto; se mantuvo solo el alcance que ya estaba declarado: tres tanques aéreos de GLP de 18.000 galones.
 - Se reescribieron home, empresa, footer, CTA y contacto para usar español chileno formal, evitar promesas absolutas y eliminar la repetición de la misma propuesta de valor.
 - Se revisaron las ocho fichas de servicio y los siete proyectos destacados. Se conservaron listas y tablas cuando facilitan la consulta técnica, y se retiraron afirmaciones promocionales o absolutas que no agregaban información.

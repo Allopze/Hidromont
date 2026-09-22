@@ -3,6 +3,7 @@ import path from 'path';
 import sharp from 'sharp';
 
 const PROJECT_ROOT = process.cwd();
+const ORIGINALS_ROOT = path.join(PROJECT_ROOT, 'assets', 'originales');
 const DEST_BASE = path.join(PROJECT_ROOT, 'public', 'fotos', 'proyectos');
 const PREVIEW_HTML_PATH = path.join(PROJECT_ROOT, 'public', 'fotos', 'curacion-preview.html');
 
@@ -13,14 +14,14 @@ const PROJECTS_CONFIG = [
     slug: 'ch-pangal-helicoptero',
     prefix: 'pangal-helico',
     maxOutput: 12,
-    sources: [path.join(PROJECT_ROOT, 'Pangal', 'Helicóptero')],
+    sources: [path.join(ORIGINALS_ROOT, 'Pangal', 'Helicóptero')],
   },
   {
     name: 'C.H. Pangal — Tuberías, Caverna y Terreno',
     slug: 'ch-pangal-terreno',
     prefix: 'pangal-obra',
     maxOutput: 16,
-    sources: [path.join(PROJECT_ROOT, 'Pangal')],
+    sources: [path.join(ORIGINALS_ROOT, 'Pangal')],
   },
   {
     name: 'C.H. Canal Chacayes — Obras y Montaje Hidromecánico',
@@ -28,10 +29,10 @@ const PROJECTS_CONFIG = [
     prefix: 'chacayes-obra',
     maxOutput: 16,
     sources: [
-      path.join(PROJECT_ROOT, 'Canal Chacayes', '1'),
-      path.join(PROJECT_ROOT, 'Canal Chacayes', '2'),
-      path.join(PROJECT_ROOT, 'Canal Chacayes', '3'),
-      path.join(PROJECT_ROOT, 'Canal Chacayes', '4'),
+      path.join(ORIGINALS_ROOT, 'Canal Chacayes', '1'),
+      path.join(ORIGINALS_ROOT, 'Canal Chacayes', '2'),
+      path.join(ORIGINALS_ROOT, 'Canal Chacayes', '3'),
+      path.join(ORIGINALS_ROOT, 'Canal Chacayes', '4'),
     ],
   },
 ];

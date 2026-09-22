@@ -3,8 +3,8 @@
 # Sube al VPS los datos que NO están en git: la base SQLite del CMS y la
 # biblioteca de medios (uploads/cms, ~2,5 GB).
 #
+#   ./scripts/sync-datos-vps.sh hidromont-vps          (alias de ~/.ssh/config)
 #   ./scripts/sync-datos-vps.sh root@170.239.86.178 -p 52607
-#   ./scripts/sync-datos-vps.sh hidromont@mi-vps -p 52607 -d /srv/hidromont
 #
 # Se puede repetir cuantas veces haga falta: rsync solo manda lo que cambió.
 #
@@ -15,14 +15,14 @@
 set -euo pipefail
 
 DESTINO=""
-PUERTO=22
+PUERTO=""
 RUTA_REMOTA=/srv/hidromont
 
 uso() {
   cat >&2 <<'USO'
-Uso: sync-datos-vps.sh usuario@host [-p PUERTO] [-d RUTA_REMOTA]
+Uso: sync-datos-vps.sh (alias-ssh | usuario@host) [-p PUERTO] [-d RUTA_REMOTA]
 
-  -p PUERTO   puerto SSH (por defecto 22)
+  -p PUERTO   puerto SSH (innecesario si usas un alias de ~/.ssh/config)
   -d RUTA     directorio de la aplicación en el servidor (por defecto /srv/hidromont)
 USO
   exit 1
@@ -44,19 +44,27 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$DESTINO" ]] || uso
-[[ "$DESTINO" == *@* ]] || { echo "El destino debe ser usuario@host (recibido: $DESTINO)" >&2; uso; }
-[[ "$PUERTO" =~ ^[0-9]+$ ]] || { echo "Puerto no válido: $PUERTO" >&2; uso; }
 
-SSH=(ssh -p "$PUERTO")
-RSYNC_SHELL="ssh -p $PUERTO"
+# Con un alias de ~/.ssh/config, el puerto y el usuario ya están ahí: pasar
+# -p por encima solo sirve para contradecirlos.
+if [[ -n "$PUERTO" ]]; then
+  [[ "$PUERTO" =~ ^[0-9]+$ ]] || { echo "Puerto no válido: $PUERTO" >&2; uso; }
+  SSH=(ssh -p "$PUERTO")
+  RSYNC_SHELL="ssh -p $PUERTO"
+else
+  SSH=(ssh)
+  RSYNC_SHELL="ssh"
+fi
 
 # Conectando como root no hay sudo que valga —y en muchas imágenes mínimas ni
-# está instalado—, así que se antepone solo cuando hace falta.
-if [[ "${DESTINO%%@*}" == "root" ]]; then SUDO=""; else SUDO="sudo "; fi
+# está instalado—, así que se antepone solo cuando hace falta. `ssh -G` resuelve
+# el usuario efectivo, venga del alias o del usuario@host.
+USUARIO="$("${SSH[@]}" -G "$DESTINO" 2>/dev/null | awk '$1=="user"{print $2; exit}')"
+if [[ "$USUARIO" == "root" ]]; then SUDO=""; else SUDO="sudo "; fi
 
 cd "$(dirname "$0")/.."
 
-echo "==> Comprobando la conexión con $DESTINO (puerto $PUERTO)"
+echo "==> Comprobando la conexión con $DESTINO (usuario ${USUARIO:-?})"
 # Falla aquí, con un mensaje claro, en vez de a mitad de una subida de 2,5 GB.
 "${SSH[@]}" -o ConnectTimeout=10 -o BatchMode=yes "$DESTINO" true || {
   echo "No se pudo conectar. Revisa la IP, el puerto SSH y que tu clave esté autorizada." >&2

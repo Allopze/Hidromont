@@ -6,15 +6,16 @@ catálogo lo resolvió.
 
 ## Fuentes
 
-| Documento                                                        | Contenido                                                                                          |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `archivos_hidromont/PPTX/2015-05-29 Hidromont - Catalogo 1.pptx` | Catálogo de **Hidromont S.A. (España)**, la matriz. 66 diapositivas                                |
-| `archivos_hidromont/PDF/Presentación HIDROMONT CHILE S.A..pdf`   | Catálogo de **Hidromont Chile**, proyectos 1997–2015 con Ø, espesor, toneladas, longitud y cliente |
-| `archivos_hidromont/PDF/PROCEDIMIENTO DE MONTAJE CONDORES.pdf`   | Metodología de montaje del blindaje Los Cóndores, Rev.05                                           |
-| `archivos_hidromont/PDF/ANEXOS (Rev.05).pdf`                     | Programa de trabajo y PPI de Los Cóndores                                                          |
-| `archivos_hidromont/PDF/1750-14-A Calculo Viga Carril.pdf`       | Memoria de cálculo de vigas carril, Los Cóndores                                                   |
+| Documento                                                                                                          | Contenido                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `assets/originales/archivos_hidromont/PPTX/2015-05-29 Hidromont - Catalogo 1.pptx`                                 | Catálogo de **Hidromont S.A. (España)**, la matriz. 66 diapositivas                                |
+| [`Presentación HIDROMONT CHILE S.A..pdf`](../referencias/empresa/Presentación%20HIDROMONT%20CHILE%20S.A..pdf)      | Catálogo de **Hidromont Chile**, proyectos 1997–2015 con Ø, espesor, toneladas, longitud y cliente |
+| [`PROCEDIMIENTO DE MONTAJE CONDORES.pdf`](../referencias/los-condores/PROCEDIMIENTO%20DE%20MONTAJE%20CONDORES.pdf) | Metodología de montaje del blindaje Los Cóndores, Rev.05                                           |
+| [`ANEXOS (Rev.05).pdf`](<../referencias/los-condores/ANEXOS%20(Rev.05).pdf>)                                       | Programa de trabajo y PPI de Los Cóndores                                                          |
+| [`1750-14-A Calculo Viga Carril.pdf`](../referencias/los-condores/1750-14-A%20Calculo%20Viga%20Carril.pdf)         | Memoria de cálculo de vigas carril, Los Cóndores                                                   |
 
-Los 4 PDF de la raíz del repo son copias idénticas de `archivos_hidromont/PDF/`.
+Los PDF de referencia versionados viven en `docs/referencias/`. El archivo original
+completo se conserva fuera de Git en `assets/originales/archivos_hidromont/`.
 
 ## Convención de notación
 

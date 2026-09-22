@@ -19,7 +19,8 @@
  *     (b) pierde resolución respecto al original, pero esos originales no son
  *     recuperables: los hashes de process-top-photos.mjs son md5 de la *ruta*
  *     y los de ImageService md5 de los *bytes*, así que no hay mapeo posible,
- *     y un barrido por public/fotos, public/uploads y top/ (5.802 archivos) no
+ *     y un barrido por public/fotos, public/uploads y assets/originales/top/
+ *     (5.802 archivos) no
  *     encontró ninguno. Si aparecen, basta reasignar el media en el CMS.
  *
  * Idempotente: correrlo dos veces deja la base igual.
