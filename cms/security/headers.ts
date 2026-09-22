@@ -70,16 +70,43 @@ export function buildContentSecurityPolicy(hashes: string[]): string {
   ].join('; ');
 }
 
-let cached: { distDir: string; csp: string } | undefined;
+let cached: { distDir: string; stamp: number; csp: string } | undefined;
+
+/**
+ * Marca del build actual. Un solo `stat` por petición, no el recorrido entero.
+ */
+function buildStamp(distDir: string): number {
+  try {
+    return fs.statSync(path.join(distDir, 'index.html')).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
 
 /**
  * CSP del sitio público. Se cachea porque recorrer el build en cada petición
- * sería absurdo; `refreshPublicSecurityHeaders()` la invalida tras publicar,
- * que es el único momento en que el HTML cambia.
+ * sería absurdo.
+ *
+ * La clave incluye la fecha de `index.html` y no solo el directorio. Antes la
+ * caché solo se invalidaba desde `refreshPublicSecurityHeaders()`, es decir
+ * únicamente al publicar desde el panel — pero el HTML también cambia cuando
+ * se recompila a mano en el servidor, que es justo lo que pide el paso 6 de la
+ * guía de despliegue. En ese caso el proceso seguía sirviendo los hashes del
+ * build anterior y la CSP bloqueaba los scripts inline del sitio: sin error
+ * visible, sin entrada en el log, y con las animaciones de entrada y el envío
+ * del formulario caídos hasta el siguiente reinicio.
+ *
+ * Es el mismo modo de fallo que ya documenta `loadRedirects()` unos archivos
+ * más allá: cachear una lectura del build que puede cambiar bajo los pies.
  */
 export function publicContentSecurityPolicy(distDir: string): string {
-  if (cached?.distDir !== distDir) {
-    cached = { distDir, csp: buildContentSecurityPolicy(collectInlineScriptHashes(distDir)) };
+  const stamp = buildStamp(distDir);
+  if (cached?.distDir !== distDir || cached.stamp !== stamp) {
+    cached = {
+      distDir,
+      stamp,
+      csp: buildContentSecurityPolicy(collectInlineScriptHashes(distDir)),
+    };
   }
   return cached.csp;
 }
