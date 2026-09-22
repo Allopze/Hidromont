@@ -83,11 +83,21 @@ test.describe('Formulario de contacto: validaciones y manejo de errores', () => 
   });
 
   test('rate-limiting de cliente tras múltiples envíos', async ({ page }) => {
-    // Simular que el usuario ya realizó 3 envíos previos en los últimos minutos
+    /*
+     * La clave y el mensaje cambiaron en 13de19c y esta prueba se quedó atrás:
+     * sembraba `hidromont:contact:submits` y esperaba «Demasiados envíos», así
+     * que el limitador veía la lista vacía, el envío salía a la red y fallaba
+     * con el error genérico. Pasaba por un fallo real del formulario cuando lo
+     * que había caducado era la prueba.
+     *
+     * El nombre nuevo describe la semántica nueva: solo cuentan los envíos que
+     * el proveedor aceptó. Un fallo de transporte o un rechazo del proveedor
+     * siguen siendo reintentables y no consumen el cupo.
+     */
     await page.evaluate(() => {
       const now = Date.now();
       sessionStorage.setItem(
-        'hidromont:contact:submits',
+        'hidromont:contact:accepted-submits',
         JSON.stringify([now - 10000, now - 5000, now - 1000])
       );
     });
@@ -100,6 +110,8 @@ test.describe('Formulario de contacto: validaciones y manejo de errores', () => 
 
     const errorBanner = page.locator('#contacto-error');
     await expect(errorBanner).toBeVisible();
-    await expect(errorBanner).toContainText(/Demasiados envíos/i);
+    await expect(errorBanner).toContainText(/Ya se aceptaron varios envíos/i);
+    // El aviso dice cuándo volver a intentarlo, no solo que no se puede.
+    await expect(errorBanner).toContainText(/Intente nuevamente en \d+ segundos/i);
   });
 });

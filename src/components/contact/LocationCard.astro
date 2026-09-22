@@ -39,7 +39,16 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
 >
   <div
     class:list={[
-      'relative flex min-h-[160px] flex-1 items-stretch bg-background-alt',
+      'relative flex min-h-[160px] flex-1 items-stretch',
+      /*
+       * El fondo tiene que seguir al tema. Estaba fijo en `bg-background-alt`
+       * (#F5F8FA, casi blanco), así que en el pie —que es `bg-background-strong`
+       * y pide `theme="dark"`— se pintaba una caja clara con el texto blanco de
+       * abajo encima: ratio 1.05, es decir invisible, en todas las páginas que
+       * muestran el pie con mapa. En oscuro se deja transparente para que se vea
+       * el `bg-white/5` de la propia tarjeta sobre el azul del pie.
+       */
+      theme === 'dark' ? 'bg-transparent' : 'bg-background-alt',
       showEmbeddedMap && 'md:min-h-[260px]',
     ]}
   >

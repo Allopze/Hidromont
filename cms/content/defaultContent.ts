@@ -296,11 +296,32 @@ function logoKeyFor(nombre: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-const clientesCollection = JSON.parse(
-  fs.readFileSync(path.join(rootDirForSeed, 'src', 'content', 'clientes', 'clientes.json'), 'utf8')
-) as { items: Array<{ nombre: string; logo?: string }> };
+type ClienteSeed = { nombre: string; logo?: string };
 
-const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = clientesCollection.items
+/**
+ * `clientes.json` pasó de ser un objeto `{id, items}` a un array de entradas
+ * `[{id, items}]` al activar el config de colecciones: el loader `file()` de
+ * Astro interpreta el JSON raíz como la colección entera, no como una entrada.
+ *
+ * Aquí se lee el archivo en crudo, sin pasar por Astro, así que hay que
+ * conocer la forma. Se falla en voz alta si no encaja en vez de devolver una
+ * lista vacía: un seed silenciosamente sin logos dejaría el panel sin las 24
+ * claves editables y nadie lo notaría hasta buscarlas.
+ */
+function leerClientes(): ClienteSeed[] {
+  const ruta = path.join(rootDirForSeed, 'src', 'content', 'clientes', 'clientes.json');
+  const bruto = JSON.parse(fs.readFileSync(ruta, 'utf8')) as unknown;
+  const entrada = Array.isArray(bruto) ? bruto[0] : bruto;
+  const items = (entrada as { items?: unknown })?.items;
+  if (!Array.isArray(items)) {
+    throw new Error(
+      `${ruta}: se esperaba [{ id, items: [...] }] y no se encontró la lista de clientes.`
+    );
+  }
+  return items as ClienteSeed[];
+}
+
+const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = leerClientes()
   .filter((cliente) => Boolean(cliente.logo))
   .map((cliente) => ({
     key: logoKeyFor(cliente.nombre),

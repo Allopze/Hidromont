@@ -67,7 +67,22 @@ src/
 │   └── galeria/index.astro
 ├── scripts/
 │   ├── motion.ts      # Scroll reveals, parallax, counters (respeta prefers-reduced-motion)
-│   └── cms-overlay.js # 1767 líneas, solo se emite si PUBLIC_ENABLE_CMS=1
+│   └── cms/
+│       ├── mobile-menu.ts   # Lanzador y panel de acciones en móvil
+│       └── overlay/         # El editor, en módulos ES (antes: 1 archivo de 3.500 líneas)
+│           ├── index.ts     # Único punto de entrada; decide si carga el resto
+│           ├── mount.js     # Arranque: eventos, menú móvil, sesión
+│           ├── markdown.ts  # Lógica del editor de texto (pura, con tests)
+│           ├── richtext.js  # Barra de formato y vista previa
+│           ├── styles.js    # CSS del panel
+│           ├── shell.js     # Barra, panel y estado global
+│           ├── api.js       # fetch + CSRF        · html.js     # Escapado y formatos
+│           ├── panel.js     # Abrir/cerrar        · drafts.js   # Borradores locales
+│           ├── auth.js      # Sesión y login      · fields.js   # Editor de campo suelto
+│           ├── media.js     # Biblioteca          · gallery.js  # Álbumes e ítems
+│           ├── collections.js # Servicios y proyectos
+│           ├── admin.js     # Registro, respaldos · publish.js  # Exportar y publicar
+│           └── events.js    # Delegación de eventos sobre `document`
 └── styles/
     ├── tokens.css     # Design tokens (colores, tipografía, spacing, radius, shadows, z-index, motion)
     ├── base.css       # Reset, @font-face, utilidades, animaciones globales
@@ -213,11 +228,13 @@ A = `requireAuth`, C = `requireCsrf`. Ver [`CMS-GUIDE.md`](./CMS-GUIDE.md) para 
 
 ## Testing
 
-| Tipo            | Tool       | Cantidad              | Ubicación                 |
-| --------------- | ---------- | --------------------- | ------------------------- |
-| Unitarios       | Vitest     | 78 tests (7 archivos) | `cms/test/`               |
-| E2E build-gate  | Playwright | 4 tests               | `e2e/build-gate.spec.ts`  |
-| E2E overlay+API | Playwright | 20 tests              | `e2e/cms-overlay.spec.ts` |
+| Tipo                | Tool       | Cantidad              | Ubicación                       |
+| ------------------- | ---------- | --------------------- | ------------------------------- |
+| Unitarios           | Vitest     | 78 tests (7 archivos) | `cms/test/`                     |
+| E2E build-gate      | Playwright | 4 tests               | `e2e/build-gate.spec.ts`        |
+| E2E overlay+API     | Playwright | 24 tests              | `e2e/cms-overlay.spec.ts`       |
+| E2E editor de texto | Playwright | 6 tests               | `e2e/cms-richtext.spec.ts`      |
+| Lógica Markdown     | Vitest     | 24 tests              | `src/test/cms-markdown.test.ts` |
 
 CI (`.github/workflows/ci.yml`) ejecuta en cada PR: `lint` → `build` → `test` → `build-gate` → (job separado) `e2e-full` con servidores levantados.
 

@@ -1,53 +1,127 @@
-{
-  "id": "clientes",
-  "items": [
-    { "nombre": "Acciona", "sector": "construccion", "logo": "/logos-clientes/acciona.svg" },
-    { "nombre": "AES Andes", "sector": "electrica", "logo": "/logos-clientes/aes-andes.png" },
-    { "nombre": "Alstom", "sector": "industrial", "logo": "/logos-clientes/alstom.svg" },
-    { "nombre": "Arauco", "sector": "industrial", "logo": "/logos-clientes/arauco.svg" },
-    { "nombre": "Besalco", "sector": "construccion", "logo": "/logos-clientes/besalco.webp" },
-    { "nombre": "Colbún", "sector": "electrica", "logo": "/logos-clientes/colbun.svg" },
-    {
-      "nombre": "Comercial CREO S.A.",
-      "sector": "industrial",
-      "logo": "/logos-clientes/comercial-creo.svg"
-    },
-    { "nombre": "Conpax", "sector": "construccion", "logo": "/logos-clientes/conpax.png" },
-    {
-      "nombre": "Constructora Renaico SpA",
-      "sector": "construccion",
-      "logo": "/logos-clientes/constructora-renaico.svg"
-    },
-    { "nombre": "Dragados", "sector": "construccion", "logo": "/logos-clientes/dragado.png" },
-    { "nombre": "Elecnor", "sector": "electrica", "logo": "/logos-clientes/elecnor.svg" },
-    {
-      "nombre": "Eléctrica Puntilla",
-      "sector": "electrica",
-      "logo": "/logos-clientes/electrica-puntilla.png"
-    },
-    { "nombre": "Endesa", "sector": "electrica", "logo": "/logos-clientes/endesa.png" },
-    { "nombre": "Ferrovial", "sector": "construccion", "logo": "/logos-clientes/ferrovial.png" },
-    { "nombre": "GPE", "sector": "electrica", "logo": "/logos-clientes/gpe.png" },
-    { "nombre": "Iberdrola", "sector": "electrica", "logo": "/logos-clientes/iberdrola.png" },
-    { "nombre": "Gasco", "sector": "industrial", "logo": "/logos-clientes/gasco.png" },
-    { "nombre": "Innergex", "sector": "electrica", "logo": "/logos-clientes/innergex.svg" },
-    { "nombre": "M.O.P. / D.O.H.", "sector": "publica", "logo": "/logos-clientes/mop-doh.jpeg" },
-    {
-      "nombre": "Nyrstar – El Toqui",
-      "sector": "industrial",
-      "logo": "/logos-clientes/nyrstar-el-toqui.png"
-    },
-    { "nombre": "OHL", "sector": "construccion", "logo": "/logos-clientes/ohl.svg" },
-    {
-      "nombre": "Pacific Hydro",
-      "sector": "electrica",
-      "logo": "/logos-clientes/pacific-hydro.png"
-    },
-    { "nombre": "Potencia", "sector": "electrica", "logo": "/logos-clientes/potencia.png" },
-    {
-      "nombre": "Sociedad Concesionaria Ruta Nahuelbuta",
-      "sector": "construccion",
-      "logo": "/logos-clientes/ruta-nahuelbuta.jpg"
-    }
-  ]
-}
+[
+  {
+    "id": "clientes",
+    "items": [
+      {
+        "nombre": "Acciona",
+        "sector": "construccion",
+        "logo": "/logos-clientes/acciona.svg"
+      },
+      {
+        "nombre": "AES Andes",
+        "sector": "electrica",
+        "logo": "/logos-clientes/aes-andes.png"
+      },
+      {
+        "nombre": "Alstom",
+        "sector": "industrial",
+        "logo": "/logos-clientes/alstom.svg"
+      },
+      {
+        "nombre": "Arauco",
+        "sector": "industrial",
+        "logo": "/logos-clientes/arauco.svg"
+      },
+      {
+        "nombre": "Besalco",
+        "sector": "construccion",
+        "logo": "/logos-clientes/besalco.webp"
+      },
+      {
+        "nombre": "Colbún",
+        "sector": "electrica",
+        "logo": "/logos-clientes/colbun.svg"
+      },
+      {
+        "nombre": "Comercial CREO S.A.",
+        "sector": "industrial",
+        "logo": "/logos-clientes/comercial-creo.svg"
+      },
+      {
+        "nombre": "Conpax",
+        "sector": "construccion",
+        "logo": "/logos-clientes/conpax.png"
+      },
+      {
+        "nombre": "Constructora Renaico SpA",
+        "sector": "construccion",
+        "logo": "/logos-clientes/constructora-renaico.svg"
+      },
+      {
+        "nombre": "Dragados",
+        "sector": "construccion",
+        "logo": "/logos-clientes/dragado.png"
+      },
+      {
+        "nombre": "Elecnor",
+        "sector": "electrica",
+        "logo": "/logos-clientes/elecnor.svg"
+      },
+      {
+        "nombre": "Eléctrica Puntilla",
+        "sector": "electrica",
+        "logo": "/logos-clientes/electrica-puntilla.png"
+      },
+      {
+        "nombre": "Endesa",
+        "sector": "electrica",
+        "logo": "/logos-clientes/endesa.png"
+      },
+      {
+        "nombre": "Ferrovial",
+        "sector": "construccion",
+        "logo": "/logos-clientes/ferrovial.png"
+      },
+      {
+        "nombre": "GPE",
+        "sector": "electrica",
+        "logo": "/logos-clientes/gpe.png"
+      },
+      {
+        "nombre": "Iberdrola",
+        "sector": "electrica",
+        "logo": "/logos-clientes/iberdrola.png"
+      },
+      {
+        "nombre": "Gasco",
+        "sector": "industrial",
+        "logo": "/logos-clientes/gasco.png"
+      },
+      {
+        "nombre": "Innergex",
+        "sector": "electrica",
+        "logo": "/logos-clientes/innergex.svg"
+      },
+      {
+        "nombre": "M.O.P. / D.O.H.",
+        "sector": "publica",
+        "logo": "/logos-clientes/mop-doh.jpeg"
+      },
+      {
+        "nombre": "Nyrstar – El Toqui",
+        "sector": "industrial",
+        "logo": "/logos-clientes/nyrstar-el-toqui.png"
+      },
+      {
+        "nombre": "OHL",
+        "sector": "construccion",
+        "logo": "/logos-clientes/ohl.svg"
+      },
+      {
+        "nombre": "Pacific Hydro",
+        "sector": "electrica",
+        "logo": "/logos-clientes/pacific-hydro.png"
+      },
+      {
+        "nombre": "Potencia",
+        "sector": "electrica",
+        "logo": "/logos-clientes/potencia.png"
+      },
+      {
+        "nombre": "Sociedad Concesionaria Ruta Nahuelbuta",
+        "sector": "construccion",
+        "logo": "/logos-clientes/ruta-nahuelbuta.jpg"
+      }
+    ]
+  }
+]

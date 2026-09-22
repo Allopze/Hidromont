@@ -22,6 +22,7 @@ import { AuthService } from '../services/authService';
 import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
 import { GalleryService } from '../services/galleryService';
+import { ErrorDeshacer, UndoService } from '../services/undoService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
 import { AuthController } from '../controllers/AuthController';
@@ -92,10 +93,12 @@ export async function createTestApp(): Promise<TestApp> {
 
   const galleryRepository = new GalleryRepository(db);
   const galleryService = new GalleryService(galleryRepository);
-  const galleryController = new GalleryController(galleryService);
+  const galleryController = new GalleryController(galleryService, auditRepository);
+
+  const undoService = new UndoService(auditRepository, contentService, galleryService);
 
   const authController = new AuthController(authService);
-  const contentController = new ContentController(contentService);
+  const contentController = new ContentController(contentService, auditRepository);
   const mediaController = new MediaController(mediaService);
   const publishController = new PublishController(publishService);
 
@@ -104,6 +107,27 @@ export async function createTestApp(): Promise<TestApp> {
   await app.register(multipart, { limits: { fileSize: 8 * 1024 * 1024, files: 1 } });
 
   app.get('/api/cms/health', async () => ({ ok: true }));
+  app.post(
+    '/api/cms/undo/:token',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (request, reply) => {
+      const { token } = request.params as { token: string };
+      try {
+        const r = undoService.restore(token, {
+          userId: request.cmsSession?.user.id,
+          ip: request.ip,
+        });
+        reply.send({ ok: true, ...r, needsExport: true });
+      } catch (error) {
+        if (error instanceof ErrorDeshacer) {
+          reply.status(error.status).send({ error: error.message });
+          return;
+        }
+        throw error;
+      }
+    }
+  );
+
   app.post('/api/cms/login', async (request, reply) => authController.login(request, reply));
   app.post(
     '/api/cms/logout',

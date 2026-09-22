@@ -39,8 +39,37 @@ export class GalleryService {
     return this.galleryRepository.getAlbum(slug);
   }
 
+  /**
+   * Borra un álbum y devuelve su fila.
+   *
+   * Se lee antes: `deleteAlbum` valida que esté vacío y lanza si no, así que
+   * capturar primero no cambia el comportamiento y deja el snapshot listo.
+   */
   deleteAlbum(slug: string) {
+    const existing = this.galleryRepository.getAlbumRow(slug);
     this.galleryRepository.deleteAlbum(slug);
+    return existing;
+  }
+
+  /**
+   * Rehace un álbum borrado.
+   *
+   * El slug lo elige una persona, así que es el único caso donde reusar el
+   * identificador es realista: si alguien creó otro álbum con el mismo, no se
+   * pisa nada y se avisa.
+   */
+  restoreDeletedAlbum(snap: {
+    slug: string;
+    name: string;
+    position: number;
+    createdAt: string;
+    updatedAt: string;
+  }): { slug: string } {
+    if (this.galleryRepository.getAlbum(snap.slug)) {
+      throw new Error(`Ya existe un álbum con el slug "${snap.slug}".`);
+    }
+    this.galleryRepository.restoreAlbum(snap);
+    return { slug: snap.slug };
   }
 
   reorderAlbums(slugs: string[]) {
@@ -100,7 +129,52 @@ export class GalleryService {
         );
       }
     }
+    // Los ids se capturan ANTES: el ON DELETE SET NULL los deja
+    // indistinguibles de las fotos que nunca tuvieron categoría.
+    const affectedItemIds = this.galleryRepository.listItemIdsByCategory(id);
     this.galleryRepository.deleteCategory(id);
+    return { category: existing, affectedItemIds };
+  }
+
+  /**
+   * Rehace una categoría y devuelve sus fotos, las que sigan sin categoría.
+   *
+   * Es el único punto donde el deshacer es legítimamente parcial, y hay que
+   * decirlo: una foto recategorizada durante la ventana conserva lo nuevo.
+   */
+  restoreDeletedCategory(snap: {
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+      position: number;
+      createdAt?: string;
+      updatedAt?: string;
+    };
+    affectedItemIds?: string[];
+  }): { id: string; revinculadas: number; omitidas: number } {
+    if (this.galleryRepository.getCategory(snap.category.id)) {
+      throw new Error(`Ya existe una categoría con el id "${snap.category.id}".`);
+    }
+    const now = new Date().toISOString();
+    this.galleryRepository.createCategory({
+      id: snap.category.id,
+      name: snap.category.name,
+      slug: snap.category.slug,
+      position: snap.category.position,
+      createdAt: snap.category.createdAt ?? now,
+      updatedAt: now,
+    });
+
+    let revinculadas = 0;
+    for (const itemId of snap.affectedItemIds ?? []) {
+      if (this.galleryRepository.relinkItemCategory(itemId, snap.category.id, now)) revinculadas++;
+    }
+    return {
+      id: snap.category.id,
+      revinculadas,
+      omitidas: (snap.affectedItemIds ?? []).length - revinculadas,
+    };
   }
 
   reorderCategories(ids: string[]) {
@@ -174,10 +248,75 @@ export class GalleryService {
     });
   }
 
+  /** Borra una foto y devuelve lo necesario para volver a crearla igual. */
   deleteItem(id: string) {
     const existing = this.galleryRepository.getItem(id);
     if (!existing) throw new Error(`Item ${id} no encontrada`);
     this.galleryRepository.deleteItem(id);
+    // Se descartan los campos del JOIN (media_*, category_*): se rehidratan
+    // solos al releer, y guardarlos duplicaría datos que pueden haber
+    // cambiado entre el borrado y el deshacer.
+    return {
+      id: existing.id,
+      mediaId: existing.mediaId,
+      categoryId: existing.categoryId ?? null,
+      projectSlug: existing.projectSlug ?? null,
+      title: existing.title,
+      alt: existing.alt,
+      caption: existing.caption ?? null,
+      position: existing.position,
+      featured: existing.featured,
+      status: existing.status,
+      createdAt: existing.createdAt,
+      updatedAt: existing.updatedAt,
+    };
+  }
+
+  /**
+   * Rehace una foto borrada.
+   *
+   * Conserva su `position` original en vez de mandarla al final como hace
+   * `createItem`: volver y aparecer la última se lee como pérdida aunque no lo
+   * sea. `position` no es única y el orden desempata por `created_at`.
+   */
+  restoreDeletedItem(snap: {
+    id: string;
+    mediaId: string | null;
+    categoryId: string | null;
+    projectSlug: string | null;
+    title: string;
+    alt: string;
+    caption: string | null;
+    position: number;
+    featured: boolean;
+    status: 'published' | 'draft';
+    createdAt: string;
+    updatedAt: string;
+  }): { id: string; avisos: string[] } {
+    if (this.galleryRepository.getItem(snap.id)) {
+      throw new Error(`Ya existe una foto con el id "${snap.id}".`);
+    }
+    const avisos: string[] = [];
+
+    // Las claves foráneas están activas: si el medio o la categoría volaron
+    // durante la ventana, el INSERT fallaría. El esquema contempla el nulo.
+    let mediaId = snap.mediaId;
+    if (mediaId && !this.galleryRepository.mediaExists(mediaId)) {
+      mediaId = null;
+      avisos.push('La imagen asociada ya no existe; reasígnela.');
+    }
+    let categoryId = snap.categoryId;
+    if (categoryId && !this.galleryRepository.categoryExists(categoryId)) {
+      categoryId = null;
+      avisos.push('Su categoría ya no existe.');
+    }
+
+    this.galleryRepository.createItem({
+      ...snap,
+      mediaId: mediaId as string,
+      categoryId,
+    });
+    return { id: snap.id, avisos };
   }
 
   reorderItems(ids: string[]) {

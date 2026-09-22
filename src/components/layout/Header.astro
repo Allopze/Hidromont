@@ -381,7 +381,19 @@ function isCurrent(href: string) {
     });
 
     toggleBtn.addEventListener('click', () => {
-      const opening = !panel!.classList.contains('is-open');
+      /*
+       * Se decide sobre `clickPinnedOpen`, no sobre la clase del panel.
+       *
+       * Con ratón, para llegar al botón hay que pasar por encima del grupo, así
+       * que `pointerenter` ya abrió el panel antes de que llegue el clic.
+       * Alternando sobre `is-open`, el clic leía «ya está abierto» y lo cerraba:
+       * apuntar a «Servicios» y pulsar el chevron cerraba el menú en la cara del
+       * visitante. Con teclado pasaba igual vía `focusin`.
+       *
+       * Un clic sobre un panel que solo está abierto por hover lo fija abierto;
+       * solo cierra si ya estaba fijado por un clic anterior.
+       */
+      const opening = !clickPinnedOpen;
       clickPinnedOpen = opening;
       escapeDismissed = false;
       setOpen(opening);

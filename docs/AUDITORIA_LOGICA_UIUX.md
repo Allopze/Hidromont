@@ -4,6 +4,9 @@
 
 > **Proyecto:** Hidromont Chile — Sitio web institucional + CMS propio
 > **Stack:** Astro 4 (output `static`) + Tailwind CSS + Fastify 5 CMS backend + SQLite
+>
+> _Nota posterior (sep-2026): el proyecto pasó a Astro 5 y las colecciones
+> usan el Content Layer. El resto del informe conserva el estado de su fecha._
 > **Rama auditada:** `fix/auditoria-p0-p1`
 > **Fecha de auditoría:** 2026-07-18
 > **Comandos ejecutados:** `npm run build` (✓ 24 páginas), `npm test` (✓ 76/76), inspección de `dist/`, análisis estático de código, smoke-test del CMS contra DB real.

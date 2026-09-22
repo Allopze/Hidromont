@@ -2,7 +2,17 @@
 import '../styles/global.css';
 import { company } from '../data/company';
 import CmsOverlay from '../components/cms/CmsOverlay.astro';
+
 import { safeJsonForScript } from '../utils/safeJson';
+
+/**
+ * El editor solo entra en el build cuando corresponde, y la decisión vive
+ * aquí: Astro incluye los scripts de un componente solo si ese componente
+ * llega a renderizarse, así que este condicional es lo que mantiene `dist/`
+ * limpio en el perfil público. Dentro de CmsOverlay no serviría: el compilador
+ * descarta los `<script>` que quedan bajo una condición, y lo hace sin avisar.
+ */
+const cmsHabilitado = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 interface Props {
   title?: string;
@@ -122,6 +132,6 @@ const allJsonLd = [
   </head>
   <body>
     <slot />
-    <CmsOverlay />
+    {cmsHabilitado && <CmsOverlay />}
   </body>
 </html>

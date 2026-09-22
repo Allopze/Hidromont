@@ -48,6 +48,9 @@ public/fotos/curadas/whatsapp-image-*
 
 # AI agent tooling (HIG-3: personal/local, not shared project config)
 .claude/
+.agents/
+.codex/
+.github/agents/
 .commandcode/
 .mimocode/
 .zcode/

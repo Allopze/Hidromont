@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
+import type { CmsEntry } from '../types/cms';
 import { getInitialEntries } from './contentSeed';
 import { CATEGORIA_PROYECTO, ICONO_SERVICIO } from '../../src/data/content-vocabulary';
 
@@ -147,8 +148,20 @@ export class ContentService {
     return this.contentRepository.updateEntryMeta(id, meta, new Date().toISOString());
   }
 
-  deleteEntry(id: string): void {
+  /**
+   * Borra una entrada y devuelve lo necesario para poder restaurarla.
+   *
+   * La captura es casi gratis: ya se leía la entrada aquí mismo para saber qué
+   * archivo borrar. Lo nuevo es conservar también los bytes del `.md`, porque
+   * el export solo corre cuando el operador pulsa «Exportar»: mientras tanto
+   * `src/content/` tendría un archivo borrado que git ve, y desplegar en esa
+   * ventana devolvería un 404.
+   */
+  deleteEntry(id: string): { entry?: CmsEntry; file?: { relPath: string; contents: string } } {
     const entry = this.contentRepository.findEntry(id);
+    const capturado: { entry?: CmsEntry; file?: { relPath: string; contents: string } } = {
+      entry: entry ?? undefined,
+    };
     this.contentRepository.deleteEntry(id);
 
     // CMS-2 fix: deleting a proyecto/servicio entry from the CMS previously
@@ -167,14 +180,67 @@ export class ContentService {
         entry.slug,
         entry.locale
       );
-      if (claimedByOther) return;
+      // Si otra entrada reclama el slug no se borra el archivo, y por tanto
+      // tampoco hay nada que restaurar de él.
+      if (claimedByOther) return capturado;
 
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
-      const target = path.join(this.rootDir, 'src', 'content', collection, `${entry.slug}.md`);
+      const relPath = path.join('src', 'content', collection, `${entry.slug}.md`);
+      const target = path.join(this.rootDir, relPath);
       if (fs.existsSync(target)) {
+        capturado.file = { relPath, contents: fs.readFileSync(target, 'utf8') };
         fs.unlinkSync(target);
       }
     }
+    return capturado;
+  }
+
+  /**
+   * Rehace una entrada borrada a partir de su snapshot.
+   *
+   * No se reutiliza `restoreRevision`: llama a `updateEntryMeta`, que lanza
+   * cuando la fila no existe — que es exactamente el caso aquí. Lo que sí
+   * sirve es `upsertEntry`, que inserta entrada, campos y primera revisión en
+   * una sola transacción.
+   *
+   * Las revisiones previas NO vuelven: el `ON DELETE CASCADE` de la tabla se
+   * las llevó, y guardarlas en el snapshot serían hasta 50 copias completas de
+   * la entrada por cada borrado. Se acepta la pérdida y se dice en pantalla.
+   */
+  restoreDeletedEntry(snapshot: {
+    entry?: CmsEntry;
+    file?: { relPath: string; contents: string };
+  }): { id: string; fileRestored: boolean } {
+    const entry = snapshot.entry;
+    if (!entry) throw new Error('El registro no conserva la entrada borrada.');
+    if (this.contentRepository.findEntry(entry.id)) {
+      throw new Error(`Ya existe una entrada con el id "${entry.id}".`);
+    }
+
+    // `upsertEntry` toma los campos como array; `CmsEntry` los trae indexados
+    // por clave, que es lo que produce `hydrateEntry`.
+    this.contentRepository.upsertEntry({
+      id: entry.id,
+      kind: entry.kind,
+      slug: entry.slug,
+      locale: entry.locale,
+      title: entry.title,
+      status: entry.status,
+      fields: Object.values(entry.fields),
+      now: new Date().toISOString(),
+    });
+
+    let fileRestored = false;
+    if (snapshot.file) {
+      const target = path.join(this.rootDir, snapshot.file.relPath);
+      // Solo si nadie lo recreó entre medias: pisarlo destruiría lo nuevo.
+      if (!fs.existsSync(target)) {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, snapshot.file.contents);
+        fileRestored = true;
+      }
+    }
+    return { id: entry.id, fileRestored };
   }
 
   listRevisions(entryId: string) {

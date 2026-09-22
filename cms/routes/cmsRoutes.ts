@@ -33,6 +33,8 @@ import { GalleryService } from '../services/galleryService';
 import { ImageService } from '../services/imageService';
 import { MediaService } from '../services/mediaService';
 import { PublishService } from '../services/publishService';
+import { ErrorDeshacer, UndoService } from '../services/undoService';
+import { captureException } from '../utils/errorTracking';
 
 export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   migrate();
@@ -65,6 +67,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const cleanupTimer = setInterval(
     () => {
       rateLimitRepository.cleanup();
+      undoService.purgeExpiredSnapshots();
       userRepository.deleteExpiredSessions(new Date().toISOString());
     },
     5 * 60 * 1000
@@ -94,7 +97,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
 
   const galleryRepository = new GalleryRepository(db);
   const galleryService = new GalleryService(galleryRepository);
-  const galleryController = new GalleryController(galleryService);
+  const galleryController = new GalleryController(galleryService, auditRepository);
 
   const imageService = new ImageService();
   const exportService = new ExportService(
@@ -107,7 +110,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const backupService = new BackupService(db);
 
   const authController = new AuthController(authService);
-  const contentController = new ContentController(contentService);
+  const contentController = new ContentController(contentService, auditRepository);
+  const undoService = new UndoService(auditRepository, contentService, galleryService);
   const mediaController = new MediaController(mediaService);
   const publishController = new PublishController(publishService, backupService);
 
@@ -235,17 +239,37 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   app.delete(
     '/api/cms/entries/:id',
     { preHandler: [requireAuth(authService), requireCsrf()] },
-    async (request, reply) => {
-      const { id } = request.params as { id: string };
-      await contentController.deleteEntry(request, reply);
-      if (reply.statusCode === 200) {
-        auditRepository.log({
-          action: 'entry.delete',
+    // El id se lee dentro del controlador, que además registra el borrado con
+    // su copia para poder deshacerlo.
+    async (request, reply) => contentController.deleteEntry(request, reply)
+  );
+
+  /**
+   * Deshacer un borrado.
+   *
+   * El token es el id del evento de auditoría que guardó la copia. No pasa por
+   * `handleError` a propósito: ese reescribe cualquier mensaje con «no
+   * encontrado» a un genérico, y aquí el motivo concreto —caducó, ya se
+   * restauró, el identificador está ocupado— es justo lo que hay que leer.
+   */
+  app.post(
+    '/api/cms/undo/:token',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (request, reply) => {
+      const { token } = request.params as { token: string };
+      try {
+        const r = undoService.restore(token, {
           userId: request.cmsSession?.user.id,
-          entityType: 'entry',
-          entityId: id,
           ip: request.ip,
         });
+        reply.send({ ok: true, ...r, needsExport: true });
+      } catch (error) {
+        if (error instanceof ErrorDeshacer) {
+          reply.status(error.status).send({ error: error.message });
+          return;
+        }
+        captureException(error, { action: 'undoRestore' });
+        reply.status(500).send({ error: 'No se pudo deshacer.' });
       }
     }
   );
@@ -476,16 +500,6 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.deleteAlbum(request, reply);
-      if (reply.statusCode === 200) {
-        const { slug } = request.params as { slug: string };
-        auditRepository.log({
-          action: 'gallery.album.delete',
-          userId: request.cmsSession?.user.id,
-          entityType: 'gallery_album',
-          entityId: slug,
-          ip: request.ip,
-        });
-      }
     }
   );
   app.post(
@@ -539,16 +553,6 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.deleteCategory(request, reply);
-      if (reply.statusCode === 200) {
-        const { id } = request.params as { id: string };
-        auditRepository.log({
-          action: 'gallery.category.delete',
-          userId: request.cmsSession?.user.id,
-          entityType: 'gallery_category',
-          entityId: id,
-          ip: request.ip,
-        });
-      }
     }
   );
   app.post(
@@ -605,16 +609,6 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.deleteItem(request, reply);
-      if (reply.statusCode === 200) {
-        const { id } = request.params as { id: string };
-        auditRepository.log({
-          action: 'gallery.item.delete',
-          userId: request.cmsSession?.user.id,
-          entityType: 'gallery_item',
-          entityId: id,
-          ip: request.ip,
-        });
-      }
     }
   );
   app.post(
