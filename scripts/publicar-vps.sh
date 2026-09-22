@@ -46,12 +46,12 @@ cd "$(dirname "$0")/.."
 
 paso "Comprobando el terreno"
 
-ssh -o ConnectTimeout=10 -o BatchMode=yes "$DESTINO" true || {
+ssh -n -o ConnectTimeout=10 -o BatchMode=yes "$DESTINO" true || {
   rojo "No se pudo conectar por SSH a $DESTINO."
   exit 1
 }
 
-IP="$(ssh "$DESTINO" 'curl -s -m 10 https://api.ipify.org')"
+IP="$(ssh -n "$DESTINO" 'curl -s -m 10 https://api.ipify.org')"
 [[ "$IP" =~ ^[0-9.]+$ ]] || { rojo "No se pudo averiguar la IP pública del VPS."; exit 1; }
 verde "  VPS en $IP"
 
@@ -61,7 +61,7 @@ PUERTO_SSH_REAL="$(ssh -G "$DESTINO" | awk '$1=="port"{print $2; exit}')"
 [[ "$PUERTO_SSH_REAL" =~ ^[0-9]+$ ]] || PUERTO_SSH_REAL=22
 verde "  SSH en el puerto $PUERTO_SSH_REAL"
 
-ssh "$DESTINO" 'curl -fsS -o /dev/null -m 10 http://127.0.0.1:8787/' || {
+ssh -n "$DESTINO" 'curl -fsS -o /dev/null -m 10 http://127.0.0.1:8787/' || {
   rojo "La aplicación no responde en 127.0.0.1:8787. Arréglalo antes de publicar."
   exit 1
 }
@@ -71,17 +71,38 @@ verde "  la aplicación responde en local"
 
 paso "Apuntando el DNS a $IP"
 
+resuelve() { dig +short @1.1.1.1 "$1" A | head -1; }
+
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
-  amar "  Sin CLOUDFLARE_API_TOKEN: este paso hay que hacerlo a mano."
-  amar ""
-  amar "  En Cloudflare → $DOMINIO → DNS, deja estos dos registros así:"
-  amar "     A   $DOMINIO       $IP    Proxy: DESACTIVADO (nube gris)"
-  amar "     A   www.$DOMINIO   $IP    Proxy: DESACTIVADO (nube gris)"
-  amar ""
-  amar "  La nube TIENE que estar gris ahora: Caddy pide el certificado por"
-  amar "  HTTP-01 y con el proxy puesto la validación no llega a la máquina."
-  amar ""
-  read -r -p "  Cuando esté hecho, pulsa Enter para seguir (Ctrl+C para abortar): " _
+  # Se comprueba el DNS en vez de fiarse de un Enter: si ya apunta al VPS no
+  # hay nada que preguntar, y si no apunta, pulsar Enter no lo arregla.
+  if [[ "$(resuelve "$DOMINIO")" != "$IP" ]]; then
+    amar "  Sin CLOUDFLARE_API_TOKEN: este paso hay que hacerlo a mano."
+    amar ""
+    amar "  En Cloudflare → $DOMINIO → DNS, deja estos dos registros así:"
+    amar "     A   $DOMINIO       $IP    Proxy: DESACTIVADO (nube gris)"
+    amar "     A   www.$DOMINIO   $IP    Proxy: DESACTIVADO (nube gris)"
+    amar ""
+    amar "  La nube TIENE que estar gris ahora: Caddy pide el certificado por"
+    amar "  HTTP-01 y con el proxy puesto la validación no llega a la máquina."
+    amar ""
+    # Desde la terminal y no desde la entrada estándar, que puede venir de
+    # una tubería o habérsela comido otro comando.
+    read -r -p "  Cuando esté hecho, pulsa Enter para seguir (Ctrl+C para abortar): " _ </dev/tty
+    [[ "$(resuelve "$DOMINIO")" == "$IP" ]] || {
+      rojo "  $DOMINIO resuelve a $(resuelve "$DOMINIO"), no a $IP."
+      rojo "  Revisa el registro A y que la nube esté gris. Con TTL bajo tarda un minuto."
+      exit 1
+    }
+  fi
+  verde "  $DOMINIO → $IP"
+  if [[ "$(resuelve "www.$DOMINIO")" != "$IP" ]]; then
+    amar "  www.$DOMINIO resuelve a $(resuelve "www.$DOMINIO"), no a $IP."
+    amar "  El dominio principal funcionará igual; www no tendrá certificado hasta"
+    amar "  que lo corrijas (nube gris, $IP). Caddy lo reintenta solo."
+  else
+    verde "  www.$DOMINIO → $IP"
+  fi
 else
   cf() {
     curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
@@ -123,7 +144,7 @@ fi
 # ── 2. Cortafuegos ───────────────────────────────────────────────────────────
 
 paso "Cortafuegos"
-ssh "$DESTINO" "
+ssh -n "$DESTINO" "
   set -e
   if ! command -v ufw >/dev/null; then
     echo '  ufw no está instalado y no hay cortafuegos activo: no hay nada que abrir.'
@@ -142,7 +163,7 @@ ssh "$DESTINO" "
 # ── 3. Caddy ─────────────────────────────────────────────────────────────────
 
 paso "Instalando Caddy"
-ssh "$DESTINO" '
+ssh -n "$DESTINO" '
   set -e
   if command -v caddy >/dev/null; then
     echo "  ya estaba instalado: $(caddy version)"
@@ -161,21 +182,29 @@ ssh "$DESTINO" '
 
 paso "Instalando el Caddyfile"
 scp -q deploy/Caddyfile "$DESTINO:/tmp/Caddyfile"
-ssh "$DESTINO" '
+ssh -n "$DESTINO" '
   set -e
   install -D -m 644 /tmp/Caddyfile /etc/caddy/Caddyfile
   rm -f /tmp/Caddyfile
   caddy validate --config /etc/caddy/Caddyfile 2>&1 | tail -2
+  # validate corre como root y crea el archivo de log con dueño root; el
+  # servicio corre como caddy y sin esto muere al arrancar con «permission
+  # denied» en /var/log/caddy. Pasó en la primera instalación.
+  chown -R caddy:caddy /var/log/caddy
 '
 
 paso "Arrancando Caddy y pidiendo el certificado"
-ssh "$DESTINO" '
+ssh -n "$DESTINO" '
   set -e
   systemctl enable caddy >/dev/null 2>&1 || true
   systemctl restart caddy
   # Let'"'"'s Encrypt tarda unos segundos; se espera a que 443 responda.
-  for i in $(seq 1 45); do
-    curl -fsS -o /dev/null --max-time 5 https://127.0.0.1/ -k && exit 0
+  # Con el nombre del dominio (SNI) y no con la IP pelada: Caddy solo tiene
+  # certificado para hidromontchile.cl y a una petición a 127.0.0.1 no le
+  # responde el handshake, así que la espera fallaría aunque todo fuera bien.
+  for i in $(seq 1 60); do
+    curl -fsS -o /dev/null --max-time 5 -k \
+      --resolve '"$DOMINIO"':443:127.0.0.1 https://'"$DOMINIO"'/ && exit 0
     sleep 2
   done
   exit 1
