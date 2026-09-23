@@ -20,12 +20,24 @@ export interface AccionBarra {
   secundario?: boolean;
   /** Explicación larga. Solo cabe en la barra de escritorio. */
   titulo?: string;
+  /** Oculta controles que solo tienen sentido en una superficie táctil. */
+  soloTactil?: boolean;
+  /** Marca un control con estado pulsado alternable. */
+  pulsable?: boolean;
 }
 
 export const ACCIONES_BARRA: readonly AccionBarra[] = [
   { accion: 'collections', etiqueta: 'Colecciones', secundario: true },
   { accion: 'gallery', etiqueta: 'Galería', secundario: true },
   { accion: 'jobs', etiqueta: 'Historial', secundario: true },
+  {
+    accion: 'toggle-edit-guides',
+    etiqueta: 'Guías editables',
+    secundario: true,
+    titulo: 'Mostrar u ocultar las zonas editables en pantallas táctiles.',
+    soloTactil: true,
+    pulsable: true,
+  },
   {
     accion: 'admin',
     etiqueta: 'Administrar',
@@ -55,6 +67,8 @@ export function botonesDeBarra({ conTitulo = true }: { conTitulo?: boolean } = {
   return ACCIONES_BARRA.map((a) => {
     const clase = a.secundario ? ' class="secondary"' : '';
     const titulo = conTitulo && a.titulo ? ` title="${escaparAtributo(a.titulo)}"` : '';
-    return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}>${a.etiqueta}</button>`;
+    const soloTactil = a.soloTactil ? ' data-touch-only' : '';
+    const pressed = a.pulsable ? ' aria-pressed="false"' : '';
+    return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}${soloTactil}${pressed}>${a.etiqueta}</button>`;
   }).join('\n      ');
 }

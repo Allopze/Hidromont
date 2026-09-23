@@ -32,6 +32,8 @@ uploads/cms/
 # Screenshots
 
 /screenshots
+/docs/audits/cms-ui-ux-2026-09-23/capturas/*.png
+/docs/audits/cms-ui-ux-2026-09-23/implementacion/capturas/*.png
 
 # Playwright artifacts (L1: no versionar reportes/resultados de tests)
 test-results/

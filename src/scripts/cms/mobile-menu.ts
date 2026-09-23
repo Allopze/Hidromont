@@ -151,6 +151,10 @@ export const mobileMenuStyles = `
     .hm-cms-mobile-sheet button.secondary {
       background: rgba(255, 255, 255, 0.1);
     }
+    .hm-cms-mobile-sheet button[aria-pressed="true"] {
+      border-color: var(--hm-cms-accent);
+      box-shadow: 0 0 0 2px rgba(0, 166, 214, 0.2);
+    }
     .hm-cms-mobile-sheet [data-mobile-close] {
       width: auto;
       text-align: center;
@@ -207,7 +211,7 @@ export function mountMobileMenu(): void {
       <button type="button" class="secondary" data-mobile-close aria-label="Cerrar menú CMS">Cerrar</button>
     </div>
     <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state role="status" aria-live="polite" aria-atomic="true"></span>
-    <p class="hm-cms-mobile-help">Guardar conserva el cambio en el CMS. «Publicar cambios» actualiza el sitio en producción; en local compila aquí y luego debes desplegarlo.</p>
+    <p class="hm-cms-mobile-help">Guardar conserva el cambio en el CMS. «Publicar cambios» actualiza el sitio en producción; en local compila aquí y luego debes desplegarlo. «Guías editables» muestra las zonas que puedes tocar.</p>
     <div class="hm-cms-mobile-sheet-actions">
       ${botonesDeBarra({ conTitulo: false })}
     </div>

@@ -1,7 +1,7 @@
 /**
  * Guarda anti-deriva de las acciones del CMS.
  *
- * Las seis acciones estaban escritas dos veces —`shell.js` para la barra de
+ * Las acciones estaban escritas dos veces —`shell.js` para la barra de
  * escritorio y `mobile-menu.ts` para el panel flotante— sin nada que atara las
  * copias. Ya habían divergido: la barra llevaba `title` explicando qué hace
  * «Exportar y validar» y qué incluye «Administrar», y el panel móvil los había
@@ -23,10 +23,10 @@ describe('acciones de la barra', () => {
     // Si alguien vuelve a pegar un <button data-action> en cualquiera de las
     // dos, la deriva empieza otra vez.
     expect(shell).not.toMatch(
-      /<button[^>]*data-action="(collections|gallery|jobs|admin|publish|logout)"/
+      /<button[^>]*data-action="(collections|gallery|jobs|toggle-edit-guides|admin|publish|logout)"/
     );
     expect(movil).not.toMatch(
-      /<button[^>]*data-action="(collections|gallery|jobs|admin|publish|logout)"/
+      /<button[^>]*data-action="(collections|gallery|jobs|toggle-edit-guides|admin|publish|logout)"/
     );
   });
 
@@ -37,7 +37,7 @@ describe('acciones de la barra', () => {
 
   it('cada acción tiene su manejador en la delegación de eventos', () => {
     // Una acción sin manejador es un botón que no hace nada: el modo de fallo
-    // que este guarda tiene que cazar cuando se añada la séptima.
+    // que este guarda tiene que cazar cada acción nueva.
     const eventos = readFileSync('src/scripts/cms/overlay/events.js', 'utf8');
     const huerfanas = ACCIONES_BARRA.filter(
       (a) => !eventos.includes(`action === '${a.accion}'`)
@@ -60,6 +60,15 @@ describe('acciones de la barra', () => {
     const sinPuntero = botonesDeBarra({ conTitulo: false });
     expect(conPuntero).toContain('title="Exporta el contenido');
     expect(sinPuntero).not.toContain('title=');
+  });
+
+  it('las guías se ofrecen solo en superficies táctiles y empiezan apagadas', () => {
+    const action = ACCIONES_BARRA.find((item) => item.accion === 'toggle-edit-guides');
+    expect(action).toMatchObject({ soloTactil: true, pulsable: true });
+    expect(botonesDeBarra()).toContain('data-touch-only aria-pressed="false"');
+    expect(readFileSync('src/scripts/cms/overlay/styles.js', 'utf8')).toContain(
+      'body.hm-cms-guides-visible [data-cms-editable-ready]'
+    );
   });
 
   it('escapa las comillas de los títulos', () => {

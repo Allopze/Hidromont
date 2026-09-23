@@ -93,6 +93,8 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     await editable.click();
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();
+    const status = panel.locator('form[data-edit] [data-edit-status]');
+    await expect(status).toHaveText('Campo guardado en el CMS.');
 
     // Simular expiración de sesión borrando las cookies en el cliente
     await context.clearCookies();
@@ -100,6 +102,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     // Modificar el valor e intentar guardar
     const input = panel.locator('form[data-edit] [name="value"]');
     await input.fill('Cambio sin sesión');
+    await expect(status).toHaveText('Cambios sin guardar.');
 
     const submitBtn = panel.locator('form[data-edit] button[type="submit"]');
     await submitBtn.click();
@@ -107,6 +110,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     // El overlay debe capturar el error 401 y mostrar el mensaje en el estado del formulario sin perder el texto
     const errorStatus = panel.locator('form[data-edit] [data-status] .hm-cms-error');
     await expect(errorStatus).toBeVisible({ timeout: 5000 });
+    await expect(errorStatus).toHaveAttribute('role', 'alert');
     await expect(input).toHaveValue('Cambio sin sesión');
   });
 });

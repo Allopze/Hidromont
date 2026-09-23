@@ -11,6 +11,7 @@ import AxeBuilder from '@axe-core/playwright';
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
 const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD ?? 'Hidromont-Admin-ChangeMe';
+let testCategoryIds: string[] = [];
 
 async function apiLogin(page: Page) {
   const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
@@ -27,7 +28,9 @@ async function crearCategoria(page: Page, csrf: string, nombre: string) {
     data: { name: nombre },
   });
   expect(res.status()).toBe(201);
-  return (await res.json()).id as string;
+  const id = (await res.json()).id as string;
+  testCategoryIds.push(id);
+  return id;
 }
 
 async function abrirCategorias(page: Page) {
@@ -38,6 +41,22 @@ async function abrirCategorias(page: Page) {
 }
 
 test.describe('Deshacer', () => {
+  test.beforeEach(() => {
+    testCategoryIds = [];
+  });
+
+  test.afterEach(async ({ page }) => {
+    if (!testCategoryIds.length) return;
+    const csrf = await apiLogin(page);
+    for (const id of testCategoryIds) {
+      await page.request
+        .delete(`${CMS_URL}/api/cms/gallery/categories/${encodeURIComponent(id)}`, {
+          headers: { 'x-csrf-token': csrf },
+        })
+        .catch(() => {});
+    }
+  });
+
   test('borrar una categoría ofrece deshacerlo, y la devuelve', async ({ page }) => {
     const csrf = await apiLogin(page);
     const nombre = `Prueba ${Date.now()}`;

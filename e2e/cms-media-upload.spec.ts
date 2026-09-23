@@ -14,6 +14,9 @@ const SYNTHETIC_PNG_BUFFER = Buffer.from(
   'base64'
 );
 
+let csrfToken: string | undefined;
+let uploadedMediaId: string | undefined;
+
 async function apiLogin(page: import('@playwright/test').Page) {
   const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
     data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
@@ -24,13 +27,24 @@ async function apiLogin(page: import('@playwright/test').Page) {
 
 test.describe('CMS Media & Uploads', () => {
   test.beforeEach(async ({ page }) => {
+    csrfToken = undefined;
+    uploadedMediaId = undefined;
     page.on('dialog', (d) => d.accept());
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
   });
 
+  test.afterEach(async ({ page }) => {
+    if (!csrfToken || !uploadedMediaId) return;
+    const response = await page.request.delete(
+      `${CMS_URL}/api/cms/media/${encodeURIComponent(uploadedMediaId)}?confirm=1`,
+      { headers: { 'x-csrf-token': csrfToken } }
+    );
+    expect([200, 404]).toContain(response.status());
+  });
+
   test('subida real de archivo de imagen sintética y creación de ítem', async ({ page }) => {
-    await apiLogin(page);
+    csrfToken = await apiLogin(page);
     await page.goto('/?cms=1');
 
     // 1. Abrir galería -> Gestión de imágenes
@@ -55,7 +69,16 @@ test.describe('CMS Media & Uploads', () => {
 
     const uniqueAlt = `UploadE2E${Date.now()}`;
     await form.locator('input[name="alt"]').fill(uniqueAlt);
+    const uploadResponse = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/cms/media' &&
+        response.request().method() === 'POST'
+    );
     await form.locator('button[type="submit"]').click();
+    const uploaded = await uploadResponse;
+    expect(uploaded.ok()).toBeTruthy();
+    uploadedMediaId = (await uploaded.json()).id as string;
+    expect(uploadedMediaId).toBeTruthy();
 
     // 3. Verificar que se procesó la subida y se creó el ítem en la lista
     const filterInput = panel.locator('input[data-gallery-filter-q]');
@@ -73,10 +96,17 @@ test.describe('CMS Media & Uploads', () => {
     await expect(
       panel.locator(`[data-action="gallery-edit-item"][title="${uniqueAlt}"]`)
     ).toHaveCount(0);
+
+    const mediaDelete = await page.request.delete(
+      `${CMS_URL}/api/cms/media/${encodeURIComponent(uploadedMediaId)}?confirm=1`,
+      { headers: { 'x-csrf-token': csrfToken } }
+    );
+    expect(mediaDelete.ok()).toBeTruthy();
+    uploadedMediaId = undefined;
   });
 
   test('selector de medios en edición de campo visual de imagen', async ({ page }) => {
-    await apiLogin(page);
+    csrfToken = await apiLogin(page);
     await page.goto('/?cms=1');
 
     // Buscar cualquier elemento editable de tipo imagen en la página actual

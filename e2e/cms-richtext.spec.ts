@@ -44,13 +44,15 @@ async function abrirPrimerServicio(page: import('@playwright/test').Page) {
  * `saveEntryForm` hace un PATCH por campo y en serie —a propósito: en paralelo
  * se conflictuarían entre sí—, así que son nueve peticiones. Navegar antes de
  * que acaben las aborta a media lista y el campo parece no haberse guardado.
- * La señal de que terminó es que el panel vuelve a la lista de entradas.
+ * La señal de que terminó es el estado de guardado del formulario, que
+ * permanece abierto para conservar el contexto de edición.
  */
 async function guardarYEsperar(panel: import('@playwright/test').Locator) {
   await panel.locator('button[type="submit"]').click();
-  await expect(panel.locator('[data-action="edit-entry"]').first()).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(
+    'Guardado. Cambios pendientes de publicar.',
+    { timeout: 15_000 }
+  );
 }
 
 test.describe('Editor de texto con formato', () => {

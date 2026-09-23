@@ -395,8 +395,8 @@ test.describe('CMS mobile navigation', () => {
     await launcher.click();
     await expect(menu).toBeVisible();
     await expect(launcher).toHaveAttribute('aria-expanded', 'true');
-    // 6 acciones más el botón de cerrar el panel.
-    await expect(menu.getByRole('button')).toHaveCount(7);
+    // 7 acciones más el botón de cerrar el panel.
+    await expect(menu.getByRole('button')).toHaveCount(8);
 
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();

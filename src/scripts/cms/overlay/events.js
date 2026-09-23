@@ -42,10 +42,14 @@ import { ADMIN_AUDIT_PAGE, adminState, loadAdmin, loadRevisions, renderAdmin } f
 import {
   GALLERY_PAGE_SIZE,
   galleryFilter,
+  filterGalleryAlbums,
+  filterGalleryCategories,
   loadGallery,
   loadGalleryAlbums,
   loadGalleryCategories,
   loadGalleryItemsList,
+  resetGalleryAlbumSearch,
+  resetGalleryCategorySearch,
   scheduleGalleryFilter,
   showGalleryAlbumForm,
   showGalleryCategoryForm,
@@ -102,6 +106,15 @@ export function registerEvents() {
         window.localStorage.removeItem('hidromont:cms');
         window.location.reload();
       }
+      if (action === 'toggle-edit-guides') {
+        event.preventDefault();
+        const visible = !document.body.classList.contains('hm-cms-guides-visible');
+        document.body.classList.toggle('hm-cms-guides-visible', visible);
+        shell.querySelectorAll('[data-action="toggle-edit-guides"]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(visible));
+        });
+        return;
+      }
       if (action === 'export') {
         // B-1: sin try/catch, un fallo aquí (el cerrojo de PublishService, la
         // guarda anti-encogimiento de galería) moría como promesa rechazada
@@ -139,7 +152,12 @@ export function registerEvents() {
       }
       if (action === 'restore-draft' && target instanceof Element) {
         const form = target.closest('form');
-        if (form) applyDraft(form);
+        if (form) {
+          applyDraft(form);
+          const status = form.querySelector('[data-edit-status]');
+          if (status)
+            status.textContent = 'Borrador local recuperado; cambios sin guardar en el CMS.';
+        }
       }
       if (action === 'discard-draft' && target instanceof Element) {
         const form = target.closest('form');
@@ -521,6 +539,8 @@ export function registerEvents() {
         if (campo) {
           campo.value = '';
           setFormDirty(true);
+          const status = form.querySelector('[data-edit-status]');
+          if (status) status.textContent = 'Cambios sin guardar.';
         }
         return;
       }
@@ -640,9 +660,9 @@ export function registerEvents() {
         form,
         () =>
           saveEdit(form).catch((error) => {
-            const status = form.querySelector('[data-status]');
+            const status = form.querySelector('[data-edit-status]');
             if (status)
-              status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+              status.innerHTML = `<span class="hm-cms-error" role="alert">No se pudo guardar: ${escapeHtml(error.message)}</span>`;
           }),
         { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
       );
@@ -722,6 +742,7 @@ export function registerEvents() {
               });
             }
             setGlobalState('unsaved');
+            resetGalleryCategorySearch();
             loadGalleryCategories();
           } catch (error) {
             if (status)
@@ -759,6 +780,7 @@ export function registerEvents() {
               });
             }
             setGlobalState('unsaved');
+            resetGalleryAlbumSearch();
             loadGalleryAlbums();
           } catch (error) {
             if (status)
@@ -879,6 +901,16 @@ export function registerEvents() {
       return;
     }
 
+    if (target instanceof HTMLInputElement && target.matches('[data-gallery-category-search]')) {
+      filterGalleryCategories(target.value);
+      return;
+    }
+
+    if (target instanceof HTMLInputElement && target.matches('[data-gallery-album-search]')) {
+      filterGalleryAlbums(target.value);
+      return;
+    }
+
     if (target instanceof HTMLInputElement && target.matches('[data-collection-search]')) {
       scheduleCollectionSearch(target.value);
       return;
@@ -926,6 +958,10 @@ export function registerEvents() {
     ) {
       setFormDirty(true);
       scheduleDraftSave(target.form);
+      if (target.form.matches('[data-edit]')) {
+        const status = target.form.querySelector('[data-edit-status]');
+        if (status) status.textContent = 'Cambios sin guardar.';
+      }
       if (target.matches('[data-richtext-input]')) {
         refrescarPrevisualizacion(target.closest('[data-richtext]'));
       }

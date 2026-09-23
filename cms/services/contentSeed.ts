@@ -5,7 +5,11 @@ import { config } from '../config/unifiedConfig';
 import { defaultContentEntries } from '../content/defaultContent';
 import type { CmsEntry, CmsField, FieldType } from '../types/cms';
 
-function fieldFromValue(key: string, value: unknown, sourceRef?: Record<string, unknown>): CmsField {
+function fieldFromValue(
+  key: string,
+  value: unknown,
+  sourceRef?: Record<string, unknown>
+): CmsField {
   let type: FieldType = 'text';
   if (typeof value === 'number') type = 'number';
   else if (Array.isArray(value)) type = 'list';
@@ -16,8 +20,11 @@ function fieldFromValue(key: string, value: unknown, sourceRef?: Record<string, 
   return { key, type, value, sourceRef };
 }
 
-function readContentCollection(collection: 'servicios' | 'proyectos'): Omit<CmsEntry, 'version'>[] {
-  const directory = path.join(config.rootDir, 'src', 'content', collection);
+function readContentCollection(
+  collection: 'servicios' | 'proyectos',
+  rootDir: string
+): Omit<CmsEntry, 'version'>[] {
+  const directory = path.join(rootDir, 'src', 'content', collection);
   if (!fs.existsSync(directory)) return [];
 
   return fs
@@ -38,7 +45,15 @@ function readContentCollection(collection: 'servicios' | 'proyectos'): Omit<CmsE
             key,
             fieldFromValue(key, value, { type: 'frontmatter', collection, file }),
           ]),
-          ['body', { key: 'body', type: 'richtext', value: parsed.content.trim(), sourceRef: { type: 'body', collection, file } }],
+          [
+            'body',
+            {
+              key: 'body',
+              type: 'richtext',
+              value: parsed.content.trim(),
+              sourceRef: { type: 'body', collection, file },
+            },
+          ],
         ].map(([key, field]) => [key, field])
       ) as Record<string, CmsField>;
 
@@ -54,7 +69,9 @@ function readContentCollection(collection: 'servicios' | 'proyectos'): Omit<CmsE
     });
 }
 
-export function getInitialEntries(): Omit<CmsEntry, 'version'>[] {
+export function getInitialEntries(
+  rootDir: string = config.cms.contentRootDir
+): Omit<CmsEntry, 'version'>[] {
   const pageEntries = defaultContentEntries.map((entry) => ({
     ...entry,
     fields: Object.fromEntries(
@@ -70,5 +87,9 @@ export function getInitialEntries(): Omit<CmsEntry, 'version'>[] {
     ),
   }));
 
-  return [...pageEntries, ...readContentCollection('servicios'), ...readContentCollection('proyectos')];
+  return [
+    ...pageEntries,
+    ...readContentCollection('servicios', rootDir),
+    ...readContentCollection('proyectos', rootDir),
+  ];
 }

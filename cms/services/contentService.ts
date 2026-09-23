@@ -56,7 +56,7 @@ export class ContentService {
 
   importInitialContent(): { imported: number } {
     const now = new Date().toISOString();
-    const entries = getInitialEntries();
+    const entries = getInitialEntries(this.rootDir);
 
     for (const entry of entries) {
       this.contentRepository.upsertEntry({
@@ -86,7 +86,7 @@ export class ContentService {
    */
   importMissingEntries(): { inserted: number; fieldsInserted: number } {
     const now = new Date().toISOString();
-    const entries = getInitialEntries();
+    const entries = getInitialEntries(this.rootDir);
     let inserted = 0;
     let fieldsInserted = 0;
 

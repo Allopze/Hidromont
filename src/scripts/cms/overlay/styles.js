@@ -100,11 +100,18 @@ export const overlayStyles = `
   }
   /* En pantallas táctiles no existe :hover para descubrir qué se puede editar. */
   @media (hover: none) {
-    [data-cms-editable-ready] {
+    [data-cms-editable-ready]:not(:focus-visible) {
+      outline: none;
+      box-shadow: none;
+    }
+    body.hm-cms-guides-visible [data-cms-editable-ready]:not(:focus-visible) {
       outline: 2px dashed var(--hm-cms-primary);
       outline-offset: 3px;
       box-shadow: 0 0 0 4px rgba(0,101,169,0.14);
     }
+  }
+  @media (hover: hover) {
+    [data-touch-only] { display: none !important; }
   }
   .hm-cms-shell {
     position: fixed;
@@ -175,6 +182,10 @@ export const overlayStyles = `
   .hm-cms-bar button.secondary:hover,
   .hm-cms-panel button.secondary:hover {
     background: rgba(255,255,255,0.2);
+  }
+  .hm-cms-bar button[aria-pressed="true"] {
+    border: 1px solid var(--hm-cms-accent);
+    box-shadow: 0 0 0 2px rgba(0,166,214,0.18);
   }
   /* H-06: estilo destructivo consistente para botones de eliminacion.
    * UI-02: se añade borde rojo suave y sombra en hover para que no pueda
@@ -300,6 +311,20 @@ export const overlayStyles = `
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+  }
+  .hm-cms-edit-actions {
+    display: grid;
+    gap: 10px;
+  }
+  .hm-cms-edit-actions-primary,
+  .hm-cms-edit-actions-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .hm-cms-edit-actions-danger {
+    padding-top: 8px;
+    border-top: 1px solid var(--hm-cms-line);
   }
   /* E-2: aviso de que hay una copia local sin guardar. */
   .hm-cms-draft-notice {
@@ -761,6 +786,7 @@ export const overlayStyles = `
     font-size: 13px;
     color: var(--hm-cms-dark-hover);
   }
+  .hm-cms-gallery-cat-btn[hidden] { display: none; }
   .hm-cms-gallery-cat-btn:hover { border-color: var(--hm-cms-primary); }
   .hm-cms-gallery-cat-name { font-weight: 700; }
   .hm-cms-gallery-cat-slug { font-size: 11px; color: var(--hm-cms-muted-soft); font-family: ui-monospace, monospace; }

@@ -86,7 +86,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const authService = new AuthService(userRepository);
   await authService.ensureAdminUser();
 
-  const contentService = new ContentService(contentRepository);
+  const contentService = new ContentService(contentRepository, config.cms.contentRootDir);
   const mediaService = new MediaService(mediaRepository);
   // A1-012: syncPublicMedia importa media nuevo y reporta huérfanos (archivos
   // borrados de disco fuera del CMS). La advertencia se emite dentro del servicio.
@@ -99,15 +99,15 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const galleryService = new GalleryService(galleryRepository);
   const galleryController = new GalleryController(galleryService, auditRepository);
 
-  const imageService = new ImageService();
+  const imageService = new ImageService(config.cms.contentRootDir);
   const exportService = new ExportService(
     contentRepository,
-    undefined,
+    config.cms.contentRootDir,
     galleryRepository,
     imageService
   );
   const publishService = new PublishService(exportService, publishJobRepository);
-  const backupService = new BackupService(db);
+  const backupService = new BackupService(db, config.cms.backupDir);
 
   const authController = new AuthController(authService);
   const contentController = new ContentController(contentService, auditRepository);

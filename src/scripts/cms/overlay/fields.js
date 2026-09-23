@@ -213,19 +213,22 @@ export async function selectElement(element) {
       </div>
       <p class="hm-cms-muted"><span class="hm-cms-field-key">${escapeHtml(entryId)}.${escapeHtml(field)}</span></p>
       ${fieldEditor(element, entry, field)}
-      <div class="hm-cms-actions">
-        <button type="submit">Guardar</button>
-        <span class="hm-cms-action-sep" aria-hidden="true"></span>
+      <div class="hm-cms-edit-actions">
+        <div class="hm-cms-edit-actions-primary">
+          <button type="submit">Guardar</button>
+        </div>
+        <div class="hm-cms-edit-actions-secondary">
+          <button type="button" class="secondary" data-action="export" title="Prepara los archivos del sitio; no los compila ni publica.">Exportar</button>
+          <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
+        </div>
         ${
           element.dataset.cmsType === 'image'
             ? ''
-            : `<button type="button" class="secondary destructive" data-action="clear-field">Vaciar este texto</button>`
+            : `<div class="hm-cms-edit-actions-danger"><button type="button" class="secondary destructive" data-action="clear-field">Vaciar este texto</button></div>`
         }
-        <button type="button" class="secondary" data-action="export" title="Prepara los archivos del sitio; no los compila ni publica.">Exportar</button>
-        <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
       </div>
       <p class="hm-cms-muted">${publishHint}</p>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status>Sin cambios guardados.</p>
+      <p class="hm-cms-muted" role="status" aria-live="polite" data-status data-edit-status>Campo guardado en el CMS.</p>
     </form>
   `);
 

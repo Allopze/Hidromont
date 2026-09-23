@@ -45,6 +45,15 @@ export const config = {
     staticDir: resolveStaticDir(rootDir, process.env.CMS_STATIC_DIR),
     databasePath:
       process.env.CMS_DATABASE_PATH ?? path.join(rootDir, 'cms', 'data', 'hidromont-cms.sqlite'),
+    // Root for files managed by CMS mutations/exports. Production defaults to
+    // the repository root; Playwright points it at a disposable copy so E2E
+    // writes cannot touch src/content or src/data in the working tree.
+    contentRootDir: process.env.CMS_CONTENT_ROOT_DIR
+      ? path.resolve(process.env.CMS_CONTENT_ROOT_DIR)
+      : rootDir,
+    backupDir: process.env.CMS_BACKUP_DIR
+      ? path.resolve(process.env.CMS_BACKUP_DIR)
+      : path.join(rootDir, 'cms', 'data', 'backups'),
     allowedOrigins: csvFromEnv('CMS_ALLOWED_ORIGINS', [
       'http://localhost:4321',
       'http://127.0.0.1:4321',

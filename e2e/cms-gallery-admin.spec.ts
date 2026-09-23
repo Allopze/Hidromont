@@ -13,6 +13,7 @@ const TEST_CAT_SLUG = 'cat-e2e-auto';
 
 const TEST_ALBUM_NAME = 'Álbum E2E Automatizado';
 const TEST_ALBUM_SLUG = 'album-e2e-auto';
+const SELECT_ALL = process.platform === 'darwin' ? 'Meta+A' : 'Control+A';
 
 async function apiLogin(page: import('@playwright/test').Page) {
   const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
@@ -68,8 +69,32 @@ test.describe('CMS Gallery Administration', () => {
       }
     );
 
+    const search = panel.getByRole('searchbox', { name: 'Buscar categoría' });
+    const count = panel.locator('[data-gallery-category-count]');
+    await search.focus();
+    await search.pressSequentially(TEST_CAT_NAME);
+    await expect(count).toHaveText(/1 de \d+ categorías/);
+    await expect(
+      panel.locator('[data-gallery-category-row]', { hasText: TEST_CAT_NAME })
+    ).toBeVisible();
+    await expect(search).toBeFocused();
+
+    await search.press(SELECT_ALL);
+    await search.pressSequentially(TEST_CAT_SLUG);
+    await expect(count).toHaveText(/1 de \d+ categorías/);
+    await expect(
+      panel.locator('[data-gallery-category-row]', { hasText: TEST_CAT_NAME })
+    ).toBeVisible();
+
+    await search.press(SELECT_ALL);
+    await search.pressSequentially('sin-coincidencias-xyz');
+    await expect(count).toHaveText(/0 de \d+ categorías/);
+    await expect(panel.locator('[data-gallery-category-empty]')).toContainText('Ninguna categoría');
+    await search.press(SELECT_ALL);
+    await search.pressSequentially(TEST_CAT_NAME);
+
     // 4. Editar categoría
-    const catItem = panel.locator('.hm-cms-gallery-cat-btn', { hasText: TEST_CAT_NAME });
+    const catItem = panel.locator('[data-gallery-category-row]', { hasText: TEST_CAT_NAME });
     await catItem.locator('[data-action="gallery-edit-cat"]').click();
     await expect(form).toBeVisible();
 
@@ -84,8 +109,8 @@ test.describe('CMS Gallery Administration', () => {
     );
 
     // 5. Eliminar categoría
-    const catEditada = panel.locator('.hm-cms-gallery-cat-btn', { hasText: nombreEditado });
-    await catEditada.locator('[data-action="gallery-delete-cat"]').click();
+    const catEditada = panel.locator('[data-gallery-category-row]', { hasText: nombreEditado });
+    await catEditada.getByRole('button', { name: `Eliminar categoría: ${nombreEditado}` }).click();
 
     await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: nombreEditado })).toHaveCount(
       0
@@ -121,8 +146,31 @@ test.describe('CMS Gallery Administration', () => {
       timeout: 5000,
     });
 
+    const search = panel.getByRole('searchbox', { name: 'Buscar álbum' });
+    const count = panel.locator('[data-gallery-album-count]');
+    await search.focus();
+    await search.pressSequentially('album e2e automatizado');
+    await expect(count).toHaveText(/1 de \d+ álbumes/);
+    await expect(
+      panel.locator('[data-gallery-album-row]', { hasText: TEST_ALBUM_NAME })
+    ).toBeVisible();
+
+    await search.press(SELECT_ALL);
+    await search.pressSequentially(TEST_ALBUM_SLUG);
+    await expect(count).toHaveText(/1 de \d+ álbumes/);
+    await expect(
+      panel.locator('[data-gallery-album-row]', { hasText: TEST_ALBUM_NAME })
+    ).toBeVisible();
+
+    await search.press(SELECT_ALL);
+    await search.pressSequentially('sin-coincidencias-xyz');
+    await expect(count).toHaveText(/0 de \d+ álbumes/);
+    await expect(panel.locator('[data-gallery-album-empty]')).toContainText('Ningún álbum');
+    await search.press(SELECT_ALL);
+    await search.pressSequentially(TEST_ALBUM_NAME);
+
     // Editar álbum
-    const albumItem = panel.locator('.hm-cms-gallery-cat-btn', { hasText: TEST_ALBUM_NAME });
+    const albumItem = panel.locator('[data-gallery-album-row]', { hasText: TEST_ALBUM_NAME });
     await albumItem.locator('[data-action="gallery-edit-album"]').click();
     await expect(form).toBeVisible();
 
@@ -135,8 +183,8 @@ test.describe('CMS Gallery Administration', () => {
     });
 
     // Eliminar álbum
-    const albumParaBorrar = panel.locator('.hm-cms-gallery-cat-btn', { hasText: albumEditado });
-    await albumParaBorrar.locator('[data-action="gallery-delete-album"]').click();
+    const albumParaBorrar = panel.locator('[data-gallery-album-row]', { hasText: albumEditado });
+    await albumParaBorrar.getByRole('button', { name: `Eliminar álbum: ${albumEditado}` }).click();
 
     await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: albumEditado })).toHaveCount(
       0

@@ -57,6 +57,86 @@ export async function loadGallery() {
   }
 }
 
+function normalizedGallerySearch(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
+function applyGalleryTaxonomySearch({
+  query,
+  rowSelector,
+  countSelector,
+  emptySelector,
+  total,
+  kind,
+}) {
+  const normalizedQuery = normalizedGallerySearch(query);
+  const rows = panelBody.querySelectorAll(rowSelector);
+  let visible = 0;
+
+  rows.forEach((row) => {
+    const matches =
+      !normalizedQuery ||
+      normalizedGallerySearch(row.dataset.gallerySearchText).includes(normalizedQuery);
+    row.hidden = !matches;
+    if (matches) visible++;
+  });
+
+  const count = panelBody.querySelector(countSelector);
+  if (count) {
+    const label = total === 1 ? kind.singular : kind.plural;
+    count.textContent = normalizedQuery ? `${visible} de ${total} ${label}` : `${total} ${label}`;
+  }
+
+  const empty = panelBody.querySelector(emptySelector);
+  if (empty) {
+    empty.textContent = query.trim()
+      ? `${kind.noMatch} coincide con «${query.trim()}».`
+      : `No hay ${kind.plural} todavía.`;
+    empty.hidden = visible > 0;
+  }
+}
+
+let galleryCategorySearch = '';
+let galleryAlbumSearch = '';
+let galleryCategoriesListCache = [];
+let galleryAlbumsListCache = [];
+
+export function filterGalleryCategories(text) {
+  galleryCategorySearch = text;
+  applyGalleryTaxonomySearch({
+    query: galleryCategorySearch,
+    rowSelector: '[data-gallery-category-row]',
+    countSelector: '[data-gallery-category-count]',
+    emptySelector: '[data-gallery-category-empty]',
+    total: galleryCategoriesListCache.length,
+    kind: { singular: 'categoría', plural: 'categorías', noMatch: 'Ninguna categoría' },
+  });
+}
+
+export function resetGalleryCategorySearch() {
+  galleryCategorySearch = '';
+}
+
+export function filterGalleryAlbums(text) {
+  galleryAlbumSearch = text;
+  applyGalleryTaxonomySearch({
+    query: galleryAlbumSearch,
+    rowSelector: '[data-gallery-album-row]',
+    countSelector: '[data-gallery-album-count]',
+    emptySelector: '[data-gallery-album-empty]',
+    total: galleryAlbumsListCache.length,
+    kind: { singular: 'álbum', plural: 'álbumes', noMatch: 'Ningún álbum' },
+  });
+}
+
+export function resetGalleryAlbumSearch() {
+  galleryAlbumSearch = '';
+}
+
 export async function loadGalleryCategories() {
   if (!(await ensureSession())) return;
   setPanelTitle('Categorías de galería');
@@ -64,33 +144,40 @@ export async function loadGalleryCategories() {
   try {
     const data = await api('/api/cms/gallery/categories');
     const cats = data.items || [];
+    galleryCategoriesListCache = cats;
     openPanel(`
       <div style="display:grid;gap:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:13px;color:var(--hm-cms-muted-soft)">${cats.length} categorías</span>
+          <p class="hm-cms-muted" role="status" aria-live="polite" data-gallery-category-count style="margin:0;font-size:13px;color:var(--hm-cms-muted-soft)"></p>
           <button type="button" data-action="gallery-new-cat">+ Nueva categoría</button>
         </div>
+        <label>Buscar categoría
+          <input name="galleryCategorySearch" type="search" data-gallery-category-search
+            placeholder="Nombre o slug" value="${escapeHtml(galleryCategorySearch)}" />
+        </label>
         <div style="display:grid;gap:6px">
           ${cats
             .map(
               (cat) => `
-            <div class="hm-cms-gallery-cat-btn" data-cat-id="${escapeHtml(cat.id)}">
+            <div class="hm-cms-gallery-cat-btn" data-gallery-category-row data-gallery-search-text="${escapeHtml(`${cat.name} ${cat.slug}`)}" data-cat-id="${escapeHtml(cat.id)}">
               <div>
                 <span class="hm-cms-gallery-cat-name">${escapeHtml(cat.name)}</span>
                 <span class="hm-cms-gallery-cat-slug">${escapeHtml(cat.slug)}</span>
               </div>
               <div style="display:flex;gap:4px">
                 <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">Editar</button>
-                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}">×</button>
+                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}" aria-label="Eliminar categoría: ${escapeHtml(cat.name)}" title="Eliminar categoría: ${escapeHtml(cat.name)}">×</button>
               </div>
             </div>
           `
             )
             .join('')}
         </div>
+        <p class="hm-cms-muted" data-gallery-category-empty hidden></p>
         <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
       </div>
     `);
+    filterGalleryCategories(galleryCategorySearch);
   } catch (error) {
     openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
   }
@@ -150,34 +237,41 @@ export async function loadGalleryAlbums() {
   try {
     const data = await api('/api/cms/gallery/albums');
     const albums = data.items || [];
+    galleryAlbumsListCache = albums;
     openPanel(`
       <div style="display:grid;gap:8px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:13px;color:var(--hm-cms-muted-soft)">${albums.length} álbumes</span>
+          <p class="hm-cms-muted" role="status" aria-live="polite" data-gallery-album-count style="margin:0;font-size:13px;color:var(--hm-cms-muted-soft)"></p>
           <button type="button" data-action="gallery-new-album">+ Nuevo álbum</button>
         </div>
+        <label>Buscar álbum
+          <input name="galleryAlbumSearch" type="search" data-gallery-album-search
+            placeholder="Nombre o slug" value="${escapeHtml(galleryAlbumSearch)}" />
+        </label>
         <div style="display:grid;gap:6px">
           ${albums
             .map(
               (album) => `
-            <div class="hm-cms-gallery-cat-btn" data-album-slug="${escapeHtml(album.slug)}">
+            <div class="hm-cms-gallery-cat-btn" data-gallery-album-row data-gallery-search-text="${escapeHtml(`${album.name} ${album.slug}`)}" data-album-slug="${escapeHtml(album.slug)}">
               <div>
                 <span class="hm-cms-gallery-cat-name">${escapeHtml(album.name)}</span>
                 <span class="hm-cms-gallery-cat-slug">${escapeHtml(album.slug)} · ${album.itemCount} foto${album.itemCount === 1 ? '' : 's'}</span>
               </div>
               <div style="display:flex;gap:4px">
                 <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-album" data-album-slug="${escapeHtml(album.slug)}">Editar</button>
-                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}">×</button>
+                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}" aria-label="Eliminar álbum: ${escapeHtml(album.name)}" title="Eliminar álbum: ${escapeHtml(album.name)}">×</button>
               </div>
             </div>
           `
             )
             .join('')}
         </div>
+        <p class="hm-cms-muted" data-gallery-album-empty hidden></p>
         <p class="hm-cms-muted">El álbum agrupa las fotos de una obra y su nombre es el que ve el visitante. Las fotos se asignan desde "Gestionar imágenes".</p>
         <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
       </div>
     `);
+    filterGalleryAlbums(galleryAlbumSearch);
   } catch (error) {
     openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
   }
