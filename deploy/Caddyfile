@@ -5,14 +5,41 @@
 #   sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
 #   sudo systemctl reload caddy
 #
-# Requisito previo: los registros A de hidromontchile.cl y www ya apuntan a la
-# IP del VPS. Caddy valida por HTTP-01 y sin DNS correcto el arranque falla.
+# Requisito previo: los registros A de hidromontchile.cl, www y editor ya apuntan
+# a la IP del VPS. Caddy valida por HTTP-01 y sin DNS correcto el arranque falla.
 
 # El sitio declara site: 'https://hidromontchile.cl' en astro.config.mjs, así
 # que las URLs canónicas son sin www. Servir ambos dominios con contenido
 # idéntico dividiría las señales de SEO; www redirige.
 www.hidromontchile.cl {
 	redir https://hidromontchile.cl{uri} permanent
+}
+
+editor.hidromontchile.cl {
+	encode zstd gzip
+
+	# Seguridad y SEO: evitar que motores de búsqueda indexen la interfaz del editor
+	header {
+		X-Robots-Tag "noindex, nofollow"
+	}
+
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy 127.0.0.1:8787 {
+		transport http {
+			read_timeout 660s
+			write_timeout 660s
+		}
+	}
+
+	log {
+		output file /var/log/caddy/hidromont-editor.log {
+			roll_size 20MiB
+			roll_keep 10
+		}
+	}
 }
 
 hidromontchile.cl {
@@ -45,3 +72,4 @@ hidromontchile.cl {
 		}
 	}
 }
+

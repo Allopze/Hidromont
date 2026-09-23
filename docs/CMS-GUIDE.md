@@ -9,10 +9,10 @@ El CMS es un **backend Fastify + SQLite** que puede correr en local o LAN para p
 
 ## Entrar al CMS
 
-Abre el enlace que te dio la persona responsable del CMS. Si la edición está
-habilitada en producción, el enlace puede ser
-`https://hidromontchile.cl/?cms=1`; para una instalación local es
-`http://localhost:4321/?cms=1`.
+Abre el enlace que te dio la persona responsable del CMS:
+
+- En producción, la dirección es **`https://editor.hidromontchile.cl`** (el panel se activa de forma automática sin necesidad de añadir parámetros).
+- Para una instalación local en desarrollo, es **`http://localhost:4321/?cms=1`** (o `http://editor.localhost:4321`).
 
 Inicia sesión con el usuario y la contraseña que te entregó esa persona. Si no
 los tienes, pídelos al responsable del CMS. La configuración técnica está en

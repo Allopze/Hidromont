@@ -38,9 +38,10 @@ sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-Antes de empezar, apunta los registros **A** de `hidromontchile.cl` y
-`www.hidromontchile.cl` a la IP del VPS. Caddy valida el certificado por
-HTTP-01 y sin DNS correcto no arranca.
+Antes de empezar, apunta los registros **A** de `hidromontchile.cl`,
+`www.hidromontchile.cl` y `editor.hidromontchile.cl` a la IP del VPS. Caddy
+valida el certificado por HTTP-01 para cada dominio y sin DNS correcto no
+arranca.
 
 ---
 

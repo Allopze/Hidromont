@@ -28,13 +28,47 @@
  */
 const CMS_EN_ESTE_BUILD = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
+/**
+ * Determina si el hostname actual corresponde a la interfaz de edición
+ * (ej: `editor.hidromontchile.cl`, `editor.localhost`).
+ */
+export function isEditorHost(hostname: string): boolean {
+  return hostname.startsWith('editor.');
+}
+
+/**
+ * Lógica pura de decisión para activar el overlay:
+ * 1. Si el host es un subdominio de edición (ej. `editor.hidromontchile.cl`), se activa siempre.
+ * 2. Si se especifica `?cms=1` en los parámetros de URL, se activa.
+ * 3. Si `localStorage` tiene la bandera persistida de una sesión previa, se activa.
+ */
+export function shouldActivateOverlay(
+  hostname: string,
+  search: string,
+  storedFlag: string | null
+): boolean {
+  if (isEditorHost(hostname)) return true;
+  const params = new URLSearchParams(search);
+  return params.get('cms') === '1' || storedFlag === '1';
+}
+
 export function startOverlay(): void {
   if (!CMS_EN_ESTE_BUILD) return;
 
-  const params = new URLSearchParams(window.location.search);
-  const enabled = params.get('cms') === '1' || window.localStorage.getItem('hidromont:cms') === '1';
+  const hostname = window.location.hostname;
+  const isEditor = isEditorHost(hostname);
+  const enabled = shouldActivateOverlay(
+    hostname,
+    window.location.search,
+    window.localStorage.getItem('hidromont:cms')
+  );
   if (!enabled) return;
-  window.localStorage.setItem('hidromont:cms', '1');
+
+  // Solo persistir en localStorage si estamos fuera de editor.* para no dejar
+  // residuos cuando se navega en el dominio público.
+  if (!isEditor) {
+    window.localStorage.setItem('hidromont:cms', '1');
+  }
 
   void import('./mount').then(({ mount }) => mount());
 }
