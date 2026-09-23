@@ -69,6 +69,21 @@ export const overlayStyles = `
     --hm-cms-badge-published-ink: #166534;
     --hm-cms-badge-dark-bg: #0f172a;
     --hm-cms-badge-dark-ink: #dbeafe;
+
+    /*
+     * UI-01: el sitio público usa radius 0px como decisión de diseño
+     * industrial, pero el CMS es una herramienta interna: un radio
+     * suave lo hace más amigable como espacio de trabajo sin afectar
+     * la estética pública.
+     */
+    --hm-cms-radius: 6px;
+    --hm-cms-radius-sm: 4px;
+    --hm-cms-radius-lg: 10px;
+
+    /* Transiciones consistentes para todo el overlay. */
+    --hm-cms-ease: cubic-bezier(0.2, 0, 0, 1);
+    --hm-cms-duration: 150ms;
+    --hm-cms-duration-panel: 240ms;
   }
   [data-cms-entry] {
     cursor: crosshair;
@@ -101,6 +116,7 @@ export const overlayStyles = `
   .hm-cms-bar {
     pointer-events: auto;
     position: fixed;
+    z-index: 20;
     left: 16px;
     bottom: 16px;
     display: flex;
@@ -110,13 +126,13 @@ export const overlayStyles = `
     background: var(--hm-cms-dark);
     color: white;
     border: 1px solid var(--hm-cms-line);
-    border-radius: 0px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.24);
+    border-radius: var(--hm-cms-radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
   }
   .hm-cms-bar button,
   .hm-cms-panel button {
     border: 0;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 9px 12px;
     min-height: 44px;
     min-width: 44px;
@@ -124,7 +140,22 @@ export const overlayStyles = `
     background: var(--hm-cms-primary);
     color: #fff;
     cursor: pointer;
-    transition: background-color 150ms ease;
+    transition: background-color var(--hm-cms-duration) var(--hm-cms-ease),
+               box-shadow var(--hm-cms-duration) var(--hm-cms-ease),
+               transform var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-bar button:active:not([disabled]),
+  .hm-cms-panel button:active:not([disabled]) {
+    transform: scale(0.97);
+  }
+  /* UI-02: sombra sutil en botones primarios para distinguirlos de secundarios. */
+  .hm-cms-panel button[type="submit"],
+  .hm-cms-bar button:not(.secondary):not(.destructive) {
+    box-shadow: 0 1px 3px rgba(0,101,169,0.3);
+  }
+  .hm-cms-panel button[type="submit"]:hover,
+  .hm-cms-bar button:not(.secondary):not(.destructive):hover {
+    box-shadow: 0 2px 8px rgba(0,101,169,0.4);
   }
   .hm-cms-bar button:hover,
   .hm-cms-panel button:hover {
@@ -145,15 +176,19 @@ export const overlayStyles = `
   .hm-cms-panel button.secondary:hover {
     background: rgba(255,255,255,0.2);
   }
-  /* H-06: estilo destructivo consistente para botones de eliminacion */
+  /* H-06: estilo destructivo consistente para botones de eliminacion.
+   * UI-02: se añade borde rojo suave y sombra en hover para que no pueda
+   * confundirse con un botón inocuo. */
   .hm-cms-bar button.destructive,
   .hm-cms-panel button.destructive {
     background: var(--hm-cms-danger-bg);
     color: var(--hm-cms-danger-ink);
+    border: 1px solid var(--hm-cms-danger-line);
   }
   .hm-cms-bar button.destructive:hover,
   .hm-cms-panel button.destructive:hover {
     background: var(--hm-cms-danger-line);
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
   }
   /* La barra flotante tapa el final de la página: damos aire al contenido. */
   body.hm-cms-active {
@@ -162,6 +197,7 @@ export const overlayStyles = `
   .hm-cms-panel {
     pointer-events: auto;
     position: fixed;
+    z-index: 30;
     top: 0;
     right: 0;
     width: min(420px, 100vw);
@@ -169,23 +205,26 @@ export const overlayStyles = `
     background: var(--hm-cms-alt);
     color: var(--hm-cms-ink);
     border-left: 1px solid var(--hm-cms-line);
-    box-shadow: -20px 0 60px rgba(15,36,51,0.24);
+    box-shadow: -8px 0 32px rgba(15,36,51,0.18), -1px 0 0 var(--hm-cms-line);
     transform: translateX(104%);
-    transition: transform 180ms ease;
+    transition: transform var(--hm-cms-duration-panel) var(--hm-cms-ease);
     display: flex;
     flex-direction: column;
   }
   .hm-cms-panel.open {
     transform: translateX(0);
   }
+  /* UI-03: borde inferior azul crea transición visual clara entre header
+   * oscuro y body claro; el panel deja de sentirse como dos bloques pegados. */
   .hm-cms-panel-head {
-    padding: 18px;
+    padding: 16px 18px;
     background: var(--hm-cms-dark);
     color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    border-bottom: 3px solid var(--hm-cms-primary);
   }
   .hm-cms-panel-head h2 {
     font-size: 16px;
@@ -230,7 +269,7 @@ export const overlayStyles = `
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--hm-cms-line);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 10px;
     font: inherit;
     color: var(--hm-cms-ink);
@@ -361,7 +400,7 @@ export const overlayStyles = `
     gap: 8px;
     padding: 10px;
     border: 1px solid var(--hm-cms-line);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
   }
   .hm-cms-job-title {
@@ -376,7 +415,7 @@ export const overlayStyles = `
   .hm-cms-badge {
     display: inline-flex;
     align-items: center;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 3px 8px;
     background: var(--hm-cms-primary-light);
     color: var(--hm-cms-primary-dark);
@@ -397,7 +436,7 @@ export const overlayStyles = `
     overflow: auto;
     margin: 0;
     padding: 8px;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: var(--hm-cms-badge-dark-bg);
     color: var(--hm-cms-badge-dark-ink);
     font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -408,7 +447,7 @@ export const overlayStyles = `
     gap: 8px;
     padding: 10px;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
   }
   .hm-cms-image-preview img {
@@ -416,7 +455,7 @@ export const overlayStyles = `
     max-height: 180px;
     object-fit: contain;
     background: var(--hm-cms-line-softer);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
   }
   .hm-cms-media-grid {
     display: grid;
@@ -441,7 +480,7 @@ export const overlayStyles = `
     display: grid;
     gap: 6px;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 6px;
     min-height: 0;
     font-weight: 400;
@@ -460,7 +499,7 @@ export const overlayStyles = `
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: var(--hm-cms-line-softer);
   }
   .hm-cms-media-name {
@@ -501,7 +540,7 @@ export const overlayStyles = `
     gap: 8px;
     padding: 8px 10px;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
   }
   .hm-cms-revision-item.current {
@@ -532,7 +571,7 @@ export const overlayStyles = `
     gap: 8px;
     padding: 10px 12px;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
   }
   .hm-cms-collection-item:hover {
@@ -569,14 +608,14 @@ export const overlayStyles = `
     gap: 4px;
     padding: 4px;
     background: var(--hm-cms-line-softer);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     margin-bottom: 12px;
   }
   .hm-cms-tab {
     flex: 1;
     padding: 7px 8px;
     border: 0;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     font: inherit;
     font-size: 12px;
     font-weight: 700;
@@ -629,7 +668,7 @@ export const overlayStyles = `
     width: 100%;
     box-sizing: border-box;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 9px 10px;
     font: inherit;
     color: var(--hm-cms-dark-hover);
@@ -660,7 +699,7 @@ export const overlayStyles = `
     position: relative;
     aspect-ratio: 1;
     overflow: hidden;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     border: 2px solid transparent;
     cursor: pointer;
     background: var(--hm-cms-line-softer);
@@ -704,7 +743,7 @@ export const overlayStyles = `
     font-size: 9px;
     font-weight: 800;
     padding: 1px 4px;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     text-transform: uppercase;
   }
   .hm-cms-gallery-cat-btn {
@@ -714,7 +753,7 @@ export const overlayStyles = `
     gap: 6px;
     padding: 8px 10px;
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
     cursor: pointer;
     text-align: left;
@@ -744,7 +783,7 @@ export const overlayStyles = `
    */
   .hm-cms-rt {
     border: 1px solid var(--hm-cms-line-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     background: white;
     margin-bottom: 12px;
   }
@@ -770,7 +809,7 @@ export const overlayStyles = `
     border: 1px solid transparent;
     background: transparent;
     color: var(--hm-cms-ink-soft);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 0 7px;
     min-width: 32px;
     min-height: 32px;
@@ -815,7 +854,7 @@ export const overlayStyles = `
     display: block;
     width: 100%;
     border: 0;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 10px 12px;
     font: inherit;
     font-family: ui-monospace, monospace;
@@ -882,6 +921,7 @@ export const overlayStyles = `
   .hm-cms-undo {
     pointer-events: auto;
     position: fixed;
+    z-index: 40;
     left: 16px;
     bottom: 76px;
     max-width: min(420px, calc(100vw - 32px));
@@ -892,7 +932,7 @@ export const overlayStyles = `
     background: var(--hm-cms-dark);
     color: #fff;
     border: 1px solid var(--hm-cms-line);
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     font-size: 13px;
     line-height: 1.4;
     box-shadow: 0 6px 20px rgba(15, 36, 51, 0.28);
@@ -915,7 +955,7 @@ export const overlayStyles = `
     border: 1px solid rgba(255, 255, 255, 0.35);
     background: transparent;
     color: #fff;
-    border-radius: 0px;
+    border-radius: var(--hm-cms-radius-sm);
     padding: 6px 12px;
     min-height: 36px;
     font: inherit;
@@ -950,5 +990,208 @@ export const overlayStyles = `
   }
   .hm-cms-autosave-indicator.visible {
     opacity: 1;
+  }
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-03: Backdrop overlay — fondo semitransparente al abrir el panel.
+   * Enfoca la atención del editor y permite cerrar con clic fuera.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  .hm-cms-backdrop {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,36,51,0.3);
+    opacity: 0;
+    transition: opacity var(--hm-cms-duration-panel) var(--hm-cms-ease);
+    z-index: 10;
+  }
+  .hm-cms-backdrop.visible {
+    pointer-events: auto;
+    opacity: 1;
+  }
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-03: Breadcrumb y separadores de acciones.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  .hm-cms-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--hm-cms-muted-soft);
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius-sm);
+    margin-bottom: 4px;
+  }
+  .hm-cms-breadcrumb-sep {
+    color: var(--hm-cms-line-soft);
+  }
+  .hm-cms-action-sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--hm-cms-line-softer);
+    margin: 4px 0;
+  }
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-04: Indicador de campo modificado, status bar con niveles, skeleton.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  .hm-cms-panel input.modified,
+  .hm-cms-panel textarea.modified,
+  .hm-cms-panel select.modified {
+    border-left: 3px solid var(--hm-cms-accent);
+  }
+  .hm-cms-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: var(--hm-cms-radius-sm);
+    transition: background-color var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-status[data-level="idle"] {
+    background: transparent;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-status[data-level="saving"] {
+    background: var(--hm-cms-info-bg);
+    color: var(--hm-cms-primary);
+  }
+  .hm-cms-status[data-level="success"] {
+    background: var(--hm-cms-ok-bg);
+    color: var(--hm-cms-ok-ink);
+  }
+  .hm-cms-status[data-level="error"] {
+    background: var(--hm-cms-danger-bg);
+    color: var(--hm-cms-danger-ink);
+  }
+  .hm-cms-skeleton {
+    background: linear-gradient(90deg, var(--hm-cms-line-softer) 25%, var(--hm-cms-surface-soft) 50%, var(--hm-cms-line-softer) 75%);
+    background-size: 200% 100%;
+    animation: hm-cms-shimmer 1.5s ease infinite;
+    border-radius: var(--hm-cms-radius-sm);
+    height: 44px;
+  }
+  @keyframes hm-cms-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-05: Stat cards para galería, transiciones en colecciones,
+   * formulario de login centrado, secciones de admin en cards.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  .hm-cms-stat-card {
+    padding: 20px 16px;
+    border: 1px solid var(--hm-cms-line-soft);
+    border-radius: var(--hm-cms-radius);
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
+                box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-panel button.hm-cms-stat-card,
+  .hm-cms-panel .hm-cms-stat-card {
+    background: white;
+    border: 1px solid var(--hm-cms-line-soft);
+    font-weight: 400;
+    color: var(--hm-cms-ink);
+    min-height: auto;
+    min-width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .hm-cms-stat-card:hover {
+    border-color: var(--hm-cms-primary);
+    box-shadow: 0 2px 8px rgba(0,101,169,0.12);
+  }
+  .hm-cms-panel button.hm-cms-stat-card:hover,
+  .hm-cms-panel .hm-cms-stat-card:hover {
+    background: white;
+    border-color: var(--hm-cms-primary);
+  }
+  .hm-cms-stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--hm-cms-primary);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .hm-cms-stat-label {
+    font-size: 12px;
+    color: var(--hm-cms-ink-softer);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+  }
+  .hm-cms-collection-item {
+    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
+                box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-collection-item:hover {
+    box-shadow: 0 2px 8px rgba(0,101,169,0.1);
+  }
+  .hm-cms-login-form {
+    display: grid;
+    gap: 16px;
+    max-width: 320px;
+    margin: 0 auto;
+    padding-top: 24px;
+  }
+  .hm-cms-admin-section {
+    padding: 16px;
+    background: white;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+  }
+
+  /*
+   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-01: prefers-reduced-motion — desactivar TODAS las animaciones
+   * y transiciones cuando el usuario lo pide.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .hm-cms-panel {
+      transition-duration: 0ms;
+    }
+    .hm-cms-backdrop {
+      transition-duration: 0ms;
+    }
+    .hm-cms-bar button,
+    .hm-cms-panel button {
+      transition: none;
+    }
+    .hm-cms-bar button:active:not([disabled]),
+    .hm-cms-panel button:active:not([disabled]) {
+      transform: none;
+    }
+    .hm-cms-collection-item,
+    .hm-cms-stat-card,
+    .hm-cms-status {
+      transition: none;
+    }
+    .hm-cms-skeleton {
+      animation: none;
+      background: var(--hm-cms-line-softer);
+    }
+    .hm-cms-autosave-indicator {
+      transition: none;
+    }
   }
 `;

@@ -33,7 +33,7 @@ export function exportNoticeMarkup(exported) {
       : '';
 
   return `
-    <div class="hm-cms-muted" role="alert" aria-live="assertive" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:10px 12px;margin-bottom:10px">
+    <div class="hm-cms-muted" role="alert" aria-live="assertive" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:10px 12px;margin-bottom:10px">
       ${lista(
         'No se publicaron (corrige el campo y vuelve a exportar):',
         omitidas.map(
@@ -74,7 +74,7 @@ export function renderPublishJobs(items) {
   openPanel(`
     <section class="hm-cms-job-list">
       <p class="hm-cms-muted">Historial de preparación de archivos y publicaciones.</p>
-      <p class="hm-cms-muted" style="background:var(--hm-cms-info-bg);border:1px solid var(--hm-cms-info-line);border-radius:0px;padding:8px 10px">
+      <p class="hm-cms-muted" style="background:var(--hm-cms-info-bg);border:1px solid var(--hm-cms-info-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">
         ℹ️ «Exportar» solo prepara archivos. «Publicar cambios» también compila este sitio. ${avisoEntorno}
       </p>
       ${items

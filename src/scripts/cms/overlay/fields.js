@@ -151,14 +151,14 @@ export function listEditorMarkup(items, inputName) {
             .map(
               (item, i) => `
             <div style="display:flex;gap:6px;align-items:center">
-              <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" aria-label="Elemento ${i + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:0px;padding:8px 10px;font:inherit" />
+              <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" aria-label="Elemento ${i + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 10px;font:inherit" />
               <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" aria-label="Quitar el elemento ${i + 1}" style="font-weight:700">×</button>
             </div>
           `
             )
             .join('')}
         </div>
-        <button type="button" data-action="add-list-item" style="border:1px dashed var(--hm-cms-line-soft);background:white;color:var(--hm-cms-ink-soft);border-radius:0px;padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
+        <button type="button" data-action="add-list-item" style="border:1px dashed var(--hm-cms-line-soft);background:white;color:var(--hm-cms-ink-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
         <input name="${escapeHtml(inputName)}" type="hidden" data-field-type="list" value="${escapeHtml(JSON.stringify(items))}" />
       </div>
     `;
@@ -205,16 +205,17 @@ export async function selectElement(element) {
 
   openPanel(`
     <form data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
-      <!-- E-3: antes esta línea era la única pista de qué se estaba editando y
-           decía \`home.hero.eyebrow\`. Ahora encabeza el nombre legible y la
-           clave queda debajo, que es la que aparece en los errores. También
-           se escapa: venía de atributos data del HTML sin pasar por
-           escapeHtml. -->
-      <h3 style="margin:0;font-size:15px">${escapeHtml(entry.fields[field]?.label || field)}</h3>
-      <p class="hm-cms-muted">${escapeHtml(entry.title || entryId)} <span class="hm-cms-field-key">${escapeHtml(entryId)}.${escapeHtml(field)}</span></p>
+      <!-- UI-03: breadcrumb estilizado en vez de texto plano. -->
+      <div class="hm-cms-breadcrumb">
+        <span>${escapeHtml(entry.title || entryId)}</span>
+        <span class="hm-cms-breadcrumb-sep" aria-hidden="true">›</span>
+        <strong>${escapeHtml(entry.fields[field]?.label || field)}</strong>
+      </div>
+      <p class="hm-cms-muted"><span class="hm-cms-field-key">${escapeHtml(entryId)}.${escapeHtml(field)}</span></p>
       ${fieldEditor(element, entry, field)}
       <div class="hm-cms-actions">
         <button type="submit">Guardar</button>
+        <span class="hm-cms-action-sep" aria-hidden="true"></span>
         ${
           element.dataset.cmsType === 'image'
             ? ''

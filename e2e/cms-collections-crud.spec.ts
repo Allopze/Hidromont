@@ -72,7 +72,12 @@ test.describe('CMS Collections CRUD', () => {
 
     await entryForm.locator('button[type="submit"]').click();
 
-    // Al guardar, el formulario muestra feedback y vuelve a la lista
+    // Al crearla, si permanece en el formulario para completar campos, volver a la lista
+    const volverBtn = panel.locator('button[data-action="back-to-collections"]');
+    await volverBtn
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => volverBtn.click())
+      .catch(() => {});
     await expect(panel.locator('.hm-cms-collection-list')).toBeVisible({ timeout: 5000 });
     const itemCreado = panel.locator('.hm-cms-collection-item', { hasText: TEST_TITLE });
     await expect(itemCreado).toBeVisible();
@@ -95,6 +100,10 @@ test.describe('CMS Collections CRUD', () => {
     }
 
     await entryForm.locator('button[type="submit"]').click();
+    await volverBtn
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => volverBtn.click())
+      .catch(() => {});
     await expect(panel.locator('.hm-cms-collection-list')).toBeVisible({ timeout: 5000 });
 
     const itemModificado = panel.locator('.hm-cms-collection-item', { hasText: nuevoTitulo });

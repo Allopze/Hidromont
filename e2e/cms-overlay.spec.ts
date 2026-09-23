@@ -385,7 +385,7 @@ test.describe('CMS mobile navigation', () => {
     await apiLogin(page);
     await page.goto('/?cms=1');
 
-    const launcher = page.getByRole('button', { name: 'Abrir menú CMS' });
+    const launcher = page.getByRole('button', { name: 'Abrir menú para editar el sitio' });
     const menu = page.getByRole('dialog', { name: 'Acciones del CMS' });
 
     await expect(launcher).toBeVisible();

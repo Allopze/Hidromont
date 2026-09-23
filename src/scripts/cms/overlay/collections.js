@@ -209,7 +209,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       <label>Título
         <input name="title" value="${escapeHtml(entry?.title || '')}" required />
       </label>
-      <details>
+      <details ${!entryId ? 'open' : ''}>
         <summary>URL y publicación</summary>
       ${
         !entryId
@@ -229,12 +229,12 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
           <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>${escapeHtml(draft.label)}</option>
         </select>
       </label>
-      <p class="hm-cms-muted" data-draft-warning hidden style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">${escapeHtml(draft.warning)}</p>
+      <p class="hm-cms-muted" data-draft-warning hidden style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">${escapeHtml(draft.warning)}</p>
       </details>
       ${
         !entryId && (kind === 'servicio' || kind === 'proyecto')
           ? `
-        <p class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:0px;padding:8px 10px">
+        <p class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">
           Al crearla, se abrirá aquí el formulario con campos de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Complétalos y guarda antes de «Publicar cambios».
         </p>`
           : ''
@@ -263,7 +263,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                 if (enums[key]) {
                   const actual = String(f.value ?? '');
                   const conocido = enums[key].some((o) => o.value === actual);
-                  return `<label>${fieldLabelMarkup(key, f, false)}
+                  return `<label>${fieldLabelMarkup(key, f)}
                     <select name="${name}" data-field-type="text">
                       ${
                         !conocido && actual
@@ -280,13 +280,13 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                   </label>`;
                 }
                 if (f.type === 'list') {
-                  return `<label>${fieldLabelMarkup(key, f, false)}</label>${listEditorMarkup(asList(f.value), name)}`;
+                  return `<label>${fieldLabelMarkup(key, f)}</label>${listEditorMarkup(asList(f.value), name)}`;
                 }
                 // El cuerpo va a ancho completo y con su propia barra, no
                 // dentro de un <label> como el resto: es el campo donde se
                 // escriben párrafos, no un dato de una línea.
                 if (f.type === 'richtext') {
-                  return richtextMarkup(f.value, name, fieldLabelMarkup(key, f, false));
+                  return richtextMarkup(f.value, name, fieldLabelMarkup(key, f));
                 }
                 const control =
                   f.type === 'textarea'
@@ -294,7 +294,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                     : f.type === 'number'
                       ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
                       : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
-                return `<label>${fieldLabelMarkup(key, f, false)}${control}</label>`;
+                return `<label>${fieldLabelMarkup(key, f)}${control}</label>`;
               })
               .join('')
           : ''

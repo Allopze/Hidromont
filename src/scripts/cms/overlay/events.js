@@ -364,8 +364,8 @@ export function registerEvents() {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;gap:6px;align-items:center';
         row.innerHTML = `
-        <input type="text" data-list-item="${idx}" value="" aria-label="Elemento ${idx + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:0px;padding:8px 10px;font:inherit" />
-        <button type="button" data-action="remove-list-item" data-index="${idx}" aria-label="Quitar el elemento ${idx + 1}" style="border:0;background:var(--hm-cms-danger-bg);color:var(--hm-cms-danger-ink);border-radius:0px;padding:6px 10px;cursor:pointer;font-weight:700">×</button>
+        <input type="text" data-list-item="${idx}" value="" aria-label="Elemento ${idx + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 10px;font:inherit" />
+        <button type="button" data-action="remove-list-item" data-index="${idx}" aria-label="Quitar el elemento ${idx + 1}" style="border:0;background:var(--hm-cms-danger-bg);color:var(--hm-cms-danger-ink);border-radius:var(--hm-cms-radius-sm);padding:6px 10px;cursor:pointer;font-weight:700">×</button>
       `;
         container.appendChild(row);
         row.querySelector('input')?.focus();

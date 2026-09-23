@@ -31,7 +31,7 @@ export function loginView(error = '', email = '') {
   // intentos por minuto antes de que el rate-limit bloquee. Se conserva.
   setPanelTitle('Acceso');
   openPanel(`
-    <form data-login>
+    <form data-login class="hm-cms-login-form">
       <label>Correo electrónico
         <input name="email" type="email" autocomplete="username" value="${escapeHtml(email)}" required />
       </label>

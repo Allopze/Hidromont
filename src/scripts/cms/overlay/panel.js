@@ -12,6 +12,8 @@ import { state } from './context';
 import { isFormDirty, panel, panelBody, setFormDirty, shell } from './shell';
 import { offerDraft } from './drafts';
 
+const backdrop = shell.querySelector('[data-cms-backdrop]');
+
 let lastActiveElement = null;
 
 // El panel sigue montado cuando está cerrado. aria-hidden quita su contenido
@@ -42,6 +44,7 @@ export function openPanel(html, { autofocus = true } = {}) {
     offerDraft(form);
   }
   panel.classList.add('open');
+  if (backdrop) backdrop.classList.add('visible');
   panel.inert = false;
   panel.removeAttribute('aria-hidden');
   // B-2: solo mientras está abierto. Marcarlo siempre haría que un lector
@@ -149,6 +152,7 @@ export function closePanel(force = false) {
   }
   setFormDirty(false);
   panel.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('visible');
   panel.inert = true;
   panel.setAttribute('aria-hidden', 'true');
   panel.removeAttribute('role');

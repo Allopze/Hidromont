@@ -96,6 +96,7 @@ export function renderAdmin({ autofocus } = {}) {
     <section class="hm-cms-admin">
       ${notice ? `<p class="hm-cms-ok" data-admin-notice>${escapeHtml(notice)}</p>` : ''}
 
+      <div class="hm-cms-admin-section">
       <h3>Registro de actividad</h3>
       ${
         adminState.auditError
@@ -121,6 +122,8 @@ export function renderAdmin({ autofocus } = {}) {
             }`
           : '<p class="hm-cms-muted">Sin actividad registrada.</p>'
       }
+      </div>
+      <div class="hm-cms-admin-section">
       <h3>Respaldos de la base de datos</h3>
       ${
         adminState.backupError
@@ -143,7 +146,9 @@ export function renderAdmin({ autofocus } = {}) {
               .join('')}</ul>`
           : '<p class="hm-cms-muted">Todavía no hay respaldos.</p>'
       }
+      </div>
 
+      <div class="hm-cms-admin-section">
       <h3>Cambiar contraseña</h3>
       <form data-password-form>
         <label>Contraseña actual
@@ -161,6 +166,7 @@ export function renderAdmin({ autofocus } = {}) {
         </span>
         <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
       </form>
+      </div>
 
     </section>
   `,

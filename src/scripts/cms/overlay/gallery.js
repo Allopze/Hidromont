@@ -34,17 +34,17 @@ export async function loadGallery() {
       <div style="display:grid;gap:12px">
         <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <button type="button" data-action="gallery-cats" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
-            <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${cats.length}</strong>
-            <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Categorías</span>
+          <button type="button" class="hm-cms-stat-card" data-action="gallery-cats">
+            <span class="hm-cms-stat-value">${cats.length}</span>
+            <span class="hm-cms-stat-label">Categorías</span>
           </button>
-          <button type="button" data-action="gallery-albums" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
-            <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${albums.length}</strong>
-            <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Álbumes</span>
+          <button type="button" class="hm-cms-stat-card" data-action="gallery-albums">
+            <span class="hm-cms-stat-value">${albums.length}</span>
+            <span class="hm-cms-stat-label">Álbumes</span>
           </button>
-          <button type="button" data-action="gallery-items" style="padding:16px;border:1px solid var(--hm-cms-line-soft);border-radius:0px;background:white;cursor:pointer;text-align:center">
-            <strong style="display:block;font-size:24px;color:var(--hm-cms-primary)">${items.length}</strong>
-            <span style="font-size:12px;color:var(--hm-cms-ink-softer)">Imágenes</span>
+          <button type="button" class="hm-cms-stat-card" data-action="gallery-items">
+            <span class="hm-cms-stat-value">${items.length}</span>
+            <span class="hm-cms-stat-label">Imágenes</span>
           </button>
         </div>
         <button type="button" data-action="gallery-cats">Gestionar categorías</button>
@@ -411,7 +411,7 @@ export async function showGalleryItemForm(itemId = null) {
     <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
       <input name="mediaId" type="hidden" value="${escapeHtml(item.mediaId || '')}" />
       <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt=""
-        style="width:100%;max-height:180px;object-fit:contain;background:var(--hm-cms-line-softer);border-radius:0px;${item.mediaPath ? '' : 'display:none'}" />
+        style="width:100%;max-height:180px;object-fit:contain;background:var(--hm-cms-line-softer);border-radius:var(--hm-cms-radius-sm);${item.mediaPath ? '' : 'display:none'}" />
       <label>Seleccionar imagen
         <input name="mediaSearch" type="search" placeholder="Buscar en la biblioteca de medios..." data-gallery-media-search />
       </label>

@@ -37,6 +37,12 @@ shell.innerHTML = `
   -->
   <div class="hm-cms-undo" data-undo-host role="status" aria-live="polite" aria-atomic="true" hidden></div>
   <!--
+    UI-03: backdrop semitransparente que enfoca la atención en el panel y
+    permite cerrarlo con clic fuera. aria-hidden porque no aporta nada al
+    árbol accesible; el panel ya se gestiona como dialog modal.
+  -->
+  <div class="hm-cms-backdrop" data-cms-backdrop data-action="close" aria-hidden="true"></div>
+  <!--
     Ni <aside> ni <header> ni <main>: el overlay se inyecta en TODAS las
     páginas del sitio, así que esas etiquetas añadían un segundo landmark
     "main" y un segundo "banner" al documento —dos avisos de axe en cada
