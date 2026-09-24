@@ -141,8 +141,9 @@ test.describe('Build gate — perfil con CMS (sitio y editor en el mismo proceso
   test.skip(() => !cmsProfile(), 'el build no lleva el overlay: se aplica el perfil público');
 
   test('el overlay sigue detrás de su interruptor', () => {
-    // El overlay no debe activarse por el mero hecho de estar presente: exige
-    // `?cms=1` o la marca en localStorage, y sin sesión solo muestra el login.
+    // El overlay no debe activarse por el mero hecho de estar presente: en
+    // producción exige el host `editor.*`; `?cms=1` solo vale en desarrollo.
+    // Sin sesión, el host editor solo muestra el login.
     //
     // La comprobación cambia de sitio, no de intención: el interruptor ya no
     // está en el HTML —donde iba cuando el editor se incrustaba entero en cada

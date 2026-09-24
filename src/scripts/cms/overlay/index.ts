@@ -9,8 +9,8 @@
  * proceso— antes TODO el overlay viajaba incrustado en el HTML de cada
  * página: un visitante cualquiera descargaba y parseaba el editor entero para
  * no usarlo nunca. El HTML del build pasó de 5,5 MB a 1,6 MB en las 27
- * páginas. Ahora el editor vive en su propio archivo y solo se pide cuando
- * alguien escribe `?cms=1`.
+ * páginas. Ahora el editor vive en su propio archivo y solo se pide en el
+ * subdominio `editor.*`; `?cms=1` queda disponible únicamente en desarrollo.
  */
 
 /**
@@ -39,15 +39,17 @@ export function isEditorHost(hostname: string): boolean {
 /**
  * Lógica pura de decisión para activar el overlay:
  * 1. Si el host es un subdominio de edición (ej. `editor.hidromontchile.cl`), se activa siempre.
- * 2. Si se especifica `?cms=1` en los parámetros de URL, se activa.
- * 3. Si `localStorage` tiene la bandera persistida de una sesión previa, se activa.
+ * 2. En desarrollo, `?cms=1` o la marca local persistida permiten activar el overlay.
+ * En builds de producción, ni la URL ni localStorage activan el CMS en el host público.
  */
 export function shouldActivateOverlay(
   hostname: string,
   search: string,
-  storedFlag: string | null
+  storedFlag: string | null,
+  allowQueryActivation = false
 ): boolean {
   if (isEditorHost(hostname)) return true;
+  if (!allowQueryActivation) return false;
   const params = new URLSearchParams(search);
   return params.get('cms') === '1' || storedFlag === '1';
 }
@@ -57,16 +59,18 @@ export function startOverlay(): void {
 
   const hostname = window.location.hostname;
   const isEditor = isEditorHost(hostname);
+  const allowQueryActivation = import.meta.env.DEV;
   const enabled = shouldActivateOverlay(
     hostname,
     window.location.search,
-    window.localStorage.getItem('hidromont:cms')
+    allowQueryActivation && !isEditor ? window.localStorage.getItem('hidromont:cms') : null,
+    allowQueryActivation
   );
   if (!enabled) return;
 
-  // Solo persistir en localStorage si estamos fuera de editor.* para no dejar
-  // residuos cuando se navega en el dominio público.
-  if (!isEditor) {
+  // La persistencia solo existe en desarrollo. En producción el host editor.*
+  // es la única condición que activa el overlay y no deja marcas en el dominio público.
+  if (!isEditor && allowQueryActivation) {
     window.localStorage.setItem('hidromont:cms', '1');
   }
 

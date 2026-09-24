@@ -17,7 +17,7 @@
  *    overlay corresponde. En el VPS el sitio se sirve con PUBLIC_ENABLE_CMS=1,
  *    así que antes CADA visitante descargaba y parseaba el editor entero
  *    dentro del HTML para no usarlo nunca. Ahora vive en su propio archivo y
- *    solo se pide con `?cms=1`.
+ *    solo se pide en `editor.*` en producción (`?cms=1` queda para desarrollo).
  *
  * El `<script>` de abajo va en el nivel superior de la plantilla a propósito:
  * Astro solo eleva y empaqueta los scripts que están ahí. Dentro de un

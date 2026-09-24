@@ -255,8 +255,8 @@ curl -I https://www.hidromontchile.cl                 # 301 al dominio sin www
 curl -I https://hidromontchile.cl/uploads/cms/…       # una imagen del CMS: 200
 ```
 
-Y a mano: abre `https://hidromontchile.cl/?cms=1` —el panel es un overlay
-sobre el propio sitio, no una URL aparte—, inicia sesión con el correo y la
+Y a mano: abre `https://editor.hidromontchile.cl` —el panel es un overlay
+sobre el propio sitio—, inicia sesión con el correo y la
 contraseña del paso 4, cambia algo y pulsa **Publicar**. Si el cambio aparece
 en el sitio, el ciclo completo funciona.
 

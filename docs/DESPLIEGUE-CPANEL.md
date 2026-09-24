@@ -298,12 +298,12 @@ nano .env
 
 Cada valor lleva comentado su porqué. Los que **hay que completar**:
 
-| Variable              | Valor                                            |
-| --------------------- | ------------------------------------------------ |
-| `CMS_ADMIN_EMAIL`     | el correo con el que entrarás al CMS             |
-| `CMS_ADMIN_PASSWORD`  | contraseña larga y única (mínimo 16 caracteres)  |
-| `CMS_ALLOWED_ORIGINS` | `https://hidromont.cl,https://www.hidromont.cl`  |
-| `CMS_HOST`            | normalmente `127.0.0.1`: Passenger hace de proxy |
+| Variable              | Valor                                                                       |
+| --------------------- | --------------------------------------------------------------------------- |
+| `CMS_ADMIN_EMAIL`     | el correo con el que entrarás al CMS                                        |
+| `CMS_ADMIN_PASSWORD`  | contraseña larga y única (mínimo 16 caracteres)                             |
+| `CMS_ALLOWED_ORIGINS` | `https://hidromont.cl,https://www.hidromont.cl,https://editor.hidromont.cl` |
+| `CMS_HOST`            | normalmente `127.0.0.1`: Passenger hace de proxy                            |
 
 Los que **no debes cambiar** sin entender la consecuencia:
 
@@ -381,7 +381,7 @@ Comprobaciones:
 ```bash
 curl -I https://hidromont.cl/                    # 200 + cabeceras de seguridad
 curl -I https://hidromont.cl/proyectos/ch-dorias # 301 a /proyectos/ch-doiras
-curl -s https://hidromont.cl/api/cms/health      # {"ok":true,...}
+curl -s https://editor.hidromont.cl/api/cms/health # {"ok":true,...}
 ```
 
 En la respuesta de la primera deben aparecer `content-security-policy`,
@@ -392,7 +392,7 @@ En la respuesta de la primera deben aparecer `content-security-policy`,
 
 ## 7. Primer uso del CMS
 
-1. Abre `https://hidromont.cl/?cms=1`.
+1. Configura el subdominio `editor.hidromont.cl` para que apunte a esta misma aplicación y abre `https://editor.hidromont.cl`.
 2. Entra con `CMS_ADMIN_EMAIL` y `CMS_ADMIN_PASSWORD`.
 3. Los cinco botones de la barra deben aparecer **sin recargar**.
 4. Cambia un texto, guarda, pulsa **Publicar** y espera. Al terminar, recarga

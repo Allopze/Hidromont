@@ -19,7 +19,7 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
 2. **CMS (Backend + Edición Visual)**:
    - **Fastify 5**: API Server en Node.js que corre en el puerto `8787` (por defecto).
    - **Better-SQLite3**: Persistencia local ultrarrápida mediante base de datos SQLite.
-   - **CMS Overlay**: Interfaz visual incluida con `PUBLIC_ENABLE_CMS=1` (o en `import.meta.env.DEV`). El build público de Cloudflare usa `PUBLIC_ENABLE_CMS=0`; la instalación integrada de Node en cPanel usa `1` para habilitar la edición protegida. El CI verifica que el perfil estático no incluya marcadores del CMS.
+   - **CMS Overlay**: Interfaz visual incluida con `PUBLIC_ENABLE_CMS=1` (o en `import.meta.env.DEV`). En producción se activa solo desde `editor.*`; `?cms=1` se admite únicamente en desarrollo. El build público de Cloudflare usa `PUBLIC_ENABLE_CMS=0`; la instalación integrada de Node en cPanel usa `1` para incluir la interfaz.
 
 ---
 
@@ -219,14 +219,14 @@ silencio— los dos scripts inline del sitio.
 
 ### Variables del build de producción
 
-| Variable                    | Valor                    | Razón                                                                                                                              |
-| --------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_ENABLE_CMS`         | **`1`**                  | La barra del CMS _es_ el overlay: sin él no hay interfaz de administración en el servidor. Queda inerte sin `?cms=1` y sin sesión. |
-| `NODE_ENV`                  | `production`             | Activa los defaults de producción (cookie segura).                                                                                 |
-| `PUBLIC_CONTACT_EMAIL`      | `hidromont@hidromont.cl` | Destinatario del formulario. El fallback del código es el mismo buzón.                                                             |
-| `PUBLIC_CMS_API_BASE`       | (vacío)                  | El overlay habla con el mismo origen que sirve la página.                                                                          |
-| `CMS_PUBLISH_CHECK_COMMAND` | `npm run build`          | Es lo que hace que publicar actualice el sitio servido. `npm run check` solo valida.                                               |
-| `CMS_PUBLISH_TIMEOUT_MS`    | medido en el servidor    | Un build completo tarda bastante más en hosting compartido que en local.                                                           |
+| Variable                    | Valor                    | Razón                                                                                                                               |
+| --------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_ENABLE_CMS`         | **`1`**                  | Incluye la interfaz del CMS en el build integrado. En producción solo se activa en `editor.*`; `?cms=1` se reserva para desarrollo. |
+| `NODE_ENV`                  | `production`             | Activa los defaults de producción (cookie segura).                                                                                  |
+| `PUBLIC_CONTACT_EMAIL`      | `hidromont@hidromont.cl` | Destinatario del formulario. El fallback del código es el mismo buzón.                                                              |
+| `PUBLIC_CMS_API_BASE`       | (vacío)                  | El overlay habla con el mismo origen que sirve la página.                                                                           |
+| `CMS_PUBLISH_CHECK_COMMAND` | `npm run build`          | Es lo que hace que publicar actualice el sitio servido. `npm run check` solo valida.                                                |
+| `CMS_PUBLISH_TIMEOUT_MS`    | medido en el servidor    | Un build completo tarda bastante más en hosting compartido que en local.                                                            |
 
 > Si en algún momento se vuelve a un hosting puramente estático, compila con
 > `PUBLIC_ENABLE_CMS=0`: `e2e/build-gate.spec.ts` detecta el perfil del build y

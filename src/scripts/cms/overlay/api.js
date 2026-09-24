@@ -5,7 +5,7 @@
  * la lógica pura se puede probar sin navegador.
  *
  * El módulo entero se carga con `import()` dinámico y solo cuando el overlay
- * está activo (`?cms=1`), de modo que un visitante normal no descarga nada.
+ * está activo en `editor.*` (o por `?cms=1` en desarrollo), de modo que un visitante normal no descarga nada.
  */
 
 import { apiBase, state } from './context';

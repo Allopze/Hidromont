@@ -5,7 +5,7 @@
  * la lógica pura se puede probar sin navegador.
  *
  * El módulo entero se carga con `import()` dinámico y solo cuando el overlay
- * está activo (`?cms=1`), de modo que un visitante normal no descarga nada.
+ * está activo en `editor.*` (o por `?cms=1` en desarrollo), de modo que un visitante normal no descarga nada.
  */
 
 import { botonesDeBarra } from './actions';
@@ -73,7 +73,7 @@ shell.innerHTML = `
  *
  * El coste es que los 7 controles de la barra van ahora antes del contenido de
  * la página. Es el orden correcto para quien viene a editar, que es la única
- * persona que ve esto: el overlay solo existe con `?cms=1`.
+ * persona que ve esto: en producción, el overlay solo existe en `editor.*`.
  */
 document.body.prepend(shell);
 

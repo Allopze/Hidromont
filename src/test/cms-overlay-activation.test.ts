@@ -34,21 +34,20 @@ describe('CMS Overlay Activation', () => {
       expect(shouldActivateOverlay('localhost', '', null)).toBe(false);
     });
 
-    it('activa en cualquier host si se proporciona ?cms=1 (compatibilidad)', () => {
-      expect(shouldActivateOverlay('hidromontchile.cl', '?cms=1', null)).toBe(true);
-      expect(shouldActivateOverlay('localhost', '?cms=1', null)).toBe(true);
-      expect(shouldActivateOverlay('localhost', '?foo=1&cms=1&bar=2', null)).toBe(true);
+    it('no activa en el host público con ?cms=1 ni con una marca antigua en storage', () => {
+      expect(shouldActivateOverlay('hidromontchile.cl', '?cms=1', null)).toBe(false);
+      expect(shouldActivateOverlay('hidromontchile.cl', '', '1')).toBe(false);
+    });
+
+    it('permite ?cms=1 y la marca persistida solo cuando se habilita en desarrollo', () => {
+      expect(shouldActivateOverlay('localhost', '?cms=1', null, true)).toBe(true);
+      expect(shouldActivateOverlay('localhost', '?foo=1&cms=1&bar=2', null, true)).toBe(true);
+      expect(shouldActivateOverlay('localhost', '', '1', true)).toBe(true);
     });
 
     it('no activa con otros valores de cms distintos de 1', () => {
-      expect(shouldActivateOverlay('hidromontchile.cl', '?cms=0', null)).toBe(false);
-      expect(shouldActivateOverlay('hidromontchile.cl', '?cms=true', null)).toBe(false);
-    });
-
-    it('activa si hay una sesión previa persistida en localStorage', () => {
-      expect(shouldActivateOverlay('hidromontchile.cl', '', '1')).toBe(true);
-      expect(shouldActivateOverlay('localhost', '', '1')).toBe(true);
-      expect(shouldActivateOverlay('hidromontchile.cl', '', '0')).toBe(false);
+      expect(shouldActivateOverlay('localhost', '?cms=0', null, true)).toBe(false);
+      expect(shouldActivateOverlay('localhost', '?cms=true', null, true)).toBe(false);
     });
   });
 });

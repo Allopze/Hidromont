@@ -12,7 +12,7 @@ El CMS es un **backend Fastify + SQLite** que puede correr en local o LAN para p
 Abre el enlace que te dio la persona responsable del CMS:
 
 - En producción, la dirección es **`https://editor.hidromontchile.cl`** (el panel se activa de forma automática sin necesidad de añadir parámetros).
-- Para una instalación local en desarrollo, es **`http://localhost:4321/?cms=1`** (o `http://editor.localhost:4321`).
+- Para una instalación local en desarrollo, es **`http://editor.localhost:4321`**. También se admite `http://localhost:4321/?cms=1` solo en desarrollo.
 
 Inicia sesión con el usuario y la contraseña que te entregó esa persona. Si no
 los tienes, pídelos al responsable del CMS. La configuración técnica está en
@@ -40,12 +40,12 @@ Al arrancar, el CMS:
 ## Edición visual (overlay)
 
 1. Arranca `npm run dev:cms` (requiere `PUBLIC_ENABLE_CMS=1` en `.env`).
-2. Abre `http://localhost:4321/?cms=1` (o cualquier página con `?cms=1`).
+2. Abre `http://editor.localhost:4321` o, solo en desarrollo, `http://localhost:4321/?cms=1`.
 3. Inicia sesión con el usuario y la contraseña configurados por quien administra el CMS.
 4. Los elementos editables muestran un cursor de cruz al hacer hover. Click → panel lateral con el editor del campo.
 5. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la vista previa de esta página; los visitantes todavía no lo ven.
 
-> **⚠️ Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. El hosting estático público de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada de cPanel lleva `PUBLIC_ENABLE_CMS=1` para que el administrador pueda entrar. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
+> **Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. En producción se activa desde el subdominio `editor.*`; `?cms=1` no activa el CMS en el dominio público. El hosting estático de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada lleva `1`. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
 
 ## Tipos de campo editables
 
