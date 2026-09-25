@@ -53,7 +53,7 @@ test.describe('CMS Media & Uploads', () => {
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();
 
-    await panel.getByRole('button', { name: 'Gestionar imágenes' }).click();
+    await panel.locator('.hm-cms-tab[data-action="gallery-items"]').click();
     await expect(panel.locator('[data-action="gallery-new-item"]')).toBeVisible();
 
     await panel.locator('[data-action="gallery-new-item"]').click();

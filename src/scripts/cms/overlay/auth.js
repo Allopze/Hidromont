@@ -15,6 +15,7 @@ import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { setInlineEditAccessibility } from './inline-edit-accessibility';
 import { detectarFicha } from './ficha';
+import { iniciarPendientes } from './pendientes';
 
 export function loginView(error = '', email = '') {
   // Si el formulario ya está en pantalla y no hay un error nuevo que mostrar,
@@ -63,6 +64,7 @@ export async function ensureSession() {
     setAuthenticatedUI(true);
     setInlineEditAccessibility(true);
     detectarFicha();
+    iniciarPendientes();
     return true;
   } catch (error) {
     setAuthenticatedUI(false);

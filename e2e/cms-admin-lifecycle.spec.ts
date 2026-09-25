@@ -29,6 +29,8 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     await page.goto('/?cms=1');
 
     // Verificar que los botones administrativos están visibles
+    // Salir vive en el menú «Más» de la barra.
+    await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     const logoutBtn = page.locator('.hm-cms-bar [data-action="logout"]');
     await expect(logoutBtn).toBeVisible();
 
@@ -51,6 +53,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     await apiLogin(page);
     await page.goto('/?cms=1');
 
+    await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     await page.locator('.hm-cms-bar [data-action="admin"]').click();
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();
@@ -74,6 +77,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     await page.goto('/?cms=1');
 
     // Abrir historial de publicaciones (jobs)
+    await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     await page.locator('.hm-cms-bar [data-action="jobs"]').click();
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();

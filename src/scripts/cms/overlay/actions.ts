@@ -29,6 +29,12 @@ export interface AccionBarra {
    * cuando `ficha.js` reconoce la entrada de la página y le pone su id.
    */
   requiereFicha?: boolean;
+  /**
+   * En la barra de escritorio va dentro del menú «Más». Son las acciones que
+   * se usan de vez en cuando: tenerlas al mismo nivel que Publicar hacía una
+   * barra de siete botones iguales. En el panel móvil se listan todas.
+   */
+  enMenu?: boolean;
 }
 
 export const ACCIONES_BARRA: readonly AccionBarra[] = [
@@ -41,7 +47,7 @@ export const ACCIONES_BARRA: readonly AccionBarra[] = [
   },
   { accion: 'collections', etiqueta: 'Colecciones', secundario: true },
   { accion: 'gallery', etiqueta: 'Galería', secundario: true },
-  { accion: 'jobs', etiqueta: 'Historial', secundario: true },
+  { accion: 'jobs', etiqueta: 'Historial de publicaciones', secundario: true, enMenu: true },
   {
     accion: 'toggle-edit-guides',
     etiqueta: 'Guías editables',
@@ -55,14 +61,14 @@ export const ACCIONES_BARRA: readonly AccionBarra[] = [
     etiqueta: 'Administrar',
     secundario: true,
     titulo: 'Registro de actividad, respaldos de la base y cambio de contraseña.',
+    enMenu: true,
   },
   {
     accion: 'publish',
     etiqueta: 'Publicar cambios',
-    titulo:
-      'Exporta el contenido y compila este sitio. Si trabajas en local, debes desplegarlo para actualizar producción.',
+    titulo: 'Muestra qué cambios saldrán y, al confirmar, actualiza el sitio.',
   },
-  { accion: 'logout', etiqueta: 'Salir', secundario: true },
+  { accion: 'logout', etiqueta: 'Salir', secundario: true, enMenu: true },
 ];
 
 function escaparAtributo(valor: string): string {
@@ -75,13 +81,27 @@ function escaparAtributo(valor: string): string {
  * `conTitulo` existe porque en el panel móvil un `title` no aporta nada: no hay
  * puntero que se quede quieto encima para revelarlo.
  */
-export function botonesDeBarra({ conTitulo = true }: { conTitulo?: boolean } = {}): string {
-  return ACCIONES_BARRA.map((a) => {
-    const clase = a.secundario ? ' class="secondary"' : '';
-    const titulo = conTitulo && a.titulo ? ` title="${escaparAtributo(a.titulo)}"` : '';
-    const soloTactil = a.soloTactil ? ' data-touch-only' : '';
-    const pressed = a.pulsable ? ' aria-pressed="false"' : '';
-    const ficha = a.requiereFicha ? ' data-page-entry' : '';
-    return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}${soloTactil}${pressed}${ficha}>${a.etiqueta}</button>`;
-  }).join('\n      ');
+export function botonesDeBarra({
+  conTitulo = true,
+  filtro = () => true,
+}: {
+  conTitulo?: boolean;
+  /** Para repartir la barra de escritorio entre los botones y el menú «Más». */
+  filtro?: (accion: AccionBarra) => boolean;
+} = {}): string {
+  return ACCIONES_BARRA.filter(filtro)
+    .map((a) => {
+      // «Publicar cambios» es la única acción principal de la barra.
+      const clase = a.secundario ? ' class="secondary"' : ' class="primary"';
+      const titulo = conTitulo && a.titulo ? ` title="${escaparAtributo(a.titulo)}"` : '';
+      const soloTactil = a.soloTactil ? ' data-touch-only' : '';
+      const pressed = a.pulsable ? ' aria-pressed="false"' : '';
+      const ficha = a.requiereFicha ? ' data-page-entry' : '';
+      return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}${soloTactil}${pressed}${ficha}>${a.etiqueta}</button>`;
+    })
+    .join('\n      ');
 }
+
+/** Los dos repartos de la barra de escritorio. */
+export const FUERA_DEL_MENU = (a: AccionBarra) => !a.enMenu;
+export const DENTRO_DEL_MENU = (a: AccionBarra) => Boolean(a.enMenu);

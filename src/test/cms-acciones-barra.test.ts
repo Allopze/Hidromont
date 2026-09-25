@@ -13,7 +13,12 @@
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { ACCIONES_BARRA, botonesDeBarra } from '../scripts/cms/overlay/actions';
+import {
+  ACCIONES_BARRA,
+  botonesDeBarra,
+  DENTRO_DEL_MENU,
+  FUERA_DEL_MENU,
+} from '../scripts/cms/overlay/actions';
 
 const shell = readFileSync('src/scripts/cms/overlay/shell.js', 'utf8');
 const movil = readFileSync('src/scripts/cms/mobile-menu.ts', 'utf8');
@@ -31,8 +36,20 @@ describe('acciones de la barra', () => {
   });
 
   it('las dos superficies se pintan desde la misma lista', () => {
-    expect(shell).toContain('botonesDeBarra()');
+    // La barra de escritorio reparte la lista entre sus botones y el menú
+    // «Más»; el panel móvil la pinta entera.
+    expect(shell).toContain('botonesDeBarra({ filtro: FUERA_DEL_MENU })');
+    expect(shell).toContain('botonesDeBarra({ filtro: DENTRO_DEL_MENU })');
     expect(movil).toContain('botonesDeBarra({ conTitulo: false })');
+  });
+
+  it('el reparto de la barra no pierde ni duplica ninguna acción', () => {
+    const fuera = ACCIONES_BARRA.filter(FUERA_DEL_MENU).map((a) => a.accion);
+    const dentro = ACCIONES_BARRA.filter(DENTRO_DEL_MENU).map((a) => a.accion);
+    expect([...fuera, ...dentro].sort()).toEqual(ACCIONES_BARRA.map((a) => a.accion).sort());
+    expect(fuera.filter((a) => dentro.includes(a))).toEqual([]);
+    // Publicar nunca se esconde en el menú.
+    expect(fuera).toContain('publish');
   });
 
   it('cada acción tiene su manejador en la delegación de eventos', () => {
@@ -58,7 +75,7 @@ describe('acciones de la barra', () => {
   it('las explicaciones largas solo salen donde hay puntero', () => {
     const conPuntero = botonesDeBarra();
     const sinPuntero = botonesDeBarra({ conTitulo: false });
-    expect(conPuntero).toContain('title="Exporta el contenido');
+    expect(conPuntero).toContain('title="Muestra qué cambios saldrán');
     expect(sinPuntero).not.toContain('title=');
   });
 

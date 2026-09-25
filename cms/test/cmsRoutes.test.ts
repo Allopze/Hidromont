@@ -82,6 +82,7 @@ const RUTAS_ESPERADAS = [
   'POST /api/cms/publish',
   'GET /api/cms/publish/jobs',
   'GET /api/cms/publish/jobs/:id',
+  'GET /api/cms/publish/pending',
   'GET /api/cms/revisions/:entryId',
   'POST /api/cms/revisions/:entryId/restore/:revisionId',
   'POST /api/cms/backup',

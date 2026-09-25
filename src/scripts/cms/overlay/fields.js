@@ -206,7 +206,6 @@ export async function selectElement(element) {
       <div class="hm-cms-edit-tools">
         <div class="hm-cms-edit-actions-secondary">
           <button type="button" class="ghost small" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>
-          <button type="button" class="ghost small" data-action="export" title="Prepara los archivos del sitio sin publicarlo. Para que el cambio se vea, usa «Publicar cambios».">Exportar</button>
         </div>
         ${
           esImagen

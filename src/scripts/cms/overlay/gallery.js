@@ -18,44 +18,35 @@ import { icon } from './icons';
 import { dropzoneMarkup } from './dropzone';
 
 // ─── Gallery management ──────────────────────────────────────────────────
-// Gallery view state tracking
-export async function loadGallery() {
-  if (!(await ensureSession())) return;
-  setPanelTitle('Galería');
-  openPanel('<p class="hm-cms-muted">Cargando galería...</p>');
-  try {
-    const [catsData, albumsData, itemsData] = await Promise.all([
-      api('/api/cms/gallery/categories'),
-      api('/api/cms/gallery/albums'),
-      api('/api/cms/gallery/items'),
-    ]);
-    const cats = catsData.items || [];
-    const albums = albumsData.items || [];
-    const items = itemsData.items || [];
-    // Tres filas de navegación, cada una con su recuento y qué contiene. Antes
-    // eran tres tarjetas de cifras más tres botones primarios idénticos que
-    // hacían lo mismo que las tarjetas: seis controles para tres destinos.
-    const destino = (accion, titulo, cuenta, detalle) => `
-      <button type="button" class="hm-cms-nav-row" data-action="${accion}">
-        <span class="hm-cms-nav-text">
-          <span class="hm-cms-nav-title">${escapeHtml(titulo)}</span>
-          <span class="hm-cms-nav-detail">${escapeHtml(detalle)}</span>
-        </span>
-        <span class="hm-cms-nav-count">${cuenta}</span>
-      </button>`;
-    openPanel(`
-      <div class="hm-cms-stack">
-        <p class="hm-cms-hint">Las fotos que aparecen en la página «Galería» del sitio.</p>
-        <div class="hm-cms-nav-list">
-          ${destino('gallery-items', 'Gestionar imágenes', items.length, 'Agregar, describir o quitar fotos')}
-          ${destino('gallery-albums', 'Gestionar álbumes', albums.length, 'Una obra con sus fotos')}
-          ${destino('gallery-cats', 'Gestionar categorías', cats.length, 'Los filtros de la galería')}
-        </div>
-      </div>
-    `);
-  } catch (error) {
-    openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
-  }
+
+/**
+ * Las tres vistas de la galería, como pestañas en la cabecera de cada una.
+ *
+ * Antes «Galería» abría una portada con tres filas y había que elegir una para
+ * empezar; lo habitual —agregar o cambiar fotos— costaba un clic de más, y
+ * para ir de Álbumes a Categorías había que volver a la portada.
+ */
+function pestanasGaleria(activa) {
+  const pestanas = [
+    ['gallery-items', 'Imágenes'],
+    ['gallery-albums', 'Álbumes'],
+    ['gallery-cats', 'Categorías'],
+  ];
+  return `<div class="hm-cms-tabs" role="group" aria-label="Secciones de la galería">
+    ${pestanas
+      .map(
+        ([accion, rotulo]) =>
+          `<button type="button" class="hm-cms-tab${accion === activa ? ' active' : ''}" data-action="${accion}"${
+            accion === activa ? ' aria-current="page"' : ''
+          }>${rotulo}</button>`
+      )
+      .join('')}
+  </div>`;
+}
+
+/** «Galería» en la barra: directo a las imágenes, que es lo que más se edita. */
+export function loadGallery() {
+  return loadGalleryItemsList();
 }
 
 function normalizedGallerySearch(value) {
@@ -140,7 +131,7 @@ export function resetGalleryAlbumSearch() {
 
 export async function loadGalleryCategories() {
   if (!(await ensureSession())) return;
-  setPanelTitle('Categorías de galería');
+  setPanelTitle('Galería');
   openPanel('<p class="hm-cms-muted">Cargando categorías...</p>');
   try {
     const data = await api('/api/cms/gallery/categories');
@@ -148,7 +139,7 @@ export async function loadGalleryCategories() {
     galleryCategoriesListCache = cats;
     openPanel(`
       <div class="hm-cms-stack">
-        <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+        ${pestanasGaleria('gallery-cats')}
         <div class="hm-cms-toolbar">
           <label class="hm-cms-grow">Buscar categoría
             <input name="galleryCategorySearch" type="search" data-gallery-category-search
@@ -235,7 +226,7 @@ export async function showGalleryCategoryForm(catId = null) {
 
 export async function loadGalleryAlbums() {
   if (!(await ensureSession())) return;
-  setPanelTitle('Álbumes de galería');
+  setPanelTitle('Galería');
   openPanel('<p class="hm-cms-muted">Cargando álbumes...</p>');
   try {
     const data = await api('/api/cms/gallery/albums');
@@ -243,7 +234,7 @@ export async function loadGalleryAlbums() {
     galleryAlbumsListCache = albums;
     openPanel(`
       <div class="hm-cms-stack">
-        <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+        ${pestanasGaleria('gallery-albums')}
         <p class="hm-cms-hint">Un álbum agrupa las fotos de una obra; su nombre es el que ve el visitante. Las fotos se asignan desde «Gestionar imágenes».</p>
         <div class="hm-cms-toolbar">
           <label class="hm-cms-grow">Buscar álbum
@@ -401,7 +392,7 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
   openPanel(
     `
     <div class="hm-cms-stack">
-      <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+      ${pestanasGaleria('gallery-items')}
       <div class="hm-cms-toolbar">
         <label class="hm-cms-grow">Buscar
           <input name="galleryFilterQ" type="search" data-gallery-filter-q
@@ -457,7 +448,7 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
 
 export async function loadGalleryItemsList({ recargar = true } = {}) {
   if (!(await ensureSession())) return;
-  setPanelTitle('Imágenes de galería');
+  setPanelTitle('Galería');
   if (recargar) {
     openPanel('<p class="hm-cms-muted">Cargando imágenes...</p>');
     try {

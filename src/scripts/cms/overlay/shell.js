@@ -8,7 +8,7 @@
  * está activo en `editor.*` (o por `?cms=1` en desarrollo), de modo que un visitante normal no descarga nada.
  */
 
-import { botonesDeBarra } from './actions';
+import { botonesDeBarra, DENTRO_DEL_MENU, FUERA_DEL_MENU } from './actions';
 import { icon } from './icons';
 import { overlayStyles } from './styles';
 
@@ -25,7 +25,13 @@ shell.innerHTML = `
     <strong class="hm-cms-brand">Hidromont CMS</strong>
     <span class="hm-cms-badge" data-state-badge role="status" aria-live="polite" aria-atomic="true" hidden></span>
     <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
-    ${botonesDeBarra()}
+    ${botonesDeBarra({ filtro: FUERA_DEL_MENU })}
+    <div class="hm-cms-bar-more">
+      <button type="button" class="secondary" data-action="bar-menu" aria-expanded="false" aria-controls="hm-cms-bar-menu" data-auth hidden>Más${icon('chevronDown')}</button>
+      <div class="hm-cms-bar-menu" id="hm-cms-bar-menu" hidden>
+        ${botonesDeBarra({ filtro: DENTRO_DEL_MENU })}
+      </div>
+    </div>
   </div>
   <!--
     El aviso de deshacer vive aquí, hermano de la barra, y NO dentro del panel:
@@ -116,16 +122,36 @@ const ESTADOS_GLOBALES = {
   error: { label: 'No se pudo completar', cls: 'failed' },
 };
 
-export function setGlobalState(stateKey) {
+let estadoActual = null;
+
+/** El estado que muestra ahora la barra, o null si no muestra ninguno. */
+export function estadoGlobal() {
+  return estadoActual;
+}
+
+/**
+ * @param stateKey Uno de ESTADOS_GLOBALES, 'pending' con su recuento, o null.
+ * @param datos Para 'pending': `{ total }`, que da «3 cambios sin publicar».
+ */
+export function setGlobalState(stateKey, datos = {}) {
   if (!stateBadge) return;
+  estadoActual = stateKey || null;
   if (!stateKey) {
     stateBadge.hidden = true;
     return;
   }
-  const s = ESTADOS_GLOBALES[stateKey] || { label: stateKey, cls: '' };
+  const s =
+    stateKey === 'pending'
+      ? {
+          label: `${datos.total} ${datos.total === 1 ? 'cambio sin publicar' : 'cambios sin publicar'}`,
+          cls: 'pending',
+        }
+      : ESTADOS_GLOBALES[stateKey] || { label: stateKey, cls: '' };
   stateBadge.textContent = s.label;
   stateBadge.className = `hm-cms-badge hm-cms-state ${s.cls}`;
   stateBadge.hidden = false;
+  // Algo se acaba de guardar: pendientes.js vuelve a contar lo que falta.
+  if (stateKey === 'unsaved') document.dispatchEvent(new CustomEvent('hm-cms:cambio'));
 }
 
 export let isFormDirty = false;

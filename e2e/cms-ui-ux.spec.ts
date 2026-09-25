@@ -40,7 +40,6 @@ test.describe('CMS UI/UX de edición', () => {
     const input = form.locator('[name="value"]');
     const status = form.locator('[data-edit-status]');
     const save = form.getByRole('button', { name: 'Guardar' });
-    const exportButton = form.getByRole('button', { name: 'Exportar' });
     const revisions = form.getByRole('button', { name: 'Revisiones' });
     const clear = form.getByRole('button', { name: 'Vaciar este texto' });
     const original = await input.inputValue();
@@ -50,7 +49,9 @@ test.describe('CMS UI/UX de edición', () => {
     // Una sola acción principal; las herramientas son discretas y «Vaciar» se
     // distingue como destructiva.
     await expect(save).not.toHaveClass(/secondary|ghost/);
-    await expect(exportButton).toHaveClass(/ghost/);
+    // «Exportar» se fue a Administración: en el editor de un campo solo
+    // confundía con «Publicar cambios».
+    await expect(form.getByRole('button', { name: 'Exportar' })).toHaveCount(0);
     await expect(revisions).toHaveClass(/ghost/);
     await expect(clear).toHaveClass(/destructive/);
     // «Vaciar» no comparte grupo con «Guardar».
@@ -62,18 +63,17 @@ test.describe('CMS UI/UX de edición', () => {
       expect(panelBox?.width).toBeCloseTo(width, 1);
 
       const saveBox = await save.boundingBox();
-      const exportBox = await exportButton.boundingBox();
       const revisionBox = await revisions.boundingBox();
       const clearBox = await clear.boundingBox();
-      expect(saveBox && exportBox && revisionBox && clearBox).toBeTruthy();
-      for (const box of [saveBox!, exportBox!, revisionBox!, clearBox!]) {
+      expect(saveBox && revisionBox && clearBox).toBeTruthy();
+      for (const box of [saveBox!, revisionBox!, clearBox!]) {
         expect(box.x).toBeGreaterThanOrEqual(panelBox!.x);
         expect(box.x + box.width).toBeLessThanOrEqual(panelBox!.x + panelBox!.width);
       }
-      // Revisiones y Exportar comparten fila; Guardar va aparte, en el pie
-      // fijo, y se ve sin desplazarse.
-      expect(exportBox!.y).toBe(revisionBox!.y);
-      expect(saveBox!.y).toBeGreaterThan(exportBox!.y);
+      // Revisiones y Vaciar comparten la fila de herramientas; Guardar va
+      // aparte, en el pie fijo, y se ve sin desplazarse.
+      expect(clearBox!.y).toBe(revisionBox!.y);
+      expect(saveBox!.y).toBeGreaterThan(revisionBox!.y);
       expect(saveBox!.y + saveBox!.height).toBeLessThanOrEqual(panelBox!.y + panelBox!.height);
     }
 
@@ -181,13 +181,14 @@ test.describe('CMS móvil táctil UI/UX', () => {
     await menu.getByRole('button', { name: 'Galería' }).click();
     await page
       .locator('.hm-cms-panel.open')
-      .getByRole('button', { name: 'Gestionar categorías' })
+      .locator('.hm-cms-tab[data-action="gallery-cats"]')
       .click();
 
     const panel = page.locator('.hm-cms-panel.open');
     const search = panel.getByRole('searchbox', { name: 'Buscar categoría' });
     const count = panel.locator('[data-gallery-category-count]');
-    await panel.getByRole('button', { name: 'Volver a Galería' }).focus();
+    // Desde la última pestaña, un Tab lleva al buscador.
+    await panel.locator('.hm-cms-tab[data-action="gallery-cats"]').focus();
     await page.keyboard.press('Tab');
     await expect(search).toBeFocused();
     await page.keyboard.type(category.name);
@@ -212,8 +213,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
       'Ninguna categoría coincide'
     );
 
-    await panel.getByRole('button', { name: 'Volver a Galería' }).click();
-    await panel.getByRole('button', { name: 'Gestionar álbumes' }).click();
+    await panel.locator('.hm-cms-tab[data-action="gallery-albums"]').click();
     const albumsResponse = await page.request.get(`${CMS_URL}/api/cms/gallery/albums`);
     expect(albumsResponse.ok()).toBeTruthy();
     const albums = (await albumsResponse.json()).items as Array<{ name: string; slug: string }>;
@@ -222,7 +222,8 @@ test.describe('CMS móvil táctil UI/UX', () => {
     const albumSearch = panel.getByRole('searchbox', { name: 'Buscar álbum' });
     const albumCount = panel.locator('[data-gallery-album-count]');
 
-    await panel.getByRole('button', { name: 'Volver a Galería' }).focus();
+    // Desde la última pestaña, un Tab lleva al buscador.
+    await panel.locator('.hm-cms-tab[data-action="gallery-cats"]').focus();
     await page.keyboard.press('Tab');
     await expect(albumSearch).toBeFocused();
     await page.keyboard.type(album.name);

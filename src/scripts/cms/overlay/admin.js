@@ -86,9 +86,28 @@ export async function loadAdmin() {
   renderAdmin({ autofocus: 'panel' });
 }
 
+/**
+ * Junta los eventos seguidos iguales: veinte «Inicio de sesión» consecutivos
+ * enterraban lo que de verdad se había hecho. Se conserva la fecha del más
+ * reciente y cuántas veces pasó.
+ */
+function agruparSeguidos(eventos) {
+  const grupos = [];
+  for (const e of eventos) {
+    const anterior = grupos[grupos.length - 1];
+    if (anterior && anterior.action === e.action && anterior.entityId === e.entityId) {
+      anterior.veces += 1;
+    } else {
+      grupos.push({ ...e, veces: 1 });
+    }
+  }
+  return grupos;
+}
+
 export function renderAdmin({ autofocus } = {}) {
   setPanelTitle('Administración');
-  const { events, backups, auditShown, notice } = adminState;
+  const { backups, auditShown, notice } = adminState;
+  const events = agruparSeguidos(adminState.events);
   const visibles = events.slice(0, auditShown);
   const restantes = events.length - visibles.length;
 
@@ -110,8 +129,8 @@ export function renderAdmin({ autofocus } = {}) {
               .map(
                 (e) => `<li${AUDIT_SECURITY.test(e.action) ? ' data-security' : ''}>
                   <span>${escapeHtml(AUDIT_LABELS[e.action] || e.action)}${
-                    e.entityId ? ` <span class="hm-cms-hint">${escapeHtml(e.entityId)}</span>` : ''
-                  }</span>
+                    e.veces > 1 ? ` <span class="hm-cms-count-pill">×${e.veces}</span>` : ''
+                  }${e.entityId ? ` <span class="hm-cms-hint">${escapeHtml(e.entityId)}</span>` : ''}</span>
                   <span class="hm-cms-hint">${escapeHtml(formatDate(e.createdAt))}${e.ip ? ` · ${escapeHtml(e.ip)}` : ''}</span>
                 </li>`
               )
@@ -148,6 +167,15 @@ export function renderAdmin({ autofocus } = {}) {
           : '<p class="hm-cms-empty">Todavía no hay respaldos.</p>'
       }
       </div>
+
+      <section class="hm-cms-admin-section">
+      <h3>Herramientas avanzadas</h3>
+      <p class="hm-cms-hint">«Exportar» escribe los archivos del sitio con lo guardado, sin publicarlo. Solo hace falta si alguien técnico te lo pide; para que los cambios se vean en el sitio, usa «Publicar cambios».</p>
+      <span class="hm-cms-actions">
+        <button type="button" class="secondary" data-action="export">Exportar archivos</button>
+      </span>
+      <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
+      </section>
 
       <div class="hm-cms-admin-section">
       <h3>Cambiar contraseña</h3>
