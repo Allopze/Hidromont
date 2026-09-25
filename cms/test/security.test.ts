@@ -102,7 +102,9 @@ describe('Security', () => {
   });
 
   describe('SVG upload rejection', () => {
-    it('rejects SVG via createMedia', async () => {
+    // Desde sep-2026 un SVG limpio se acepta y se guarda convertido a PNG
+    // (media-video-svg.test.ts); uno con código sigue sin entrar.
+    it('rejects SVG with scripts via createMedia', async () => {
       const svgBuffer = Buffer.from(
         '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
       );
@@ -113,7 +115,7 @@ describe('Security', () => {
           buffer: svgBuffer,
           alt: 'test',
         })
-      ).rejects.toThrow('no permitido');
+      ).rejects.toThrow(/scripts/);
     });
 
     it('accepts JPEG uploads', async () => {

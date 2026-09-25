@@ -169,6 +169,67 @@ export const overlayStyles = `
     position: relative;
     z-index: 1;
   }
+  /*
+   * La foto de fondo de la portada: queda debajo del contenido y de dos
+   * degradados. Con sesión, lo vacío del bloque de contenido deja pasar el
+   * clic hasta la foto; los textos y botones siguen recibiéndolo.
+   */
+  [data-cms-fondo][data-cms-editable-ready] {
+    pointer-events: auto;
+  }
+  body.hm-cms-active [data-cms-sobre-fondo] {
+    pointer-events: none;
+  }
+  body.hm-cms-active [data-cms-sobre-fondo] > * {
+    pointer-events: auto;
+  }
+  /* Selector de iconos de servicio: los ocho de la lista, en su color. */
+  .hm-cms-iconos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .hm-cms-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 64px;
+    padding: 10px;
+    border: 1px solid var(--hm-cms-line);
+    border-radius: var(--hm-cms-radius-sm);
+    background: #fff;
+    color: var(--hm-cms-primary);
+    cursor: pointer;
+  }
+  .hm-cms-icono[aria-checked="true"] {
+    border-color: var(--hm-cms-primary);
+    box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
+    background: var(--hm-cms-primary-light);
+  }
+  .hm-cms-icono-dibujo {
+    display: block;
+    width: 36px;
+    height: 36px;
+  }
+  .hm-cms-icono-dibujo svg {
+    width: 100%;
+    height: 100%;
+  }
+  .hm-cms-icono-propio {
+    width: 64px;
+    height: 64px;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--hm-cms-primary);
+    border-radius: var(--hm-cms-radius-sm);
+    color: var(--hm-cms-primary);
+  }
+  /* Las fotos de /galeria se editan pulsándolas (abren su ficha de galería). */
+  body.hm-cms-sesion .gallery-card:hover {
+    outline: 2px solid var(--hm-cms-primary);
+    outline-offset: 2px;
+  }
   /* El elemento que se está editando: se ve con el panel abierto al lado. */
   [data-cms-entry].hm-cms-editing,
   [data-cms-editable-ready]:has(> .hm-cms-editing) {
@@ -1140,6 +1201,14 @@ export const overlayStyles = `
     border-radius: var(--hm-cms-radius);
     background: #fff;
   }
+  .hm-cms-image-preview video {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-cms-dark);
+  }
   .hm-cms-image-preview img {
     display: block;
     width: 100%;
@@ -1164,6 +1233,12 @@ export const overlayStyles = `
     overflow: hidden;
     border-radius: var(--hm-cms-radius-sm);
   }
+  /* El video se queda los eventos del puntero y el arrastre no llegaba al
+     marco: que los reciba el marco, como con una foto. */
+  .hm-cms-encuadre-marco video {
+    pointer-events: none;
+  }
+  .hm-cms-encuadre-marco.is-encuadre video,
   .hm-cms-encuadre-marco.is-encuadre img {
     width: 100%;
     height: 100%;
@@ -1237,6 +1312,7 @@ export const overlayStyles = `
     border-color: var(--hm-cms-primary);
     box-shadow: 0 0 0 2px var(--hm-cms-primary);
   }
+  .hm-cms-media-item video,
   .hm-cms-media-item img {
     display: block;
     width: 100%;

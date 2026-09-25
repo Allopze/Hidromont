@@ -1,4 +1,5 @@
 ---
+import { logoKeyFor } from '../../data/cliente-logos';
 import EditableText from '../cms/EditableText.astro';
 import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 
@@ -35,6 +36,18 @@ const {
 const mid = Math.ceil(logos.length / 2);
 const row1 = logos.slice(0, mid);
 const row2 = logos.slice(mid);
+
+// Con el editor, cada logo se cambia pulsándolo: `logoAlts` guarda el nombre
+// del cliente de cada logo, y de él sale el campo (el mismo de la cuadrícula).
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const marcaDeLogo = (src: string) =>
+  cmsEditingEnabled && logoAlts[src]
+    ? {
+        'data-cms-entry': 'clientes.logos',
+        'data-cms-field': `logo-${logoKeyFor(logoAlts[src])}`,
+        'data-cms-type': 'image',
+      }
+    : {};
 ---
 
 <section class="relative bg-background-strong text-white overflow-hidden">
@@ -137,6 +150,7 @@ const row2 = logos.slice(mid);
                   <img
                     src={src}
                     alt={logoAlts[src] ?? ''}
+                    {...marcaDeLogo(src)}
                     height={40}
                     class="h-10 w-[144px] object-contain grayscale opacity-80"
                     loading="lazy"
@@ -159,6 +173,7 @@ const row2 = logos.slice(mid);
                   <img
                     src={src}
                     alt={logoAlts[src] ?? ''}
+                    {...marcaDeLogo(src)}
                     height={40}
                     class="h-10 w-[144px] object-contain grayscale opacity-80"
                     loading="lazy"

@@ -39,7 +39,8 @@ function leerPosicion(css) {
  */
 export function prepararEncuadre(form, elemento) {
   const marco = form.querySelector('[data-encuadre-marco]');
-  const img = marco?.querySelector('img');
+  // La vista previa es una foto o un video: los dos se recortan igual.
+  const img = marco?.querySelector('img, video');
   const ayuda = form.querySelector('[data-encuadre-ayuda]');
   if (!marco || !img || !ayuda) return null;
 
@@ -60,8 +61,8 @@ export function prepararEncuadre(form, elemento) {
   const medidas = () => ({
     ancho: marco.clientWidth,
     alto: marco.clientHeight,
-    naturalAncho: img.naturalWidth,
-    naturalAlto: img.naturalHeight,
+    naturalAncho: img.naturalWidth ?? img.videoWidth,
+    naturalAlto: img.naturalHeight ?? img.videoHeight,
   });
 
   const campos = () => [form.elements.focalX, form.elements.focalY];
@@ -134,6 +135,7 @@ export function prepararEncuadre(form, elemento) {
   });
 
   img.addEventListener('load', evaluar);
+  img.addEventListener('loadedmetadata', evaluar);
   aplicar(enfoque, { inicial: true });
   evaluar();
 

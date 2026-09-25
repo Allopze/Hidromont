@@ -43,7 +43,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   await app.register(cookie);
   await app.register(multipart, {
     limits: {
-      fileSize: config.cms.uploadMaxBytes,
+      // El mayor de los dos: cada tipo tiene su tope en MediaService.
+      fileSize: Math.max(config.cms.uploadMaxBytes, config.cms.videoMaxBytes),
       files: 1,
     },
   });
@@ -444,6 +445,19 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       // 3. La divergencia se cerró retirando `pending_review` del vocabulario,
       // no ofreciéndolo: hacía lo mismo que `draft` bajo un nombre que promete
       // una revisión que nadie hace. Ver el comentario en content-vocabulary.
+      // Los nombres de las categorías se editan en `proyectos.categorias`: el
+      // desplegable de la ficha debe decir lo mismo que el sitio.
+      let nombresDeCategoria: Record<string, string> = {};
+      try {
+        const fichas = contentService.getEntry('proyectos.categorias').fields;
+        nombresDeCategoria = Object.fromEntries(
+          Object.entries(fichas)
+            .map(([codigo, f]) => [codigo, typeof f.value === 'string' ? f.value.trim() : ''])
+            .filter(([, nombre]) => nombre)
+        );
+      } catch {
+        // Sin la ficha, el vocabulario del código.
+      }
       return reply.send({
         fieldTypes: FIELD_TYPES,
         entryKinds: ENTRY_KINDS,
@@ -456,7 +470,12 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
                 key,
                 values.map((value) => ({
                   value,
-                  label: ENUM_FIELD_LABELS[kind]?.[key]?.[value] ?? value,
+                  label:
+                    (kind === 'proyecto' && key === 'categoria'
+                      ? nombresDeCategoria[value]
+                      : undefined) ??
+                    ENUM_FIELD_LABELS[kind]?.[key]?.[value] ??
+                    value,
                 })),
               ])
             ),
@@ -653,7 +672,19 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
         .join(', ')}.`
     );
   }
-  if (inserted > 0 || fieldsInserted > 0 || retiradas.length > 0) {
+  const camposRetirados = contentService.retireObsoleteFields();
+  for (const campo of camposRetirados) {
+    auditRepository.log({
+      action: 'content.field_retired',
+      entityType: 'field',
+      entityId: `${campo.entryId}.${campo.key}`,
+      data: campo,
+    });
+  }
+  if (camposRetirados.length > 0) {
+    app.log.info(`[CMS] retirados ${camposRetirados.length} campo(s) sin uso en el sitio.`);
+  }
+  if (inserted > 0 || fieldsInserted > 0 || retiradas.length > 0 || camposRetirados.length > 0) {
     app.log.info(
       `[CMS] seed: ${inserted} entrada(s) y ${fieldsInserted} campo(s) nuevo(s) importado(s).`
     );

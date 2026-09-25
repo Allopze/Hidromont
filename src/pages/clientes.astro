@@ -9,7 +9,8 @@ import EditableText from '../components/cms/EditableText.astro';
 import EditableImage from '../components/cms/EditableImage.astro';
 import { getEntry } from 'astro:content';
 import { getCmsText } from '../data/cms';
-import { getClienteLogoByNombre } from '../data/cliente-logos';
+import { getClienteLogoByNombre, listaDeClientes, logoKeyFor } from '../data/cliente-logos';
+import { soloEditor } from '../utils/soloEditor';
 
 const clientesEntry = await getEntry('clientes', 'clientes');
 
@@ -17,7 +18,11 @@ const clientesEntry = await getEntry('clientes', 'clientes');
 // que en escritorio. Sin `sizes`, el navegador asume el ancho de la ventana y
 // escoge del srcset el candidato de 1.600 px para pintar 119 px.
 const LOGO_SIZES = '119px';
-const lista = clientesEntry?.data?.items ? [...clientesEntry.data.items] : [];
+// La lista sale del CMS (se edita en el recuadro de abajo, solo visible en el
+// editor); clientes.json queda de respaldo.
+const enOrdenDelCms = listaDeClientes(clientesEntry?.data?.items ?? []);
+const lista = [...enOrdenDelCms];
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 
 // Sort alphabetically by name for a neutral and orderly presentation
 lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
@@ -76,12 +81,7 @@ for (const c of lista) {
         {
           lista.map((c) => {
             const logoSrc = getClienteLogoByNombre(c.nombre, c.logo || '');
-            const logoKey = c.nombre
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/(^-|-$)/g, '');
+            const logoKey = logoKeyFor(c.nombre);
             return (
               <div class="clientes-item" title={c.nombre}>
                 {logoSrc ? (
@@ -96,13 +96,42 @@ for (const c of lista) {
                     loading="lazy"
                   />
                 ) : (
-                  <span class="clientes-fallback-text">{c.nombre}</span>
+                  <span
+                    class="clientes-fallback-text"
+                    {...(cmsEditingEnabled
+                      ? {
+                          // Un cliente sin logo: pulsar su nombre abre el
+                          // editor de imagen para subírselo.
+                          'data-cms-entry': 'clientes.logos',
+                          'data-cms-field': `logo-${logoKey}`,
+                          'data-cms-type': 'image',
+                        }
+                      : {})}
+                  >
+                    {c.nombre}
+                  </span>
                 )}
               </div>
             );
           })
         }
       </div>
+
+      {
+        cmsEditingEnabled && (
+          <div class="clientes-lista-editor" {...soloEditor(true)}>
+            <p class="clientes-lista-editor-titulo">
+              Lista de clientes · solo la ve quien edita. Púlsala para añadir, quitar o renombrar;
+              el logo de un cliente nuevo se añade pulsando su nombre arriba.
+            </p>
+            <EditableText as="ul" entry="clientes.lista" field="nombres" type="list">
+              {enOrdenDelCms.map((c) => (
+                <li>{c.nombre}</li>
+              ))}
+            </EditableText>
+          </div>
+        )
+      }
     </Container>
   </Section>
 
@@ -175,6 +204,22 @@ for (const c of lista) {
   }
 
   /* Text-only fallback styles for a premium look without cards */
+  .clientes-lista-editor {
+    margin-top: 2.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px dashed var(--color-border);
+    background: var(--color-background-alt);
+    font-size: 0.875rem;
+  }
+  .clientes-lista-editor-titulo {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted);
+  }
+  .clientes-lista-editor ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
   .clientes-fallback-text {
     font-family: var(--font-heading);
     font-size: 1.15rem;

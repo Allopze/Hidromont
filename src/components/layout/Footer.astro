@@ -14,6 +14,33 @@ const year = new Date().getFullYear();
 // ESTRUCT-4 fix: derivar del mismo nav.ts que usa el Header, para que el
 // footer no pueda quedar desincronizado si se agrega/renombra un servicio.
 const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')?.children ?? [];
+
+// Rótulos del pie (Textos del sitio → Pie de página). Los enlaces de la
+// columna Empresa, salvo «Quiénes somos», son las mismas entradas del menú.
+const rotulo = {
+  servicios: getCmsText('layout.footer', 'tituloServicios', 'Servicios'),
+  empresa: getCmsText('layout.footer', 'tituloEmpresa', 'Empresa'),
+  contacto: getCmsText('layout.footer', 'tituloContacto', 'Contacto'),
+  telefono: getCmsText('layout.footer', 'rotuloTelefono', 'Teléfono'),
+  correo: getCmsText('layout.footer', 'rotuloCorreo', 'Correo'),
+  direccion: getCmsText('layout.footer', 'rotuloDireccion', 'Dirección'),
+  derechos: getCmsText('layout.footer', 'derechos', 'Todos los derechos reservados.'),
+};
+const delMenu = (campo: string) => navItems.find((item) => item.cmsField === campo);
+const enlacesEmpresa = [
+  {
+    href: delMenu('navEmpresa')?.href ?? '/empresa',
+    entry: 'layout.footer',
+    field: 'enlaceQuienesSomos',
+    label: getCmsText('layout.footer', 'enlaceQuienesSomos', 'Quiénes somos'),
+  },
+  ...['navProyectos', 'navGaleria', 'navClientes', 'navContacto'].flatMap((campo) => {
+    const item = delMenu(campo);
+    return item
+      ? [{ href: item.href, entry: 'layout.header', field: campo, label: item.label }]
+      : [];
+  }),
+];
 ---
 
 <footer class="bg-background-strong text-white">
@@ -65,9 +92,13 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             </EditableText>
             <div class="space-y-2 text-sm text-white/70">
               <p>
-                <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">
-                  Dirección
-                </span>
+                <EditableText
+                  entry="layout.footer"
+                  field="rotuloDireccion"
+                  class="text-white/70 text-xs uppercase tracking-wide block mb-0.5"
+                >
+                  {rotulo.direccion}
+                </EditableText>
                 <>
                   <EditableText entry="site.company" field="domicilio">
                     {company.domicilio}
@@ -88,7 +119,10 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
         <summary
           class="text-sm font-semibold text-white uppercase tracking-wide mb-4 min-h-[44px] flex items-center justify-between cursor-pointer"
         >
-          Servicios <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
+          <EditableText entry="layout.footer" field="tituloServicios"
+            >{rotulo.servicios}</EditableText
+          >
+          <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
         </summary>
         {
           /* M-8: `min-h-[24px]` en cada enlace cumple WCAG 2.2 SC 2.5.8
@@ -96,7 +130,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             medían 17 px de alto, y en móvil este pie es la navegación
             secundaria principal. Era el último incumplimiento AA del sitio. */
         }
-        <nav aria-label="Servicios">
+        <nav aria-label={rotulo.servicios}>
           <ul class="space-y-2">
             {
               serviciosLinks.map((item) => (
@@ -106,7 +140,7 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
                     class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                   >
                     {/* El mismo campo que el menú de la cabecera. */}
-                    <EditableText entry="layout.header" field={item.cmsField}>
+                    <EditableText entry={item.cmsEntry ?? 'layout.header'} field={item.cmsField}>
                       {item.label}
                     </EditableText>
                   </a>
@@ -122,45 +156,25 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
         <summary
           class="text-sm font-semibold text-white uppercase tracking-wide mb-4 min-h-[44px] flex items-center justify-between cursor-pointer"
         >
-          Empresa <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
+          <EditableText entry="layout.footer" field="tituloEmpresa">{rotulo.empresa}</EditableText>
+          <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
         </summary>
-        <nav aria-label="Empresa">
+        <nav aria-label={rotulo.empresa}>
           <ul class="space-y-2">
-            <li>
-              <a
-                href="/empresa"
-                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
-                >Quiénes somos</a
-              >
-            </li>
-            <li>
-              <a
-                href="/proyectos"
-                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
-                >Proyectos</a
-              >
-            </li>
-            <li>
-              <a
-                href="/galeria"
-                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
-                >Galería</a
-              >
-            </li>
-            <li>
-              <a
-                href="/clientes"
-                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
-                >Clientes</a
-              >
-            </li>
-            <li>
-              <a
-                href="/contacto"
-                class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
-                >Contacto</a
-              >
-            </li>
+            {
+              enlacesEmpresa.map((enlace) => (
+                <li>
+                  <a
+                    href={enlace.href}
+                    class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
+                  >
+                    <EditableText entry={enlace.entry} field={enlace.field}>
+                      {enlace.label}
+                    </EditableText>
+                  </a>
+                </li>
+              ))
+            }
           </ul>
         </nav>
       </details>
@@ -170,11 +184,19 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
         <summary
           class="text-sm font-semibold text-white uppercase tracking-wide mb-4 min-h-[44px] flex items-center justify-between cursor-pointer"
         >
-          Contacto <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
+          <EditableText entry="layout.footer" field="tituloContacto">{rotulo.contacto}</EditableText
+          >
+          <span class="footer-chevron md:hidden" aria-hidden="true">+</span>
         </summary>
         <div class="space-y-3 text-sm text-white/70">
           <p>
-            <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">Teléfono</span>
+            <EditableText
+              entry="layout.footer"
+              field="rotuloTelefono"
+              class="text-white/70 text-xs uppercase tracking-wide block mb-0.5"
+            >
+              {rotulo.telefono}
+            </EditableText>
             <a
               href={`tel:${company.telefono.replace(/\s/g, '')}`}
               class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast"
@@ -183,7 +205,13 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
             </a>
           </p>
           <p>
-            <span class="text-white/70 text-xs uppercase tracking-wide block mb-0.5">Correo</span>
+            <EditableText
+              entry="layout.footer"
+              field="rotuloCorreo"
+              class="text-white/70 text-xs uppercase tracking-wide block mb-0.5"
+            >
+              {rotulo.correo}
+            </EditableText>
             <a
               href={`mailto:${company.email}`}
               class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast break-all"
@@ -205,7 +233,13 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
     >
       <p class="text-xs text-white/70">
         &copy; {year}
-        {company.razonSocial.replace(/\.+$/, '')}. Todos los derechos reservados.
+        {
+          /* La razón social se muestra sin su punto final, así que no se marca:
+            al editarla aquí saldría «S.A..». Se cambia en Textos del sitio →
+            Datos de la empresa. */
+        }
+        {company.razonSocial.replace(/\.+$/, '')}.{' '}
+        <EditableText entry="layout.footer" field="derechos">{rotulo.derechos}</EditableText>
       </p>
       <p class="text-xs text-white/60">
         <EditableText entry="layout.footer" field="location">

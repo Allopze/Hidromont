@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import { getCmsText } from '../data/cms';
 
 interface Props {
   title?: string;
@@ -24,19 +25,20 @@ const { currentPath, headerOverlay = false, hideFooterMap = false, ...baseProps 
     href="#main"
     class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-none focus:font-semibold focus:shadow-md focus:outline focus:outline-[3px] focus:outline-primary/30"
   >
-    Ir al contenido principal
+    {getCmsText('site.accesibilidad', 'saltarContenido', 'Ir al contenido principal')}
   </a>
   <Header currentPath={currentPath ?? Astro.url.pathname} overlay={headerOverlay} />
   <main id="main">
     <slot />
   </main>
   <Footer hideMap={hideFooterMap} />
-  {/* JS-1 fix: modals (e.g. the gallery Lightbox) must render here, as a sibling
+  {
+    /* JS-1 fix: modals (e.g. the gallery Lightbox) must render here, as a sibling
       of <header>/<main>, not inside the default slot. Marking <main> `inert`
       while a modal is open would otherwise make the modal — being <main>'s own
-      descendant — inert too, disabling its own buttons. */}
+      descendant — inert too, disabling its own buttons. */
+  }
   <slot name="overlay" />
   <!-- Motion: scroll reveals, parallax, counters -->
   <script src="../scripts/motion.ts"></script>
 </BaseLayout>
-

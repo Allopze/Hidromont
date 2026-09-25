@@ -6,7 +6,7 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 import { getCmsText } from '../../data/cms';
-import { getClienteLogoByNombre } from '../../data/cliente-logos';
+import { getClienteLogoByNombre, listaDeClientes, logoKeyFor } from '../../data/cliente-logos';
 
 interface ClienteItem {
   nombre: string;
@@ -22,7 +22,18 @@ const { clientes } = Astro.props;
 // El logo pasa por el CMS igual que en /clientes. La franja lo leía directo de
 // la colección, así que un logo cambiado desde el panel se veía en /clientes y
 // no aquí: Acciona, Besalco, Colbún y Elecnor salían con dos logos distintos.
-const lista: ClienteItem[] = (clientes?.data?.items || []).map((c: ClienteItem) => ({
+// Con el editor, cada logo de la franja se cambia pulsándolo (la animación se
+// detiene al pasar el puntero). Es el mismo campo que la cuadrícula de /clientes.
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const marcaDeLogo = (nombre: string) =>
+  cmsEditingEnabled
+    ? {
+        'data-cms-entry': 'clientes.logos',
+        'data-cms-field': `logo-${logoKeyFor(nombre)}`,
+        'data-cms-type': 'image',
+      }
+    : {};
+const lista: ClienteItem[] = listaDeClientes(clientes?.data?.items || []).map((c: ClienteItem) => ({
   ...c,
   logo: getClienteLogoByNombre(c.nombre, c.logo || '') || undefined,
 }));
@@ -78,6 +89,7 @@ const row2 = conLogo.slice(mid);
                     loading="lazy"
                     decoding="async"
                     class="clients-marquee-logo"
+                    {...marcaDeLogo(c.nombre)}
                   />
                 </div>
               ))}
@@ -101,6 +113,7 @@ const row2 = conLogo.slice(mid);
                     loading="lazy"
                     decoding="async"
                     class="clients-marquee-logo"
+                    {...marcaDeLogo(c.nombre)}
                   />
                 </div>
               ))}

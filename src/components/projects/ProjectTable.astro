@@ -3,16 +3,29 @@ import type { CollectionEntry } from 'astro:content';
 import { formatDiameters } from '../../utils/format';
 import { entrySlug } from '../../utils/contentId';
 import EditableText from '../cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 
 interface Props {
   proyectos: CollectionEntry<'proyectos'>[];
   titulo: string;
+  /** Código de la categoría: su nombre se edita pulsando el título. */
+  categoria?: string;
 }
 
-const { proyectos, titulo } = Astro.props;
+const { proyectos, titulo, categoria } = Astro.props;
 // Los proyectos del banco no tienen página propia: esta tabla es el único
 // sitio donde se ven, así que es también donde se editan.
 const fichaDe = (p: CollectionEntry<'proyectos'>) => `proyectos.${entrySlug(p.id)}`;
+const columna = {
+  proyecto: getCmsText('proyectos.index.banco', 'columnaProyecto', 'Proyecto'),
+  alcance: getCmsText('proyectos.index.banco', 'columnaAlcance', 'Alcance'),
+  cliente: getCmsText('proyectos.index.banco', 'columnaCliente', 'Cliente'),
+};
+const rotulo = {
+  contratista: getCmsText('plantilla.proyecto', 'rotuloContratista', 'Contratista'),
+  mandante: getCmsText('plantilla.proyecto', 'rotuloMandante', 'Mandante'),
+  cliente: getCmsText('plantilla.proyecto', 'rotuloCliente', 'Cliente'),
+};
 // El índice se normaliza igual que lo que se muestra: si no, buscar "Ø 2.200"
 // no encuentra una ficha que guarde "Ø2200", ni al revés.
 const searchText = (project: CollectionEntry<'proyectos'>) =>
@@ -36,12 +49,15 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
       {/* Section heading */}
       <div class="mb-5">
         <div class="w-10 h-0.5 bg-accent mb-3" aria-hidden="true" />
-        <h3
+        <EditableText
+          as="h3"
+          entry={categoria ? 'proyectos.categorias' : undefined}
+          field={categoria ?? ''}
           class="font-heading font-bold text-primary-dark"
           style="font-size: var(--font-size-h3);"
         >
           {titulo}
-        </h3>
+        </EditableText>
       </div>
 
       {/* Desktop/Tablet table */}
@@ -50,13 +66,19 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
           <thead>
             <tr style="border-bottom: 2px solid var(--color-border);">
               <th class="text-left px-5 py-3 text-xs font-semibold text-text-muted tracking-[0.05em] uppercase whitespace-nowrap">
-                Proyecto
+                <EditableText entry="proyectos.index.banco" field="columnaProyecto">
+                  {columna.proyecto}
+                </EditableText>
               </th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-text-muted tracking-[0.05em] uppercase">
-                Alcance
+                <EditableText entry="proyectos.index.banco" field="columnaAlcance">
+                  {columna.alcance}
+                </EditableText>
               </th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-text-muted tracking-[0.05em] uppercase whitespace-nowrap">
-                Cliente
+                <EditableText entry="proyectos.index.banco" field="columnaCliente">
+                  {columna.cliente}
+                </EditableText>
               </th>
             </tr>
           </thead>
@@ -129,7 +151,7 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
                   )}
                   {p.data.mandante && (
                     <span class="block text-xs text-text-muted mt-0.5">
-                      Mandante:{' '}
+                      {rotulo.mandante}:{' '}
                       <EditableText entry={fichaDe(p)} field="mandante">
                         {p.data.mandante}
                       </EditableText>
@@ -216,7 +238,7 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
 
             {(p.data.cliente || p.data.contratista || p.data.mandante) && (
               <div class="flex items-center gap-2 flex-wrap text-xs text-text-muted">
-                <span>{p.data.contratista ? 'Contratista:' : 'Cliente:'}</span>
+                <span>{p.data.contratista ? rotulo.contratista : rotulo.cliente}:</span>
                 <EditableText
                   entry={fichaDe(p)}
                   field={p.data.contratista ? 'contratista' : 'cliente'}
@@ -226,7 +248,7 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
                 </EditableText>
                 {p.data.mandante && (
                   <span>
-                    Mandante:{' '}
+                    {rotulo.mandante}:{' '}
                     <EditableText entry={fichaDe(p)} field="mandante">
                       {p.data.mandante}
                     </EditableText>

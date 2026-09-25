@@ -22,6 +22,8 @@ interface Props {
   decoding?: 'async' | 'auto' | 'sync';
   class?: string;
   style?: string;
+  /** Otros `data-*` de la imagen (`data-cms-fondo` en la portada). */
+  [atributo: `data-${string}`]: string | boolean | undefined;
 }
 
 const {
@@ -38,6 +40,7 @@ const {
   decoding = 'async',
   class: className,
   style,
+  ...dataAttrs
 } = Astro.props;
 /**
  * Los campos de imagen del CMS guardaban una ruta y este componente la pintaba
@@ -94,5 +97,6 @@ const editableAttrs =
   decoding={decoding}
   class={className}
   style={finalStyle}
+  {...dataAttrs}
   {...editableAttrs}
 />

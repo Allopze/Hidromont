@@ -63,6 +63,47 @@ repinta como lista o con formato (el cuerpo, de forma aproximada hasta publicar)
 Esto lo fija `e2e/cms-edicion-completa.spec.ts`. Hasta sep-2026 más de 600
 textos visibles salían de un campo del CMS sin poder pulsarse.
 
+También se editan pulsándolos (lo fija `e2e/cms-todo-editable.spec.ts`):
+
+- **La foto de portada del inicio:** pulsando la zona vacía de la portada. Sin
+  foto elegida se usa la de `src/assets`, que Astro optimiza.
+- **La lista de clientes:** en `/clientes`, bajo la cuadrícula, hay un recuadro
+  que solo ve quien edita. Ahí se añaden, quitan o renombran clientes; el logo
+  de uno nuevo se añade pulsando su nombre en la cuadrícula (el servidor crea
+  su campo `logo-…` al guardarlo). Renombrar un cliente lo deja sin logo hasta
+  que se le vuelva a elegir. `clientes.json` queda como respaldo.
+- **Los nombres de las categorías de proyecto** (`proyectos.categorias`): en
+  los títulos de la tabla de `/proyectos` y en las etiquetas de las tarjetas. El
+  desplegable de la ficha usa los mismos nombres. El código de cada categoría
+  sigue fijo porque lo valida el schema.
+- **Los rótulos de plantilla:** tarjetas, fichas de servicio y de proyecto, pie,
+  recuadro de ubicación, buscador y tabla de `/proyectos`, galería y página 404. Los textos que cambian con un número llevan `{n}`, `{visibles}` o
+  `{total}`, que se sustituyen al mostrarse.
+- **Las fotos de `/galeria`:** con sesión, pulsar una abre su ficha de galería
+  en vez del visor.
+- **Los logos de las franjas animadas** (la animación se detiene al pasar el
+  puntero).
+
+En las páginas índice la barra ofrece **«Datos para buscadores»**, que abre el
+título y la descripción que muestran Google y la pestaña del navegador.
+
+Lo que no se ve en pantalla está en **Colecciones → Textos del sitio**: textos
+de ejemplo, errores y mensajes del formulario de contacto, datos de la empresa,
+cabecera y menú, pie, recuadro de ubicación y textos para lectores de pantalla.
+Esas fichas no tienen dirección ni estado (pasarlas a borrador vaciaba la
+cabecera o el pie) y ocultan los campos técnicos: destinos del menú y medidas de
+fotos.
+
+El submenú de **Servicios** (cabecera y pie) se construye con los servicios que
+existen: uno nuevo aparece con el título de su ficha y uno borrado desaparece.
+
+> **Solo para quien edita:** en el VPS el sitio público y el editor son el mismo
+> build (`PUBLIC_ENABLE_CMS=1`), así que lo que se pinta «si el CMS está activo»
+> lo ve también el visitante. Las casillas «+ Agregar imagen» y el recuadro de la
+> lista de clientes se marcan con `soloEditor()` (`src/utils/soloEditor.ts`):
+> llegan ocultas y el overlay las muestra. Hasta sep-2026 las casillas vacías se
+> veían en hidromontchile.cl.
+
 > **Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. En producción se activa desde el subdominio `editor.*`; `?cms=1` no activa el CMS en el dominio público. El hosting estático de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada lleva `1`. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
 
 ## Tipos de campo editables
@@ -101,6 +142,46 @@ guarda.
 
 Hasta sep-2026 el enfoque se guardaba pero ningún componente lo leía: se
 editaba con dos números («Foco X/Y») que no cambiaban nada en pantalla.
+
+### Videos de cabecera
+
+Las cabeceras con foto (servicios, proyectos, `/empresa`, `/servicios`,
+`/proyectos`) pueden llevar un video en su lugar. En el editor de la foto,
+**«Poner un video en lugar de la foto»** crea el video en la página y abre su
+editor: se sube (MP4 o WebM, hasta 60 MB) o se elige de la biblioteca, se
+describe y se **encuadra arrastrándolo**, igual que una foto. La foto queda de
+respaldo: se ve mientras carga el video y para quien prefiere menos movimiento
+(«Cambiar la foto de respaldo»). **«Quitar el video y dejar la foto»** lo quita;
+el archivo sigue en la biblioteca.
+
+- El video se guarda en el campo `video` de la ficha de imagen de la cabecera
+  (`service-image.<slug>`, `project-image.<slug>`, `empresa.hero`…), con su
+  descripción en `videoAlt`. El encuadre va en la biblioteca, como el de las
+  fotos, y el export lo escribe como `focal`.
+- Se reproduce mudo, en bucle y sin controles salvo pausar. No se recomprime:
+  conviene subirlo ya optimizado (1080p, sin sonido, unos pocos MB).
+- El de Limpiarrejas estaba fijo en `src/assets`; ahora está en
+  `public/videos/` y es un video más de la biblioteca.
+- El servidor comprueba la firma del archivo (no basta con renombrar a `.mp4`)
+  y lo sirve con su tipo y por trozos (206): **Safari e iOS no reproducen un
+  video sin eso**. Hasta sep-2026 el de Limpiarrejas salía como
+  `application/octet-stream`.
+
+### Iconos de servicio
+
+El icono de cada tarjeta de servicio se cambia **pulsándolo**: se elige uno de
+los ocho de la lista o se sube uno propio (SVG, PNG o WebP). El propio se pinta
+del color del sitio, como los de la lista (es una máscara), así que sirve un
+dibujo de un solo color con fondo transparente. Elegir uno de la lista quita el
+propio.
+
+- Se guardan en la ficha del servicio: `icono` (uno de la lista) e
+  `iconoPropio` (la ruta del subido), que manda si está. El servidor crea
+  `iconoPropio` la primera vez que se guarda.
+- **Un SVG nunca se sirve como SVG.** Se revisa (sin scripts, manejadores
+  `on…`, `foreignObject`, entidades ni enlaces externos) y se guarda convertido a
+  PNG: servido desde el mismo dominio, un script dentro sería un XSS
+  almacenado. Vale para cualquier imagen subida, no solo iconos.
 
 ### Listas de grupos
 
@@ -150,7 +231,11 @@ cambiara nada. Las fichas de `ENTRADAS_RETIRADAS` (`cms/services/contentService.
 se borran al arrancar, con su contenido completo en la auditoría
 (`content.entry_retired`) por si hubiera que rehacerlas con
 `restoreDeletedEntry`. Hoy son `calidad.*`, `contacto.hero`, `galeria.hero` y
-`galeria.config`.
+`galeria.config`. Del mismo modo, `CAMPOS_RETIRADOS` quita al arrancar los
+campos sueltos que ninguna página lee (textos sobre el título de las cabeceras
+interiores, la cuarta métrica de `/empresa`, datos de empresa sin uso, logos de
+clientes que ya no están…), cada uno con su copia en la auditoría
+(`content.field_retired`) y la versión anterior en «Revisiones».
 
 El formulario de ficha tampoco ofrece los campos que ninguna plantilla pinta
 (`procesos` de los servicios, `anio` de los proyectos): siguen en la base y en
@@ -290,12 +375,14 @@ Esto re-hashea, actualiza la fila del admin e invalida todas las sesiones activa
 
 Ver [`.env.example`](../.env.example) para todas las variables. Las críticas:
 
-| Variable             | Default               | Nota                                                                                                                          |
-| -------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `CMS_HOST`           | `127.0.0.1`           | `0.0.0.0` para LAN. Si no es local + `CMS_COOKIE_SECURE=0`, el guard bloquea el arranque salvo `CMS_ALLOW_INSECURE_COOKIE=1`. |
-| `CMS_COOKIE_SECURE`  | auto (prod=1)         | `1` exige HTTPS.                                                                                                              |
-| `PUBLIC_ENABLE_CMS`  | —                     | `1` para editar (dev/staging). `0` para build público.                                                                        |
-| `CMS_ADMIN_PASSWORD` | Configurada en `.env` | Cambiar antes de exponer el CMS en LAN.                                                                                       |
+| Variable               | Default               | Nota                                                                                                                                         |
+| ---------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CMS_HOST`             | `127.0.0.1`           | `0.0.0.0` para LAN. Si no es local + `CMS_COOKIE_SECURE=0`, el guard bloquea el arranque salvo `CMS_ALLOW_INSECURE_COOKIE=1`.                |
+| `CMS_COOKIE_SECURE`    | auto (prod=1)         | `1` exige HTTPS.                                                                                                                             |
+| `PUBLIC_ENABLE_CMS`    | —                     | `1` para editar (dev/staging). `0` para build público.                                                                                       |
+| `CMS_ADMIN_PASSWORD`   | Configurada en `.env` | Cambiar antes de exponer el CMS en LAN.                                                                                                      |
+| `CMS_UPLOAD_MAX_BYTES` | 8 MB                  | Tope de una foto subida.                                                                                                                     |
+| `CMS_VIDEO_MAX_BYTES`  | 60 MB                 | Tope de un video subido. Caddy (`deploy/Caddyfile`, host del editor) acepta hasta 64 MB; si se sube este valor, hay que subir también aquel. |
 
 ## Solución de problemas
 

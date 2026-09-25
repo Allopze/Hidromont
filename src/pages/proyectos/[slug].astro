@@ -11,6 +11,7 @@ import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCmsText } from '../../data/cms';
+import { soloEditor } from '../../utils/soloEditor';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
 import { formatDiameters } from '../../utils/format';
@@ -65,10 +66,29 @@ const containedHero = [
   'tanques-glp-coyhaique',
   'tanques-glp-puerto-williams',
 ].includes(slug);
+// Rótulos comunes a todas las fichas de proyecto (Páginas → Fichas de
+// proyecto — rótulos). Los de los datos se usan también en la cabecera.
+const rotulo = {
+  datosTecnicos: getCmsText('plantilla.proyecto', 'tituloDatosTecnicos', 'Datos técnicos'),
+  diametro: getCmsText('plantilla.proyecto', 'rotuloDiametro', 'Diámetro'),
+  diametros: getCmsText('plantilla.proyecto', 'rotuloDiametros', 'Diámetros principales'),
+  longitud: getCmsText('plantilla.proyecto', 'rotuloLongitud', 'Longitud'),
+  acero: getCmsText('plantilla.proyecto', 'rotuloAcero', 'Acero'),
+  peso: getCmsText('plantilla.proyecto', 'rotuloPeso', 'Peso'),
+  ubicacion: getCmsText('plantilla.proyecto', 'rotuloUbicacion', 'Ubicación'),
+  participantes: getCmsText('plantilla.proyecto', 'tituloParticipantes', 'Participantes'),
+  contratista: getCmsText('plantilla.proyecto', 'rotuloContratista', 'Contratista'),
+  mandante: getCmsText('plantilla.proyecto', 'rotuloMandante', 'Mandante'),
+  cliente: getCmsText('plantilla.proyecto', 'rotuloCliente', 'Cliente'),
+  normas: getCmsText('plantilla.proyecto', 'tituloNormasAplicadas', 'Normas aplicadas'),
+  servicio: getCmsText('plantilla.proyecto', 'enlaceServicio', 'Ver servicio relacionado:'),
+  volver: getCmsText('plantilla.proyecto', 'enlaceVolver', 'Volver a proyectos'),
+  galeria: getCmsText('plantilla.proyecto', 'tituloGaleria', 'Galería de imágenes'),
+};
 const participantSummary = contratista
-  ? `Contratista: ${contratista}${mandante ? ` · Mandante: ${mandante}` : ''}`
+  ? `${rotulo.contratista}: ${contratista}${mandante ? ` · ${rotulo.mandante}: ${mandante}` : ''}`
   : cliente
-    ? `Cliente: ${cliente}`
+    ? `${rotulo.cliente}: ${cliente}`
     : undefined;
 
 // Respaldo por categoría para las 34 fichas que no declaran `servicio`.
@@ -155,15 +175,25 @@ const jsonLd = {
           {
             (diametro || longitud || ubicacion || peso || acero) && (
               <div class="p-5 border border-border rounded-none bg-background-alt">
-                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4">
-                  Datos técnicos
-                </h3>
+                <EditableText
+                  as="h3"
+                  entry="plantilla.proyecto"
+                  field="tituloDatosTecnicos"
+                  class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-4"
+                >
+                  {rotulo.datosTecnicos}
+                </EditableText>
                 <dl class="space-y-3">
                   {diametro && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">
-                        {diametro.includes('/') ? 'Diámetros principales' : 'Diámetro'}
-                      </dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field={diametro.includes('/') ? 'rotuloDiametros' : 'rotuloDiametro'}
+                        class="text-xs text-text-muted uppercase tracking-wide"
+                      >
+                        {diametro.includes('/') ? rotulo.diametros : rotulo.diametro}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -176,7 +206,14 @@ const jsonLd = {
                   )}
                   {longitud && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloLongitud"
+                        class="text-xs text-text-muted uppercase tracking-wide"
+                      >
+                        {rotulo.longitud}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -189,7 +226,14 @@ const jsonLd = {
                   )}
                   {acero && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">Acero</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloAcero"
+                        class="text-xs text-text-muted uppercase tracking-wide"
+                      >
+                        {rotulo.acero}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -202,7 +246,14 @@ const jsonLd = {
                   )}
                   {peso && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">Peso</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloPeso"
+                        class="text-xs text-text-muted uppercase tracking-wide"
+                      >
+                        {rotulo.peso}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -215,7 +266,14 @@ const jsonLd = {
                   )}
                   {ubicacion && (
                     <div>
-                      <dt class="text-xs text-text-muted uppercase tracking-wide">Ubicación</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloUbicacion"
+                        class="text-xs text-text-muted uppercase tracking-wide"
+                      >
+                        {rotulo.ubicacion}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -234,13 +292,25 @@ const jsonLd = {
           {
             (cliente || contratista || mandante) && (
               <div class="p-5 border border-border rounded-none bg-surface">
-                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2">
-                  Participantes
-                </h3>
+                <EditableText
+                  as="h3"
+                  entry="plantilla.proyecto"
+                  field="tituloParticipantes"
+                  class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-2"
+                >
+                  {rotulo.participantes}
+                </EditableText>
                 <dl class="space-y-2 text-sm">
                   {contratista && (
                     <div>
-                      <dt class="text-text-muted">Contratista</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloContratista"
+                        class="text-text-muted"
+                      >
+                        {rotulo.contratista}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -253,7 +323,14 @@ const jsonLd = {
                   )}
                   {mandante && (
                     <div>
-                      <dt class="text-text-muted">Mandante</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloMandante"
+                        class="text-text-muted"
+                      >
+                        {rotulo.mandante}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -266,7 +343,14 @@ const jsonLd = {
                   )}
                   {!contratista && !mandante && cliente && (
                     <div>
-                      <dt class="text-text-muted">Cliente</dt>
+                      <EditableText
+                        as="dt"
+                        entry="plantilla.proyecto"
+                        field="rotuloCliente"
+                        class="text-text-muted"
+                      >
+                        {rotulo.cliente}
+                      </EditableText>
                       <EditableText
                         as="dd"
                         entry={cmsEntry}
@@ -285,9 +369,14 @@ const jsonLd = {
           {
             normas && normas.length > 0 && (
               <div class="p-5 border border-border rounded-none bg-surface">
-                <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
-                  Normas aplicadas
-                </h3>
+                <EditableText
+                  as="h3"
+                  entry="plantilla.proyecto"
+                  field="tituloNormasAplicadas"
+                  class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3"
+                >
+                  {rotulo.normas}
+                </EditableText>
                 <EditableText
                   as="div"
                   entry={cmsEntry}
@@ -345,7 +434,11 @@ const jsonLd = {
               href={servicioDestinoHref}
               class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors duration-fast"
             >
-              → Ver servicio relacionado: {servicioDestinoLabel}
+              →{' '}
+              <EditableText entry="plantilla.proyecto" field="enlaceServicio">
+                {rotulo.servicio}
+              </EditableText>{' '}
+              {servicioDestinoLabel}
             </a>
           </div>
         </aside>
@@ -353,13 +446,16 @@ const jsonLd = {
 
       {
         (gallery?.images.length > 0 || cmsEditingEnabled) && (
-          <div class="mt-16">
-            <h2
+          <div class="mt-16" {...soloEditor(!gallery?.images.length)}>
+            <EditableText
+              as="h2"
+              entry="plantilla.proyecto"
+              field="tituloGaleria"
               class="font-heading font-bold text-primary-dark mb-6"
               style="font-size: var(--font-size-h2);"
             >
-              Galería de imágenes
-            </h2>
+              {rotulo.galeria}
+            </EditableText>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* UIUX-12 fix: this iterated a fixed [1,2,3] and always rendered
                  the bordered wrapper regardless of whether a slot had an image
@@ -370,7 +466,10 @@ const jsonLd = {
                 const img = gallery?.images[n - 1];
                 if (!img && !cmsEditingEnabled) return null;
                 return (
-                  <div class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border">
+                  <div
+                    class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border"
+                    {...soloEditor(!img)}
+                  >
                     {img ? (
                       <EditableImage
                         entry={galleryEntryId}
@@ -402,7 +501,12 @@ const jsonLd = {
       }
 
       <div class="mt-12 pt-8 border-t border-border">
-        <Button href="/proyectos" variant="secondary">← Volver a proyectos</Button>
+        <Button href="/proyectos" variant="secondary">
+          ←{' '}
+          <EditableText entry="plantilla.proyecto" field="enlaceVolver">
+            {rotulo.volver}
+          </EditableText>
+        </Button>
       </div>
     </Container>
   </Section>

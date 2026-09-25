@@ -11,7 +11,15 @@
 import { apiBase, state } from './context';
 import { escapeHtml } from './html';
 import { isFormDirty, panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
-import { editando, previsualizarImagen, previsualizarTexto } from './edicion';
+import {
+  crearVideoProvisional,
+  editando,
+  previsualizarIcono,
+  previsualizarImagen,
+  previsualizarTexto,
+  previsualizarVideo,
+} from './edicion';
+import { ICONOS_SERVICIO_SVG } from '../../../data/iconos-servicio';
 import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
 import { api, ejecutarUnaVez, setButtonLoading } from './api';
 import { deshacer, ofrecerDeshacer } from './undo';
@@ -114,6 +122,20 @@ export function registerEvents() {
     'click',
     async (event) => {
       const target = event.target;
+      // Una foto del muro de /galeria abre su ficha de galería en vez del
+      // visor. Las fotos no son campos de una entrada, sino elementos de la
+      // galería (Galería → Imágenes): sin esto, para cambiar una había que
+      // buscarla allí entre 170.
+      const fotoDeGaleria =
+        target instanceof Element && document.body.classList.contains('hm-cms-sesion')
+          ? target.closest('.gallery-card[data-item-id]')
+          : null;
+      if (fotoDeGaleria && !panel.contains(fotoDeGaleria)) {
+        event.preventDefault();
+        event.stopPropagation();
+        showGalleryItemForm(fotoDeGaleria.dataset.itemId);
+        return;
+      }
       // Un enlace con un solo campo dentro (un botón, una entrada del menú) se
       // resalta entero como editable: pulsar su relleno, fuera del texto,
       // navegaba a otra página en vez de abrir el editor.
@@ -526,6 +548,71 @@ export function registerEvents() {
       if (action === 'encuadre-centrar') {
         event.preventDefault();
         state.encuadre?.centrar();
+        return;
+      }
+      // Una cabecera con foto pasa a tener video: se crea en la página, en el
+      // sitio de la foto, y se abre su editor. Sin guardar, se deshace.
+      if (action === 'poner-video') {
+        event.preventDefault();
+        const foto = state.selected;
+        if (!(foto instanceof HTMLImageElement) || !foto.dataset.cmsVideoField) return;
+        const video = crearVideoProvisional(foto, {
+          entry: foto.dataset.cmsEntry,
+          field: foto.dataset.cmsVideoField,
+          altField: 'videoAlt',
+          posterField: foto.dataset.cmsField,
+        });
+        selectElement(video).catch((error) => loginView(error.message));
+        return;
+      }
+      // La foto de respaldo del video: está en la página, oculta tras él.
+      if (action === 'editar-respaldo') {
+        event.preventDefault();
+        const video = state.selected;
+        if (!(video instanceof HTMLVideoElement)) return;
+        const campo = video.dataset.cmsPosterField;
+        const respaldo =
+          video.parentElement?.querySelector(`img[data-cms-field="${CSS.escape(campo)}"]`) ??
+          (video.previousElementSibling instanceof HTMLImageElement
+            ? video.previousElementSibling
+            : null);
+        if (respaldo) selectElement(respaldo).catch((error) => loginView(error.message));
+        return;
+      }
+      if (action === 'quitar-video') {
+        event.preventDefault();
+        const form = panelBody.querySelector('form[data-edit]');
+        if (!form) return;
+        const quitar = await confirmar({
+          titulo: '¿Quitar el video?',
+          mensaje:
+            'La cabecera volverá a mostrar la foto. El video sigue en la biblioteca y puedes volver a ponerlo.',
+          aceptar: 'Quitar el video',
+          peligro: true,
+        });
+        if (!quitar) return;
+        form.elements.value.value = '';
+        form.elements.mediaId.value = '';
+        form.requestSubmit();
+        return;
+      }
+      if (action === 'elegir-icono' && target instanceof Element) {
+        event.preventDefault();
+        const boton = target.closest('[data-icono]');
+        const form = boton?.closest('form[data-edit]');
+        if (!boton || !form) return;
+        const codigo = boton.dataset.icono;
+        form.elements.icono.value = codigo;
+        // Uno de la lista sustituye al propio.
+        form.elements.value.value = '';
+        if (form.elements.file) form.elements.file.value = '';
+        form.querySelectorAll('[data-action="elegir-icono"]').forEach((b) => {
+          b.setAttribute('aria-checked', String(b === boton));
+        });
+        const propio = form.querySelector('[data-icono-propio]');
+        if (propio) propio.hidden = true;
+        previsualizarIcono({ svg: ICONOS_SERVICIO_SVG[codigo] });
+        markDirty(form);
         return;
       }
       if (action === 'confirm-publish') {
@@ -981,6 +1068,27 @@ export function registerEvents() {
     if (!file || !form?.matches('[data-edit]')) return;
     markDirty(form);
     const local = URL.createObjectURL(file);
+    // Un icono propio: se ve ya en la tarjeta, y deja de estar elegido el de
+    // la lista.
+    if (form.elements.icono) {
+      form.querySelectorAll('[data-action="elegir-icono"]').forEach((b) => {
+        b.setAttribute('aria-checked', 'false');
+      });
+      const propio = form.querySelector('[data-icono-propio]');
+      if (propio) {
+        propio.hidden = false;
+        propio.querySelector('.icono-propio')?.style.setProperty('--icono', `url('${local}')`);
+      }
+      previsualizarIcono({ url: local });
+      return;
+    }
+    const video = form.querySelector('[data-video-preview]');
+    if (video) {
+      video.src = local;
+      previsualizarVideo(local);
+      state.encuadre?.habilitar(true);
+      return;
+    }
     const preview = form.querySelector('[data-image-preview]');
     if (preview) preview.src = local;
     previsualizarImagen(local);
@@ -1031,7 +1139,7 @@ export function registerEvents() {
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
       const tipo = state.selected?.dataset.cmsType || 'text';
-      if (tipo === 'image') schedulePreviewUpdate(target.value);
+      if (tipo === 'image' || tipo === 'video') schedulePreviewUpdate(target.value);
       // El texto se ve en la página mientras se escribe. El Markdown no: en
       // crudo no es una vista previa, es ruido.
       else if (tipo === 'text' || tipo === 'textarea') previsualizarTexto(target.value);

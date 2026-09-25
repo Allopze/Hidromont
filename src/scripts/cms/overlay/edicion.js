@@ -93,13 +93,40 @@ export function mostrarImagen(img, src) {
   img.setAttribute('src', src);
 }
 
+/** Pone otro video en el elemento y lo arranca (mudo y en bucle, como el sitio). */
+export function mostrarVideo(video, src) {
+  video.setAttribute('src', src);
+  video.muted = true;
+  video.load();
+  video.play?.().catch(() => {});
+}
+
+/**
+ * Pinta un icono de servicio en su hueco de la tarjeta: uno de la lista (su
+ * SVG) o uno propio (la misma máscara que usa el sitio, .icono-propio).
+ */
+export function escribirIcono(element, { svg, url }) {
+  if (url) {
+    const span = document.createElement('span');
+    span.className = 'icono-propio';
+    span.style.setProperty('--icono', `url('${url.replace(/'/g, '%27')}')`);
+    element.replaceChildren(span);
+  } else if (svg) {
+    element.innerHTML = svg;
+  }
+}
+
+const esMedio = (element) =>
+  element instanceof HTMLImageElement || element instanceof HTMLVideoElement;
+
 function capturar(element) {
-  if (element instanceof HTMLImageElement) {
+  if (esMedio(element)) {
     return {
       src: element.getAttribute('src'),
       srcset: element.getAttribute('srcset'),
       sizes: element.getAttribute('sizes'),
       alt: element.getAttribute('alt'),
+      'aria-label': element.getAttribute('aria-label'),
       // El encuadre vive en `style` (object-position).
       style: element.getAttribute('style'),
     };
@@ -116,6 +143,40 @@ function restaurar(element, original) {
     if (valor === null) element.removeAttribute(atributo);
     else element.setAttribute(atributo, valor);
   }
+  if (element instanceof HTMLVideoElement) element.load();
+}
+
+/**
+ * «Poner un video» en una cabecera que solo tenía foto: el video se crea en la
+ * página en el sitio de la foto (que se oculta) para poder elegirlo y
+ * encuadrarlo ahí mismo. Si se cierra sin guardar, se deshace.
+ */
+export function crearVideoProvisional(img, { entry, field, altField, posterField }) {
+  const video = document.createElement('video');
+  video.className = img.className;
+  video.muted = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.setAttribute('poster', img.currentSrc || img.getAttribute('src') || '');
+  Object.assign(video.dataset, {
+    cmsEntry: entry,
+    cmsField: field,
+    cmsType: 'video',
+    cmsAltField: altField,
+    cmsPosterField: posterField,
+    cmsProvisional: '1',
+  });
+  img.hidden = true;
+  img.after(video);
+  return video;
+}
+
+/** Deshace un video provisional que no llegó a guardarse. */
+function retirarProvisional(video) {
+  const img = video.previousElementSibling;
+  if (img instanceof HTMLImageElement) img.hidden = false;
+  video.remove();
 }
 
 /** Empieza a editar `element`. Termina antes la edición anterior, si la hay. */
@@ -127,7 +188,7 @@ export function empezarEdicion(element) {
 
 /** Muestra en la página el texto que se está escribiendo. */
 export function previsualizarTexto(valor) {
-  if (!actual || actual.element instanceof HTMLImageElement) return;
+  if (!actual || esMedio(actual.element) || actual.element.dataset.cmsType === 'icono') return;
   escribirTexto(actual.element, valor);
   actual.pendiente = true;
 }
@@ -139,9 +200,23 @@ export function previsualizarImagen(src) {
   actual.pendiente = true;
 }
 
+/** Muestra en la página el video elegido o subido, antes de guardar. */
+export function previsualizarVideo(src) {
+  if (!actual || !(actual.element instanceof HTMLVideoElement) || !src) return;
+  mostrarVideo(actual.element, src);
+  actual.pendiente = true;
+}
+
+/** Muestra en la página el icono elegido, antes de guardar. */
+export function previsualizarIcono(icono) {
+  if (!actual || actual.element.dataset.cmsType !== 'icono') return;
+  escribirIcono(actual.element, icono);
+  actual.pendiente = true;
+}
+
 /** Muestra en la página el encuadre que se está eligiendo. */
 export function previsualizarEnfoque(posicion) {
-  if (!actual || !(actual.element instanceof HTMLImageElement)) return;
+  if (!actual || !esMedio(actual.element)) return;
   actual.element.style.objectPosition = posicion;
   actual.pendiente = true;
 }
@@ -151,13 +226,21 @@ export function confirmarEdicion() {
   if (!actual) return;
   actual.original = capturar(actual.element);
   actual.pendiente = false;
+  // Un video provisional guardado pasa a ser el video de la cabecera.
+  if (actual.element.getAttribute('src')) delete actual.element.dataset.cmsProvisional;
 }
 
 /** Deja el elemento como estaba si quedó algo sin guardar, y quita el resalte. */
 export function terminarEdicion() {
   if (!actual) return;
-  if (actual.pendiente) restaurar(actual.element, actual.original);
-  actual.element.classList.remove('hm-cms-editing');
+  const { element } = actual;
+  if (element.dataset.cmsProvisional) {
+    retirarProvisional(element);
+    actual = null;
+    return;
+  }
+  if (actual.pendiente) restaurar(element, actual.original);
+  element.classList.remove('hm-cms-editing');
   actual = null;
 }
 

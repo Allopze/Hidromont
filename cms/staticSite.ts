@@ -12,6 +12,10 @@ const contentTypes: Record<string, string> = {
   '.ico': 'image/x-icon',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  // Sin estos, el video de la cabecera de Limpiarrejas salía como
+  // application/octet-stream con `nosniff`, y Safari no lo reproduce.
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.map': 'application/json; charset=utf-8',
@@ -70,6 +74,33 @@ function loadRedirects(): Redirect[] {
   return acumulado;
 }
 
+/**
+ * Un rango `Range: bytes=…` válido para un archivo de `tamano` bytes, o null si
+ * no hay cabecera o no se puede servir (se responde entero). Safari e iOS piden
+ * los videos por trozos y no los reproducen si el servidor no contesta 206.
+ */
+export function rangoPedido(
+  cabecera: string | undefined,
+  tamano: number
+): { inicio: number; fin: number } | 'fuera' | null {
+  if (!cabecera) return null;
+  const m = /^bytes=(\d*)-(\d*)$/.exec(cabecera.trim());
+  if (!m || (m[1] === '' && m[2] === '')) return null;
+  let inicio: number;
+  let fin: number;
+  if (m[1] === '') {
+    // Los últimos N bytes.
+    const n = Number(m[2]);
+    inicio = Math.max(0, tamano - n);
+    fin = tamano - 1;
+  } else {
+    inicio = Number(m[1]);
+    fin = m[2] === '' ? tamano - 1 : Math.min(Number(m[2]), tamano - 1);
+  }
+  if (inicio >= tamano || inicio > fin) return 'fuera';
+  return { inicio, fin };
+}
+
 export function registerStaticSite(app: FastifyInstance): void {
   app.get('/*', serveStaticSite);
 }
@@ -94,11 +125,24 @@ async function serveStaticSite(request: FastifyRequest, reply: FastifyReply) {
   const contentType = contentTypes[extension] ?? 'application/octet-stream';
 
   reply
-    .status(statusCode)
     .type(contentType)
-    .header('Content-Length', stat.size)
+    .header('Accept-Ranges', 'bytes')
     .header('Cache-Control', cacheControlFor(pathname, extension));
 
+  const rango = statusCode === 200 ? rangoPedido(request.headers.range, stat.size) : null;
+  if (rango === 'fuera') {
+    return reply.status(416).header('Content-Range', `bytes */${stat.size}`).send();
+  }
+  if (rango) {
+    reply
+      .status(206)
+      .header('Content-Range', `bytes ${rango.inicio}-${rango.fin}/${stat.size}`)
+      .header('Content-Length', rango.fin - rango.inicio + 1);
+    if (request.method === 'HEAD') return reply.send();
+    return reply.send(fs.createReadStream(filePath, { start: rango.inicio, end: rango.fin }));
+  }
+
+  reply.status(statusCode).header('Content-Length', stat.size);
   if (request.method === 'HEAD') {
     return reply.send();
   }
@@ -157,6 +201,14 @@ function cacheControlFor(pathname: string, extension: string): string {
     ['.webp', '.png', '.jpg', '.jpeg', '.gif', '.svg'].includes(extension)
   ) {
     return 'public, max-age=31536000, immutable';
+  }
+
+  // Los videos subidos llevan un sufijo único en el nombre: no cambian nunca.
+  // Los de public/videos sí pueden cambiar con el mismo nombre.
+  if (['.mp4', '.webm'].includes(extension)) {
+    return pathname.startsWith(`${config.cms.publicUploadBase}/`)
+      ? 'public, max-age=31536000, immutable'
+      : 'public, max-age=86400';
   }
 
   if (extension === '.html') {

@@ -90,6 +90,9 @@ describe('sePuedeVaciar', () => {
     expect(sePuedeVaciar('page', 'image', 'image')).toBe(false);
     expect(sePuedeVaciar('servicio', 'tipos', 'list')).toBe(false);
     expect(sePuedeVaciar('proyecto', 'body', 'richtext')).toBe(false);
+    // El video se quita con su propio botón; el icono, eligiendo otro.
+    expect(sePuedeVaciar('settings', 'video', 'video')).toBe(false);
+    expect(sePuedeVaciar('servicio', 'iconoPropio', 'icono')).toBe(false);
   });
 
   it('sí lo ofrece en los datos opcionales y en los textos de página', () => {

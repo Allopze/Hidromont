@@ -76,7 +76,11 @@ export class ContentController extends BaseController {
           return;
         }
         if (
-          (type === 'text' || type === 'textarea' || type === 'richtext' || type === 'image') &&
+          (type === 'text' ||
+            type === 'textarea' ||
+            type === 'richtext' ||
+            type === 'image' ||
+            type === 'video') &&
           val !== null &&
           val !== undefined &&
           typeof val !== 'string'

@@ -446,3 +446,15 @@ ol {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Icono de servicio subido desde el CMS: se pinta como máscara del color del
+   texto, igual que los SVG de la lista (que usan currentColor). Un dibujo de
+   un solo color con fondo transparente queda en el azul del sitio. */
+.icono-propio {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: currentColor;
+  -webkit-mask: var(--icono) center / contain no-repeat;
+  mask: var(--icono) center / contain no-repeat;
+}

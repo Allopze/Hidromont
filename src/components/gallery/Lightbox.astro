@@ -13,6 +13,17 @@
  */
 
 // No props needed — data is embedded in gallery cards via data attributes
+import { getCmsText } from '../../data/cms';
+import EditableText from '../cms/EditableText.astro';
+
+// Lo que leen los lectores de pantalla (Textos del sitio → Textos para
+// lectores de pantalla) y el enlace visible al proyecto (Páginas → Galería).
+const a11y = {
+  nombre: getCmsText('site.accesibilidad', 'visorNombre', 'Visor de imágenes de galería'),
+  cerrar: getCmsText('site.accesibilidad', 'visorCerrar', 'Cerrar visor (Escape)'),
+  anterior: getCmsText('site.accesibilidad', 'visorAnterior', 'Imagen anterior (←)'),
+  siguiente: getCmsText('site.accesibilidad', 'visorSiguiente', 'Siguiente imagen (→)'),
+};
 ---
 
 {
@@ -25,7 +36,7 @@
   class="fixed inset-0 z-overlay hidden"
   role="dialog"
   aria-modal="true"
-  aria-label="Visor de imágenes de galería"
+  aria-label={a11y.nombre}
   tabindex="-1"
 >
   {
@@ -55,7 +66,7 @@
         type="button"
         class="p-2.5 hover:bg-white/10 text-white transition-colors duration-150 ease-out border border-transparent rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-close
-        aria-label="Cerrar visor (Escape)"
+        aria-label={a11y.cerrar}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +91,7 @@
         type="button"
         class="absolute left-2 md:left-6 z-20 p-3 bg-white/10 hover:bg-white/20 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-prev
-        aria-label="Imagen anterior (←)"
+        aria-label={a11y.anterior}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +134,7 @@
         type="button"
         class="absolute right-2 md:right-6 z-20 p-3 bg-white/10 hover:bg-white/20 text-white transition-all duration-150 ease-out border border-white/10 hover:border-white/20 rounded-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         data-lb-next
-        aria-label="Siguiente imagen (→)"
+        aria-label={a11y.siguiente}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -160,7 +171,9 @@
         href="#"
         class="inline-flex items-center gap-1.5 mt-3 text-xs md:text-sm font-semibold text-accent hover:text-white transition-colors duration-150 font-mono uppercase tracking-wider hidden group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        <span>Ver Proyecto Relacionado</span>
+        <EditableText entry="page.galeria" field="enlaceProyecto">
+          {getCmsText('page.galeria', 'enlaceProyecto', 'Ver Proyecto Relacionado')}
+        </EditableText>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

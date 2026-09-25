@@ -50,8 +50,23 @@ const bancoPorCategoria = categorias
   // a dead option.
   .filter((c) => c.proyectos.length > 0);
 
+// Textos del buscador y de la paginación (Páginas → banco de proyectos). Los
+// que cambian con el número llevan {n}, {visibles} y {total}.
+const banco_ = {
+  todos: getCmsText('proyectos.index.banco', 'filtroTodos', 'Todos'),
+  verMasUno: getCmsText('proyectos.index.banco', 'verMasUno', 'Ver 1 proyecto más'),
+  verMasVarios: getCmsText('proyectos.index.banco', 'verMasVarios', 'Ver {n} proyectos más'),
+  mostrando: getCmsText(
+    'proyectos.index.banco',
+    'mostrandoProyectos',
+    'Mostrando {visibles} de {total} proyectos.'
+  ),
+};
+const verMas = (n: number) =>
+  n === 1 ? banco_.verMasUno : banco_.verMasVarios.replace('{n}', String(n));
+
 const filterItems = [
-  { label: 'Todos', id: 'todos' },
+  { label: banco_.todos, id: 'todos' },
   ...bancoPorCategoria.map((c) => ({ label: c.label, id: c.id })),
 ];
 ---
@@ -159,11 +174,17 @@ const filterItems = [
         class="mb-5 grid max-w-md gap-2 text-sm font-semibold text-primary-dark"
         for="project-search"
       >
-        Buscar en el banco de proyectos
+        <EditableText entry="proyectos.index.banco" field="buscarRotulo">
+          {getCmsText('proyectos.index.banco', 'buscarRotulo', 'Buscar en el banco de proyectos')}
+        </EditableText>
         <input
           id="project-search"
           type="search"
-          placeholder="Proyecto, cliente, ubicación o alcance"
+          placeholder={getCmsText(
+            'proyectos.index.banco',
+            'buscarEjemplo',
+            'Proyecto, cliente, ubicación o alcance'
+          )}
           class="min-h-[44px] border border-border bg-white px-3 py-2 font-normal text-text focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
         />
       </label>
@@ -174,7 +195,7 @@ const filterItems = [
         {
           bancoPorCategoria.map((cat) => (
             <div id={cat.id} data-category={cat.id}>
-              <ProjectTable proyectos={cat.proyectos} titulo={cat.label} />
+              <ProjectTable proyectos={cat.proyectos} titulo={cat.label} categoria={cat.id} />
             </div>
           ))
         }
@@ -185,25 +206,45 @@ const filterItems = [
         role="status"
         aria-live="polite"
       >
-        <p class="mb-4 font-semibold text-primary-dark">
-          No encontramos proyectos con estos criterios.
-        </p>
+        <EditableText
+          as="p"
+          entry="proyectos.index.banco"
+          field="sinResultados"
+          class="mb-4 font-semibold text-primary-dark"
+        >
+          {
+            getCmsText(
+              'proyectos.index.banco',
+              'sinResultados',
+              'No encontramos proyectos con estos criterios.'
+            )
+          }
+        </EditableText>
         <button
           type="button"
           id="project-reset-filters"
           class="min-h-[44px] border border-primary px-5 py-3 font-semibold text-primary-dark hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Limpiar búsqueda y filtros
+          <EditableText entry="proyectos.index.banco" field="limpiarFiltros">
+            {getCmsText('proyectos.index.banco', 'limpiarFiltros', 'Limpiar búsqueda y filtros')}
+          </EditableText>
         </button>
       </div>
       <p id="project-results-count" class="sr-only" aria-live="polite"></p>
-      <div id="project-load-more-wrap" class="mt-2 flex justify-center" data-page-size={PAGE_SIZE}>
+      <div
+        id="project-load-more-wrap"
+        class="mt-2 flex justify-center"
+        data-page-size={PAGE_SIZE}
+        data-ver-mas-uno={banco_.verMasUno}
+        data-ver-mas-varios={banco_.verMasVarios}
+        data-mostrando={banco_.mostrando}
+      >
         <button
           type="button"
           id="project-load-more"
           class="min-h-[44px] border border-primary px-5 py-3 font-semibold text-primary-dark hover:bg-primary-light focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Ver {loteInicial} proyectos más
+          {verMas(loteInicial)}
         </button>
       </div>
     </Container>
@@ -276,10 +317,19 @@ const filterItems = [
           // El número va en el texto visible, no en un aria-label aparte:
           // WCAG 2.5.3 exige que el nombre accesible contenga lo que se lee.
           const lote = nextBatchSize(result.total, result.visible.length, PAGE_SIZE);
-          loadMore.textContent = lote === 1 ? 'Ver 1 proyecto más' : `Ver ${lote} proyectos más`;
+          const plantilla =
+            lote === 1 ? loadMoreWrap?.dataset.verMasUno : loadMoreWrap?.dataset.verMasVarios;
+          loadMore.textContent = (plantilla || 'Ver {n} proyectos más').replace(
+            '{n}',
+            String(lote)
+          );
         }
         if (resultsCount) {
-          resultsCount.textContent = `Mostrando ${result.visible.length} de ${result.total} proyectos.`;
+          resultsCount.textContent = (
+            loadMoreWrap?.dataset.mostrando || 'Mostrando {visibles} de {total} proyectos.'
+          )
+            .replace('{visibles}', String(result.visible.length))
+            .replace('{total}', String(result.total));
         }
       }
 

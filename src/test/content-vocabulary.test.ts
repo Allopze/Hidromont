@@ -61,13 +61,16 @@ describe('vocabulario del contenido', () => {
     expect(fuera).toEqual([]);
   });
 
-  it('ServiceCard dibuja un icono para cada valor del vocabulario', () => {
+  it('hay un icono dibujado para cada valor del vocabulario', () => {
     // El tipado de `Record<IconoServicio, string>` ya lo exige en compilación;
     // esto lo comprueba también sobre el archivo, por si el mapa se
-    // reescribiera con un tipo más laxo.
-    const card = readFileSync('src/components/services/ServiceCard.astro', 'utf8');
-    const sinDibujo = ICONO_SERVICIO.filter((icono) => !card.includes(`\n  ${icono}: \``));
+    // reescribiera con un tipo más laxo. Los dibujos viven en
+    // iconos-servicio.ts desde que los comparten la tarjeta y el editor.
+    const iconos = readFileSync('src/data/iconos-servicio.ts', 'utf8');
+    const sinDibujo = ICONO_SERVICIO.filter((icono) => !iconos.includes(`\n  ${icono}: \``));
     expect(sinDibujo).toEqual([]);
+    const card = readFileSync('src/components/services/ServiceCard.astro', 'utf8');
+    expect(card).toContain('ICONOS_SERVICIO_SVG');
   });
 
   /**

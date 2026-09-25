@@ -136,9 +136,20 @@ test.describe('Edición de un campo en la página', () => {
 test.describe('La ficha de un servicio', () => {
   test('la barra ofrece «Editar este servicio» solo en su ficha', async ({ page }) => {
     await iniciarSesion(page);
-    await page.goto('/?cms=1');
+    // Una página sin ficha propia ni datos para buscadores: nada que ofrecer.
+    await page.goto('/contacto/gracias/?cms=1');
     await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
     await expect(page.locator('.hm-cms-bar [data-action="edit-page-entry"]')).toBeHidden();
+
+    // En la portada, la ficha que guarda su título y descripción en Google.
+    await page.goto('/?cms=1');
+    const portada = page.locator('.hm-cms-bar [data-action="edit-page-entry"]');
+    await expect(portada).toHaveText('Datos para buscadores');
+    await portada.click();
+    await expect(page.locator('.hm-cms-panel.open form[data-entry-form]')).toHaveAttribute(
+      'data-entry-id',
+      'home.hero'
+    );
 
     await page.goto('/servicios/compuertas/?cms=1');
     const boton = page.locator('.hm-cms-bar [data-action="edit-page-entry"]');

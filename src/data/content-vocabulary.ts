@@ -96,6 +96,8 @@ export const FIELD_TYPES = [
   'textarea',
   'richtext',
   'image',
+  // Un video (mp4 o webm) de la biblioteca: se sirve tal cual, sin derivados.
+  'video',
   'link',
   'number',
   'list',

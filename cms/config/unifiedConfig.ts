@@ -74,6 +74,9 @@ export const config = {
     trustProxy: process.env.CMS_TRUST_PROXY === '1',
     sessionDays: intFromEnv('CMS_SESSION_DAYS', 7),
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
+    // Los videos no se recomprimen: el tope es más alto que el de las fotos, y
+    // Caddy tiene que aceptarlo también (request_body del editor).
+    videoMaxBytes: intFromEnv('CMS_VIDEO_MAX_BYTES', 60 * 1024 * 1024),
     // Fuera de public/ para que Astro no copie los originales (2+ GB) a dist/
     // en cada build; el servidor CMS los sirve directamente en /uploads/cms.
     //

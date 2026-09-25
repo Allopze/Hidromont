@@ -26,13 +26,13 @@ function mostrar(anfitrion) {
     ? anfitrion
     : anfitrion.querySelector('[data-cms-entry]');
   if (!entrada) return;
-  const esImagen = entrada.dataset.cmsType === 'image';
+  const tipo = entrada.dataset.cmsType;
+  const esMedio = tipo === 'image' || tipo === 'video' || tipo === 'icono';
+  const accion = { image: 'Cambiar imagen', video: 'Cambiar video', icono: 'Cambiar icono' };
   const texto = entrada.classList.contains('hm-cms-editing')
     ? 'Editando'
-    : esImagen
-      ? 'Cambiar imagen'
-      : 'Editar texto';
-  chip.innerHTML = `${icon(esImagen ? 'image' : 'pencil', { size: 12 })}<span>${texto}</span>`;
+    : (accion[tipo] ?? 'Editar texto');
+  chip.innerHTML = `${icon(esMedio ? 'image' : 'pencil', { size: 12 })}<span>${texto}</span>`;
 
   const caja = anfitrion.getBoundingClientRect();
   chip.hidden = false;
