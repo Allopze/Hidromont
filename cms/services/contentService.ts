@@ -42,6 +42,34 @@ function requiredFieldTemplate(kind: string, title: string): Record<string, Seed
   return {};
 }
 
+/**
+ * Entradas que ninguna página del sitio lee.
+ *
+ * `importMissingEntries` solo añade: quitar una entrada de la semilla no la
+ * borra de una base viva. Así quedaron en el panel fichas que se podían editar
+ * y guardar sin que el sitio cambiara nada, que para quien no sabe de dónde
+ * sale cada texto es indistinguible de un error:
+ *
+ * - `calidad.*`: la página de calidad se retiró en A2-002 y sus cinco fichas
+ *   siguieron en la base.
+ * - `contacto.hero`: «Conversemos». /contacto dejó de pintar su cabecera en
+ *   ffa7674 y la ficha siguió sembrándose.
+ * - `galeria.hero`, `galeria.config`: restos de una importación antigua; la
+ *   galería lee `page.galeria` y sus textos de filtro están en el código.
+ *
+ * Solo se retiran por su id exacto: nada que coincida por prefijo o parecido.
+ */
+export const ENTRADAS_RETIRADAS = [
+  'calidad.hero',
+  'calidad.contenido',
+  'calidad.badge',
+  'calidad.principios',
+  'calidad.cta',
+  'contacto.hero',
+  'galeria.hero',
+  'galeria.config',
+] as const;
+
 export class ContentService {
   /**
    * @param rootDir raíz del repo donde vive `src/content`. Configurable por el
@@ -113,6 +141,27 @@ export class ContentService {
     }
 
     return { inserted, fieldsInserted };
+  }
+
+  /**
+   * Borra las entradas de `ENTRADAS_RETIRADAS` que sigan en la base.
+   *
+   * Devuelve el snapshot de cada una, con la misma forma que `deleteEntry`, para
+   * que quien arranca el servidor lo deje en la auditoría: con él
+   * `restoreDeletedEntry` la rehace si alguna vez hiciera falta. Idempotente:
+   * en el segundo arranque ya no queda nada que retirar.
+   */
+  retireObsoleteEntries(): Array<{ entry: CmsEntry }> {
+    const retiradas: Array<{ entry: CmsEntry }> = [];
+    for (const id of ENTRADAS_RETIRADAS) {
+      const entry = this.contentRepository.findEntry(id);
+      // Ninguna es de colección, pero si alguna vez lo fuera `deleteEntry`
+      // borraría su .md: eso no es una limpieza de fichas, así que se salta.
+      if (!entry || entry.kind === 'servicio' || entry.kind === 'proyecto') continue;
+      this.contentRepository.deleteEntry(id);
+      retiradas.push({ entry });
+    }
+    return retiradas;
   }
 
   createEntry(input: {

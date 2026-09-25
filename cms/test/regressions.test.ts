@@ -174,3 +174,70 @@ describe('A1-011 — importMissingEntries es idempotente', () => {
     expect(String(fieldAfter?.value)).toBe(editedValue);
   });
 });
+
+describe('Fichas retiradas — retireObsoleteEntries', () => {
+  let ctx: TestApp;
+
+  beforeAll(async () => {
+    ctx = await createTestApp();
+  });
+
+  afterAll(async () => {
+    await ctx.app.close();
+  });
+
+  it('borra solo las fichas de la lista y devuelve su snapshot', () => {
+    ctx.contentService.createEntry({
+      id: 'calidad.hero',
+      kind: 'page',
+      slug: '/calidad',
+      title: 'Hero calidad',
+      fields: { title: { type: 'text', value: 'Calidad certificada' } },
+    });
+    ctx.contentService.createEntry({
+      id: 'calidad.otra-que-no-esta-en-la-lista',
+      kind: 'page',
+      slug: '/calidad',
+      title: 'No retirar',
+      fields: { title: { type: 'text', value: 'Se queda' } },
+    });
+
+    const retiradas = ctx.contentService.retireObsoleteEntries();
+
+    expect(retiradas.map((r) => r.entry.id)).toEqual(['calidad.hero']);
+    expect(retiradas[0].entry.fields.title?.value).toBe('Calidad certificada');
+    expect(() => ctx.contentService.getEntry('calidad.hero')).toThrow();
+    // Nada por prefijo: la que no está en la lista sigue.
+    expect(ctx.contentService.getEntry('calidad.otra-que-no-esta-en-la-lista')).toBeDefined();
+  });
+
+  it('es idempotente y el snapshot basta para rehacer la ficha', () => {
+    ctx.contentService.createEntry({
+      id: 'contacto.hero',
+      kind: 'page',
+      slug: '/contacto',
+      title: 'Hero contacto',
+      fields: { title: { type: 'text', value: 'Conversemos' } },
+    });
+    const [snapshot] = ctx.contentService.retireObsoleteEntries();
+    expect(ctx.contentService.retireObsoleteEntries()).toEqual([]);
+
+    ctx.contentService.restoreDeletedEntry(snapshot);
+    expect(ctx.contentService.getEntry('contacto.hero').fields.title?.value).toBe('Conversemos');
+  });
+
+  it('la semilla ya no vuelve a crear las fichas retiradas', () => {
+    ctx.contentService.retireObsoleteEntries();
+    // La base de prueba empieza vacía: esto siembra todo defaultContent.ts.
+    ctx.contentService.importMissingEntries();
+    for (const id of ['contacto.hero', 'calidad.hero', 'galeria.hero', 'galeria.config']) {
+      expect(() => ctx.contentService.getEntry(id)).toThrow();
+    }
+    // Y las que sustituyen a texto fijo sí llegan.
+    expect(ctx.contentService.getEntry('servicios.detalle.contacto')).toBeDefined();
+    expect(ctx.contentService.getEntry('proyectos.detalle.contacto')).toBeDefined();
+    expect(ctx.contentService.getEntry('servicios.index.banner').fields.stat1Value?.value).toBe(
+      '3.000 m²'
+    );
+  });
+});

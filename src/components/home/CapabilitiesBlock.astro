@@ -8,6 +8,13 @@ interface Capability {
   title: string;
   description?: string;
   value?: string;
+  /**
+   * Los campos de `cmsEntry` de los que salen el título, la descripción y la
+   * cifra. Sin ellos el punto se pinta, pero no se puede editar pulsándolo.
+   */
+  titleField?: string;
+  descField?: string;
+  valueField?: string;
 }
 
 interface Props {
@@ -29,14 +36,18 @@ const hasValues = items.some((i) => i.value);
  * Parse a metric value like "3.000 m²" into { num: 3000, suffix: " m²" }
  * for animated counter support. Returns null if not parseable.
  */
-function parseMetric(val: string): { num: number; suffix: string } | null {
-  const match = val.match(/^([\d.]+)\s*(.*)$/);
+function parseMetric(val: string): { num: number; suffix: string; plain: boolean } | null {
+  const match = val.match(/^([\d.]+)(\s*)(.*)$/);
   if (!match) return null;
   // Remove thousands separator dots (Chilean format) but keep decimal commas
   const numStr = match[1].replace(/\./g, '');
   const num = parseInt(numStr, 10);
   if (isNaN(num)) return null;
-  return { num, suffix: match[2] ? ` ${match[2]}` : '' };
+  // El sufijo conserva el espacio que traía el valor (o su ausencia): se le
+  // añadía siempre uno y «40+ años» terminaba la animación como «40 + años».
+  // `plain`: sin punto de miles en el valor, el contador no lo pone. «1997» es
+  // un año y acababa como «1.997»; «3.000 m²» sí lo lleva.
+  return { num, suffix: `${match[2]}${match[3]}`, plain: !match[1].includes('.') };
 }
 
 /**
@@ -107,27 +118,40 @@ function splitValueDisplay(val: string): { digits: string; rest: string } {
                 const parsed = parseMetric(item.value);
                 const { digits, rest } = splitValueDisplay(item.value);
                 return (
-                  <p
+                  <EditableText
+                    as="p"
+                    entry={item.valueField ? cmsEntry : undefined}
+                    field={item.valueField ?? ''}
+                    wholeText
                     class={`font-heading font-bold mb-2 ${light ? 'text-accent' : 'text-primary'}`}
                     style="font-size: var(--font-size-h3);"
                     data-count={parsed ? String(parsed.num) : undefined}
                     data-suffix={parsed ? parsed.suffix : undefined}
+                    data-count-format={parsed?.plain ? 'plain' : undefined}
                   >
                     <span class="font-mono">{digits}</span>
                     {rest}
-                  </p>
+                  </EditableText>
                 );
               })()}
-            <h3
+            <EditableText
+              as="h3"
+              entry={item.titleField ? cmsEntry : undefined}
+              field={item.titleField ?? ''}
               class={`font-heading font-semibold mb-1 ${light ? 'text-white' : 'text-primary-dark'}`}
               style="font-size: 1.05rem;"
             >
               {item.title}
-            </h3>
+            </EditableText>
             {item.description && (
-              <p class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}>
+              <EditableText
+                as="p"
+                entry={item.descField ? cmsEntry : undefined}
+                field={item.descField ?? ''}
+                class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}
+              >
                 {item.description}
-              </p>
+              </EditableText>
             )}
           </div>
         ))}
@@ -144,16 +168,24 @@ function splitValueDisplay(val: string): { digits: string; rest: string } {
             {/* Accent marker */}
             <div class="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
             <div>
-              <h3
+              <EditableText
+                as="h3"
+                entry={item.titleField ? cmsEntry : undefined}
+                field={item.titleField ?? ''}
                 class={`font-heading font-semibold mb-1 ${light ? 'text-white' : 'text-primary-dark'}`}
                 style="font-size: 1.05rem;"
               >
                 {item.title}
-              </h3>
+              </EditableText>
               {item.description && (
-                <p class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}>
+                <EditableText
+                  as="p"
+                  entry={item.descField ? cmsEntry : undefined}
+                  field={item.descField ?? ''}
+                  class={`text-sm leading-relaxed ${light ? 'text-white/80' : 'text-text-muted'}`}
+                >
                   {item.description}
-                </p>
+                </EditableText>
               )}
             </div>
           </div>

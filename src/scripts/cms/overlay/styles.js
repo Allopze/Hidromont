@@ -159,6 +159,16 @@ export const overlayStyles = `
     outline: 2px solid var(--hm-cms-primary);
     box-shadow: 0 0 0 4px rgba(0,101,169,0.2);
   }
+  /*
+   * Tarjetas que son un enlace entero (las de proyecto): el enlace se estira
+   * con un ::before que tapa todo el contenido, así que el clic en el título
+   * abría la ficha en vez del editor. Con sesión, los campos suben por encima.
+   * El resto de la tarjeta sigue llevando a la ficha.
+   */
+  [data-cms-tarjeta-enlace] [data-cms-editable-ready] {
+    position: relative;
+    z-index: 1;
+  }
   /* El elemento que se está editando: se ve con el panel abierto al lado. */
   [data-cms-entry].hm-cms-editing,
   [data-cms-editable-ready]:has(> .hm-cms-editing) {

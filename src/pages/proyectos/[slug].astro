@@ -9,6 +9,8 @@ import { getCollection, render } from 'astro:content';
 import { projectImages } from '../../data/project-images';
 import { projectGalleries } from '../../data/project-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
+import EditableText from '../../components/cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
 import { formatDiameters } from '../../utils/format';
@@ -48,6 +50,7 @@ const projectImageEntry = `project-image.${slug}`;
 const heroImg = projectImages[slug];
 const gallery = projectGalleries[slug];
 const galleryEntryId = `project-gallery.${slug}`;
+const cmsEntry = `proyectos.${slug}`;
 
 // La rejilla de la galería es de 1, 2 o 3 columnas según el ancho. Medido en el
 // navegador: 340 px con la ventana a 390 px y 371 px con la ventana a 1.440 px,
@@ -123,7 +126,7 @@ const jsonLd = {
     imageWidth={heroImg?.width}
     imageHeight={heroImg?.height}
     breadcrumbs={[{ label: 'Proyectos', href: '/proyectos' }, { label: nombre }]}
-    cmsEntry={`proyectos.${slug}`}
+    cmsEntry={cmsEntry}
     cmsEyebrowField={false}
     cmsTitleField="nombre"
     cmsSubtitleField={false}
@@ -136,11 +139,15 @@ const jsonLd = {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <!-- Contenido principal -->
         <div class="lg:col-span-2">
-          <div
+          <EditableText
+            as="div"
+            entry={cmsEntry}
+            field="body"
+            type="richtext"
             class="prose prose-lg max-w-none text-text-muted [&_h2]:font-heading [&_h2]:font-bold [&_h2]:text-primary-dark [&_h3]:font-heading [&_h3]:text-primary-dark [&_table]:text-sm [&_th]:bg-primary-light [&_th]:text-primary-dark [&_th]:font-bold [&_th]:px-4 [&_th]:py-3 [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-border"
           >
             <Content />
-          </div>
+          </EditableText>
         </div>
 
         <!-- Sidebar con datos técnicos -->
@@ -157,31 +164,66 @@ const jsonLd = {
                       <dt class="text-xs text-text-muted uppercase tracking-wide">
                         {diametro.includes('/') ? 'Diámetros principales' : 'Diámetro'}
                       </dt>
-                      <dd class="font-mono font-semibold text-text">{formatDiameters(diametro)}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="diametro"
+                        class="font-mono font-semibold text-text"
+                      >
+                        {formatDiameters(diametro)}
+                      </EditableText>
                     </div>
                   )}
                   {longitud && (
                     <div>
                       <dt class="text-xs text-text-muted uppercase tracking-wide">Longitud</dt>
-                      <dd class="font-mono font-semibold text-text">{longitud}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="longitud"
+                        class="font-mono font-semibold text-text"
+                      >
+                        {longitud}
+                      </EditableText>
                     </div>
                   )}
                   {acero && (
                     <div>
                       <dt class="text-xs text-text-muted uppercase tracking-wide">Acero</dt>
-                      <dd class="font-semibold text-text">{acero}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="acero"
+                        class="font-semibold text-text"
+                      >
+                        {acero}
+                      </EditableText>
                     </div>
                   )}
                   {peso && (
                     <div>
                       <dt class="text-xs text-text-muted uppercase tracking-wide">Peso</dt>
-                      <dd class="font-mono font-semibold text-text">{peso}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="peso"
+                        class="font-mono font-semibold text-text"
+                      >
+                        {peso}
+                      </EditableText>
                     </div>
                   )}
                   {ubicacion && (
                     <div>
                       <dt class="text-xs text-text-muted uppercase tracking-wide">Ubicación</dt>
-                      <dd class="font-semibold text-text">{ubicacion}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="ubicacion"
+                        class="font-semibold text-text"
+                      >
+                        {ubicacion}
+                      </EditableText>
                     </div>
                   )}
                 </dl>
@@ -199,19 +241,40 @@ const jsonLd = {
                   {contratista && (
                     <div>
                       <dt class="text-text-muted">Contratista</dt>
-                      <dd class="font-semibold text-text">{contratista}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="contratista"
+                        class="font-semibold text-text"
+                      >
+                        {contratista}
+                      </EditableText>
                     </div>
                   )}
                   {mandante && (
                     <div>
                       <dt class="text-text-muted">Mandante</dt>
-                      <dd class="font-semibold text-text">{mandante}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="mandante"
+                        class="font-semibold text-text"
+                      >
+                        {mandante}
+                      </EditableText>
                     </div>
                   )}
                   {!contratista && !mandante && cliente && (
                     <div>
                       <dt class="text-text-muted">Cliente</dt>
-                      <dd class="font-semibold text-text">{cliente}</dd>
+                      <EditableText
+                        as="dd"
+                        entry={cmsEntry}
+                        field="cliente"
+                        class="font-semibold text-text"
+                      >
+                        {cliente}
+                      </EditableText>
                     </div>
                   )}
                 </dl>
@@ -225,23 +288,55 @@ const jsonLd = {
                 <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
                   Normas aplicadas
                 </h3>
-                <div class="flex flex-wrap gap-2">
+                <EditableText
+                  as="div"
+                  entry={cmsEntry}
+                  field="normas"
+                  type="list"
+                  class="flex flex-wrap gap-2"
+                >
                   {normas.map((n: string) => (
                     <Badge variant="muted">{n}</Badge>
                   ))}
-                </div>
+                </EditableText>
               </div>
             )
           }
 
           <div class="p-5 bg-primary rounded-none text-white">
-            <p class="font-semibold text-sm mb-2">¿Trabaja en proyectos similares?</p>
-            <p class="text-white/80 text-xs mb-4 leading-relaxed">
-              Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
-              montaje.
-            </p>
+            <EditableText
+              as="p"
+              entry="proyectos.detalle.contacto"
+              field="title"
+              class="font-semibold text-sm mb-2"
+            >
+              {
+                getCmsText(
+                  'proyectos.detalle.contacto',
+                  'title',
+                  '¿Trabaja en proyectos similares?'
+                )
+              }
+            </EditableText>
+            <EditableText
+              as="p"
+              entry="proyectos.detalle.contacto"
+              field="text"
+              type="textarea"
+              class="text-white/80 text-xs mb-4 leading-relaxed"
+            >
+              {
+                getCmsText(
+                  'proyectos.detalle.contacto',
+                  'text',
+                  'Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje.'
+                )
+              }
+            </EditableText>
             <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
-              Contactar
+              <EditableText entry="proyectos.detalle.contacto" field="buttonLabel">
+                {getCmsText('proyectos.detalle.contacto', 'buttonLabel', 'Contactar')}
+              </EditableText>
             </Button>
           </div>
 

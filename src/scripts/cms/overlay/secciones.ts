@@ -25,7 +25,7 @@ const PLANES: Record<string, Plan> = {
     campoTitulo: 'titulo',
     secciones: [
       { titulo: 'Contenido', claves: ['titulo', 'resumen', 'body'] },
-      { titulo: 'Detalles del servicio', claves: ['tipos', 'aplicaciones', 'procesos', 'normas'] },
+      { titulo: 'Detalles del servicio', claves: ['tipos', 'aplicaciones', 'normas'] },
       { titulo: 'Cómo aparece en el sitio', claves: ['icono', 'orden'] },
     ],
   },
@@ -42,6 +42,27 @@ const PLANES: Record<string, Plan> = {
   },
 };
 
+/**
+ * Campos de ficha que el sitio siempre pinta: vaciarlos deja una tarjeta sin
+ * título o sin descripción en el inicio, en /servicios y en /proyectos.
+ */
+const OBLIGATORIOS: Record<string, string[]> = {
+  servicio: ['titulo', 'resumen'],
+  proyecto: ['nombre', 'alcance'],
+};
+
+/**
+ * ¿Ofrece el editor de la página «Vaciar este texto» para este campo?
+ *
+ * No en una imagen (se cambia, no se vacía), ni en una lista o un cuerpo con
+ * formato (vaciarlos borra de golpe todos sus elementos o el texto entero de
+ * la ficha), ni en los campos obligatorios de una ficha.
+ */
+export function sePuedeVaciar(kind: string, campo: string, tipo: string): boolean {
+  if (tipo === 'image' || tipo === 'list' || tipo === 'richtext') return false;
+  return !OBLIGATORIOS[kind]?.includes(campo);
+}
+
 /** El campo que hace de título en el sitio, si esta ficha lo tiene. */
 export function campoTituloDe(kind: string, claves: string[]): string | null {
   const campo = PLANES[kind]?.campoTitulo;
@@ -49,12 +70,32 @@ export function campoTituloDe(kind: string, claves: string[]): string | null {
 }
 
 /**
+ * Campos que existen en las fichas pero que ninguna página muestra. El
+ * formulario los ofrecía y guardarlos no cambiaba nada en el sitio:
+ *
+ * - `procesos` de los servicios: la sección «Proceso de trabajo» se quitó de
+ *   la página del servicio en 79f5257 y el campo siguió en las ocho fichas.
+ * - `anio` de los proyectos: el schema lo admite, pero ninguna plantilla lo
+ *   pinta (solo lo tiene la pasarela de Nahuelbuta).
+ *
+ * No se borran: el formulario solo envía lo que cambia, así que el valor sigue
+ * en la base y en el .md exportado, listo por si alguna página vuelve a usarlo.
+ */
+const SIN_USO_EN_EL_SITIO: Record<string, string[]> = {
+  servicio: ['procesos'],
+  proyecto: ['anio'],
+};
+
+/**
  * Reparte las claves en secciones, en el orden del plan. Las que el plan no
  * nombra van a la sección del medio (los datos), en su orden original: un
  * campo nuevo nunca desaparece del formulario por no estar en la lista. Las
  * secciones vacías se omiten. Sin plan (páginas), una sola sección sin título.
+ * Los campos que el sitio no muestra no se ofrecen.
  */
-export function seccionesDeFicha(kind: string, claves: string[]): Seccion[] {
+export function seccionesDeFicha(kind: string, todas: string[]): Seccion[] {
+  const sinUso = new Set(SIN_USO_EN_EL_SITIO[kind] ?? []);
+  const claves = todas.filter((k) => !sinUso.has(k));
   const plan = PLANES[kind];
   if (!plan) return [{ titulo: '', claves: [...claves] }];
 

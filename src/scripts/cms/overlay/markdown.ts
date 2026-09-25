@@ -194,7 +194,7 @@ export function enlaceSeguro(href: string): string | null {
  *
  * No pretende ser un analizador completo: cubre lo que aparece en las fichas
  * de servicios y proyectos (encabezados, negrita, cursiva, código, listas,
- * citas y enlaces) y nada más. Lo que no reconoce lo deja como texto escapado,
+ * citas, enlaces y tablas) y nada más. Lo que no reconoce lo deja como texto escapado,
  * que es el modo correcto de fallar aquí: se ve raro, pero no ejecuta nada.
  *
  * El HTML del sitio lo sigue generando Astro al compilar; esto nunca se
@@ -226,6 +226,35 @@ export function renderizarPrevisualizacion(markdown: string): string {
     if (lineas.every((l) => /^\d+\. /.test(l))) {
       const items = lineas.map((l) => `<li>${enLinea(l.replace(/^\d+\. /, ''))}</li>`).join('');
       salida.push(`<ol>${items}</ol>`);
+      continue;
+    }
+
+    // Tablas con barras: las fichas de los tanques de GLP llevan una. Sin esto
+    // la vista previa —y la página, al guardar desde ella— mostraba las barras.
+    if (
+      lineas.length >= 2 &&
+      lineas.every((l) => /^\|.*\|$/.test(l.trim())) &&
+      /^\|[\s:|-]+\|$/.test(lineas[1].trim())
+    ) {
+      const celdas = (l: string) =>
+        l
+          .trim()
+          .slice(1, -1)
+          .split('|')
+          .map((c) => c.trim());
+      const cabecera = celdas(lineas[0])
+        .map((c) => `<th>${enLinea(c)}</th>`)
+        .join('');
+      const filas = lineas
+        .slice(2)
+        .map(
+          (l) =>
+            `<tr>${celdas(l)
+              .map((c) => `<td>${enLinea(c)}</td>`)
+              .join('')}</tr>`
+        )
+        .join('');
+      salida.push(`<table><thead><tr>${cabecera}</tr></thead><tbody>${filas}</tbody></table>`);
       continue;
     }
 

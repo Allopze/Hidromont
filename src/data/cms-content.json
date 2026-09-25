@@ -1,128 +1,6 @@
 {
   "updatedAt": "2026-09-11T03:25:43.689Z",
   "entries": {
-    "calidad.badge": {
-      "title": "Badge ISO calidad",
-      "slug": "/calidad",
-      "fields": {
-        "caption": {
-          "type": "text",
-          "value": "Sistema de gestión de calidad"
-        },
-        "line1": {
-          "type": "text",
-          "value": "ISO"
-        },
-        "line2": {
-          "type": "text",
-          "value": "9001"
-        }
-      }
-    },
-    "calidad.contenido": {
-      "title": "Contenido calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Sistema de gestión"
-        },
-        "p1": {
-          "type": "textarea",
-          "value": "Hidromont mantiene un Sistema de Gestión basado en la norma ISO 9001, como apoyo a la planificación, organización y prestación de sus servicios. Este enfoque refuerza su posicionamiento como proveedor técnico para proyectos de alta exigencia en infraestructura hidráulica e hidroeléctrica."
-        },
-        "p2": {
-          "type": "textarea",
-          "value": "El propósito declarado de la empresa es enfocar la calidad como un compromiso para cumplir y satisfacer las necesidades de sus clientes, fomentar la mejora continua y cumplir los requisitos del cliente y las obligaciones legales y reglamentarias aplicables."
-        },
-        "title": {
-          "type": "text",
-          "value": "ISO 9001"
-        }
-      }
-    },
-    "calidad.cta": {
-      "title": "CTA calidad",
-      "slug": "/calidad",
-      "fields": {
-        "buttonLabel": {
-          "type": "text",
-          "value": "Contactar equipo técnico"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "Consulte cómo nuestro sistema de gestión puede aplicarse a su proyecto específico."
-        },
-        "title": {
-          "type": "text",
-          "value": "Proyectos que exigen calidad certificada"
-        }
-      }
-    },
-    "calidad.hero": {
-      "title": "Hero calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Gestión de Calidad"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "La calidad como compromiso para cumplir las necesidades de nuestros clientes, fomentar la mejora continua y cumplir los requisitos legales y reglamentarios aplicables."
-        },
-        "title": {
-          "type": "text",
-          "value": "Calidad y Medioambiente"
-        }
-      }
-    },
-    "calidad.principios": {
-      "title": "Principios calidad",
-      "slug": "/calidad",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Principios"
-        },
-        "p1Desc": {
-          "type": "textarea",
-          "value": "Cumplir y satisfacer las necesidades de nuestros clientes es el punto de partida de cada proyecto."
-        },
-        "p1Title": {
-          "type": "text",
-          "value": "Satisfacción del cliente"
-        },
-        "p2Desc": {
-          "type": "textarea",
-          "value": "Revisamos permanentemente nuestros procesos para elevar la calidad técnica de cada entrega."
-        },
-        "p2Title": {
-          "type": "text",
-          "value": "Mejora continua"
-        },
-        "p3Desc": {
-          "type": "textarea",
-          "value": "Aplicamos los requisitos legales, reglamentarios y técnicos de calidad en cada etapa del proyecto."
-        },
-        "p3Title": {
-          "type": "text",
-          "value": "Cumplimiento normativo"
-        },
-        "p4Desc": {
-          "type": "textarea",
-          "value": "El sistema de gestión ISO 9001 apoya la planificación, organización y prestación de nuestros servicios."
-        },
-        "p4Title": {
-          "type": "text",
-          "value": "Planificación y organización"
-        },
-        "title": {
-          "type": "text",
-          "value": "Nuestros compromisos de calidad"
-        }
-      }
-    },
     "clientes.cta": {
       "title": "CTA clientes",
       "slug": "/clientes",
@@ -563,24 +441,6 @@
         }
       }
     },
-    "contacto.hero": {
-      "title": "Hero contacto",
-      "slug": "/contacto",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Contacto"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje, mantenimiento y rehabilitación de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas."
-        },
-        "title": {
-          "type": "text",
-          "value": "Conversemos"
-        }
-      }
-    },
     "contacto.sections": {
       "title": "Secciones contacto",
       "slug": "/contacto",
@@ -868,72 +728,6 @@
         "ubicacionTitle": {
           "type": "text",
           "value": "Ubicación"
-        }
-      }
-    },
-    "galeria.config": {
-      "title": "Config galería",
-      "slug": "/galeria",
-      "fields": {
-        "allItemsLabel": {
-          "type": "text",
-          "value": "Todas"
-        },
-        "emptyLabel": {
-          "type": "text",
-          "value": "No hay imágenes en esta categoría."
-        },
-        "lightboxCloseLabel": {
-          "type": "text",
-          "value": "Cerrar"
-        },
-        "lightboxNextLabel": {
-          "type": "text",
-          "value": "Siguiente"
-        },
-        "lightboxPrevLabel": {
-          "type": "text",
-          "value": "Anterior"
-        },
-        "resultsLabel": {
-          "type": "text",
-          "value": "Mostrando {n} imágenes"
-        },
-        "showFilters": {
-          "type": "text",
-          "value": "true"
-        }
-      }
-    },
-    "galeria.hero": {
-      "title": "Hero galería",
-      "slug": "/galeria",
-      "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Portafolio visual"
-        },
-        "image": {
-          "type": "image",
-          "value": "/fotos/curadas/montaje-vertical-caverna.webp",
-          "derived": {
-            "src": "/gallery/derived/dbb383a4-1024.webp",
-            "srcset": "/gallery/derived/dbb383a4-640.webp 640w, /gallery/derived/dbb383a4-1024.webp 1024w",
-            "width": 1024,
-            "height": 1365
-          }
-        },
-        "imageAlt": {
-          "type": "text",
-          "value": "Montaje vertical de tubería forzada en caverna subterránea"
-        },
-        "subtitle": {
-          "type": "textarea",
-          "value": "Más de 40 años de proyectos hidromecánicos documentados en imágenes: tuberías forzadas, compuertas, válvulas, turbinas y montajes en terreno."
-        },
-        "title": {
-          "type": "text",
-          "value": "Galería de obras y montajes"
         }
       }
     },
@@ -2065,6 +1859,24 @@
         }
       }
     },
+    "proyectos.detalle.contacto": {
+      "title": "Fichas de proyecto — recuadro de contacto",
+      "slug": "/proyectos",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar"
+        },
+        "text": {
+          "type": "textarea",
+          "value": "Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje."
+        },
+        "title": {
+          "type": "text",
+          "value": "¿Trabaja en proyectos similares?"
+        }
+      }
+    },
     "proyectos.index.banco": {
       "title": "Banco proyectos",
       "slug": "/proyectos",
@@ -2669,6 +2481,24 @@
         }
       }
     },
+    "servicios.detalle.contacto": {
+      "title": "Fichas de servicio — recuadro de contacto",
+      "slug": "/servicios",
+      "fields": {
+        "buttonLabel": {
+          "type": "text",
+          "value": "Contactar"
+        },
+        "text": {
+          "type": "textarea",
+          "value": "Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje."
+        },
+        "title": {
+          "type": "text",
+          "value": "¿Trabaja en proyectos de este tipo?"
+        }
+      }
+    },
     "servicios.index.banner": {
       "title": "Servicios — banner de capacidad industrial",
       "slug": "/servicios",
@@ -2690,6 +2520,22 @@
         "imageAlt": {
           "type": "text",
           "value": "Proceso de fabricacion y caldereria hidromecanica en taller"
+        },
+        "stat1Label": {
+          "type": "text",
+          "value": "Taller industrial"
+        },
+        "stat1Value": {
+          "type": "text",
+          "value": "3.000 m²"
+        },
+        "stat2Label": {
+          "type": "text",
+          "value": "Puentes grúa de 10 a 20 t"
+        },
+        "stat2Value": {
+          "type": "text",
+          "value": "5"
         },
         "subtitle": {
           "type": "textarea",

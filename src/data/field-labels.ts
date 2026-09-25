@@ -29,6 +29,7 @@ export const FIELD_LABELS: Record<string, string> = {
   titulo: 'Título',
   pageTitle: 'Título de la página',
   subtitle: 'Subtítulo',
+  text: 'Texto',
   eyebrow: 'Texto pequeño sobre el título',
   formEyebrow: 'Texto pequeño del formulario',
   formTitle: 'Título del formulario',
@@ -161,6 +162,7 @@ const FAMILIAS: Record<string, string> = {
   item: 'Punto',
   gallery: 'Foto de la galería',
   p: 'Párrafo',
+  stat: 'Cifra',
 };
 
 /** camelCase o kebab-case → «Frase legible». */
@@ -198,8 +200,8 @@ export function fieldLabel(key: string): string {
     return `Logo · ${nombre}`;
   }
 
-  // Familias numeradas: card3Value, item5Title, gallery2Alt, p1Desc, item7.
-  const numerado = /^(card|item|gallery|p)(\d+)([A-Z][a-z]+)?$/.exec(key);
+  // Familias numeradas: card3Value, item5Title, gallery2Alt, p1Desc, item7, stat1Value.
+  const numerado = /^(card|item|gallery|p|stat)(\d+)([A-Z][a-z]+)?$/.exec(key);
   if (numerado) {
     const familia = FAMILIAS[numerado[1]];
     const parte = numerado[3] ? PARTES[numerado[3]] : undefined;

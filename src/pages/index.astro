@@ -60,6 +60,9 @@ const PROPUESTA_FALLBACK = [
 ];
 
 const instalaciones = [1, 2, 3].map((n) => ({
+  titleField: `card${n}Label`,
+  descField: `card${n}Desc`,
+  valueField: `card${n}Value`,
   title: getCmsText('home.installations', `card${n}Label`, INSTALACIONES_FALLBACK[n - 1].title),
   description: getCmsText(
     'home.installations',
@@ -70,6 +73,8 @@ const instalaciones = [1, 2, 3].map((n) => ({
 }));
 
 const propuestaValor = [1, 2, 3].map((n) => ({
+  titleField: `item${n}Title`,
+  descField: `item${n}Desc`,
   title: getCmsText('home.capabilities', `item${n}Title`, PROPUESTA_FALLBACK[n - 1].title),
   description: getCmsText(
     'home.capabilities',
@@ -116,9 +121,15 @@ const propuestaValor = [1, 2, 3].map((n) => ({
   <Section variant="default" id="servicios">
     <Container>
       <div class="text-center mb-12">
-        <Eyebrow
-          ><EditableText entry="home.services" field="eyebrow">Servicios</EditableText></Eyebrow
-        >
+        <Eyebrow>
+          {
+            /* Pintaba el literal: lo editado se veía al guardar y desaparecía
+              al publicar. */
+          }
+          <EditableText entry="home.services" field="eyebrow">
+            {getCmsText('home.services', 'eyebrow', 'Servicios')}
+          </EditableText>
+        </Eyebrow>
         <EditableText
           as="h2"
           entry="home.services"
@@ -153,8 +164,8 @@ const propuestaValor = [1, 2, 3].map((n) => ({
               description={s.data.resumen}
               href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
-              bullets={s.data.tipos?.slice(0, 3)}
               compact
+              cmsEntry={`servicios.${entrySlug(s.id)}`}
             />
           ))
         }
@@ -239,7 +250,7 @@ const propuestaValor = [1, 2, 3].map((n) => ({
             <div>
               <Eyebrow>
                 <EditableText entry="home.projects" field="eyebrow">
-                  Experiencia
+                  {getCmsText('home.projects', 'eyebrow', 'Experiencia')}
                 </EditableText>
               </Eyebrow>
               <EditableText
@@ -253,7 +264,9 @@ const propuestaValor = [1, 2, 3].map((n) => ({
               </EditableText>
             </div>
             <Button href="/proyectos" variant="secondary">
-              {getCmsText('home.projects', 'buttonLabel', 'Ver todos los proyectos')}
+              <EditableText entry="home.projects" field="buttonLabel">
+                {getCmsText('home.projects', 'buttonLabel', 'Ver todos los proyectos')}
+              </EditableText>
             </Button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-group>
@@ -269,7 +282,7 @@ const propuestaValor = [1, 2, 3].map((n) => ({
           <div class="text-center py-10">
             <Eyebrow>
               <EditableText entry="home.projects" field="eyebrow">
-                Experiencia
+                {getCmsText('home.projects', 'eyebrow', 'Experiencia')}
               </EditableText>
             </Eyebrow>
             <EditableText
@@ -308,10 +321,15 @@ const propuestaValor = [1, 2, 3].map((n) => ({
       'subtitle',
       'Cuéntenos el alcance de su proyecto. Revisaremos las alternativas de fabricación y montaje que correspondan.'
     )}
-    primary={{ label: getCmsText('home.cta', 'primaryLabel', 'Contacto'), href: '/contacto' }}
+    primary={{
+      label: getCmsText('home.cta', 'primaryLabel', 'Contacto'),
+      href: '/contacto',
+      field: 'primaryLabel',
+    }}
     secondary={{
       label: getCmsText('home.cta', 'secondaryLabel', 'Conocer la empresa'),
       href: '/empresa',
+      field: 'secondaryLabel',
     }}
   />
 </PageLayout>

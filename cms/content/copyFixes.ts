@@ -71,4 +71,12 @@ export const copyFixRules: CopyFixRule[] = [
     to: 'Nuestro taller cuenta con equipamiento',
     nota: 'La ubicación ya está dicha en la portada y en /empresa; aquí solo estorbaba el ritmo.',
   },
+  {
+    batch: 'reconciliacion',
+    entryId: 'contact.form',
+    key: 'subject',
+    from: 'Nuevo contacto desde hidromont.cl',
+    to: 'Nuevo contacto desde hidromontchile.cl',
+    nota: 'bded6cc lo corrigió solo en cms-content.json: la base seguía con hidromont.cl, que no es este sitio, y el siguiente export lo revertía.',
+  },
 ];

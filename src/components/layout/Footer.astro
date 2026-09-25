@@ -105,7 +105,10 @@ const serviciosLinks = navItems.find((item) => item.cmsField === 'navServicios')
                     href={item.href}
                     class="inline-flex min-h-[24px] items-center text-sm text-white/70 hover:text-white no-underline transition-colors duration-fast"
                   >
-                    {item.label}
+                    {/* El mismo campo que el menú de la cabecera. */}
+                    <EditableText entry="layout.header" field={item.cmsField}>
+                      {item.label}
+                    </EditableText>
                   </a>
                 </li>
               ))

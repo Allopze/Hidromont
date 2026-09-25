@@ -6,9 +6,12 @@
  * campo sin guardar, vuelve a como estaba: la página nunca enseña un texto que
  * no está en el CMS.
  *
- * Solo depende del DOM, así que lo usan el panel, los campos y el selector de
- * medios sin crear dependencias circulares entre ellos.
+ * Solo depende del DOM (y del conversor de Markdown, que es puro), así que lo
+ * usan el panel, los campos y el selector de medios sin crear dependencias
+ * circulares entre ellos.
  */
+
+import { renderizarPrevisualizacion } from './markdown';
 
 let actual = null;
 
@@ -23,7 +26,9 @@ let actual = null;
 export function escribirTexto(element, valor) {
   const children = Array.from(element.childNodes);
   const elementChildren = children.filter((node) => node.nodeType === Node.ELEMENT_NODE);
-  if (elementChildren.length === 0) {
+  // Cifras como «40+ años»: el valor va repartido en varios nodos y
+  // reemplazar solo uno dejaba «40» delante del texto nuevo.
+  if (elementChildren.length === 0 || element.hasAttribute('data-cms-texto-entero')) {
     element.textContent = valor;
     return;
   }
@@ -42,6 +47,46 @@ export function escribirTexto(element, valor) {
  * guardar— dejaba la foto anterior en pantalla: parecía que no se había
  * guardado nada.
  */
+/**
+ * Pinta una lista guardada en su elemento de la página (`<ul>` de tipos,
+ * insignias de normas…). Cada elemento nuevo es una copia del primero que ya
+ * había, así que conserva su viñeta o su estilo; solo cambia su texto.
+ *
+ * Hasta ahora ninguna lista se editaba desde la página, y al guardarla el
+ * valor se habría escrito como texto: «Compuerta vagón,Compuerta clapeta…»
+ * delante de la lista vieja.
+ *
+ * `data-cms-list-max` limita cuántos se ven, como hace la página: la tarjeta de
+ * /servicios muestra solo los tres primeros tipos. Si la lista trae algo que
+ * no es texto (grupos), no se toca nada: la página queda como estaba y el
+ * cambio se verá al publicar.
+ */
+export function escribirLista(element, items) {
+  const plantilla = element.firstElementChild;
+  if (!plantilla || !Array.isArray(items)) return;
+  if (!items.every((item) => typeof item === 'string')) return;
+  const max = Number(element.dataset.cmsListMax) || items.length;
+  const nuevos = items
+    .filter((item) => item.trim())
+    .slice(0, max)
+    .map((item) => {
+      const copia = plantilla.cloneNode(true);
+      escribirTexto(copia, item);
+      return copia;
+    });
+  element.replaceChildren(...nuevos);
+}
+
+/**
+ * Pinta un cuerpo en Markdown con la misma vista previa del panel. Es
+ * aproximada —el HTML definitivo lo genera Astro al publicar—, pero es la
+ * única forma de que la página refleje lo guardado: escribirlo como texto
+ * dejaba el Markdown crudo delante del cuerpo anterior.
+ */
+export function escribirFormato(element, markdown) {
+  element.innerHTML = renderizarPrevisualizacion(String(markdown ?? ''));
+}
+
 export function mostrarImagen(img, src) {
   img.removeAttribute('srcset');
   img.removeAttribute('sizes');

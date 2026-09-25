@@ -9,6 +9,8 @@ import { getCollection, render } from 'astro:content';
 import { serviceImages } from '../../data/service-images';
 import { serviceGalleries } from '../../data/service-galleries';
 import EditableImage from '../../components/cms/EditableImage.astro';
+import EditableText from '../../components/cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 import { entrySlug } from '../../utils/contentId';
 import limpiarrejasVideo from '../../assets/limpiarrejas-hero.mp4';
 // El dominio vive en `site` de astro.config.mjs y de ahí lo toman también el
@@ -33,6 +35,7 @@ const serviceImageEntry = `service-image.${slug}`;
 const heroImg = serviceImages[slug];
 const gallery = serviceGalleries[slug];
 const galleryEntryId = `service-gallery.${slug}`;
+const cmsEntry = `servicios.${slug}`;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 const isLimpiarrejas = slug === 'limpiarrejas';
 
@@ -81,7 +84,7 @@ const jsonLd = [
       ? 'Limpiarrejas Hidromont en operación en una obra hidroeléctrica'
       : undefined}
     breadcrumbs={[{ label: 'Servicios', href: '/servicios' }, { label: titulo }]}
-    cmsEntry={`servicios.${slug}`}
+    cmsEntry={cmsEntry}
     cmsEyebrowField={false}
     cmsTitleField="titulo"
     cmsSubtitleField="resumen"
@@ -93,9 +96,15 @@ const jsonLd = [
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <!-- Contenido principal -->
         <div class="lg:col-span-2">
-          <div class="prose prose-lg max-w-none">
+          <EditableText
+            as="div"
+            entry={cmsEntry}
+            field="body"
+            type="richtext"
+            class="prose prose-lg max-w-none"
+          >
             <Content />
-          </div>
+          </EditableText>
         </div>
 
         <!-- Sidebar técnico -->
@@ -106,7 +115,13 @@ const jsonLd = [
                 <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
                   Tipos
                 </h3>
-                <ul class="space-y-1.5">
+                <EditableText
+                  as="ul"
+                  entry={cmsEntry}
+                  field="tipos"
+                  type="list"
+                  class="space-y-1.5"
+                >
                   {tipos.map((t: string) => (
                     <li class="flex items-start gap-2 text-sm text-text-muted">
                       <span
@@ -116,7 +131,7 @@ const jsonLd = [
                       {t}
                     </li>
                   ))}
-                </ul>
+                </EditableText>
               </div>
             )
           }
@@ -127,7 +142,13 @@ const jsonLd = [
                 <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
                   Aplicaciones
                 </h3>
-                <ul class="space-y-1.5">
+                <EditableText
+                  as="ul"
+                  entry={cmsEntry}
+                  field="aplicaciones"
+                  type="list"
+                  class="space-y-1.5"
+                >
                   {aplicaciones.map((a: string) => (
                     <li class="flex items-start gap-2 text-sm text-text-muted">
                       <span
@@ -137,7 +158,7 @@ const jsonLd = [
                       {a}
                     </li>
                   ))}
-                </ul>
+                </EditableText>
               </div>
             )
           }
@@ -148,24 +169,56 @@ const jsonLd = [
                 <h3 class="font-heading font-semibold text-primary-dark text-sm uppercase tracking-wide mb-3">
                   Normas de referencia
                 </h3>
-                <div class="flex flex-wrap gap-2">
+                <EditableText
+                  as="div"
+                  entry={cmsEntry}
+                  field="normas"
+                  type="list"
+                  class="flex flex-wrap gap-2"
+                >
                   {normas.map((n: string) => (
                     <Badge variant="muted">{n}</Badge>
                   ))}
-                </div>
+                </EditableText>
               </div>
             )
           }
 
           <!-- Contacto (corporate presence — no sales language) -->
           <div class="p-5 bg-primary rounded-none text-white">
-            <p class="font-semibold text-sm mb-3">¿Trabaja en proyectos de este tipo?</p>
-            <p class="text-white/80 text-xs mb-4 leading-relaxed">
-              Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y
-              montaje.
-            </p>
+            <EditableText
+              as="p"
+              entry="servicios.detalle.contacto"
+              field="title"
+              class="font-semibold text-sm mb-3"
+            >
+              {
+                getCmsText(
+                  'servicios.detalle.contacto',
+                  'title',
+                  '¿Trabaja en proyectos de este tipo?'
+                )
+              }
+            </EditableText>
+            <EditableText
+              as="p"
+              entry="servicios.detalle.contacto"
+              field="text"
+              type="textarea"
+              class="text-white/80 text-xs mb-4 leading-relaxed"
+            >
+              {
+                getCmsText(
+                  'servicios.detalle.contacto',
+                  'text',
+                  'Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje.'
+                )
+              }
+            </EditableText>
             <Button href="/contacto" variant="secondary-light" class="w-full justify-center">
-              Contactar
+              <EditableText entry="servicios.detalle.contacto" field="buttonLabel">
+                {getCmsText('servicios.detalle.contacto', 'buttonLabel', 'Contactar')}
+              </EditableText>
             </Button>
           </div>
         </aside>
