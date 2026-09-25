@@ -59,8 +59,21 @@ Definidos en `cms/controllers/ContentController.ts` y el schema (`GET /api/cms/s
 | `image`    | Imágenes (sube o elige de biblioteca)       | Picker de medios + upload                  |
 | `link`     | Enlaces con label + href                    | Dos inputs                                 |
 | `number`   | Métricas, años, cantidades                  | Input numérico                             |
-| `list`     | Listas de strings (bullets, normas)         | Editor de items dinámico                   |
+| `list`     | Listas de textos (normas) o de grupos       | Filas de texto, o un grupo por elemento    |
 | `object`   | Estructuras complejas                       | JSON                                       |
+
+### Listas de grupos
+
+Algunas listas no son de textos sueltos sino de grupos: los **procesos** de un
+servicio son pares título + descripción. El panel las muestra como un grupo por
+elemento, con un campo para cada parte, y las guarda con esa misma forma.
+
+> **Hasta sep-2026 esto corrompía datos.** El formulario pintaba cada grupo como
+> «[object Object]» y, si se tocaba uno y se guardaba, los procesos quedaban
+> reemplazados por ese texto. Ahora el servidor también lo impide: rechaza un
+> guardado que convierta una lista de grupos en textos o que traiga
+> «[object Object]» (`cms/validators/fieldShape.ts`). Una lista con una forma que
+> el panel no sabe editar sin riesgo se muestra fija y no se envía.
 
 ### El editor de texto con formato
 

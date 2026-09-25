@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
+import { entornoDePublicacion } from '../scripts/cms/overlay/entorno';
 import { isEditorHost, shouldActivateOverlay } from '../scripts/cms/overlay/index';
+
+describe('entornoDePublicacion', () => {
+  it('trata el subdominio del editor como el sitio al que apunta', () => {
+    // editor.hidromontchile.cl y hidromontchile.cl son el mismo proceso Node:
+    // publicar desde el editor actualiza producción.
+    expect(entornoDePublicacion('editor.hidromontchile.cl')).toBe('production');
+    expect(entornoDePublicacion('hidromontchile.cl')).toBe('production');
+    expect(entornoDePublicacion('www.hidromontchile.cl')).toBe('production');
+    expect(entornoDePublicacion('editor.localhost')).toBe('local');
+    expect(entornoDePublicacion('localhost')).toBe('local');
+    expect(entornoDePublicacion('127.0.0.1')).toBe('local');
+  });
+
+  it('no confunde otros dominios con producción', () => {
+    expect(entornoDePublicacion('editor.staging.hidromontchile.cl')).toBe('other');
+    expect(entornoDePublicacion('hidromontchile.cl.evil.test')).toBe('other');
+  });
+});
 
 describe('CMS Overlay Activation', () => {
   describe('isEditorHost', () => {

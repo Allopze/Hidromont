@@ -15,14 +15,19 @@ import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
 import { richtextMarkup } from './richtext';
-import { fieldLabelMarkup, listEditorMarkup } from './fields';
+import { fieldLabelMarkup, listEditorMarkup, mensajeGuardado } from './fields';
+import { confirmar } from './confirm';
+import { icon } from './icons';
 
 // ─── CRUD de colecciones ─────────────────────────────────────────────────
 const COLLECTION_KINDS = [
-  { id: 'servicio', label: 'Servicios' },
-  { id: 'proyecto', label: 'Proyectos' },
-  { id: 'page', label: 'Páginas' },
+  { id: 'servicio', label: 'Servicios', nueva: 'Nuevo servicio' },
+  { id: 'proyecto', label: 'Proyectos', nueva: 'Nuevo proyecto' },
+  { id: 'page', label: 'Páginas', nueva: 'Nueva página' },
 ];
+
+/** Un rótulo por cada estado que acepta el servidor (lo vigila un test). */
+const ROTULOS_DE_ESTADO = { draft: 'Borrador', published: 'Publicado' };
 
 export let activeCollectionKind = 'servicio';
 
@@ -82,22 +87,24 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
     openPanel(
       `
       <div class="hm-cms-tabs">${tabs}</div>
-      <label style="margin-bottom:8px">Buscar
-        <input name="collectionSearch" type="search" data-collection-search
-          placeholder="Título, slug o id" value="${escapeHtml(collectionQuery)}" />
-      </label>
-      <p class="hm-cms-muted" style="margin:0 0 8px">
-        ${entries.length === data.total ? `${data.total} entrada${data.total === 1 ? '' : 's'}` : `Mostrando ${entries.length} de ${data.total}`}
+      <div class="hm-cms-toolbar">
+        <label class="hm-cms-grow">Buscar
+          <input name="collectionSearch" type="search" data-collection-search
+            placeholder="Buscar por título" value="${escapeHtml(collectionQuery)}" />
+        </label>
+        <button type="button" class="primary" data-action="new-entry" data-kind="${escapeHtml(kind)}">${icon('plus')}${escapeHtml(COLLECTION_KINDS.find((k) => k.id === kind)?.nueva || 'Nueva entrada')}</button>
+      </div>
+      <p class="hm-cms-count">
+        ${entries.length === data.total ? `${data.total} ${data.total === 1 ? 'entrada' : 'entradas'}` : `Mostrando ${entries.length} de ${data.total}`}
         ${data.pages > 1 ? ' · acota la búsqueda para ver el resto' : ''}
       </p>
-      <div class="hm-cms-actions" style="margin-bottom:12px">
-        <button type="button" data-action="new-entry" data-kind="${escapeHtml(kind)}">+ Nueva entrada</button>
-      </div>
       ${
         entries.length === 0
-          ? collectionQuery
-            ? `<p class="hm-cms-muted">Ninguna entrada de tipo «${escapeHtml(kind)}» coincide con «${escapeHtml(collectionQuery)}».</p>`
-            : `<p class="hm-cms-muted">No hay entradas de tipo «${escapeHtml(kind)}».</p>`
+          ? `<p class="hm-cms-empty">${
+              collectionQuery
+                ? `Ninguna entrada coincide con «${escapeHtml(collectionQuery)}».`
+                : 'Todavía no hay entradas aquí.'
+            }</p>`
           : `<div class="hm-cms-collection-list">
             ${entries
               .map(
@@ -105,11 +112,20 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
               <div class="hm-cms-collection-item">
                 <div class="hm-cms-collection-info">
                   <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
-                  <span class="hm-cms-collection-meta">${escapeHtml(e.slug)} · <span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml({ draft: 'Borrador', published: 'Publicado' }[e.status] || e.status)}</span></span>
+                  <span class="hm-cms-collection-meta">
+                    ${
+                      // Solo se marca la excepción: con todas en «Publicado»,
+                      // la etiqueta en cada fila era ruido.
+                      e.status === 'published'
+                        ? ''
+                        : `<span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(ROTULOS_DE_ESTADO[e.status] || e.status)}</span>`
+                    }
+                    <span>/${escapeHtml(String(e.slug).replace(/^\//, ''))}</span>
+                  </span>
                 </div>
                 <div class="hm-cms-collection-actions">
-                  <button type="button" class="secondary" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
-                  <button type="button" class="secondary destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}">Borrar</button>
+                  <button type="button" class="secondary small" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">${icon('pencil')}Editar</button>
+                  <button type="button" class="icon ghost destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}" aria-label="Eliminar: ${escapeHtml(e.title)}" title="Eliminar">${icon('trash')}</button>
                 </div>
               </div>
             `
@@ -209,32 +225,32 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       <label>Título
         <input name="title" value="${escapeHtml(entry?.title || '')}" required />
       </label>
-      <details ${!entryId ? 'open' : ''}>
-        <summary>URL y publicación</summary>
+      <details class="hm-cms-advanced" ${!entryId ? 'open' : ''}>
+        <summary>Dirección y publicación</summary>
       ${
         !entryId
           ? `<label>ID interno
         <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
-        <span class="hm-cms-muted">Se sugiere según el título y el tipo de entrada.</span>
-      </label>`
-          : `<p class="hm-cms-muted">ID: <strong>${escapeHtml(entryId)}</strong></p>`
+      </label>
+      <p class="hm-cms-hint">Se sugiere según el título y el tipo de entrada.</p>`
+          : `<p class="hm-cms-hint">Identificador interno: <code>${escapeHtml(entryId)}</code></p>`
       }
-      <label>URL corta
+      <label>Dirección en el sitio
         <input name="slug" value="${escapeHtml(entry?.slug || '')}" required />
       </label>
-      <p class="hm-cms-muted" data-suggested-path hidden></p>
+      <p class="hm-cms-hint" data-suggested-path hidden></p>
       <label>Estado de publicación
         <select name="status" data-initial-status="${escapeHtml(entry?.status || 'published')}">
           <option value="published" ${!entry || entry.status === 'published' ? 'selected' : ''}>Publicado</option>
           <option value="draft" ${entry?.status === 'draft' ? 'selected' : ''}>${escapeHtml(draft.label)}</option>
         </select>
       </label>
-      <p class="hm-cms-muted" data-draft-warning hidden style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">${escapeHtml(draft.warning)}</p>
+      <p class="hm-cms-notice is-warn" data-draft-warning hidden>${escapeHtml(draft.warning)}</p>
       </details>
       ${
         !entryId && (kind === 'servicio' || kind === 'proyecto')
           ? `
-        <p class="hm-cms-muted" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">
+        <p class="hm-cms-notice is-info">
           Al crearla, se abrirá aquí el formulario con campos de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Complétalos y guarda antes de «Publicar cambios».
         </p>`
           : ''
@@ -263,7 +279,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                 if (enums[key]) {
                   const actual = String(f.value ?? '');
                   const conocido = enums[key].some((o) => o.value === actual);
-                  return `<label>${fieldLabelMarkup(key, f)}
+                  return `<label data-field-key="${escapeHtml(key)}">${fieldLabelMarkup(key, f)}
                     <select name="${name}" data-field-type="text">
                       ${
                         !conocido && actual
@@ -279,8 +295,14 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                     </select>
                   </label>`;
                 }
+                // Una lista no cabe dentro de un <label>: son varios controles.
+                // Su nombre va en un <fieldset>, que es lo que un lector de
+                // pantalla anuncia al entrar en cualquiera de ellos.
                 if (f.type === 'list') {
-                  return `<label>${fieldLabelMarkup(key, f)}</label>${listEditorMarkup(asList(f.value), name)}`;
+                  return `<fieldset class="hm-cms-fieldset" data-field-key="${escapeHtml(key)}">
+                    <legend>${fieldLabelMarkup(key, f)}</legend>
+                    ${listEditorMarkup(asList(f.value), name, { clave: key })}
+                  </fieldset>`;
                 }
                 // El cuerpo va a ancho completo y con su propia barra, no
                 // dentro de un <label> como el resto: es el campo donde se
@@ -294,17 +316,17 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
                     : f.type === 'number'
                       ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
                       : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
-                return `<label>${fieldLabelMarkup(key, f)}${control}</label>`;
+                return `<label data-field-key="${escapeHtml(key)}">${fieldLabelMarkup(key, f)}${control}</label>`;
               })
               .join('')
           : ''
       }
-      <div class="hm-cms-actions">
+      <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
-        <button type="button" class="secondary" data-action="back-to-collections">← Volver</button>
-        ${entry ? `<button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>` : ''}
+        <button type="button" class="ghost" data-action="back-to-collections">${icon('arrowLeft')}Volver</button>
+        ${entry ? `<button type="button" class="ghost" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>` : ''}
+        <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
   const slug = panelBody.querySelector('[data-entry-form] [name="slug"]');
@@ -313,6 +335,16 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
     mostrarRutaSugerida(kind, slug.value);
   }
   if (!entry) sugerirIdentificadores(kind);
+}
+
+/** El nombre visible de un control del formulario, para los mensajes de error. */
+function rotuloDeCampo(input, key) {
+  const leyenda = input.closest?.('fieldset')?.querySelector('legend');
+  if (leyenda) return leyenda.textContent.trim();
+  const label =
+    input.closest?.('label') ||
+    (input.id ? input.form?.querySelector(`label[for="${CSS.escape(input.id)}"]`) : null);
+  return label?.firstChild?.textContent?.trim() || key;
 }
 
 export async function saveEntryForm(form) {
@@ -330,7 +362,13 @@ export async function saveEntryForm(form) {
   const estadoPrevio = form.elements.status.dataset?.initialStatus;
   if (entryStatus === 'draft' && estadoPrevio === 'published') {
     const aviso = form.querySelector('[data-draft-warning]')?.textContent?.trim();
-    if (!window.confirm(`${aviso}\n\n¿Continuar?`)) {
+    const seguir = await confirmar({
+      titulo: '¿Pasar a borrador?',
+      mensaje: aviso,
+      aceptar: 'Pasar a borrador',
+      peligro: true,
+    });
+    if (!seguir) {
       if (status) status.textContent = '';
       return;
     }
@@ -392,24 +430,34 @@ export async function saveEntryForm(form) {
               value = [];
             }
           }
-          await api(
-            `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
-            {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ value }),
-            }
-          );
+          try {
+            await api(
+              `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
+              {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value }),
+              }
+            );
+          } catch (error) {
+            // El servidor nombra la clave («orden»); quien edita ve el rótulo
+            // («Orden de aparición»). Se dice cuál falló y cuántos sí entraron.
+            const rotulo = rotuloDeCampo(input, key);
+            throw new Error(
+              `No se pudo guardar «${rotulo}»: ${error.message}${hechos ? ` (los ${hechos} campos anteriores sí se guardaron)` : ''}`
+            );
+          }
           hechos += 1;
           if (status) status.textContent = `Guardando campo ${hechos} de ${campos.length}...`;
         }
       }
     }
 
-    if (status) status.textContent = 'Guardado. Cambios pendientes de publicar.';
+    if (status) status.textContent = mensajeGuardado();
     setGlobalState('unsaved');
     clearDraft(form);
   } catch (error) {
-    if (status) status.innerHTML = `<span class="hm-cms-error">${escapeHtml(error.message)}</span>`;
+    if (status)
+      status.innerHTML = `<span class="hm-cms-error" role="alert">${escapeHtml(error.message)}</span>`;
   }
 }

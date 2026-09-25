@@ -3,6 +3,7 @@
  * Cubre: gestión de categorías (crear, editar, eliminar), álbumes y fotos.
  */
 import { test, expect } from '@playwright/test';
+import { aceptarConfirmaciones } from './helpers/confirmaciones';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -42,7 +43,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de categorías: crear, editar y eliminar', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
 
     // 1. Abrir menú de Galería
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
@@ -59,11 +60,13 @@ test.describe('CMS Gallery Administration', () => {
     await expect(form).toBeVisible();
 
     await form.locator('input[name="name"]').fill(TEST_CAT_NAME);
+    // El identificador se genera solo; forzarlo es una opción avanzada.
+    await form.getByText('Opciones avanzadas').click();
     await form.locator('input[name="slug"]').fill(TEST_CAT_SLUG);
     await form.locator('button[type="submit"]').click();
 
     // Volver a la lista y verificar que existe
-    await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: TEST_CAT_NAME })).toBeVisible(
+    await expect(panel.locator('.hm-cms-collection-title', { hasText: TEST_CAT_NAME })).toBeVisible(
       {
         timeout: 5000,
       }
@@ -102,7 +105,7 @@ test.describe('CMS Gallery Administration', () => {
     await form.locator('input[name="name"]').fill(nombreEditado);
     await form.locator('button[type="submit"]').click();
 
-    await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: nombreEditado })).toBeVisible(
+    await expect(panel.locator('.hm-cms-collection-title', { hasText: nombreEditado })).toBeVisible(
       {
         timeout: 5000,
       }
@@ -112,7 +115,7 @@ test.describe('CMS Gallery Administration', () => {
     const catEditada = panel.locator('[data-gallery-category-row]', { hasText: nombreEditado });
     await catEditada.getByRole('button', { name: `Eliminar categoría: ${nombreEditado}` }).click();
 
-    await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: nombreEditado })).toHaveCount(
+    await expect(panel.locator('.hm-cms-collection-title', { hasText: nombreEditado })).toHaveCount(
       0
     );
   });
@@ -120,7 +123,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de álbumes: crear, editar y eliminar', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
     const panel = page.locator('.hm-cms-panel.open');
@@ -141,7 +144,7 @@ test.describe('CMS Gallery Administration', () => {
 
     // Verificar en la lista
     await expect(
-      panel.locator('.hm-cms-gallery-cat-name', { hasText: TEST_ALBUM_NAME })
+      panel.locator('.hm-cms-collection-title', { hasText: TEST_ALBUM_NAME })
     ).toBeVisible({
       timeout: 5000,
     });
@@ -178,7 +181,7 @@ test.describe('CMS Gallery Administration', () => {
     await form.locator('input[name="name"]').fill(albumEditado);
     await form.locator('button[type="submit"]').click();
 
-    await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: albumEditado })).toBeVisible({
+    await expect(panel.locator('.hm-cms-collection-title', { hasText: albumEditado })).toBeVisible({
       timeout: 5000,
     });
 
@@ -186,7 +189,7 @@ test.describe('CMS Gallery Administration', () => {
     const albumParaBorrar = panel.locator('[data-gallery-album-row]', { hasText: albumEditado });
     await albumParaBorrar.getByRole('button', { name: `Eliminar álbum: ${albumEditado}` }).click();
 
-    await expect(panel.locator('.hm-cms-gallery-cat-name', { hasText: albumEditado })).toHaveCount(
+    await expect(panel.locator('.hm-cms-collection-title', { hasText: albumEditado })).toHaveCount(
       0
     );
   });
@@ -194,7 +197,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de imágenes: agregar imagen, buscarla y eliminarla', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
     const panel = page.locator('.hm-cms-panel.open');

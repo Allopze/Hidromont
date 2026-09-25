@@ -120,3 +120,9 @@ Se implementaron la búsqueda local por nombre y slug para categorías y álbume
 La verificación pasó: `npm run check` (219 archivos, sin errores ni avisos), `npm test` (330 pruebas) y `npm run test:e2e` (105 aprobadas, 4 omitidas). Las [capturas nuevas](implementacion/README.md) muestran las escenas afectadas en escritorio y móvil.
 
 El HOLD **permanece** por el primer criterio: 32 categorías y 24 medios sintéticos siguen en la biblioteca original a la espera de una revisión humana. Se prepararon respaldos y un [inventario con cada candidato](inventario-datos-prueba.md); ningún registro ni archivo fue eliminado. Al aprobar cada candidato, se podrá hacer la limpieza editorial y reevaluar el cierre del HOLD.
+
+## Cierre del HOLD — 24 de septiembre de 2026
+
+Se aprobó y ejecutó la limpieza del [inventario](inventario-datos-prueba.md#limpieza-ejecutada): 32 categorías y 24 medios sintéticos eliminados de la base local, con respaldo previo. Con eso se cumple el primer criterio; los otros tres ya estaban cerrados. **El HOLD queda levantado para la base local.** Falta confirmar que la base del VPS no conserve los mismos restos.
+
+El mismo día se implementaron las fases 0 (integridad) y 1 (estilo común) del plan de mejora del panel. Entre ellas se corrigió que la lista «Procesos» de los servicios se guardara como «[object Object]» al editarla.

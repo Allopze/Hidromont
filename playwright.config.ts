@@ -30,6 +30,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 4321',
+      env: { ASTRO_DEV_TOOLBAR: '0' },
       url: PAGE_URL,
       reuseExistingServer: false,
       timeout: 120_000,

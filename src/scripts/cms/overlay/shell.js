@@ -9,6 +9,7 @@
  */
 
 import { botonesDeBarra } from './actions';
+import { icon } from './icons';
 import { overlayStyles } from './styles';
 
 const hojaDeEstilos = document.createElement('style');
@@ -21,8 +22,8 @@ shell.className = 'hm-cms-shell';
 
 shell.innerHTML = `
   <div class="hm-cms-bar">
-    <strong>Hidromont CMS</strong>
-    <span class="hm-cms-badge" data-state-badge role="status" aria-live="polite" aria-atomic="true" style="display:none"></span>
+    <strong class="hm-cms-brand">Hidromont CMS</strong>
+    <span class="hm-cms-badge" data-state-badge role="status" aria-live="polite" aria-atomic="true" hidden></span>
     <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
     ${botonesDeBarra()}
   </div>
@@ -58,7 +59,7 @@ shell.innerHTML = `
   <div class="hm-cms-panel" aria-labelledby="hm-cms-panel-title">
     <div class="hm-cms-panel-head">
       <h2 id="hm-cms-panel-title" data-panel-title>Editor</h2>
-      <button type="button" class="secondary" data-action="close">Cerrar</button>
+      <button type="button" class="icon" data-action="close" aria-label="Cerrar" title="Cerrar">${icon('x', { size: 20 })}</button>
     </div>
     <div class="hm-cms-panel-body" data-panel-body></div>
   </div>
@@ -94,37 +95,35 @@ export const panelBody = shell.querySelector('[data-panel-body]');
 
 const stateBadge = shell.querySelector('[data-state-badge]');
 
+/*
+ * Los glifos (● ✓ ⚠ ✗) salen del texto: cada fuente los dibujaba distinto y un
+ * lector de pantalla los leía en voz alta. El punto de color lo pone la hoja de
+ * estilos según la clase. «Cambios sin publicar» deja de pintarse en rojo de
+ * error: es el estado normal después de guardar, no un fallo.
+ */
+const ESTADOS_GLOBALES = {
+  unsaved: { label: 'Cambios sin publicar', cls: 'pending' },
+  exported: { label: 'Archivos preparados · falta publicar', cls: 'pending' },
+  'exported-warning': { label: 'Preparado con avisos · revisar', cls: 'warning' },
+  published: { label: 'Sitio actualizado', cls: 'succeeded' },
+  'published-warning': { label: 'Publicado con avisos · revisar', cls: 'warning' },
+  'local-built': { label: 'Compilado en local · falta desplegar', cls: 'succeeded' },
+  'local-warning': { label: 'Compilado con avisos · falta desplegar', cls: 'warning' },
+  'other-built': { label: 'Compilado aquí · producción sin confirmar', cls: 'succeeded' },
+  'other-warning': { label: 'Compilado con avisos · producción sin confirmar', cls: 'warning' },
+  error: { label: 'No se pudo completar', cls: 'failed' },
+};
+
 export function setGlobalState(stateKey) {
   if (!stateBadge) return;
   if (!stateKey) {
-    stateBadge.style.display = 'none';
+    stateBadge.hidden = true;
     return;
   }
-  const map = {
-    unsaved: { label: '● Cambios pendientes de publicar', cls: 'failed' },
-    exported: { label: '✓ Archivos preparados · falta publicar', cls: 'succeeded' },
-    'exported-warning': { label: '⚠ Archivos preparados con omisiones', cls: 'failed' },
-    published: { label: '✓ Sitio actualizado', cls: 'succeeded' },
-    'published-warning': { label: '⚠ Publicación con omisiones · revisar', cls: 'failed' },
-    'local-built': { label: '✓ Compilado en local · falta desplegar', cls: 'succeeded' },
-    'local-warning': {
-      label: '⚠ Compilación local con omisiones · falta desplegar',
-      cls: 'failed',
-    },
-    'other-built': {
-      label: '✓ Compilado en este entorno · producción no confirmada',
-      cls: 'succeeded',
-    },
-    'other-warning': {
-      label: '⚠ Compilación con omisiones · producción no confirmada',
-      cls: 'failed',
-    },
-    error: { label: '✗ Error', cls: 'failed' },
-  };
-  const s = map[stateKey] || { label: stateKey, cls: '' };
+  const s = ESTADOS_GLOBALES[stateKey] || { label: stateKey, cls: '' };
   stateBadge.textContent = s.label;
-  stateBadge.className = `hm-cms-badge ${s.cls}`;
-  stateBadge.style.display = '';
+  stateBadge.className = `hm-cms-badge hm-cms-state ${s.cls}`;
+  stateBadge.hidden = false;
 }
 
 export let isFormDirty = false;

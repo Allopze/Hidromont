@@ -32,15 +32,19 @@ export function loginView(error = '', email = '') {
   setPanelTitle('Acceso');
   openPanel(`
     <form data-login class="hm-cms-login-form">
+      <div class="hm-cms-login-head">
+        <h3>Entra para editar el sitio</h3>
+        <p class="hm-cms-hint">Usa el correo y la contraseña que te dio quien administra el CMS.</p>
+      </div>
       <label>Correo electrónico
         <input name="email" type="email" autocomplete="username" value="${escapeHtml(email)}" required />
       </label>
       <label>Contraseña
         <input name="password" type="password" autocomplete="current-password" required />
       </label>
-      ${error ? `<p class="hm-cms-error">${escapeHtml(error)}</p>` : ''}
+      ${error ? `<p class="hm-cms-notice is-danger" role="alert">${escapeHtml(error)}</p>` : ''}
       <button type="submit">Entrar</button>
-      ${config.isDev ? `<p class="hm-cms-muted">Servidor CMS: ${apiBase}</p>` : ''}
+      ${config.isDev ? `<p class="hm-cms-hint">Servidor CMS (solo en desarrollo): ${apiBase}</p>` : ''}
     </form>
   `);
 }

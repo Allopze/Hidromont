@@ -7,6 +7,7 @@
  */
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { aceptarConfirmaciones } from './helpers/confirmaciones';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -65,7 +66,7 @@ test.describe('Deshacer', () => {
     await abrirCategorias(page);
     await expect(page.getByText(nombre, { exact: false }).first()).toBeVisible();
 
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
 
     const aviso = page.locator('[data-undo-host]');
@@ -89,7 +90,7 @@ test.describe('Deshacer', () => {
     await crearCategoria(page, csrf, nombre);
 
     await abrirCategorias(page);
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
 
     const aviso = page.locator('[data-undo-host]');
@@ -119,7 +120,7 @@ test.describe('Deshacer', () => {
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
     await page.getByRole('button', { name: 'Gestionar categorías' }).click();
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
     await expect(aviso).toBeVisible();
 
@@ -138,7 +139,7 @@ test.describe('Deshacer', () => {
     await crearCategoria(page, csrf, nombre);
 
     await abrirCategorias(page);
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
     await expect(page.locator('[data-undo-host]')).toBeVisible();
 
@@ -173,7 +174,7 @@ test.describe('Deshacer', () => {
     await crearCategoria(page, csrf, nombre);
 
     await abrirCategorias(page);
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
     await expect(page.locator('[data-undo-host]')).toBeVisible();
 
@@ -196,7 +197,7 @@ test.describe('Deshacer', () => {
     await crearCategoria(page, csrf, b);
 
     await abrirCategorias(page);
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${a}"]`).click();
     await expect(page.locator('[data-undo-host]')).toContainText(a);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${b}"]`).click();

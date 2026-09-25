@@ -12,6 +12,8 @@ import { escapeHtml, formatDate } from './html';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
+import { entornoDePublicacion } from './entorno';
+import { icon } from './icons';
 
 /**
  * A-7/A-9: lo que el export dejó fuera y lo que volvió al texto por
@@ -26,41 +28,41 @@ export function exportNoticeMarkup(exported) {
 
   const lista = (titulo, filas) =>
     filas.length
-      ? `<p style="margin:0 0 4px"><strong>${escapeHtml(titulo)}</strong></p>
-         <ul style="margin:0 0 8px;padding-left:18px">
+      ? `<p><strong>${escapeHtml(titulo)}</strong></p>
+         <ul class="hm-cms-notice-list">
            ${filas.join('')}
          </ul>`
       : '';
 
   return `
-    <div class="hm-cms-muted" role="alert" aria-live="assertive" style="background:var(--hm-cms-warn-bg);border:1px solid var(--hm-cms-warn-line);border-radius:var(--hm-cms-radius-sm);padding:10px 12px;margin-bottom:10px">
+    <div class="hm-cms-notice is-warn" role="alert" aria-live="assertive">
+      ${icon('alert')}
+      <div>
       ${lista(
-        'No se publicaron (corrige el campo y vuelve a exportar):',
+        'No se publicaron (corrige el campo y vuelve a publicar):',
         omitidas.map(
           (e) =>
             `<li>${escapeHtml(e.slug)} — ${escapeHtml(e.reason)}
-               <button type="button" class="secondary" style="font-size:11px;padding:3px 7px;margin-left:6px" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
+               <button type="button" class="secondary small" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">Editar</button>
              </li>`
         )
       )}
       ${lista(
         'En borrador: el sitio muestra el texto por defecto del código',
-        revertidas.map((e) => `<li>${escapeHtml(e.title)} (${escapeHtml(e.id)})</li>`)
+        revertidas.map((e) => `<li>${escapeHtml(e.title)}</li>`)
       )}
+      </div>
     </div>
   `;
 }
 
 export function publishEnvironment() {
-  const host = window.location.hostname.toLowerCase();
-  if (host === 'hidromontchile.cl' || host === 'www.hidromontchile.cl') return 'production';
-  if (['localhost', '127.0.0.1', '::1', '[::1]'].includes(host)) return 'local';
-  return 'other';
+  return entornoDePublicacion(window.location.hostname);
 }
 
 export function renderPublishJobs(items) {
   if (!items.length) {
-    openPanel('<p class="hm-cms-muted">Aun no hay publicaciones registradas.</p>');
+    openPanel('<p class="hm-cms-empty">Todavía no hay publicaciones.</p>');
     return;
   }
   const entorno = publishEnvironment();
@@ -73,10 +75,10 @@ export function renderPublishJobs(items) {
 
   openPanel(`
     <section class="hm-cms-job-list">
-      <p class="hm-cms-muted">Historial de preparación de archivos y publicaciones.</p>
-      <p class="hm-cms-muted" style="background:var(--hm-cms-info-bg);border:1px solid var(--hm-cms-info-line);border-radius:var(--hm-cms-radius-sm);padding:8px 10px">
-        ℹ️ «Exportar» solo prepara archivos. «Publicar cambios» también compila este sitio. ${avisoEntorno}
-      </p>
+      <div class="hm-cms-notice is-info">
+        ${icon('info')}
+        <p>«Publicar cambios» prepara los archivos y actualiza el sitio. ${avisoEntorno}</p>
+      </div>
       ${items
         .map(
           (job) => `
@@ -85,9 +87,12 @@ export function renderPublishJobs(items) {
             <span>${escapeHtml(job.action === 'export' ? 'Preparación de archivos' : 'Publicación')}</span>
             <span class="hm-cms-badge ${escapeHtml(job.status)}">${escapeHtml({ queued: 'En cola', running: 'En curso', succeeded: 'Completada', failed: 'Fallida', cancelled: 'Cancelada', canceled: 'Cancelada' }[job.status] || job.status)}</span>
           </div>
-          <p class="hm-cms-muted">${escapeHtml(formatDate(job.createdAt))}${job.completedAt ? ` - ${escapeHtml(formatDate(job.completedAt))}` : ''}</p>
-          <p class="hm-cms-muted">${escapeHtml(job.id)}</p>
-          <pre class="hm-cms-log" tabindex="0" aria-label="Registro de la publicación">${escapeHtml((job.logs || []).slice(-8).join('\n'))}</pre>
+          <p class="hm-cms-hint">${escapeHtml(formatDate(job.createdAt))}</p>
+          <details class="hm-cms-tech">
+            <summary>Detalles técnicos</summary>
+            <p>Identificador: <code>${escapeHtml(job.id)}</code></p>
+            <pre class="hm-cms-log" tabindex="0" aria-label="Registro de la publicación">${escapeHtml((job.logs || []).slice(-8).join('\n'))}</pre>
+          </details>
         </article>
       `
         )

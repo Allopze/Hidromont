@@ -10,6 +10,7 @@
 
 import { apiBase, state } from './context';
 import { asList, escapeHtml } from './html';
+import { icon } from './icons';
 import { setFormDirty, setGlobalState } from './shell';
 import { clearDraft } from './drafts';
 import { api } from './api';
@@ -18,29 +19,56 @@ import { ensureSession } from './auth';
 import { applyMediaSelection, loadMediaPicker } from './media';
 import { richtextMarkup } from './richtext';
 import { publishEnvironment } from './publish';
+import { dropzoneMarkup } from './dropzone';
+import { listEditorMarkup } from './list-editor';
+
+export { listEditorMarkup, syncListValue } from './list-editor';
 
 /**
- * E-3: rótulo del campo. El servidor manda `label` junto al campo; la clave
- * cruda se conserva en pequeño porque es la que aparece en los mensajes de
- * error y la que nombra un desarrollador por teléfono.
+ * E-3: rótulo del campo. El servidor manda `label` junto al campo.
+ *
+ * La clave cruda (`orden`, `layout.header.logoSrc`) ya no va al lado: quien
+ * edita no la necesita y la leía como parte del nombre. Se conserva en
+ * `data-field-key` y en «Detalles técnicos», que es donde la busca quien da
+ * soporte por teléfono.
  */
-export function fieldLabelMarkup(key, field, incluirClave = true) {
-  const legible = field?.label || key;
-  // Cuando la etiqueta es la clave capitalizada o acentuada («Aplicaciones»
-  // de `aplicaciones`, «Título» de `titulo`), repetirla al lado solo añade
-  // ruido: la pista solo aparece cuando de verdad dice algo distinto.
-  const normalizar = (t) =>
-    t
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '');
-  if (!incluirClave || normalizar(legible) === normalizar(key)) return escapeHtml(legible);
-  return `${escapeHtml(legible)} <span class="hm-cms-field-key">${escapeHtml(key)}</span>`;
+export function fieldLabelMarkup(key, field) {
+  return escapeHtml(field?.label || key);
+}
+
+/**
+ * Los estados del editor de un campo, en palabras de quien edita.
+ *
+ * Antes cada mensaje explicaba el circuito completo («Guardado en CMS.
+ * «Publicar cambios» compila aquí; falta desplegar para actualizar
+ * producción.»): cierto, pero ilegible junto a un botón.
+ */
+export const ESTADOS_DE_CAMPO = {
+  limpio: 'Todo guardado.',
+  sucio: 'Cambios sin guardar.',
+  guardando: 'Guardando…',
+};
+
+export function mensajeGuardado() {
+  const entorno = publishEnvironment();
+  if (entorno === 'production') return 'Guardado. Se verá en el sitio cuando publiques.';
+  if (entorno === 'local') return 'Guardado. Se verá al publicar y desplegar.';
+  return 'Guardado. Pendiente de publicar.';
+}
+
+/**
+ * Pinta el estado del editor de campo. `nivel` colorea el texto y el punto
+ * que lo acompaña: idle, dirty, saving, success o error.
+ */
+export function setEditStatus(form, nivel, texto, { html = false } = {}) {
+  const status = form?.querySelector('[data-edit-status]');
+  if (!status) return;
+  status.dataset.level = nivel;
+  if (html) status.innerHTML = texto;
+  else status.textContent = texto;
 }
 
 function fieldEditor(element, entry, field) {
-  setPanelTitle('Editor');
   const cmsType = element.dataset.cmsType || 'text';
   const current = entry.fields[field]?.value ?? '';
   const altField = element.dataset.cmsAltField;
@@ -51,49 +79,57 @@ function fieldEditor(element, entry, field) {
   if (cmsType === 'image') {
     const imagenPredeterminada = !current;
     const vistaPrevia = current || element.currentSrc || element.src;
+    // Orden de la tarea: ver la foto, cambiarla (subir o elegir), describirla.
+    // La ruta y el punto de enfoque numérico quedan en «Opciones avanzadas»:
+    // funcionan igual, pero no son lo primero que alguien debería tocar.
     return `
       <div class="hm-cms-image-preview">
         <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview />
-        <p class="hm-cms-muted" data-selected-media-label>${imagenPredeterminada ? 'Imagen predeterminada' : 'Imagen actual'}</p>
+        <p class="hm-cms-hint" data-selected-media-label>${imagenPredeterminada ? 'Imagen predeterminada del sitio' : 'Imagen actual'}</p>
       </div>
-      <label>Ruta de imagen
-        <input name="value" value="${escapeHtml(String(current))}" />
-      </label>
+      ${dropzoneMarkup({ texto: 'Subir una imagen nueva' })}
+      <div class="hm-cms-field-group">
+        <label>Elegir de la biblioteca
+          <input name="mediaSearch" type="search" placeholder="Buscar por nombre o descripción" data-media-search />
+        </label>
+        <div data-media-grid class="hm-cms-media-grid">
+          <p class="hm-cms-hint">Cargando imágenes…</p>
+        </div>
+      </div>
       ${
         altField
-          ? `<label>Texto alternativo
-        <input name="alt" value="${escapeHtml(String(altValue))}" />
-      </label>`
+          ? `<label>Descripción de la imagen
+        <input name="alt" value="${escapeHtml(String(altValue))}" aria-describedby="hm-cms-alt-hint" />
+      </label>
+      <p class="hm-cms-hint" id="hm-cms-alt-hint">La leen quienes no pueden ver la foto y los buscadores.</p>`
           : ''
       }
       <input name="mediaId" type="hidden" value="" />
-      <div class="hm-cms-two">
-        <label>Foco X
-          <input name="focalX" type="number" min="0" max="1" step="0.01" value="0.5" />
+      <details class="hm-cms-advanced">
+        <summary>Opciones avanzadas</summary>
+        <label>Ruta del archivo
+          <input name="value" value="${escapeHtml(String(current))}" />
         </label>
-        <label>Foco Y
-          <input name="focalY" type="number" min="0" max="1" step="0.01" value="0.5" />
-        </label>
-      </div>
-      <label>Subir imagen
-        <input name="file" type="file" accept="image/png,image/jpeg,image/webp" />
-      </label>
-      <label>Biblioteca de medios
-        <input name="mediaSearch" type="search" placeholder="Buscar por nombre o alt" data-media-search />
-      </label>
-      <div data-media-grid class="hm-cms-media-grid">
-        <p class="hm-cms-muted">Cargando medios...</p>
-      </div>
+        <div class="hm-cms-two">
+          <label>Enfoque horizontal
+            <input name="focalX" type="number" min="0" max="1" step="0.01" value="0.5" />
+          </label>
+          <label>Enfoque vertical
+            <input name="focalY" type="number" min="0" max="1" step="0.01" value="0.5" />
+          </label>
+        </div>
+        <p class="hm-cms-hint">El enfoque va de 0 a 1 e indica qué parte de la foto se conserva al recortarla.</p>
+      </details>
     `;
   }
 
   if (cmsType === 'richtext') {
-    return richtextMarkup(current, 'value', 'Contenido');
+    return richtextMarkup(current, 'value', 'Texto');
   }
 
   if (cmsType === 'textarea') {
     return `
-      <label>Contenido
+      <label>Texto
         <textarea name="value">${escapeHtml(String(current))}</textarea>
       </label>
     `;
@@ -101,14 +137,14 @@ function fieldEditor(element, entry, field) {
 
   if (cmsType === 'list') {
     return `
-      <p class="hm-cms-muted" style="margin:0 0 8px">Items de la lista:</p>
-      ${listEditorMarkup(asList(current), 'value')}
+      <p class="hm-cms-label">Elementos de la lista</p>
+      ${listEditorMarkup(asList(current), 'value', { clave: field })}
     `;
   }
 
   if (cmsType === 'number') {
     return `
-      <label>Valor numérico
+      <label>Número
         <input name="value" type="number" value="${escapeHtml(String(current))}" step="any" />
       </label>
     `;
@@ -123,7 +159,7 @@ function fieldEditor(element, entry, field) {
       <label>Texto del enlace
         <input name="link-label" value="${escapeHtml(String(link.label ?? ''))}" />
       </label>
-      <label>URL
+      <label>Dirección (URL)
         <input name="link-href" value="${escapeHtml(String(link.href ?? ''))}" />
       </label>
       <input name="value" type="hidden" value="${escapeHtml(JSON.stringify(link))}" />
@@ -131,51 +167,10 @@ function fieldEditor(element, entry, field) {
   }
 
   return `
-    <label>Contenido
+    <label>Texto
       <input name="value" value="${escapeHtml(String(current))}" />
     </label>
   `;
-}
-
-/**
- * A-8: markup del editor de listas, reutilizado por el editor de campo
- * suelto y por el formulario de colección. `inputName` existe porque el
- * formulario de colección puede tener varias listas a la vez (tipos,
- * aplicaciones, normas) y cada una necesita su propio hidden.
- */
-export function listEditorMarkup(items, inputName) {
-  return `
-      <div data-list-editor>
-        <div data-list-items style="display:grid;gap:6px;margin-bottom:8px">
-          ${items
-            .map(
-              (item, i) => `
-            <div style="display:flex;gap:6px;align-items:center">
-              <input type="text" data-list-item="${i}" value="${escapeHtml(String(item))}" aria-label="Elemento ${i + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 10px;font:inherit" />
-              <button type="button" class="secondary destructive" data-action="remove-list-item" data-index="${i}" aria-label="Quitar el elemento ${i + 1}" style="font-weight:700">×</button>
-            </div>
-          `
-            )
-            .join('')}
-        </div>
-        <button type="button" data-action="add-list-item" style="border:1px dashed var(--hm-cms-line-soft);background:white;color:var(--hm-cms-ink-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 12px;cursor:pointer;font:inherit;width:100%;text-align:left">+ Agregar item</button>
-        <input name="${escapeHtml(inputName)}" type="hidden" data-field-type="list" value="${escapeHtml(JSON.stringify(items))}" />
-      </div>
-    `;
-}
-
-/**
- * A-8: se acota al `[data-list-editor]` que contiene el input tocado. Antes
- * buscaba en todo el formulario y el hidden fijo `[name="value"]`, lo que
- * bastaba con un solo editor por formulario pero colisiona en cuanto hay
- * varias listas, como en el formulario de colección.
- */
-export function syncListValue(scope) {
-  const editor = scope?.closest?.('[data-list-editor]') ?? scope;
-  if (!editor) return;
-  const items = Array.from(editor.querySelectorAll('[data-list-item]')).map((input) => input.value);
-  const hidden = editor.querySelector('input[type="hidden"]');
-  if (hidden) hidden.value = JSON.stringify(items);
 }
 
 export function syncLinkValue(form) {
@@ -195,44 +190,49 @@ export async function selectElement(element) {
   const entry = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
   state.selected = element;
   state.entry = entry;
-  const entorno = publishEnvironment();
-  const publishHint =
-    entorno === 'production'
-      ? 'Exportar solo prepara archivos. «Publicar cambios» compila y actualiza el sitio.'
-      : entorno === 'local'
-        ? 'Exportar solo prepara archivos. «Publicar cambios» compila aquí; luego debes desplegarlo para actualizar producción.'
-        : 'Exportar solo prepara archivos. «Publicar cambios» compila este entorno; no confirma una actualización de producción.';
+  const nombre = entry.fields[field]?.label || field;
+  const esImagen = element.dataset.cmsType === 'image';
+  setPanelTitle(esImagen ? 'Editar imagen' : 'Editar texto');
 
+  // Guardar va en un pie fijo: en el editor de imagen quedaba debajo de la
+  // biblioteca entera y había que desplazarse para encontrarlo. «Vaciar» se
+  // aparta del pie a propósito: es la única acción destructiva y no debe
+  // compartir grupo con la que se pulsa siempre.
   openPanel(`
-    <form data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
-      <!-- UI-03: breadcrumb estilizado en vez de texto plano. -->
-      <div class="hm-cms-breadcrumb">
+    <form class="hm-cms-edit-form" data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
+      <p class="hm-cms-context">
         <span>${escapeHtml(entry.title || entryId)}</span>
-        <span class="hm-cms-breadcrumb-sep" aria-hidden="true">›</span>
-        <strong>${escapeHtml(entry.fields[field]?.label || field)}</strong>
-      </div>
-      <p class="hm-cms-muted"><span class="hm-cms-field-key">${escapeHtml(entryId)}.${escapeHtml(field)}</span></p>
+        <span class="hm-cms-context-sep" aria-hidden="true">›</span>
+        <strong>${escapeHtml(nombre)}</strong>
+      </p>
       ${fieldEditor(element, entry, field)}
-      <div class="hm-cms-edit-actions">
-        <div class="hm-cms-edit-actions-primary">
-          <button type="submit">Guardar</button>
-        </div>
+      <div class="hm-cms-edit-tools">
         <div class="hm-cms-edit-actions-secondary">
-          <button type="button" class="secondary" data-action="export" title="Prepara los archivos del sitio; no los compila ni publica.">Exportar</button>
-          <button type="button" class="secondary" data-action="revisions" data-entry-id="${escapeHtml(entryId)}">Revisiones</button>
+          <button type="button" class="ghost small" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>
+          <button type="button" class="ghost small" data-action="export" title="Prepara los archivos del sitio sin publicarlo. Para que el cambio se vea, usa «Publicar cambios».">Exportar</button>
         </div>
         ${
-          element.dataset.cmsType === 'image'
+          esImagen
             ? ''
-            : `<div class="hm-cms-edit-actions-danger"><button type="button" class="secondary destructive" data-action="clear-field">Vaciar este texto</button></div>`
+            : `<div class="hm-cms-edit-actions-danger">
+          <button type="button" class="ghost destructive small" data-action="clear-field">${icon('trash')}Vaciar este texto</button>
+        </div>`
         }
       </div>
-      <p class="hm-cms-muted">${publishHint}</p>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status data-edit-status>Campo guardado en el CMS.</p>
+      <details class="hm-cms-tech">
+        <summary>Detalles técnicos</summary>
+        <p>Clave del campo: <code>${escapeHtml(entryId)}.${escapeHtml(field)}</code></p>
+      </details>
+      <div class="hm-cms-footer hm-cms-edit-actions">
+        <div class="hm-cms-edit-actions-primary">
+          <button type="submit">Guardar</button>
+          <p class="hm-cms-save-state" role="status" aria-live="polite" data-status data-edit-status data-level="idle">${ESTADOS_DE_CAMPO.limpio}</p>
+        </div>
+      </div>
     </form>
   `);
 
-  if (element.dataset.cmsType === 'image') {
+  if (esImagen) {
     loadMediaPicker();
   }
 }
@@ -277,17 +277,20 @@ function updateEditableText(element, newValue) {
  * imponer el suyo, reintentar contra la versión actual.
  */
 function renderConflict(form, entryId, field, message) {
-  const status = form.querySelector('[data-status]');
-  if (!status) return;
-  status.innerHTML = `
+  setEditStatus(
+    form,
+    'error',
+    `
     <span class="hm-cms-error">${escapeHtml(message)}</span>
-    <span class="hm-cms-actions" style="margin-top:8px">
-      <button type="button" class="secondary" data-action="show-server-value"
-        data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">Ver valor del servidor</button>
-      <button type="button" class="secondary" data-action="force-save">Guardar de todos modos</button>
+    <span class="hm-cms-actions">
+      <button type="button" class="secondary small" data-action="show-server-value"
+        data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">Ver el valor guardado</button>
+      <button type="button" class="secondary small" data-action="force-save">Guardar el mío de todos modos</button>
     </span>
     <span data-server-value></span>
-  `;
+  `,
+    { html: true }
+  );
 }
 
 export async function saveEdit(form) {
@@ -296,11 +299,18 @@ export async function saveEdit(form) {
 
   const entryId = element.dataset.cmsEntry;
   const field = element.dataset.cmsField;
-  const status = form.querySelector('[data-status]');
-  status.textContent = 'Guardando...';
+  setEditStatus(form, 'saving', ESTADOS_DE_CAMPO.guardando);
 
   const file = form.elements.file?.files?.[0];
   let value = form.elements.value.value;
+  // El editor de listas guarda JSON en su hidden; el servidor espera el array.
+  if (form.elements.value.dataset?.fieldType === 'list') {
+    try {
+      value = JSON.parse(value || '[]');
+    } catch {
+      value = [];
+    }
+  }
 
   if (file) {
     const payload = new FormData();
@@ -313,7 +323,7 @@ export async function saveEdit(form) {
       body: payload,
     }).then(async (response) => {
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Error al subir imagen');
+      if (!response.ok) throw new Error(data.error || 'No se pudo subir la imagen.');
       return data;
     });
     value = uploaded.path;
@@ -322,6 +332,9 @@ export async function saveEdit(form) {
     state.mediaItems = [uploaded, ...state.mediaItems.filter((item) => item.id !== uploaded.id)];
     setGlobalState('unsaved');
     applyMediaSelection(uploaded);
+    // Ya subida: si se vuelve a guardar no debe subirse otra vez.
+    form.elements.file.value = '';
+    form.elements.file.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   if (element.dataset.cmsType === 'image' && form.elements.mediaId?.value) {
@@ -396,13 +409,7 @@ export async function saveEdit(form) {
     updateEditableText(element, newValue);
   }
 
-  const entorno = publishEnvironment();
-  status.textContent =
-    entorno === 'production'
-      ? 'Guardado en CMS. Cambios pendientes; «Publicar cambios» actualizará el sitio.'
-      : entorno === 'local'
-        ? 'Guardado en CMS. «Publicar cambios» compila aquí; falta desplegar para actualizar producción.'
-        : 'Guardado en CMS. «Publicar cambios» compila este entorno; producción no está confirmada.';
+  setEditStatus(form, 'success', mensajeGuardado());
   setGlobalState('unsaved');
   // A-11: este es el único guardado que no reabre el panel (los formularios
   // de colección y galería vuelven a su listado, y openPanel ya lo limpia).

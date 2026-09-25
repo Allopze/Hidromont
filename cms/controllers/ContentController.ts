@@ -10,6 +10,7 @@ import {
   updateEntryMetaSchema,
   updateFieldSchema,
 } from '../validators/cms.schema';
+import { problemaDeForma } from '../validators/fieldShape';
 import { BaseController } from './BaseController';
 import type { AuditRepository } from '../repositories/AuditRepository';
 import { UndoService } from '../services/undoService';
@@ -83,6 +84,11 @@ export class ContentController extends BaseController {
           reply
             .status(400)
             .send({ error: `El campo "${params.key}" de tipo "${type}" debe ser texto` });
+          return;
+        }
+        const problema = problemaDeForma(fieldMeta.label || params.key, fieldMeta.value, val);
+        if (problema) {
+          reply.status(400).send({ error: problema });
           return;
         }
       }

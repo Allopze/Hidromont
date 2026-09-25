@@ -4,6 +4,7 @@
  * revisiones con restauración y eliminación con confirmación.
  */
 import { test, expect } from '@playwright/test';
+import { aceptarConfirmaciones } from './helpers/confirmaciones';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -42,7 +43,7 @@ test.describe('CMS Collections CRUD', () => {
     await page.goto('/?cms=1');
 
     // Manejo de diálogos de confirmación (para borrado o despublicación)
-    page.on('dialog', (dialog) => dialog.accept());
+    await aceptarConfirmaciones(page);
 
     // 1. Abrir panel de colecciones
     const collectionsBtn = page.locator('.hm-cms-bar [data-action="collections"]');

@@ -12,6 +12,7 @@ import { escapeHtml, formatBytes, formatDate } from './html';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
+import { icon } from './icons';
 
 /**
  * M-6: el registro guarda claves técnicas y estables (`entry.delete`,
@@ -82,7 +83,7 @@ export async function loadAdmin() {
     auditError: auditRes.status === 'rejected' ? auditRes.reason.message : '',
     backupError: backupRes.status === 'rejected' ? backupRes.reason.message : '',
   };
-  renderAdmin();
+  renderAdmin({ autofocus: 'panel' });
 }
 
 export function renderAdmin({ autofocus } = {}) {
@@ -94,7 +95,7 @@ export function renderAdmin({ autofocus } = {}) {
   openPanel(
     `
     <section class="hm-cms-admin">
-      ${notice ? `<p class="hm-cms-ok" data-admin-notice>${escapeHtml(notice)}</p>` : ''}
+      ${notice ? `<p class="hm-cms-notice is-ok" data-admin-notice>${icon('check')}<span>${escapeHtml(notice)}</span></p>` : ''}
 
       <div class="hm-cms-admin-section">
       <h3>Registro de actividad</h3>
@@ -109,18 +110,18 @@ export function renderAdmin({ autofocus } = {}) {
               .map(
                 (e) => `<li${AUDIT_SECURITY.test(e.action) ? ' data-security' : ''}>
                   <span>${escapeHtml(AUDIT_LABELS[e.action] || e.action)}${
-                    e.entityId ? ` <span class="hm-cms-muted">${escapeHtml(e.entityId)}</span>` : ''
+                    e.entityId ? ` <span class="hm-cms-hint">${escapeHtml(e.entityId)}</span>` : ''
                   }</span>
-                  <span class="hm-cms-muted">${escapeHtml(formatDate(e.createdAt))}${e.ip ? ` · ${escapeHtml(e.ip)}` : ''}</span>
+                  <span class="hm-cms-hint">${escapeHtml(formatDate(e.createdAt))}${e.ip ? ` · ${escapeHtml(e.ip)}` : ''}</span>
                 </li>`
               )
               .join('')}</ul>
             ${
               restantes > 0
-                ? `<button type="button" class="secondary" data-action="admin-more-audit">Ver ${Math.min(restantes, ADMIN_AUDIT_PAGE)} más (${restantes} restantes)</button>`
+                ? `<button type="button" class="secondary small" data-action="admin-more-audit">Ver ${Math.min(restantes, ADMIN_AUDIT_PAGE)} más (quedan ${restantes})</button>`
                 : ''
             }`
-          : '<p class="hm-cms-muted">Sin actividad registrada.</p>'
+          : '<p class="hm-cms-empty">Sin actividad registrada.</p>'
       }
       </div>
       <div class="hm-cms-admin-section">
@@ -130,7 +131,7 @@ export function renderAdmin({ autofocus } = {}) {
           ? `<p class="hm-cms-error">${escapeHtml(adminState.backupError)}</p>`
           : ''
       }
-      <p class="hm-cms-muted">Copia del contenido y la galería. Se guarda en el servidor, junto a la base; descárgala fuera del servidor si es un respaldo que quieres conservar.</p>
+      <p class="hm-cms-hint">Una copia del contenido y la galería. Se guarda en el servidor, junto a la base; descárgala fuera del servidor si es un respaldo que quieres conservar.</p>
       <span class="hm-cms-actions">
         <button type="button" class="secondary" data-action="create-backup">Crear respaldo ahora</button>
       </span>
@@ -140,11 +141,11 @@ export function renderAdmin({ autofocus } = {}) {
               .map(
                 (b) => `<li>
                   <span>${escapeHtml(b.file)}</span>
-                  <span class="hm-cms-muted">${escapeHtml(formatDate(b.createdAt))} · ${escapeHtml(formatBytes(b.size))}</span>
+                  <span class="hm-cms-hint">${escapeHtml(formatDate(b.createdAt))} · ${escapeHtml(formatBytes(b.size))}</span>
                 </li>`
               )
               .join('')}</ul>`
-          : '<p class="hm-cms-muted">Todavía no hay respaldos.</p>'
+          : '<p class="hm-cms-empty">Todavía no hay respaldos.</p>'
       }
       </div>
 
@@ -160,32 +161,37 @@ export function renderAdmin({ autofocus } = {}) {
         <label>Repetir la nueva
           <input type="password" name="repetir" autocomplete="new-password" minlength="12" required />
         </label>
-        <p class="hm-cms-muted">Mínimo 12 caracteres. Al cambiarla se cierran las demás sesiones abiertas; esta se mantiene.</p>
+        <p class="hm-cms-hint">Mínimo 12 caracteres. Al cambiarla se cierran las demás sesiones abiertas; esta se mantiene.</p>
         <span class="hm-cms-actions">
           <button type="submit">Cambiar contraseña</button>
         </span>
-        <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
+        <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </form>
       </div>
 
     </section>
   `,
-    { autofocus: autofocus !== false }
+    { autofocus: autofocus ?? true }
   );
 }
 
-export async function loadRevisions(entryId) {
+/**
+ * @param titulo El nombre legible de la entrada. Antes la vista decía
+ *   «Revisiones de layout.header»: la clave interna, no lo que ve quien edita.
+ */
+export async function loadRevisions(entryId, titulo = '') {
   if (!(await ensureSession())) return;
+  const nombre = titulo || entryId;
   setPanelTitle('Revisiones');
-  openPanel(`<p class="hm-cms-muted">Cargando revisiones de ${escapeHtml(entryId)}...</p>`);
+  openPanel('<p class="hm-cms-muted">Cargando revisiones…</p>');
   try {
     const data = await api(`/api/cms/revisions/${encodeURIComponent(entryId)}`);
     const revisions = data.revisions || [];
 
     if (!revisions.length) {
       openPanel(`
-        <p class="hm-cms-muted">Sin revisiones registradas para <strong>${escapeHtml(entryId)}</strong>.</p>
-        <button type="button" class="secondary" data-action="back-to-editor">← Volver</button>
+        <button type="button" class="ghost small hm-cms-back" data-action="back-to-editor">${icon('arrowLeft')}Volver</button>
+        <p class="hm-cms-empty">«${escapeHtml(nombre)}» todavía no tiene versiones anteriores.</p>
       `);
       return;
     }
@@ -193,19 +199,19 @@ export async function loadRevisions(entryId) {
     const currentVersion = revisions[0]?.version ?? 0;
 
     openPanel(`
-      <div style="display:grid;gap:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <strong style="font-size:14px">Revisiones de ${escapeHtml(entryId)}</strong>
-          <button type="button" class="secondary" data-action="back-to-editor">← Volver</button>
+      <div class="hm-cms-stack">
+        <button type="button" class="ghost small hm-cms-back" data-action="back-to-editor">${icon('arrowLeft')}Volver</button>
+        <div>
+          <h3 class="hm-cms-section-title">${escapeHtml(nombre)}</h3>
+          <p class="hm-cms-hint">Cada vez que guardas se crea una versión. Pulsa «Restaurar» para volver a una anterior.</p>
         </div>
-        <p class="hm-cms-muted">Haga clic en «Restaurar» para volver a esa versión.</p>
         <div class="hm-cms-revisions">
           ${revisions
             .map(
               (rev) => `
             <div class="hm-cms-revision-item${rev.version === currentVersion ? ' current' : ''}">
               <div class="hm-cms-revision-info">
-                <span class="hm-cms-revision-version">v${rev.version}${rev.version === currentVersion ? ' · actual' : ''}</span>
+                <span class="hm-cms-revision-version">Versión ${rev.version}</span>
                 <span class="hm-cms-revision-date">${escapeHtml(formatDate(rev.createdAt))}</span>
               </div>
               ${
@@ -213,15 +219,14 @@ export async function loadRevisions(entryId) {
                   ? `
                 <button
                   type="button"
-                  class="secondary"
-                  style="font-size:12px;padding:6px 10px"
+                  class="secondary small"
                   data-action="restore-revision"
                   data-entry-id="${escapeHtml(entryId)}"
                   data-revision-id="${escapeHtml(rev.id)}"
                   data-revision-version="${rev.version}"
                 >Restaurar</button>
               `
-                  : '<span class="hm-cms-badge" style="font-size:10px">Versión actual</span>'
+                  : '<span class="hm-cms-badge published">Actual</span>'
               }
             </div>
           `

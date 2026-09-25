@@ -3,6 +3,7 @@
  * publicación y control de sesiones en el CMS.
  */
 import { test, expect } from '@playwright/test';
+import { aceptarConfirmaciones } from './helpers/confirmaciones';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -18,7 +19,7 @@ async function apiLogin(page: import('@playwright/test').Page) {
 
 test.describe('CMS Admin Lifecycle & Sessions', () => {
   test.beforeEach(async ({ page }) => {
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
   });
@@ -87,14 +88,16 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
     await page.goto('/?cms=1');
 
     // Clic en cualquier elemento editable de texto para abrir el formulario
-    const editable = page.locator('[data-cms-entry][data-cms-field]').first();
+    const editable = page
+      .locator('[data-cms-entry][data-cms-field][data-cms-type="text"]:visible')
+      .first();
     if ((await editable.count()) === 0) return;
 
     await editable.click();
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();
     const status = panel.locator('form[data-edit] [data-edit-status]');
-    await expect(status).toHaveText('Campo guardado en el CMS.');
+    await expect(status).toHaveText('Todo guardado.');
 
     // Simular expiración de sesión borrando las cookies en el cliente
     await context.clearCookies();
