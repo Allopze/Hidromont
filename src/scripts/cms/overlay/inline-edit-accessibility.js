@@ -62,6 +62,15 @@ function prepareEditable(element) {
   }
 
   markEditable(element);
+  // Algo decorativo que se puede editar (el icono de una tarjeta de servicio)
+  // deja de estar oculto mientras dura la sesión: un control enfocable dentro
+  // de aria-hidden no lo anuncia ningún lector de pantalla.
+  if (element.getAttribute('aria-hidden') === 'true') {
+    setManagedAttribute(element, 'aria-hidden', 'false');
+    if (!element.hasAttribute('aria-label') && element.dataset.cmsType === 'icono') {
+      setManagedAttribute(element, 'aria-label', 'Icono del servicio');
+    }
+  }
   if (
     !element.hasAttribute('tabindex') &&
     !element.matches('a[href], button, input, select, textarea, summary')

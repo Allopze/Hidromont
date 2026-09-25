@@ -18,14 +18,34 @@ import { richtextMarkup } from './richtext';
 import { fieldLabelMarkup, listEditorMarkup, mensajeGuardado } from './fields';
 import { confirmar } from './confirm';
 import { icon } from './icons';
-import { campoTituloDe, seccionesDeFicha } from './secciones';
+import { FICHAS_DEL_SITIO, campoTituloDe, esFichaDelSitio, seccionesDeFicha } from './secciones';
 
 // ─── CRUD de colecciones ─────────────────────────────────────────────────
 const COLLECTION_KINDS = [
   { id: 'servicio', label: 'Servicios', nueva: 'Nuevo servicio' },
   { id: 'proyecto', label: 'Proyectos', nueva: 'Nuevo proyecto' },
   { id: 'page', label: 'Páginas', nueva: 'Nueva página' },
+  // Sin «nueva»: son las fichas fijas de FICHAS_DEL_SITIO, no se crean ni se borran.
+  { id: 'sitio', label: 'Textos del sitio' },
 ];
+
+/**
+ * Las fichas de «Textos del sitio», con su nombre para el panel. No hay un
+ * tipo común que pedir al servidor: se piden una a una, y la que falte (una
+ * base sin sembrar) simplemente no aparece.
+ */
+async function fichasDelSitio() {
+  const buscado = collectionQuery.toLowerCase();
+  const fichas = await Promise.all(
+    FICHAS_DEL_SITIO.filter((f) => !buscado || f.nombre.toLowerCase().includes(buscado)).map((f) =>
+      api(`/api/cms/entries/${encodeURIComponent(f.id)}`)
+        .then((e) => ({ ...e, title: f.nombre }))
+        .catch(() => null)
+    )
+  );
+  const entries = fichas.filter(Boolean);
+  return { entries, total: entries.length, pages: 1 };
+}
 
 /** Un rótulo por cada estado que acepta el servidor (lo vigila un test). */
 const ROTULOS_DE_ESTADO = { draft: 'Borrador', published: 'Publicado' };
@@ -78,7 +98,8 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
   try {
     const params = new URLSearchParams({ kind, limit: '100' });
     if (collectionQuery) params.set('q', collectionQuery);
-    const data = await api(`/api/cms/entries?${params}`);
+    const esSitio = kind === 'sitio';
+    const data = esSitio ? await fichasDelSitio() : await api(`/api/cms/entries?${params}`);
     const entries = data.entries || [];
     const tabs = COLLECTION_KINDS.map(
       (k) =>
@@ -93,7 +114,11 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
           <input name="collectionSearch" type="search" data-collection-search
             placeholder="Buscar por título" value="${escapeHtml(collectionQuery)}" />
         </label>
-        <button type="button" class="primary" data-action="new-entry" data-kind="${escapeHtml(kind)}">${icon('plus')}${escapeHtml(COLLECTION_KINDS.find((k) => k.id === kind)?.nueva || 'Nueva entrada')}</button>
+        ${
+          esSitio
+            ? ''
+            : `<button type="button" class="primary" data-action="new-entry" data-kind="${escapeHtml(kind)}">${icon('plus')}${escapeHtml(COLLECTION_KINDS.find((k) => k.id === kind)?.nueva || 'Nueva entrada')}</button>`
+        }
       </div>
       <p class="hm-cms-count">
         ${entries.length === data.total ? `${data.total} ${data.total === 1 ? 'entrada' : 'entradas'}` : `Mostrando ${entries.length} de ${data.total}`}
@@ -121,12 +146,16 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
                         ? ''
                         : `<span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(ROTULOS_DE_ESTADO[e.status] || e.status)}</span>`
                     }
-                    <span>/${escapeHtml(String(e.slug).replace(/^\//, ''))}</span>
+                    ${esSitio ? '' : `<span>/${escapeHtml(String(e.slug).replace(/^\//, ''))}</span>`}
                   </span>
                 </div>
                 <div class="hm-cms-collection-actions">
                   <button type="button" class="secondary small" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">${icon('pencil')}Editar</button>
-                  <button type="button" class="icon ghost destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}" aria-label="Eliminar: ${escapeHtml(e.title)}" title="Eliminar">${icon('trash')}</button>
+                  ${
+                    esSitio
+                      ? ''
+                      : `<button type="button" class="icon ghost destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}" aria-label="Eliminar: ${escapeHtml(e.title)}" title="Eliminar">${icon('trash')}</button>`
+                  }
                 </div>
               </div>
             `
@@ -292,6 +321,11 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
   );
   const campoTitulo = entry ? campoTituloDe(kind, Object.keys(campos)) : null;
   const secciones = entry ? seccionesDeFicha(kind, Object.keys(campos)) : [];
+  // Ajustes del sitio: ni su nombre en el panel, ni una dirección, ni un
+  // estado tienen efecto en el sitio. Pasarlos a borrador vaciaba la cabecera
+  // o el pie, así que viajan fijos y ocultos.
+  const delSitio = Boolean(entry) && esFichaDelSitio(kind);
+  const nombreDelSitio = FICHAS_DEL_SITIO.find((f) => f.id === entryId)?.nombre;
 
   openPanel(
     `
@@ -299,9 +333,14 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       ${
         // Un solo título: el que muestra el sitio. El de la entrada es el
         // nombre en la lista del panel y lo sigue en silencio (events.js).
-        campoTitulo
-          ? `<input type="hidden" name="title" value="${escapeHtml(entry.title || '')}" data-anterior="${escapeHtml(entry.title || '')}" />`
-          : `<label>Título
+        delSitio
+          ? `<input type="hidden" name="title" value="${escapeHtml(entry.title || '')}" />
+             <input type="hidden" name="slug" value="${escapeHtml(entry.slug || '')}" />
+             <input type="hidden" name="status" value="${escapeHtml(entry.status || 'published')}" />
+             ${nombreDelSitio ? `<p class="hm-cms-context"><strong>${escapeHtml(nombreDelSitio)}</strong></p>` : ''}`
+          : campoTitulo
+            ? `<input type="hidden" name="title" value="${escapeHtml(entry.title || '')}" data-anterior="${escapeHtml(entry.title || '')}" />`
+            : `<label>Título
         <input name="title" value="${escapeHtml(entry?.title || '')}" required />
       </label>`
       }
@@ -324,7 +363,10 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
         </section>`
         )
         .join('')}
-      <details class="hm-cms-advanced" ${!entryId ? 'open' : ''}>
+      ${
+        delSitio
+          ? ''
+          : `<details class="hm-cms-advanced" ${!entryId ? 'open' : ''}>
         <summary>Dirección y publicación</summary>
       ${
         !entryId
@@ -345,7 +387,8 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
         </select>
       </label>
       <p class="hm-cms-notice is-warn" data-draft-warning hidden>${escapeHtml(draft.warning)}</p>
-      </details>
+      </details>`
+      }
       <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
         <button type="button" class="ghost" data-action="back-to-collections">${icon('arrowLeft')}Volver</button>

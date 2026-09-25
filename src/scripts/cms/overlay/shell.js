@@ -86,10 +86,18 @@ document.body.prepend(shell);
 
 document.body.classList.add('hm-cms-active');
 
+// Lo que solo tiene sentido para quien edita (utils/soloEditor.ts) llega
+// oculto: el visitante del mismo build no debe verlo.
+document.querySelectorAll('[data-cms-solo-editor]').forEach((el) => {
+  el.hidden = false;
+});
+
 // Las acciones de la barra solo existen con sesión iniciada: sin sesión se
 // muestra el rótulo "Hidromont CMS" y nada más (antes "Salir" aparecía sin
 // haber entrado, y Colecciones/Galería/Historial invitaban a clicks fallidos).
 export function setAuthenticatedUI(isAuthenticated) {
+  // Lo que solo se puede tocar con sesión (las fotos de /galeria) lo mira aquí.
+  document.body.classList.toggle('hm-cms-sesion', Boolean(isAuthenticated));
   shell.querySelectorAll('[data-auth]').forEach((el) => {
     // «Editar esta ficha» necesita además saber qué entrada es la página.
     const faltaFicha = el.hasAttribute('data-page-entry') && !el.dataset.entryId;

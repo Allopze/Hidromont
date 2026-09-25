@@ -4,6 +4,8 @@ import heroImg from '../../assets/fotos/hero-home.png';
 import Button from '../ui/Button.astro';
 import Eyebrow from '../ui/Eyebrow.astro';
 import EditableText from '../cms/EditableText.astro';
+import EditableImage from '../cms/EditableImage.astro';
+import { getCmsText } from '../../data/cms';
 
 interface Props {
   eyebrow?: string;
@@ -22,23 +24,63 @@ const {
   ctaSecondary,
   cmsEntry = 'home.hero',
 } = Astro.props;
+
+// La foto de portada era un import de src/assets: cambiarla exigía un
+// despliegue. Si el CMS tiene una foto, se usa esa (con su encuadre); si no,
+// la de siempre, que Astro sigue optimizando. Las dos se cambian pulsándolas.
+const fotoCms = getCmsText('home.hero', 'image', '');
+const fotoAlt = getCmsText(
+  'home.hero',
+  'imageAlt',
+  'Vista aérea de las instalaciones de Hidromont Chile en Los Ángeles, Biobío'
+);
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const marcasFoto = cmsEditingEnabled
+  ? {
+      'data-cms-entry': cmsEntry,
+      'data-cms-field': 'image',
+      'data-cms-alt-field': 'imageAlt',
+      'data-cms-type': 'image',
+    }
+  : {};
 ---
 
 <section
   class="relative min-h-[100dvh] flex items-center overflow-hidden bg-background-strong text-white"
 >
-  <!-- Foto de fondo optimizada (Astro genera webp responsivo) -->
-  <Image
-    src={heroImg}
-    alt="Vista aérea de las instalaciones de Hidromont Chile en Los Ángeles, Biobío"
-    widths={[768, 1280, 1920]}
-    sizes="100vw"
-    loading="eager"
-    fetchpriority="high"
-    decoding="async"
-    class="absolute inset-0 w-full h-full object-cover pointer-events-none"
-    style="object-position: center 35%;"
-  />
+  <!-- Foto de fondo. `data-cms-fondo`: con el editor abierto recibe los clics
+       de las zonas vacías de la portada (styles.js del overlay). -->
+  {
+    fotoCms ? (
+      <EditableImage
+        entry={cmsEntry}
+        field="image"
+        altField="imageAlt"
+        src={fotoCms}
+        alt={fotoAlt}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        data-cms-fondo
+      />
+    ) : (
+      <Image
+        src={heroImg}
+        alt={fotoAlt}
+        widths={[768, 1280, 1920]}
+        sizes="100vw"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style="object-position: center 35%;"
+        data-cms-fondo
+        {...marcasFoto}
+      />
+    )
+  }
 
   <!-- Overlay gradiente superior para mejorar legibilidad de la cabecera (desde el tope hasta la mitad) -->
   <div
@@ -69,7 +111,7 @@ const {
   </div>
 
   <!-- Contenido: alineado a la izquierda -->
-  <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28">
+  <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28" data-cms-sobre-fondo>
     <div class="max-w-2xl">
       <Eyebrow light class="text-on-photo">
         <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>

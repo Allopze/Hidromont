@@ -241,3 +241,42 @@ describe('Fichas retiradas — retireObsoleteEntries', () => {
     );
   });
 });
+
+describe('Campos sueltos retirados — retireObsoleteFields', () => {
+  let ctx: TestApp;
+
+  beforeAll(async () => {
+    ctx = await createTestApp();
+    ctx.contentService.importMissingEntries();
+  });
+
+  afterAll(async () => {
+    await ctx.app.close();
+  });
+
+  it('quita solo los campos de la lista y deja el resto de la ficha', () => {
+    ctx.contentService.updateField('site.company', 'nombre', 'Hidromont Chile S.A.');
+    // Una base vieja todavía los tiene: se simulan como los dejó la semilla anterior.
+    const antes = ctx.contentService.getEntry('site.company');
+    ctx.db
+      .prepare(
+        `INSERT INTO content_fields (entry_id, key, type, value_json, updated_at)
+         VALUES ('site.company', 'casillaPostal', 'text', '"Casilla 48"', ?)`
+      )
+      .run(new Date().toISOString());
+
+    const retirados = ctx.contentService.retireObsoleteFields();
+
+    expect(retirados.map((r) => `${r.entryId}.${r.key}`)).toContain('site.company.casillaPostal');
+    const despues = ctx.contentService.getEntry('site.company');
+    expect(despues.fields.casillaPostal).toBeUndefined();
+    expect(despues.fields.nombre?.value).toBe('Hidromont Chile S.A.');
+    expect(despues.version).toBeGreaterThan(antes.version);
+  });
+
+  it('es idempotente y la semilla no los vuelve a crear', () => {
+    ctx.contentService.retireObsoleteFields();
+    ctx.contentService.importMissingEntries();
+    expect(ctx.contentService.retireObsoleteFields()).toEqual([]);
+  });
+});

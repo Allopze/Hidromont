@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
-import type { CmsEntry } from '../types/cms';
+import type { CmsEntry, CmsField } from '../types/cms';
 import { getInitialEntries } from './contentSeed';
 import { CATEGORIA_PROYECTO, ICONO_SERVICIO } from '../../src/data/content-vocabulary';
 
@@ -69,6 +69,98 @@ export const ENTRADAS_RETIRADAS = [
   'galeria.hero',
   'galeria.config',
 ] as const;
+
+/**
+ * Campos sueltos que ninguna página lee, dentro de fichas que sí se usan.
+ * Se comprobó con un build completo registrando cada lectura del CMS
+ * (25-09-2026), y leyendo el código en los que se leen sin mostrarse
+ * (`company.ts` leía todos sus datos al cargarse, se usaran o no).
+ *
+ * `prefijo` retira el campo en todas las fichas de una familia generada por
+ * slug (una galería por servicio o por proyecto); el resto, por id exacto.
+ */
+export const CAMPOS_RETIRADOS: ReadonlyArray<{
+  entrada?: string;
+  prefijo?: string;
+  campos: readonly string[];
+}> = [
+  // PageHero dejó de pintar el texto pequeño sobre el título de las páginas
+  // interiores; su prop `eyebrow` quedó solo por compatibilidad.
+  { entrada: 'empresa.hero', campos: ['eyebrow'] },
+  { entrada: 'servicios.index.hero', campos: ['eyebrow'] },
+  { entrada: 'proyectos.index.hero', campos: ['eyebrow'] },
+  { entrada: 'clientes.hero', campos: ['eyebrow'] },
+  { entrada: 'page.galeria', campos: ['eyebrow'] },
+  // CTASection no tiene texto sobre el título.
+  { entrada: 'home.cta', campos: ['eyebrow'] },
+  // Títulos quitados por petición expresa del dueño (ver clientes.astro y
+  // ClientsStrip.astro): si siguen en el panel, invitan a escribirlos.
+  { entrada: 'clients.strip', campos: ['title'] },
+  { entrada: 'clientes.sectores', campos: ['title'] },
+  // Nadie los lee.
+  { entrada: 'contact.form', campos: ['fromName'] },
+  { entrada: 'contact.info', campos: ['note'] },
+  { entrada: 'contacto.sections', campos: ['infoTitle'] },
+  // /empresa pinta tres tarjetas.
+  { entrada: 'empresa.metricas', campos: ['card4Label', 'card4Value', 'card4Desc'] },
+  // La página de calidad no existe (A2-002) y la cabecera usa el logo.
+  {
+    entrada: 'layout.header',
+    campos: ['navCalidad', 'hrefCalidad', 'wordmarkPrimary', 'wordmarkSub'],
+  },
+  // Ninguna página los muestra.
+  {
+    entrada: 'site.company',
+    campos: [
+      'casillaPostal',
+      'fundacion',
+      'chileDesde',
+      'descripcionLarga',
+      'especialidad',
+      'modalidad',
+    ],
+  },
+  // Restos de cuando las galerías eran una lista: hoy son gallery1..3.
+  { prefijo: 'project-gallery.', campos: ['images'] },
+  { prefijo: 'service-gallery.', campos: ['images'] },
+  // Logos de clientes que ya no están en la lista (o duplicados de uno que
+  // sí está con otro nombre): ninguna página los pide.
+  {
+    entrada: 'clientes.logos',
+    campos: [
+      'logo-dragado',
+      'logo-engie',
+      'logo-fcc',
+      'logo-gas-natural-fenosa',
+      'logo-mop-doh',
+      'logo-naturener',
+      'logo-navarro-sic',
+      'logo-norvento',
+      'logo-plenium-partners',
+      'logo-viesgo',
+    ],
+  },
+];
+
+/** `clientes.logos.logo-<nombre-en-minúsculas-con-guiones>`, como lo pide cliente-logos.ts. */
+export function esLogoDeCliente(entryId: string, key: string): boolean {
+  return entryId === 'clientes.logos' && /^logo-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(key);
+}
+
+/**
+ * Campos que no existen hasta que alguien los usa, y que por eso se crean al
+ * guardarlos: el logo de un cliente recién añadido a la lista y el icono propio
+ * de un servicio (sus fichas vienen de un .md que no lo declara). Devuelve el
+ * tipo con que se crea, o null si esa clave inexistente es un error.
+ */
+export function campoQueSeCreaAlGuardar(
+  entry: Pick<CmsEntry, 'id' | 'kind'>,
+  key: string
+): 'image' | null {
+  if (esLogoDeCliente(entry.id, key)) return 'image';
+  if (entry.kind === 'servicio' && key === 'iconoPropio') return 'image';
+  return null;
+}
 
 export class ContentService {
   /**
@@ -162,6 +254,35 @@ export class ContentService {
       retiradas.push({ entry });
     }
     return retiradas;
+  }
+
+  /**
+   * Quita de sus fichas los campos de `CAMPOS_RETIRADOS`. Cada ficha tocada
+   * sube de versión y guarda revisión, así que «Revisiones» recupera la
+   * anterior; además se devuelve cada campo quitado para la auditoría.
+   * Idempotente.
+   */
+  retireObsoleteFields(): Array<{ entryId: string; key: string; field: CmsField }> {
+    const now = new Date().toISOString();
+    const retirados: Array<{ entryId: string; key: string; field: CmsField }> = [];
+    // Las familias por slug (galerías) son todas de tipo `settings`.
+    const ajustes = this.contentRepository.listEntries('settings', 10_000).entries.map((e) => e.id);
+
+    for (const regla of CAMPOS_RETIRADOS) {
+      const afectadas = regla.entrada
+        ? [regla.entrada]
+        : ajustes.filter((id) => regla.prefijo && id.startsWith(regla.prefijo));
+      for (const id of afectadas) {
+        const entry = this.contentRepository.findEntry(id);
+        if (!entry || entry.kind === 'servicio' || entry.kind === 'proyecto') continue;
+        const quitar = regla.campos.filter((key) => entry.fields[key] !== undefined);
+        if (quitar.length === 0) continue;
+        const quedan = Object.values(entry.fields).filter((f) => !quitar.includes(f.key));
+        this.contentRepository.replaceEntryFields(id, quedan, now);
+        for (const key of quitar) retirados.push({ entryId: id, key, field: entry.fields[key] });
+      }
+    }
+    return retirados;
   }
 
   createEntry(input: {
@@ -323,6 +444,20 @@ export class ContentService {
     mediaId?: string,
     expectedVersion?: number
   ) {
+    // El logo de un cliente recién añadido o el icono propio de un servicio no
+    // tienen campo todavía (ver campoQueSeCreaAlGuardar). Cualquier otra clave
+    // inexistente sigue siendo un error.
+    const entry = this.contentRepository.findEntry(entryId);
+    const tipoNuevo = entry && !entry.fields[key] ? campoQueSeCreaAlGuardar(entry, key) : null;
+    if (tipoNuevo) {
+      if (typeof value !== 'string')
+        throw new Error(`El campo "${key}" de tipo "${tipoNuevo}" debe ser texto`);
+      this.contentRepository.insertMissingFields(
+        entryId,
+        [{ key, type: tipoNuevo, value: '' }],
+        new Date().toISOString()
+      );
+    }
     return this.contentRepository.updateField(
       entryId,
       key,

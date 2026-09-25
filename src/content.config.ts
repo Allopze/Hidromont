@@ -44,6 +44,9 @@ const servicios = defineCollection({
       resumen: z.string(),
       // A-7: endurecido de z.string() al enum real, ahora que hay lista.
       icono: z.enum(ICONO_SERVICIO),
+      // Un icono subido desde el CMS (ruta de la biblioteca). Si está, se usa en
+      // lugar del de la lista; vacío o ausente, el de `icono`.
+      iconoPropio: z.string().optional(),
       tipos: z.array(z.string()).optional(),
       aplicaciones: z.array(z.string()).optional(),
       normas: z.array(z.string()).optional(),

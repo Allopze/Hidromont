@@ -49,12 +49,48 @@ const {
 } = Astro.props;
 
 const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg:py-24';
+import { getCmsImageObjectPosition, getCmsText, getCmsValue } from '../../data/cms';
+
+// El video de la cabecera sale del CMS (campo `video` de la ficha de imagen),
+// con su encuadre; vacío, se ve la foto. `videoSrc` queda como respaldo del
+// llamador. Donde la ficha tiene el campo, la foto ofrece «Poner un video».
+const admiteVideo =
+  Boolean(cmsImageEntry) && getCmsValue(cmsImageEntry!, 'video', undefined) !== undefined;
+const videoCms = admiteVideo ? getCmsText(cmsImageEntry!, 'video', '') : '';
+const videoFinal = videoCms || videoSrc;
+const videoDescripcion =
+  (admiteVideo && getCmsText(cmsImageEntry!, 'videoAlt', '')) || videoAlt || imageAlt;
+const videoPosicion = admiteVideo ? getCmsImageObjectPosition(cmsImageEntry, 'video') : undefined;
+const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
+const marcasVideo =
+  cmsEditingEnabled && admiteVideo
+    ? {
+        'data-cms-entry': cmsImageEntry,
+        'data-cms-field': 'video',
+        'data-cms-alt-field': 'videoAlt',
+        'data-cms-type': 'video',
+        // La foto que queda de respaldo, para ofrecer cambiarla desde el video.
+        'data-cms-poster-field': 'image',
+      }
+    : {};
+const marcasRespaldo =
+  cmsEditingEnabled && admiteVideo
+    ? {
+        'data-cms-entry': cmsImageEntry,
+        'data-cms-field': 'image',
+        'data-cms-alt-field': 'imageAlt',
+        'data-cms-type': 'image',
+      }
+    : {};
+// Botón del video (Textos del sitio → Textos para lectores de pantalla).
+const videoPausar = getCmsText('site.accesibilidad', 'videoPausar', 'Pausar video');
+const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Reproducir video');
 ---
 
 <section class="relative bg-background-strong text-white overflow-hidden">
   {/* ── Cinematic layout: text (45%) + full-bleed image (55%) ── */}
   {
-    (imageSrc || videoSrc) && (
+    (imageSrc || videoFinal) && (
       <div
         class="relative flex flex-col lg:flex-row lg:items-stretch"
         style="min-height: clamp(380px, 50vw, 580px);"
@@ -152,18 +188,20 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
             style={imagePresentation === 'contained' ? undefined : 'top: -6%; height: 112%;'}
             data-parallax={imagePresentation === 'contained' ? undefined : '0.04'}
           >
-            {videoSrc ? (
+            {videoFinal ? (
               <>
                 <video
-                  src={videoSrc}
+                  src={videoFinal}
                   poster={imageSrc}
                   autoplay
                   muted
                   loop
                   playsinline
                   preload="metadata"
-                  aria-label={videoAlt || imageAlt}
+                  aria-label={videoDescripcion}
+                  style={videoPosicion ? `object-position:${videoPosicion}` : undefined}
                   data-hero-video
+                  {...marcasVideo}
                   class={
                     imagePresentation === 'contained'
                       ? 'max-w-full max-h-full object-contain'
@@ -177,6 +215,7 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
                     width={imageWidth}
                     height={imageHeight}
                     data-hero-video-poster
+                    {...marcasRespaldo}
                     class={
                       imagePresentation === 'contained'
                         ? 'max-w-full max-h-full object-contain'
@@ -207,16 +246,19 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
                     ? `max-width:${imageWidth}px;max-height:${imageHeight}px`
                     : undefined
                 }
+                data-cms-video-field={admiteVideo ? 'video' : undefined}
               />
             )}
           </div>
 
-          {videoSrc && (
+          {videoFinal && (
             <button
               type="button"
               class="absolute bottom-4 right-4 z-20 inline-flex min-h-[44px] items-center gap-2 border border-white/40 bg-background-strong/90 px-3 text-sm font-semibold text-white transition-colors hover:bg-background-strong focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-white"
               data-hero-video-control
-              aria-label="Pausar video"
+              data-label-pausar={videoPausar}
+              data-label-reproducir={videoReproducir}
+              aria-label={videoPausar}
             >
               <svg
                 data-video-pause-icon
@@ -236,7 +278,7 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
               >
                 <path d="M4 2.8v10.4c0 .6.7 1 1.2.7l8-5.2a.8.8 0 0 0 0-1.4l-8-5.2C4.7 1.8 4 2.2 4 2.8Z" />
               </svg>
-              <span data-video-control-label>Pausar video</span>
+              <span data-video-control-label>{videoPausar}</span>
             </button>
           )}
 
@@ -253,7 +295,7 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
 
   {/* ── Text-only layout (no image) ── */}
   {
-    !imageSrc && !videoSrc && (
+    !imageSrc && !videoFinal && (
       <Container size="2xl">
         <div class={`relative z-10 ${textOnlyPadding} max-w-3xl`}>
           {/* Grid motif */}
@@ -369,7 +411,9 @@ const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg
     if (!video || !label || !pauseIcon || !playIcon) return;
 
     const setPaused = (paused: boolean) => {
-      const nextLabel = paused ? 'Reproducir video' : 'Pausar video';
+      const nextLabel = paused
+        ? button.dataset.labelReproducir || 'Reproducir video'
+        : button.dataset.labelPausar || 'Pausar video';
       label.textContent = nextLabel;
       button.setAttribute('aria-label', nextLabel);
       pauseIcon.classList.toggle('hidden', paused);

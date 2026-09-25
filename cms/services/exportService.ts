@@ -343,6 +343,15 @@ export class ExportService {
               fields: Object.fromEntries(
                 await Promise.all(
                   Object.entries(entry.fields).map(async ([key, field]) => {
+                    // Un video no tiene derivados (se sirve tal cual), pero sí
+                    // encuadre: se recorta igual que una foto en la cabecera.
+                    if (field.type === 'video') {
+                      const focal = this.enfoqueDe(field.value);
+                      return [
+                        key,
+                        { type: field.type, value: field.value, ...(focal ? { focal } : {}) },
+                      ] as const;
+                    }
                     if (field.type !== 'image') {
                       return [key, { type: field.type, value: field.value }] as const;
                     }

@@ -18,7 +18,12 @@ export class MediaController extends BaseController {
     try {
       const query = listMediaQuerySchema.parse(request.query);
       const offset = (query.page - 1) * query.limit;
-      const { items, total } = this.mediaService.listMedia(query.limit, offset, query.q);
+      const { items, total } = this.mediaService.listMedia(
+        query.limit,
+        offset,
+        query.q,
+        query.tipo
+      );
       this.handleSuccess(reply, {
         items,
         total,

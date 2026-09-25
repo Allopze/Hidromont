@@ -1,5 +1,5 @@
 export type FieldType =
-  'text' | 'textarea' | 'richtext' | 'image' | 'link' | 'number' | 'list' | 'object';
+  'text' | 'textarea' | 'richtext' | 'image' | 'video' | 'link' | 'number' | 'list' | 'object';
 
 export interface CmsField {
   key: string;

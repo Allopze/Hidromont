@@ -1,6 +1,7 @@
 ---
 import { company } from '../../data/company';
 import EditableText from '../cms/EditableText.astro';
+import { getCmsText } from '../../data/cms';
 
 interface Props {
   theme?: 'light' | 'dark';
@@ -24,6 +25,18 @@ const {
 } = Astro.props;
 
 const destino = 'Hidromont Chile S.A., Avenida Las Industrias 10950, Los Ángeles, Chile';
+// Textos del recuadro (Textos del sitio → Recuadro de ubicación).
+const texto = {
+  titulo: getCmsText('contact.ubicacion', 'ubicacionTitulo', 'Hidromont Chile'),
+  mapaTitulo: getCmsText('contact.ubicacion', 'mapaTitulo', 'Ubicación de Hidromont Chile'),
+  mapaLugar: getCmsText('contact.ubicacion', 'mapaLugar', 'Los Ángeles, Región del Biobío'),
+  mapaEnlace: getCmsText('contact.ubicacion', 'mapaEnlace', 'Abrir en Google Maps'),
+  mapaDescripcion: getCmsText(
+    'contact.ubicacion',
+    'mapaDescripcion',
+    'Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío'
+  ),
+};
 const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
 // Forma sin clave del embed de Google Maps: no requiere API key ni facturación.
 // El dominio ya está autorizado en el CSP de public/_headers (frame-src).
@@ -57,7 +70,7 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
       showEmbeddedMap && (
         <iframe
           src={embedUrl}
-          title="Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío"
+          title={texto.mapaDescripcion}
           class:list={[
             'absolute inset-0 hidden h-full w-full border-0 md:block',
             theme === 'dark' && 'map-dark',
@@ -85,10 +98,22 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
         <path d="M19 10.2c0 5.2-7 11-7 11s-7-5.8-7-11a7 7 0 1 1 14 0Z"></path>
         <circle cx="12" cy="10" r="2.2"></circle>
       </svg>
-      <p class="font-heading text-base font-bold">Ubicación de Hidromont Chile</p>
-      <p class:list={['text-sm', theme === 'dark' ? 'text-white/75' : 'text-text-muted']}>
-        Los Ángeles, Región del Biobío
-      </p>
+      <EditableText
+        as="p"
+        entry="contact.ubicacion"
+        field="mapaTitulo"
+        class="font-heading text-base font-bold"
+      >
+        {texto.mapaTitulo}
+      </EditableText>
+      <EditableText
+        as="p"
+        entry="contact.ubicacion"
+        field="mapaLugar"
+        class={`text-sm ${theme === 'dark' ? 'text-white/75' : 'text-text-muted'}`}
+      >
+        {texto.mapaLugar}
+      </EditableText>
       {
         !showEmbeddedMap && (
           <a
@@ -102,7 +127,9 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
                 : 'border-primary text-primary-dark hover:bg-white',
             ]}
           >
-            Abrir en Google Maps
+            <EditableText entry="contact.ubicacion" field="mapaEnlace">
+              {texto.mapaEnlace}
+            </EditableText>
           </a>
         )
       }
@@ -117,7 +144,7 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
         theme === 'dark' ? 'text-white' : 'text-primary-dark',
       ]}
     >
-      Hidromont Chile
+      <EditableText entry="contact.ubicacion" field="ubicacionTitulo">{texto.titulo}</EditableText>
     </h2>
     <p
       class:list={[
@@ -141,7 +168,9 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
               : 'border-primary text-primary-dark hover:bg-white',
           ]}
         >
-          Abrir en Google Maps
+          <EditableText entry="contact.ubicacion" field="mapaEnlace">
+            {texto.mapaEnlace}
+          </EditableText>
         </a>
       )
     }

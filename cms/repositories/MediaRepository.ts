@@ -66,49 +66,46 @@ export class MediaRepository {
     return this.create(input);
   }
 
+  /**
+   * @param tipo `imagen` o `video`: el selector de un campo de imagen no debe
+   *   ofrecer videos, ni al revés. Sin él, todo (la pestaña Biblioteca).
+   */
   list(
     limit = 100,
     offset = 0,
-    q?: string
+    q?: string,
+    tipo?: 'imagen' | 'video'
   ): { items: (MediaAsset & { usageCount: number })[]; total: number } {
-    const searchPattern = q ? `%${q}%` : null;
+    const condiciones: string[] = [];
+    const parametros: unknown[] = [];
+    if (q) {
+      const patron = `%${q}%`;
+      condiciones.push('(m.name LIKE ? OR m.alt LIKE ? OR m.path LIKE ?)');
+      parametros.push(patron, patron, patron);
+    }
+    if (tipo) {
+      condiciones.push('m.mime LIKE ?');
+      parametros.push(tipo === 'video' ? 'video/%' : 'image/%');
+    }
+    const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
 
-    const total: number = searchPattern
-      ? (
-          this.db
-            .prepare(
-              `SELECT COUNT(*) as count FROM media_assets
-               WHERE name LIKE ? OR alt LIKE ? OR path LIKE ?`
-            )
-            .get(searchPattern, searchPattern, searchPattern) as { count: number }
-        ).count
-      : (this.db.prepare('SELECT COUNT(*) as count FROM media_assets').get() as { count: number })
-          .count;
+    const total = (
+      this.db
+        .prepare(`SELECT COUNT(*) as count FROM media_assets m ${where}`)
+        .get(...parametros) as { count: number }
+    ).count;
 
-    const rows = searchPattern
-      ? (this.db
-          .prepare(
-            `SELECT m.*, COUNT(u.media_id) AS usage_count
-             FROM media_assets m
-             LEFT JOIN media_usages u ON m.id = u.media_id
-             WHERE m.name LIKE ? OR m.alt LIKE ? OR m.path LIKE ?
-             GROUP BY m.id
-             ORDER BY m.created_at DESC
-             LIMIT ? OFFSET ?`
-          )
-          .all(searchPattern, searchPattern, searchPattern, limit, offset) as (MediaRow & {
-          usage_count: number;
-        })[])
-      : (this.db
-          .prepare(
-            `SELECT m.*, COUNT(u.media_id) AS usage_count
-             FROM media_assets m
-             LEFT JOIN media_usages u ON m.id = u.media_id
-             GROUP BY m.id
-             ORDER BY m.created_at DESC
-             LIMIT ? OFFSET ?`
-          )
-          .all(limit, offset) as (MediaRow & { usage_count: number })[]);
+    const rows = this.db
+      .prepare(
+        `SELECT m.*, COUNT(u.media_id) AS usage_count
+         FROM media_assets m
+         LEFT JOIN media_usages u ON m.id = u.media_id
+         ${where}
+         GROUP BY m.id
+         ORDER BY m.created_at DESC
+         LIMIT ? OFFSET ?`
+      )
+      .all(...parametros, limit, offset) as (MediaRow & { usage_count: number })[];
 
     return {
       items: rows.map((row) => ({ ...this.fromRow(row), usageCount: row.usage_count })),

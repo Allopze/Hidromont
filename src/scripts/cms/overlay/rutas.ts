@@ -34,3 +34,30 @@ export function fichaDeRuta(pathname: string): FichaDeRuta | null {
   }
   return null;
 }
+
+/**
+ * Páginas índice: la ficha que guarda su título y descripción para buscadores.
+ * Esos dos textos no se ven en la página, así que no hay nada que pulsar; la
+ * barra ofrece abrirlos directamente, como «Editar este servicio».
+ */
+const PAGINAS: Record<string, string> = {
+  '': 'home.hero',
+  '/empresa': 'empresa.hero',
+  '/servicios': 'servicios.index.hero',
+  '/proyectos': 'proyectos.index.hero',
+  '/clientes': 'clientes.hero',
+  '/galeria': 'page.galeria',
+  '/contacto': 'contacto.sections',
+};
+
+export function fichaDePagina(pathname: string): { entryId: string; etiqueta: string } | null {
+  let ruta: string;
+  try {
+    ruta = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  ruta = ruta.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+  const entryId = PAGINAS[ruta];
+  return entryId ? { entryId, etiqueta: 'Datos para buscadores' } : null;
+}

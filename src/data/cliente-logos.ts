@@ -1,4 +1,4 @@
-import { getCmsText } from './cms';
+import { getCmsText, getCmsValue } from './cms';
 
 /**
  * A3-003: fuente única de verdad para los logos de clientes.
@@ -16,7 +16,7 @@ import { getCmsText } from './cms';
  * (lowercase, sin acentos, separadores `-`). Esto preserva la editabilidad via el
  * overlay (`EditableImage field={`logo-${logoKey}`}`) sin duplicar datos.
  */
-function logoKeyFor(nombre: string): string {
+export function logoKeyFor(nombre: string): string {
   return nombre
     .toLowerCase()
     .normalize('NFD')
@@ -34,4 +34,28 @@ function logoKeyFor(nombre: string): string {
  */
 export function getClienteLogoByNombre(nombre: string, fallback = ''): string {
   return getCmsText('clientes.logos', `logo-${logoKeyFor(nombre)}`, fallback);
+}
+
+export interface ClienteItem {
+  nombre: string;
+  sector?: string;
+  logo?: string;
+}
+
+/**
+ * Los clientes que pinta el sitio, en el orden de la lista del CMS
+ * (`clientes.lista.nombres`, editable desde /clientes).
+ *
+ * Antes la lista solo vivía en `src/content/clientes/clientes.json`: añadir o
+ * quitar un cliente exigía tocar el código. El archivo queda como respaldo
+ * —si el CMS no tiene la lista, se usa tal cual— y como fuente del logo por
+ * defecto de cada nombre que ya estaba en él.
+ */
+export function listaDeClientes(coleccion: ClienteItem[]): ClienteItem[] {
+  const nombres = getCmsValue<unknown>('clientes.lista', 'nombres', undefined);
+  if (!Array.isArray(nombres)) return coleccion;
+  const porNombre = new Map(coleccion.map((c) => [c.nombre, c]));
+  return nombres
+    .filter((n): n is string => typeof n === 'string' && n.trim() !== '')
+    .map((n) => porNombre.get(n.trim()) ?? { nombre: n.trim() });
 }

@@ -1,10 +1,54 @@
 import { getCmsText } from './cms';
 
+export interface NavChild {
+  label: string;
+  href: string;
+  cmsField: string;
+  /** De qué ficha sale el rótulo. Por defecto, `layout.header`. */
+  cmsEntry?: string;
+}
+
 export interface NavItem {
   label: string;
   href: string;
   cmsField: string;
-  children?: { label: string; href: string; cmsField: string }[];
+  children?: NavChild[];
+}
+
+/**
+ * Los servicios que existen, leídos de sus fichas al compilar. El submenú era
+ * una lista fija: un servicio creado desde el panel no aparecía en el menú ni
+ * en el pie, y uno borrado dejaba un enlace a una página inexistente.
+ */
+const fichasDeServicio = import.meta.glob<{ titulo?: string }>('../content/servicios/*.md', {
+  eager: true,
+  import: 'frontmatter',
+});
+const serviciosExistentes = new Map(
+  Object.entries(fichasDeServicio).map(([ruta, frontmatter]) => [
+    ruta.replace(/^.*\/([^/]+)\.md$/, '$1'),
+    frontmatter?.titulo ?? '',
+  ])
+);
+
+/**
+ * El submenú de Servicios: los de siempre (con su rótulo corto del CMS) que
+ * sigan existiendo, más los nuevos con el título de su ficha, que es también
+ * lo que se edita al pulsarlos. En orden alfabético, como estaba.
+ */
+function submenuDeServicios(fijos: NavChild[]): NavChild[] {
+  const slugDe = (href: string) => href.replace(/^\/servicios\//, '').replace(/\/$/, '');
+  const conocidos = new Set(fijos.map((c) => slugDe(c.href)));
+  const vigentes = fijos.filter((c) => serviciosExistentes.has(slugDe(c.href)));
+  const nuevos: NavChild[] = [...serviciosExistentes]
+    .filter(([slug, titulo]) => !conocidos.has(slug) && titulo)
+    .map(([slug, titulo]) => ({
+      label: titulo,
+      href: `/servicios/${slug}`,
+      cmsField: 'titulo',
+      cmsEntry: `servicios.${slug}`,
+    }));
+  return [...vigentes, ...nuevos].sort((a, b) => a.label.localeCompare(b.label, 'es'));
 }
 
 /**
@@ -48,7 +92,7 @@ export const navItems: NavItem[] = [
     label: getCmsText('layout.header', 'navServicios', 'Servicios'),
     href: safeHref('hrefServicios', '/servicios'),
     cmsField: 'navServicios',
-    children: [
+    children: submenuDeServicios([
       {
         label: getCmsText('layout.header', 'navServiciosCompuertas', 'Compuertas'),
         href: safeHref('hrefServiciosCompuertas', '/servicios/compuertas'),
@@ -89,7 +133,7 @@ export const navItems: NavItem[] = [
         href: safeHref('hrefServiciosValvulas', '/servicios/valvulas'),
         cmsField: 'navServiciosValvulas',
       },
-    ],
+    ]),
   },
   {
     label: getCmsText('layout.header', 'navProyectos', 'Proyectos'),

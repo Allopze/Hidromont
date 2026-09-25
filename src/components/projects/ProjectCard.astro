@@ -10,6 +10,7 @@ import { projectImages } from '../../data/project-images';
 import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
 import { formatDiameters } from '../../utils/format';
+import { getCmsText } from '../../data/cms';
 
 interface Props {
   proyecto: CollectionEntry<'proyectos'>;
@@ -24,6 +25,10 @@ const slug = entrySlug(proyecto.id);
 const photo = projectImages[slug];
 // La misma ficha y la misma foto que edita la página del proyecto.
 const cmsEntry = `proyectos.${slug}`;
+// Va dentro del enlace estirado: marcarlo lo convertiría en el campo que se
+// edita al pulsar cualquier punto de la tarjeta. Se cambia desde el panel
+// (Páginas → Textos de las tarjetas).
+const verDetalle = getCmsText('plantilla.tarjetas', 'verDetalle', 'Ver detalle');
 ---
 
 {
@@ -63,7 +68,9 @@ const cmsEntry = `proyectos.${slug}`;
     isDestacado && !photo && (
       <div class="bg-primary-light px-5 py-3 border-b border-border">
         <Badge variant="accent" class="text-[10px]">
-          Caso Destacado
+          <EditableText entry="plantilla.tarjetas" field="casoDestacado">
+            {getCmsText('plantilla.tarjetas', 'casoDestacado', 'Caso Destacado')}
+          </EditableText>
         </Badge>
       </div>
     )
@@ -71,7 +78,11 @@ const cmsEntry = `proyectos.${slug}`;
 
   <div class="p-6 flex flex-col flex-1 gap-4">
     <div class="flex items-center justify-between gap-2 flex-wrap">
-      <Badge variant="muted">{categoriaLabels[categoria] || categoria}</Badge>
+      <Badge variant="muted">
+        <EditableText entry="proyectos.categorias" field={categoria}>
+          {categoriaLabels[categoria] || categoria}
+        </EditableText>
+      </Badge>
       {
         cliente && (
           <EditableText
@@ -168,11 +179,11 @@ const cmsEntry = `proyectos.${slug}`;
         <Button
           href={`/proyectos/${slug}`}
           variant="link"
-          ariaLabel={`Ver detalle: ${nombre}`}
+          ariaLabel={`${verDetalle}: ${nombre}`}
           class="self-start mt-auto before:content-[''] before:absolute before:inset-0 before:rounded-none"
         >
           <span class="relative" aria-hidden="true">
-            Ver detalle
+            {verDetalle}
           </span>
           <ArrowIcon class="relative transition-transform group-hover:translate-x-0.5" />
         </Button>

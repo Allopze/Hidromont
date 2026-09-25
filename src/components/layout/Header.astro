@@ -155,7 +155,10 @@ function isCurrent(href: string) {
                       aria-current={isCurrent(child.href) ? 'page' : undefined}
                       class={`flex min-h-11 items-center px-4 py-2.5 text-sm font-body no-underline transition-colors duration-fast hover:bg-primary-light hover:text-primary-dark first:rounded-none last:rounded-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text'}`}
                     >
-                      <EditableText entry="layout.header" field={child.cmsField}>
+                      <EditableText
+                        entry={child.cmsEntry ?? 'layout.header'}
+                        field={child.cmsField}
+                      >
                         {child.label}
                       </EditableText>
                     </a>
@@ -264,7 +267,7 @@ function isCurrent(href: string) {
                     aria-current={isCurrent(child.href) ? 'page' : undefined}
                     class={`flex min-h-11 items-center px-3 py-2 text-sm font-body no-underline rounded-none transition-colors hover:bg-primary-light hover:text-primary-dark focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive(child.href) ? 'text-primary font-semibold' : 'text-text-muted'}`}
                   >
-                    <EditableText entry="layout.header" field={child.cmsField}>
+                    <EditableText entry={child.cmsEntry ?? 'layout.header'} field={child.cmsField}>
                       {child.label}
                     </EditableText>
                   </a>

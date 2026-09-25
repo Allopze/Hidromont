@@ -2,32 +2,79 @@
 import PageLayout from '../layouts/PageLayout.astro';
 import Container from '../components/ui/Container.astro';
 import Button from '../components/ui/Button.astro';
+import EditableText from '../components/cms/EditableText.astro';
+import { getCmsText } from '../data/cms';
+import { navItems } from '../data/nav';
+
+// Todo el texto de la página sale de `page.404` (Páginas → Página no
+// encontrada); los accesos a secciones usan las mismas entradas del menú.
+const delMenu = (campo: string) => navItems.find((item) => item.cmsField === campo);
+const secciones = ['navServicios', 'navProyectos', 'navGaleria'].flatMap((campo) => {
+  const item = delMenu(campo);
+  return item ? [{ campo, href: item.href, label: item.label }] : [];
+});
 ---
 
-<PageLayout title="Página no encontrada" noindex>
+<PageLayout title={getCmsText('page.404', 'seoTitle', 'Página no encontrada')} noindex>
   <section class="bg-background py-24 md:py-32">
     <Container size="sm">
       <div class="text-center">
-        <p class="font-mono font-bold text-primary text-7xl mb-4">404</p>
-        <h1
+        <EditableText
+          as="p"
+          entry="page.404"
+          field="codigo"
+          class="font-mono font-bold text-primary text-7xl mb-4"
+        >
+          {getCmsText('page.404', 'codigo', '404')}
+        </EditableText>
+        <EditableText
+          as="h1"
+          entry="page.404"
+          field="titulo"
           class="font-heading font-bold text-primary-dark mb-4"
           style="font-size: var(--font-size-h2);"
         >
-          Página no encontrada
-        </h1>
-        <p class="text-text-muted mb-8">
-          La página que busca no existe o fue movida. Pruebe alguno de estos accesos.
-        </p>
+          {getCmsText('page.404', 'titulo', 'Página no encontrada')}
+        </EditableText>
+        <EditableText
+          as="p"
+          entry="page.404"
+          field="texto"
+          type="textarea"
+          class="text-text-muted mb-8"
+        >
+          {
+            getCmsText(
+              'page.404',
+              'texto',
+              'La página que busca no existe o fue movida. Pruebe alguno de estos accesos.'
+            )
+          }
+        </EditableText>
         {
           /* UIUX-L8 fix: only Inicio/Contactar left a lost visitor with no way
              back into the site's main sections. */
         }
         <div class="flex flex-wrap justify-center gap-4">
-          <Button href="/" variant="primary">Ir al inicio</Button>
-          <Button href="/servicios" variant="secondary">Servicios</Button>
-          <Button href="/proyectos" variant="secondary">Proyectos</Button>
-          <Button href="/galeria" variant="secondary">Galería</Button>
-          <Button href="/contacto" variant="secondary">Contactar</Button>
+          <Button href="/" variant="primary">
+            <EditableText entry="page.404" field="botonInicio">
+              {getCmsText('page.404', 'botonInicio', 'Ir al inicio')}
+            </EditableText>
+          </Button>
+          {
+            secciones.map((s) => (
+              <Button href={s.href} variant="secondary">
+                <EditableText entry="layout.header" field={s.campo}>
+                  {s.label}
+                </EditableText>
+              </Button>
+            ))
+          }
+          <Button href="/contacto" variant="secondary">
+            <EditableText entry="page.404" field="botonContactar">
+              {getCmsText('page.404', 'botonContactar', 'Contactar')}
+            </EditableText>
+          </Button>
         </div>
       </div>
     </Container>

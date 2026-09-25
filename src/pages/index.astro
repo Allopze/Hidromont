@@ -164,6 +164,7 @@ const propuestaValor = [1, 2, 3].map((n) => ({
               description={s.data.resumen}
               href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
+              iconoPropio={s.data.iconoPropio}
               compact
               cmsEntry={`servicios.${entrySlug(s.id)}`}
             />
@@ -294,12 +295,24 @@ const propuestaValor = [1, 2, 3].map((n) => ({
             >
               {getCmsText('home.projects', 'title', 'Proyectos destacados')}
             </EditableText>
-            <p class="text-text-muted mb-6" style="font-size: var(--font-size-lead);">
-              Estamos actualizando nuestro catálogo de proyectos. Pronto podrá consultar nuestra
-              experiencia completa en esta sección.
-            </p>
+            <EditableText
+              as="p"
+              entry="home.projects"
+              field="sinProyectosTexto"
+              type="textarea"
+              class="text-text-muted mb-6"
+              style="font-size: var(--font-size-lead);"
+            >
+              {getCmsText(
+                'home.projects',
+                'sinProyectosTexto',
+                'Estamos actualizando nuestro catálogo de proyectos. Pronto podrá consultar nuestra experiencia completa en esta sección.'
+              )}
+            </EditableText>
             <Button href="/contacto" variant="secondary">
-              Consultar experiencia técnica
+              <EditableText entry="home.projects" field="sinProyectosBoton">
+                {getCmsText('home.projects', 'sinProyectosBoton', 'Consultar experiencia técnica')}
+              </EditableText>
             </Button>
           </div>
         </Container>

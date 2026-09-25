@@ -25,10 +25,15 @@ import {
   confirmarEdicion,
   empezarEdicion,
   escribirFormato,
+  escribirIcono,
   escribirLista,
   escribirTexto,
   mostrarImagen,
+  mostrarVideo,
 } from './edicion';
+import { ICONO_SERVICIO, ICONO_SERVICIO_LABEL } from '../../../data/content-vocabulary';
+import { ICONOS_SERVICIO_SVG } from '../../../data/iconos-servicio';
+import { fieldLabel } from '../../../data/field-labels';
 import { sePuedeVaciar } from './secciones';
 import { prepararEncuadre } from './encuadre-ui';
 
@@ -127,12 +132,111 @@ function fieldEditor(element, entry, field) {
           : ''
       }
       <input name="mediaId" type="hidden" value="" />
+      ${
+        // Una cabecera que puede llevar video: se ofrece cambiar la foto por
+        // uno. La foto queda de respaldo (se ve mientras carga el video).
+        element.dataset.cmsVideoField
+          ? `<div class="hm-cms-field-group">
+        <button type="button" class="secondary small" data-action="poner-video">${icon('upload')}Poner un video en lugar de la foto</button>
+        <p class="hm-cms-hint">La foto queda de respaldo: se ve mientras carga el video.</p>
+      </div>`
+          : ''
+      }
       <details class="hm-cms-advanced">
         <summary>Opciones avanzadas</summary>
         <label>Ruta del archivo
           <input name="value" value="${escapeHtml(String(current))}" />
         </label>
       </details>
+    `;
+  }
+
+  if (cmsType === 'video') {
+    const hayVideo = Boolean(current);
+    const src = hayVideo ? ` src="${escapeHtml(String(current))}"` : '';
+    // Lo mismo que el editor de foto: ver el video recortado como en la
+    // página y arrastrarlo para encuadrarlo, cambiarlo, describirlo.
+    return `
+      <div class="hm-cms-image-preview">
+        <div class="hm-cms-encuadre-marco" data-encuadre-marco aria-label="Encuadre del video" aria-describedby="hm-cms-encuadre-ayuda">
+          <video${src} data-video-preview muted loop autoplay playsinline draggable="false"></video>
+        </div>
+        <p class="hm-cms-hint" data-selected-media-label>${hayVideo ? 'Video actual' : 'Todavía no hay video: súbelo o elígelo de la biblioteca.'}</p>
+        <div class="hm-cms-encuadre-ayuda" data-encuadre-ayuda hidden>
+          <p class="hm-cms-hint" id="hm-cms-encuadre-ayuda">Arrastra el video para elegir qué parte se ve en este lugar del sitio.<span class="hm-cms-sr"> También con las flechas del teclado.</span></p>
+          <button type="button" class="ghost small" data-action="encuadre-centrar">Centrar</button>
+        </div>
+        <p class="hm-cms-hint" data-encuadre-bloqueado hidden>Este video no está en la biblioteca, así que su encuadre no se puede ajustar.</p>
+      </div>
+      <input name="focalX" type="hidden" value="" />
+      <input name="focalY" type="hidden" value="" />
+      ${dropzoneMarkup({ texto: hayVideo ? 'Subir otro video' : 'Subir un video', tipo: 'video' })}
+      <div class="hm-cms-field-group">
+        <label>Elegir de la biblioteca
+          <input name="mediaSearch" type="search" placeholder="Buscar videos por nombre" data-media-search />
+        </label>
+        <div data-media-grid class="hm-cms-media-grid">
+          <p class="hm-cms-hint">Cargando videos…</p>
+        </div>
+      </div>
+      ${
+        altField
+          ? `<label>Descripción del video
+        <input name="alt" value="${escapeHtml(String(altValue))}" aria-describedby="hm-cms-alt-hint" />
+      </label>
+      <p class="hm-cms-hint" id="hm-cms-alt-hint">La leen quienes no pueden verlo. Se reproduce sin sonido y en bucle.</p>`
+          : ''
+      }
+      <input name="mediaId" type="hidden" value="" />
+      ${
+        element.dataset.cmsPosterField
+          ? `<div class="hm-cms-field-group">
+        <button type="button" class="secondary small" data-action="editar-respaldo">${icon('image')}Cambiar la foto de respaldo</button>
+        <p class="hm-cms-hint">Se ve mientras carga el video y para quien prefiere menos movimiento.</p>
+      </div>`
+          : ''
+      }
+      ${
+        hayVideo
+          ? `<div class="hm-cms-edit-actions-danger">
+        <button type="button" class="ghost destructive small" data-action="quitar-video">${icon('trash')}Quitar el video y dejar la foto</button>
+      </div>`
+          : ''
+      }
+      <details class="hm-cms-advanced">
+        <summary>Opciones avanzadas</summary>
+        <label>Ruta del archivo
+          <input name="value" value="${escapeHtml(String(current))}" />
+        </label>
+      </details>
+    `;
+  }
+
+  if (cmsType === 'icono') {
+    const propio = String(current || '');
+    const deLaLista = String(entry.fields.icono?.value || element.dataset.cmsIcono || 'pipe');
+    // Primero los de la lista, que son los que casan con el resto del sitio;
+    // después, subir uno propio.
+    return `
+      <p class="hm-cms-label" id="hm-cms-iconos-titulo">Iconos del sitio</p>
+      <div class="hm-cms-iconos" role="radiogroup" aria-labelledby="hm-cms-iconos-titulo">
+        ${ICONO_SERVICIO.map((codigo) => {
+          const elegido = !propio && codigo === deLaLista;
+          const rotulo = ICONO_SERVICIO_LABEL[codigo] || codigo;
+          return `<button type="button" role="radio" aria-checked="${elegido}" class="hm-cms-icono" data-action="elegir-icono" data-icono="${escapeHtml(codigo)}" title="${escapeHtml(rotulo)}">
+            <span class="hm-cms-icono-dibujo" aria-hidden="true">${ICONOS_SERVICIO_SVG[codigo]}</span>
+            <span class="hm-cms-sr">${escapeHtml(rotulo)}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <p class="hm-cms-label">O un icono propio</p>
+      <div class="hm-cms-icono-propio" data-icono-propio ${propio ? '' : 'hidden'}>
+        <span class="icono-propio" ${propio ? `style="--icono: url('${escapeHtml(propio)}')"` : ''}></span>
+      </div>
+      ${dropzoneMarkup({ texto: propio ? 'Subir otro icono' : 'Subir un icono', tipo: 'icono' })}
+      <p class="hm-cms-hint">Se pinta del color del sitio, como los de la lista: sirve un dibujo de un solo color con fondo transparente.</p>
+      <input name="value" type="hidden" value="${escapeHtml(propio)}" />
+      <input name="icono" type="hidden" value="${escapeHtml(deLaLista)}" />
     `;
   }
 
@@ -203,9 +307,14 @@ export async function selectElement(element) {
   const entry = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
   state.selected = element;
   state.entry = entry;
-  const nombre = entry.fields[field]?.label || field;
-  const esImagen = element.dataset.cmsType === 'image';
-  setPanelTitle(esImagen ? 'Editar imagen' : 'Editar texto');
+  // El icono son dos campos (el de la lista y el propio): se nombra el conjunto.
+  // Un campo que todavía no existe no trae `label` del servidor.
+  const nombre =
+    element.dataset.cmsType === 'icono' ? 'Icono' : entry.fields[field]?.label || fieldLabel(field);
+  const tipo = element.dataset.cmsType || 'text';
+  const esMedio = tipo === 'image' || tipo === 'video';
+  const titulos = { image: 'Editar imagen', video: 'Editar video', icono: 'Cambiar icono' };
+  setPanelTitle(titulos[tipo] ?? 'Editar texto');
 
   // Guardar va en un pie fijo: en el editor de imagen quedaba debajo de la
   // biblioteca entera y había que desplazarse para encontrarlo. «Vaciar» se
@@ -213,7 +322,7 @@ export async function selectElement(element) {
   // compartir grupo con la que se pulsa siempre.
   openPanel(
     `
-    <form class="hm-cms-edit-form" data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
+    <form class="hm-cms-edit-form" data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}" data-tipo-medio="${tipo === 'video' ? 'video' : 'imagen'}">
       <p class="hm-cms-context">
         <span>${escapeHtml(entry.title || entryId)}</span>
         <span class="hm-cms-context-sep" aria-hidden="true">›</span>
@@ -253,7 +362,7 @@ export async function selectElement(element) {
   const form = panelBody.querySelector('form[data-edit]');
   if (form?.elements.alt) form.elements.alt.dataset.inicial = form.elements.alt.value;
   state.encuadre = null;
-  if (esImagen && form) {
+  if (esMedio && form) {
     loadMediaPicker();
     iniciarEncuadre(form, element, entry.fields[field]?.value ?? '');
   }
@@ -281,7 +390,7 @@ function iniciarEncuadre(form, element, valor) {
 }
 
 async function buscarMedioPorRuta(ruta) {
-  if (!/^\/[^?#]+\.(webp|jpe?g|png|avif)$/i.test(ruta)) return null;
+  if (!/^\/[^?#]+\.(webp|jpe?g|png|avif|mp4|webm)$/i.test(ruta)) return null;
   try {
     const nombre = ruta.split('/').pop();
     const data = await api(`/api/cms/media?${new URLSearchParams({ q: nombre, limit: '20' })}`);
@@ -313,9 +422,100 @@ function renderConflict(form, entryId, field, message) {
   );
 }
 
+/** Sube un archivo a la biblioteca y devuelve el asset. */
+async function subirArchivo(file, alt = '') {
+  const payload = new FormData();
+  payload.append('file', file);
+  payload.append('alt', alt);
+  const response = await fetch(`${apiBase}/api/cms/media`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'X-CSRF-Token': state.csrfToken },
+    body: payload,
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'No se pudo subir el archivo.');
+  return data;
+}
+
+async function patchCampo(entryId, key, body) {
+  return api(`/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * El icono de un servicio son dos campos: `icono`, uno de la lista, e
+ * `iconoPropio`, la ruta de uno subido, que manda si está. Elegir uno de la
+ * lista vacía el propio; subir uno lo pone.
+ */
+async function guardarIcono(form, element) {
+  const entryId = element.dataset.cmsEntry;
+  setEditStatus(form, 'saving', ESTADOS_DE_CAMPO.guardando);
+  const file = form.elements.file?.files?.[0];
+  let propio = form.elements.value.value;
+  const deLaLista = form.elements.icono.value;
+  if (file) {
+    const subido = await subirArchivo(file, `Icono de ${state.entry.title || 'servicio'}`);
+    propio = subido.path;
+    form.elements.value.value = propio;
+    form.elements.file.value = '';
+    form.elements.file.dispatchEvent(new Event('change', { bubbles: true }));
+    setGlobalState('unsaved');
+  }
+  let guardo = false;
+  if (propio !== (state.entry.fields.iconoPropio?.value ?? '')) {
+    state.entry = await patchCampo(entryId, 'iconoPropio', {
+      value: propio,
+      expectedVersion: state.entry.version,
+    });
+    guardo = true;
+  }
+  if (!propio && deLaLista !== (state.entry.fields.icono?.value ?? '')) {
+    state.entry = await patchCampo(entryId, 'icono', {
+      value: deLaLista,
+      expectedVersion: state.entry.version,
+    });
+    guardo = true;
+  }
+  escribirIcono(element, propio ? { url: propio } : { svg: ICONOS_SERVICIO_SVG[deLaLista] });
+  element.dataset.cmsIcono = deLaLista;
+  confirmarEdicion();
+  setFormDirty(false);
+  clearDraft(form);
+  if (!guardo) {
+    setEditStatus(form, 'idle', 'No hay cambios que guardar.');
+    return;
+  }
+  setGlobalState('unsaved');
+  setEditStatus(form, 'success', mensajeGuardado());
+}
+
+/**
+ * Quitar el video de una cabecera: la página vuelve a enseñar la foto que
+ * quedaba de respaldo, como la pintará el sitio al publicar.
+ */
+function quitarVideoDeLaPagina(video) {
+  const respaldo =
+    video.parentElement?.querySelector('img[data-hero-video-poster]') ??
+    (video.previousElementSibling instanceof HTMLImageElement
+      ? video.previousElementSibling
+      : null);
+  if (respaldo) {
+    respaldo.hidden = false;
+    respaldo.style.display = 'block';
+  }
+  video.pause?.();
+  video.hidden = true;
+  video.closest('[data-reveal-cinematic]')?.querySelector('[data-hero-video-control]')?.remove();
+}
+
 export async function saveEdit(form) {
   const element = state.selected;
   if (!element || !state.entry) return;
+  if (element.dataset.cmsType === 'icono') return guardarIcono(form, element);
 
   const entryId = element.dataset.cmsEntry;
   const field = element.dataset.cmsField;
@@ -332,7 +532,10 @@ export async function saveEdit(form) {
     }
   }
 
-  const esImagen = element.dataset.cmsType === 'image';
+  const esVideo = element.dataset.cmsType === 'video';
+  // Foto o video: los dos se suben, se eligen de la biblioteca, se encuadran
+  // y se describen igual.
+  const esImagen = element.dataset.cmsType === 'image' || esVideo;
   const valorOriginal = state.entry.fields[field]?.value ?? '';
   // El encuadre elegido antes de subir una foto nueva: la subida la registra
   // con el centro y hay que devolverle el que la persona dejó.
@@ -340,19 +543,7 @@ export async function saveEdit(form) {
   let guardoAlgo = false;
 
   if (file) {
-    const payload = new FormData();
-    payload.append('file', file);
-    payload.append('alt', form.elements.alt?.value || '');
-    const uploaded = await fetch(`${apiBase}/api/cms/media`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'X-CSRF-Token': state.csrfToken },
-      body: payload,
-    }).then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'No se pudo subir la imagen.');
-      return data;
-    });
+    const uploaded = await subirArchivo(file, form.elements.alt?.value || '');
     value = uploaded.path;
     form.elements.value.value = value;
     form.elements.mediaId.value = uploaded.id;
@@ -449,7 +640,11 @@ export async function saveEdit(form) {
   setGlobalState('unsaved');
 
   if (esImagen) {
-    if (value && value !== valorOriginal) mostrarImagen(element, value);
+    if (esVideo && !value) quitarVideoDeLaPagina(element);
+    else if (value && value !== valorOriginal) {
+      if (esVideo) mostrarVideo(element, value);
+      else mostrarImagen(element, value);
+    }
     const altField = element.dataset.cmsAltField;
     const alt = form.elements.alt;
     if (altField && alt && alt.value !== alt.dataset.inicial) {
@@ -462,7 +657,8 @@ export async function saveEdit(form) {
           body: JSON.stringify({ value: altValue, expectedVersion: state.entry.version }),
         }
       );
-      element.setAttribute('alt', altValue);
+      // Un video no tiene `alt`: su descripción es su nombre accesible.
+      element.setAttribute(esVideo ? 'aria-label' : 'alt', altValue);
       alt.dataset.inicial = altValue;
       guardoAlgo = true;
     }

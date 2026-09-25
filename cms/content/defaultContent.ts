@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CmsEntry } from '../types/cms';
+import { CATEGORIA_PROYECTO_LABEL } from '../../src/data/content-vocabulary';
 
 const rootDirForSeed = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -329,6 +330,22 @@ const clienteLogos: Array<{ key: string; nombre: string; logo: string }> = leerC
     logo: cliente.logo as string,
   }));
 
+/**
+ * Los dos campos del video de una cabecera: vacíos, la cabecera muestra su
+ * foto. Se siembran en todas las que pueden llevarlo para que el editor pueda
+ * guardarlo (un campo que no existe no se puede escribir).
+ */
+function videoDeCabecera(video?: { src: string; alt: string }) {
+  return {
+    video: { type: 'video' as const, value: video?.src ?? '' },
+    videoAlt: { type: 'text' as const, value: video?.alt ?? '' },
+  };
+}
+const VIDEO_LIMPIARREJAS = {
+  src: '/videos/limpiarrejas-hero.mp4',
+  alt: 'Limpiarrejas Hidromont en operación en una obra hidroeléctrica',
+};
+
 const imageEntries: EntrySeed[] = [
   ...serviceImageSeeds.map((image) => ({
     id: `service-image.${image.slug}`,
@@ -342,6 +359,9 @@ const imageEntries: EntrySeed[] = [
       imageAlt: { type: 'text' as const, value: image.alt },
       imageWidth: { type: 'number' as const, value: image.width },
       imageHeight: { type: 'number' as const, value: image.height },
+      // Video de la cabecera, en lugar de la foto (que queda de respaldo). El
+      // de Limpiarrejas venía de src/assets, fijo en el código.
+      ...videoDeCabecera(image.slug === 'limpiarrejas' ? VIDEO_LIMPIARREJAS : undefined),
     },
   })),
   ...projectImageSeeds.map((image) => ({
@@ -356,6 +376,7 @@ const imageEntries: EntrySeed[] = [
       imageAlt: { type: 'text' as const, value: image.alt },
       imageWidth: { type: 'number' as const, value: image.width },
       imageHeight: { type: 'number' as const, value: image.height },
+      ...videoDeCabecera(),
     },
   })),
   // Galerías de servicios (3 slots por servicio, vacíos por defecto)
@@ -412,28 +433,14 @@ export const defaultContentEntries: EntrySeed[] = [
       razonSocial: { type: 'text', value: 'Hidromont Chile' },
       domicilio: { type: 'text', value: 'Av. Las Industrias N° 10.950' },
       ciudad: { type: 'text', value: 'Los Ángeles, Región del Biobío, Chile' },
-      casillaPostal: { type: 'text', value: 'Casilla 48 — Los Ángeles, Región del Biobío' },
       telefono: { type: 'text', value: '+56 43 232 8414' },
       email: { type: 'text', value: 'hidromont@hidromont.cl' },
       sitioWeb: { type: 'link', value: 'https://hidromontchile.cl' },
-      fundacion: { type: 'number', value: 1983 },
-      chileDesde: { type: 'number', value: 1997 },
       descripcionCorta: {
         type: 'textarea',
         value:
           'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas.',
       },
-      descripcionLarga: {
-        type: 'textarea',
-        value:
-          'Realizamos ingeniería, fabricación y montaje de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para obras hidráulicas e hidroeléctricas.',
-      },
-      especialidad: {
-        type: 'textarea',
-        value:
-          'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas.',
-      },
-      modalidad: { type: 'text', value: 'Proyectos EPC' },
     },
   },
   ...imageEntries,
@@ -448,8 +455,6 @@ export const defaultContentEntries: EntrySeed[] = [
       logoSrc: { type: 'image', value: '' },
       logoAlt: { type: 'text', value: 'Hidromont Chile' },
       logoAriaLabel: { type: 'text', value: 'Hidromont Chile — Inicio' },
-      wordmarkPrimary: { type: 'text', value: 'HIDROMONT' },
-      wordmarkSub: { type: 'text', value: 'Chile' },
       navInicio: { type: 'text', value: 'Inicio' },
       hrefInicio: { type: 'text', value: '/' },
       navServicios: { type: 'text', value: 'Servicios' },
@@ -501,6 +506,13 @@ export const defaultContentEntries: EntrySeed[] = [
         type: 'textarea',
         value:
           'Hidromont Chile — Especialistas en ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas desde 1983.',
+      },
+      // Vacía = la foto de siempre (src/assets), que Astro optimiza. Al elegir
+      // otra desde la portada, se usa esa.
+      image: { type: 'image', value: '' },
+      imageAlt: {
+        type: 'text',
+        value: 'Vista aérea de las instalaciones de Hidromont Chile en Los Ángeles, Biobío',
       },
       eyebrow: { type: 'text', value: 'Especialistas en equipos hidromecánicos' },
       title: { type: 'text', value: 'Ingeniería, fabricación y montaje de equipos hidromecánicos' },
@@ -611,6 +623,12 @@ export const defaultContentEntries: EntrySeed[] = [
       eyebrow: { type: 'text', value: 'Experiencia' },
       title: { type: 'text', value: 'Proyectos destacados' },
       buttonLabel: { type: 'text', value: 'Ver todos los proyectos' },
+      sinProyectosTexto: {
+        type: 'textarea',
+        value:
+          'Estamos actualizando nuestro catálogo de proyectos. Pronto podrá consultar nuestra experiencia completa en esta sección.',
+      },
+      sinProyectosBoton: { type: 'text', value: 'Consultar experiencia técnica' },
     },
   },
   {
@@ -621,7 +639,6 @@ export const defaultContentEntries: EntrySeed[] = [
     title: 'CTA home',
     status: 'published',
     fields: {
-      eyebrow: { type: 'text', value: 'Contáctenos' },
       title: { type: 'text', value: '¿Quiere saber más sobre nuestra empresa?' },
       subtitle: {
         type: 'textarea',
@@ -649,7 +666,6 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Hidromont Chile — Especialistas en ingeniería hidromecánica desde 1983. Sede en Los Ángeles, Biobío, con instalaciones propias y equipo técnico especializado.',
       },
-      eyebrow: { type: 'text', value: 'Quiénes somos' },
       title: { type: 'text', value: 'Empresa' },
       subtitle: {
         type: 'textarea',
@@ -660,6 +676,7 @@ export const defaultContentEntries: EntrySeed[] = [
         type: 'text',
         value: 'Nave del taller industrial de Hidromont con grúa pórtico de 20 toneladas',
       },
+      ...videoDeCabecera(),
     },
   },
   {
@@ -679,7 +696,6 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Servicios hidromecánicos de Hidromont Chile: tuberías forzadas, compuertas, válvulas, turbinas, limpiarrejas y montajes especiales. Proyectos EPC.',
       },
-      eyebrow: { type: 'text', value: 'Servicios' },
       title: { type: 'text', value: 'Servicios hidromecánicos' },
       subtitle: {
         type: 'textarea',
@@ -688,6 +704,7 @@ export const defaultContentEntries: EntrySeed[] = [
       },
       image: { type: 'image', value: '/fotos/curadas/otros-montajes.jpg' },
       imageAlt: { type: 'text', value: 'Fabricación de grandes equipos hidromecánicos en taller' },
+      ...videoDeCabecera(),
     },
   },
   {
@@ -707,7 +724,6 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Banco de proyectos de Hidromont Chile — más de 80 proyectos ejecutados en Chile y el extranjero para centrales hidroeléctricas, embalses y presas.',
       },
-      eyebrow: { type: 'text', value: 'Experiencia' },
       title: { type: 'text', value: 'Proyectos' },
       subtitle: {
         type: 'textarea',
@@ -716,6 +732,7 @@ export const defaultContentEntries: EntrySeed[] = [
       },
       image: { type: 'image', value: '/fotos/curadas/bifurcacion-t-taller.webp' },
       imageAlt: { type: 'text', value: 'Bifurcación en T de gran diámetro fabricada en taller' },
+      ...videoDeCabecera(),
     },
   },
   {
@@ -764,7 +781,6 @@ export const defaultContentEntries: EntrySeed[] = [
         type: 'textarea',
         value: 'Proyectos, instalaciones y equipos hidromecánicos fabricados por Hidromont Chile.',
       },
-      eyebrow: { type: 'text', value: 'Nuestro trabajo' },
       title: { type: 'text', value: 'Galería' },
       subtitle: {
         type: 'textarea',
@@ -783,6 +799,11 @@ export const defaultContentEntries: EntrySeed[] = [
         type: 'text',
         value: 'Próximamente se añadirán proyectos a esta galería.',
       },
+      filtroTodas: { type: 'text', value: 'Todas las Categorías' },
+      mostrandoUna: { type: 'text', value: 'Mostrando {visibles} de {total} foto.' },
+      mostrandoFotos: { type: 'text', value: 'Mostrando {visibles} de {total} fotos.' },
+      sinFotos: { type: 'text', value: 'No se encontraron fotos.' },
+      enlaceProyecto: { type: 'text', value: 'Ver Proyecto Relacionado' },
     },
   },
   // `contacto.hero` («Conversemos») se retiró: /contacto no tiene cabecera
@@ -807,7 +828,6 @@ export const defaultContentEntries: EntrySeed[] = [
       formEyebrow: { type: 'text', value: 'Formulario de contacto' },
       formTitle: { type: 'text', value: 'Envíe su consulta' },
       infoEyebrow: { type: 'text', value: 'Datos de contacto' },
-      infoTitle: { type: 'text', value: 'Información directa' },
     },
   },
   {
@@ -819,7 +839,6 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       subject: { type: 'text', value: 'Nuevo contacto desde hidromontchile.cl' },
-      fromName: { type: 'text', value: 'Sitio web Hidromont Chile' },
       nameLabel: { type: 'text', value: 'Nombre' },
       namePlaceholder: { type: 'text', value: 'Su nombre completo' },
       companyLabel: { type: 'text', value: 'Empresa' },
@@ -887,11 +906,8 @@ export const defaultContentEntries: EntrySeed[] = [
       addressLabel: { type: 'text', value: 'Dirección' },
       phoneLabel: { type: 'text', value: 'Teléfono' },
       emailLabel: { type: 'text', value: 'Correo electrónico' },
-      note: {
-        type: 'textarea',
-        value:
-          'Envíenos sus antecedentes y nuestro equipo técnico responderá a la brevedad. Puede adjuntar planos, fichas técnicas o cualquier documento de referencia.',
-      },
+      enlaceGoogleMaps: { type: 'text', value: 'Google Maps' },
+      enlaceWaze: { type: 'text', value: 'Waze' },
     },
   },
   {
@@ -932,6 +948,14 @@ export const defaultContentEntries: EntrySeed[] = [
           'Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Desde 1983 ejecutando proyectos complejos con precisión industrial.',
       },
       location: { type: 'text', value: 'Los Ángeles, Región del Biobío, Chile' },
+      tituloServicios: { type: 'text', value: 'Servicios' },
+      tituloEmpresa: { type: 'text', value: 'Empresa' },
+      tituloContacto: { type: 'text', value: 'Contacto' },
+      enlaceQuienesSomos: { type: 'text', value: 'Quiénes somos' },
+      rotuloTelefono: { type: 'text', value: 'Teléfono' },
+      rotuloCorreo: { type: 'text', value: 'Correo' },
+      rotuloDireccion: { type: 'text', value: 'Dirección' },
+      derechos: { type: 'text', value: 'Todos los derechos reservados.' },
     },
   },
   {
@@ -943,7 +967,6 @@ export const defaultContentEntries: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Clientes y referencias' },
-      title: { type: 'text', value: 'Empresas que confían en Hidromont' },
       fallbackLabel: { type: 'text', value: 'También trabajamos con' },
       linkLabel: { type: 'text', value: 'Ver todos los clientes' },
     },
@@ -1209,6 +1232,17 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Obras del grupo en Chile, España, Honduras y Costa Rica, agrupadas por línea de servicio.',
       },
+      buscarRotulo: { type: 'text', value: 'Buscar en el banco de proyectos' },
+      buscarEjemplo: { type: 'text', value: 'Proyecto, cliente, ubicación o alcance' },
+      filtroTodos: { type: 'text', value: 'Todos' },
+      columnaProyecto: { type: 'text', value: 'Proyecto' },
+      columnaAlcance: { type: 'text', value: 'Alcance' },
+      columnaCliente: { type: 'text', value: 'Cliente' },
+      sinResultados: { type: 'text', value: 'No encontramos proyectos con estos criterios.' },
+      limpiarFiltros: { type: 'text', value: 'Limpiar búsqueda y filtros' },
+      verMasUno: { type: 'text', value: 'Ver 1 proyecto más' },
+      verMasVarios: { type: 'text', value: 'Ver {n} proyectos más' },
+      mostrandoProyectos: { type: 'text', value: 'Mostrando {visibles} de {total} proyectos.' },
     },
   },
   {
@@ -1226,6 +1260,23 @@ export const defaultContentEntries: EntrySeed[] = [
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
+  },
+  // Cómo se llama cada categoría en el sitio (etiquetas de las tarjetas,
+  // filtros y títulos de la tabla de /proyectos). El código de la izquierda es
+  // fijo: lo valida el schema de las fichas.
+  {
+    id: 'proyectos.categorias',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'Nombres de las categorías de proyecto',
+    status: 'published',
+    fields: Object.fromEntries(
+      Object.entries(CATEGORIA_PROYECTO_LABEL).map(([codigo, nombre]) => [
+        codigo,
+        { type: 'text' as const, value: nombre },
+      ])
+    ),
   },
   // El mismo recuadro en las fichas de proyecto (ver servicios.detalle.contacto).
   {
@@ -1265,7 +1316,6 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos.',
       },
-      eyebrow: { type: 'text', value: 'Nuestros clientes' },
       title: { type: 'text', value: 'Clientes' },
       subtitle: {
         type: 'textarea',
@@ -1303,6 +1353,136 @@ export const defaultContentEntries: EntrySeed[] = [
         value: 'Cuéntenos el alcance y revisamos las alternativas de fabricación y montaje.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
+    },
+  },
+  // Rótulos de plantilla que estaban escritos en el código (sep-2026): se
+  // editan pulsándolos o desde el panel, y el texto de antes queda de respaldo.
+  // Las tarjetas de servicios y proyectos del inicio y de los índices.
+  {
+    id: 'plantilla.tarjetas',
+    kind: 'page',
+    slug: '/',
+    locale: 'es-CL',
+    title: 'Textos de las tarjetas',
+    status: 'published',
+    fields: {
+      verServicio: { type: 'text', value: 'Ver servicio' },
+      verDetalle: { type: 'text', value: 'Ver detalle' },
+      casoDestacado: { type: 'text', value: 'Caso Destacado' },
+    },
+  },
+  // Comunes a las ocho fichas de servicio.
+  {
+    id: 'plantilla.servicio',
+    kind: 'page',
+    slug: '/servicios',
+    locale: 'es-CL',
+    title: 'Fichas de servicio — rótulos',
+    status: 'published',
+    fields: {
+      etiquetaServicio: { type: 'text', value: 'Servicio' },
+      tituloTipos: { type: 'text', value: 'Tipos' },
+      tituloAplicaciones: { type: 'text', value: 'Aplicaciones' },
+      tituloNormas: { type: 'text', value: 'Normas de referencia' },
+      tituloGaleria: { type: 'text', value: 'Galería de imágenes' },
+      obrasPrefijo: { type: 'text', value: 'Obras ejecutadas en' },
+      botonProyectos: { type: 'text', value: 'Ver proyectos' },
+      botonContacto: { type: 'text', value: 'Contacto' },
+    },
+  },
+  // Comunes a las fichas de proyecto y a la tabla del banco.
+  {
+    id: 'plantilla.proyecto',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'Fichas de proyecto — rótulos',
+    status: 'published',
+    fields: {
+      tituloDatosTecnicos: { type: 'text', value: 'Datos técnicos' },
+      rotuloDiametro: { type: 'text', value: 'Diámetro' },
+      rotuloDiametros: { type: 'text', value: 'Diámetros principales' },
+      rotuloLongitud: { type: 'text', value: 'Longitud' },
+      rotuloAcero: { type: 'text', value: 'Acero' },
+      rotuloPeso: { type: 'text', value: 'Peso' },
+      rotuloUbicacion: { type: 'text', value: 'Ubicación' },
+      tituloParticipantes: { type: 'text', value: 'Participantes' },
+      rotuloContratista: { type: 'text', value: 'Contratista' },
+      rotuloMandante: { type: 'text', value: 'Mandante' },
+      rotuloCliente: { type: 'text', value: 'Cliente' },
+      tituloNormasAplicadas: { type: 'text', value: 'Normas aplicadas' },
+      enlaceServicio: { type: 'text', value: 'Ver servicio relacionado:' },
+      enlaceVolver: { type: 'text', value: 'Volver a proyectos' },
+      tituloGaleria: { type: 'text', value: 'Galería de imágenes' },
+    },
+  },
+  {
+    id: 'contact.ubicacion',
+    kind: 'component',
+    slug: 'contact/ubicacion',
+    locale: 'es-CL',
+    title: 'Recuadro de ubicación',
+    status: 'published',
+    fields: {
+      ubicacionTitulo: { type: 'text', value: 'Hidromont Chile' },
+      mapaTitulo: { type: 'text', value: 'Ubicación de Hidromont Chile' },
+      mapaLugar: { type: 'text', value: 'Los Ángeles, Región del Biobío' },
+      mapaEnlace: { type: 'text', value: 'Abrir en Google Maps' },
+      mapaDescripcion: {
+        type: 'text',
+        value: 'Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío',
+      },
+    },
+  },
+  {
+    id: 'page.404',
+    kind: 'page',
+    slug: '/404',
+    locale: 'es-CL',
+    title: 'Página no encontrada (404)',
+    status: 'published',
+    fields: {
+      seoTitle: { type: 'text', value: 'Página no encontrada' },
+      codigo: { type: 'text', value: '404' },
+      titulo: { type: 'text', value: 'Página no encontrada' },
+      texto: {
+        type: 'textarea',
+        value: 'La página que busca no existe o fue movida. Pruebe alguno de estos accesos.',
+      },
+      botonInicio: { type: 'text', value: 'Ir al inicio' },
+      botonContactar: { type: 'text', value: 'Contactar' },
+    },
+  },
+  {
+    id: 'site.accesibilidad',
+    kind: 'component',
+    slug: 'site/accesibilidad',
+    locale: 'es-CL',
+    title: 'Textos para lectores de pantalla',
+    status: 'published',
+    fields: {
+      saltarContenido: { type: 'text', value: 'Ir al contenido principal' },
+      videoPausar: { type: 'text', value: 'Pausar video' },
+      videoReproducir: { type: 'text', value: 'Reproducir video' },
+      visorNombre: { type: 'text', value: 'Visor de imágenes de galería' },
+      visorCerrar: { type: 'text', value: 'Cerrar visor (Escape)' },
+      visorAnterior: { type: 'text', value: 'Imagen anterior (←)' },
+      visorSiguiente: { type: 'text', value: 'Siguiente imagen (→)' },
+      carruselPausar: { type: 'text', value: 'Pausar animación del carrusel de logos' },
+      carruselReanudar: { type: 'text', value: 'Reanudar animación del carrusel de logos' },
+    },
+  },
+  // Quiénes aparecen en /clientes y en la franja del inicio. Vivía solo en
+  // clientes.json, así que añadir o quitar un cliente exigía tocar el código.
+  {
+    id: 'clientes.lista',
+    kind: 'page',
+    slug: '/clientes',
+    locale: 'es-CL',
+    title: 'Lista de clientes',
+    status: 'published',
+    fields: {
+      nombres: { type: 'list', value: leerClientes().map((cliente) => cliente.nombre) },
     },
   },
   {

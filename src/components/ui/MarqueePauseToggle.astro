@@ -3,7 +3,20 @@ interface Props {
   class?: string;
 }
 
+import { getCmsText } from '../../data/cms';
+
 const { class: className = '' } = Astro.props;
+// Textos del sitio → Textos para lectores de pantalla.
+const pausar = getCmsText(
+  'site.accesibilidad',
+  'carruselPausar',
+  'Pausar animación del carrusel de logos'
+);
+const reanudar = getCmsText(
+  'site.accesibilidad',
+  'carruselReanudar',
+  'Reanudar animación del carrusel de logos'
+);
 ---
 
 {
@@ -19,7 +32,9 @@ const { class: className = '' } = Astro.props;
   type="button"
   class={`marquee-pause-toggle ${className}`}
   aria-pressed="false"
-  aria-label="Pausar animación del carrusel de logos"
+  aria-label={pausar}
+  data-label-pausar={pausar}
+  data-label-reanudar={reanudar}
 >
   <svg
     class="marquee-pause-icon"
@@ -94,8 +109,8 @@ const { class: className = '' } = Astro.props;
       btn.setAttribute(
         'aria-label',
         paused
-          ? 'Reanudar animación del carrusel de logos'
-          : 'Pausar animación del carrusel de logos'
+          ? btn.dataset.labelReanudar || 'Reanudar animación del carrusel de logos'
+          : btn.dataset.labelPausar || 'Pausar animación del carrusel de logos'
       );
     });
   });

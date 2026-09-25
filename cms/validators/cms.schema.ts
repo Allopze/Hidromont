@@ -93,6 +93,7 @@ export const listMediaQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(500).default(100),
   q: z.string().optional(),
+  tipo: z.enum(['imagen', 'video']).optional(),
 });
 
 // ── Gallery schemas ───────────────────────────────────────────

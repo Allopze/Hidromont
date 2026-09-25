@@ -12,20 +12,45 @@ import { icon } from './icons';
 
 let secuencia = 0;
 
+/** Qué acepta cada zona según lo que se sube, y cómo se le dice a quien edita. */
+const TIPOS = {
+  imagen: {
+    accept: 'image/png,image/jpeg,image/webp,image/svg+xml',
+    ayuda: 'JPG, PNG, WebP o SVG · hasta 8 MB',
+    arrastra: 'o arrástrala aquí',
+  },
+  video: {
+    accept: 'video/mp4,video/webm',
+    ayuda: 'MP4 o WebM · hasta 60 MB · sin sonido, se reproduce en bucle',
+    arrastra: 'o arrástralo aquí',
+  },
+  icono: {
+    accept: 'image/svg+xml,image/png,image/webp',
+    ayuda: 'SVG o PNG de un solo color, con fondo transparente',
+    arrastra: 'o arrástralo aquí',
+  },
+};
+
 /**
- * @param {{ name?: string, atributos?: string, texto?: string }} [opciones]
+ * @param {{ name?: string, atributos?: string, texto?: string, tipo?: 'imagen'|'video'|'icono' }} [opciones]
  *   `atributos` se añade tal cual al input, para los `data-*` de cada formulario.
  */
-export function dropzoneMarkup({ name = 'file', atributos = '', texto = 'Subir una imagen' } = {}) {
+export function dropzoneMarkup({
+  name = 'file',
+  atributos = '',
+  texto = 'Subir una imagen',
+  tipo = 'imagen',
+} = {}) {
   const id = `hm-cms-drop-${++secuencia}`;
+  const t = TIPOS[tipo] ?? TIPOS.imagen;
   return `
     <div class="hm-cms-drop" data-dropzone>
       <input id="${id}" class="hm-cms-drop-input" name="${escapeHtml(name)}" type="file"
-        accept="image/png,image/jpeg,image/webp" ${atributos} />
+        accept="${t.accept}" ${atributos} />
       <label for="${id}" class="hm-cms-drop-label">
         ${icon('upload', { size: 20 })}
-        <span><strong>${escapeHtml(texto)}</strong> o arrástrala aquí</span>
-        <span class="hm-cms-hint">JPG, PNG o WebP · hasta 8 MB</span>
+        <span><strong>${escapeHtml(texto)}</strong> ${t.arrastra}</span>
+        <span class="hm-cms-hint">${t.ayuda}</span>
       </label>
       <p class="hm-cms-drop-file" data-drop-file hidden></p>
     </div>`;

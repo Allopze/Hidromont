@@ -354,7 +354,12 @@ export class ContentRepository {
       // escriba un campo de imagen (el editor inline, el formulario de
       // colección, los scripts), no solo quien pase por el selector de medios.
       let resolvedMediaId = mediaId;
-      if (!resolvedMediaId && field.type === 'image' && typeof value === 'string' && value) {
+      if (
+        !resolvedMediaId &&
+        (field.type === 'image' || field.type === 'video') &&
+        typeof value === 'string' &&
+        value
+      ) {
         const asset = this.db
           .prepare('SELECT id FROM media_assets WHERE path = ? ORDER BY created_at ASC LIMIT 1')
           .get(value) as { id: string } | undefined;

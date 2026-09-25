@@ -23,8 +23,10 @@ editor.hidromontchile.cl {
 		X-Robots-Tag "noindex, nofollow"
 	}
 
+	# Aquí se suben los videos (CMS_VIDEO_MAX_BYTES, 60 MB por defecto) con
+	# margen para el resto del formulario. El sitio público sigue en 12 MB.
 	request_body {
-		max_size 12MB
+		max_size 64MB
 	}
 
 	reverse_proxy 127.0.0.1:8787 {

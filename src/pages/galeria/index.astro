@@ -71,7 +71,11 @@ const buildableProjectSlugs = (
 // lo añade. Hacerlo aquí producía «Galería de Proyectos | Hidromont Chile |
 // Hidromont Chile S.A.», y era la única ruta de las trece que lo hacía.
 const filters = [
-  { slug: 'all', name: 'Todas las Categorías', count: mixedItems.length },
+  {
+    slug: 'all',
+    name: getCmsText('page.galeria', 'filtroTodas', 'Todas las Categorías'),
+    count: mixedItems.length,
+  },
   ...categories
     .map((cat) => ({
       slug: cat.slug,
@@ -184,7 +188,7 @@ const filters = [
                 class="min-h-[44px] w-full h-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-text hover:bg-background transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
               >
                 <span id="filter-trigger-label" class="truncate">
-                  Todas las Categorías
+                  {getCmsText('page.galeria', 'filtroTodas', 'Todas las Categorías')}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -263,7 +267,22 @@ const filters = [
 
           {/* UIUX-8 fix: announce filter/search results to screen readers — the
              old gallery had this (aria-live counter), the new one didn't. */}
-          <p id="results-count" class="sr-only" aria-live="polite" />
+          <p
+            id="results-count"
+            class="sr-only"
+            aria-live="polite"
+            data-una={getCmsText(
+              'page.galeria',
+              'mostrandoUna',
+              'Mostrando {visibles} de {total} foto.'
+            )}
+            data-varias={getCmsText(
+              'page.galeria',
+              'mostrandoFotos',
+              'Mostrando {visibles} de {total} fotos.'
+            )}
+            data-ninguna={getCmsText('page.galeria', 'sinFotos', 'No se encontraron fotos.')}
+          />
 
           {/* Empty state message when search yields no results */}
           <div id="no-results" class="hidden text-center py-16" role="status">
@@ -431,10 +450,13 @@ const filters = [
       if (noResults) noResults.classList.toggle('hidden', result.total > 0);
       // UIUX-8 fix: announce the visible count on every filter/search change.
       if (resultsCount) {
+        const plantillas = resultsCount.dataset;
         resultsCount.textContent =
           result.total === 0
-            ? 'No se encontraron fotos.'
-            : `Mostrando ${result.visible.length} de ${result.total} ${result.total === 1 ? 'foto' : 'fotos'}.`;
+            ? plantillas.ninguna || 'No se encontraron fotos.'
+            : ((result.total === 1 ? plantillas.una : plantillas.varias) || '')
+                .replace('{visibles}', String(result.visible.length))
+                .replace('{total}', String(result.total));
       }
     }
 

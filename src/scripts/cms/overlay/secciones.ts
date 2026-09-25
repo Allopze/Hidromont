@@ -59,7 +59,7 @@ const OBLIGATORIOS: Record<string, string[]> = {
  * la ficha), ni en los campos obligatorios de una ficha.
  */
 export function sePuedeVaciar(kind: string, campo: string, tipo: string): boolean {
-  if (tipo === 'image' || tipo === 'list' || tipo === 'richtext') return false;
+  if (['image', 'video', 'icono', 'list', 'richtext'].includes(tipo)) return false;
   return !OBLIGATORIOS[kind]?.includes(campo);
 }
 
@@ -87,6 +87,38 @@ const SIN_USO_EN_EL_SITIO: Record<string, string[]> = {
 };
 
 /**
+ * Fichas que no son de una página concreta y que ningún listado del panel
+ * mostraba (su tipo es componente, ajustes o diseño). Muchos de sus textos no
+ * se ven en pantalla —los textos de ejemplo y los errores del formulario, el
+ * nombre de la empresa en la pestaña del navegador— y por eso no había dónde
+ * pulsar para cambiarlos. La pestaña «Textos del sitio» las reúne.
+ */
+export const FICHAS_DEL_SITIO: ReadonlyArray<{ id: string; nombre: string }> = [
+  { id: 'contact.form', nombre: 'Formulario de contacto' },
+  { id: 'contact.info', nombre: 'Datos de contacto (página Contacto)' },
+  { id: 'site.company', nombre: 'Datos de la empresa' },
+  { id: 'layout.header', nombre: 'Cabecera y menú' },
+  { id: 'layout.footer', nombre: 'Pie de página' },
+  { id: 'clients.strip', nombre: 'Franja de clientes del inicio' },
+  { id: 'contact.ubicacion', nombre: 'Recuadro de ubicación' },
+  { id: 'site.accesibilidad', nombre: 'Textos para lectores de pantalla' },
+];
+
+/** ¿Es una ficha de ajustes del sitio, sin dirección ni estado propios? */
+export function esFichaDelSitio(kind: string): boolean {
+  return kind === 'component' || kind === 'settings' || kind === 'layout';
+}
+
+/**
+ * Campos que son mecánica y no texto: los destinos del menú (una ruta mal
+ * escrita rompe un enlace de todas las páginas) y las medidas de las fotos,
+ * que el editor de imagen ya calcula.
+ */
+export function esCampoTecnico(clave: string): boolean {
+  return /^href/.test(clave) || clave === 'ctaHref' || /(Width|Height)$/.test(clave);
+}
+
+/**
  * Reparte las claves en secciones, en el orden del plan. Las que el plan no
  * nombra van a la sección del medio (los datos), en su orden original: un
  * campo nuevo nunca desaparece del formulario por no estar en la lista. Las
@@ -95,7 +127,7 @@ const SIN_USO_EN_EL_SITIO: Record<string, string[]> = {
  */
 export function seccionesDeFicha(kind: string, todas: string[]): Seccion[] {
   const sinUso = new Set(SIN_USO_EN_EL_SITIO[kind] ?? []);
-  const claves = todas.filter((k) => !sinUso.has(k));
+  const claves = todas.filter((k) => !sinUso.has(k) && !esCampoTecnico(k));
   const plan = PLANES[kind];
   if (!plan) return [{ titulo: '', claves: [...claves] }];
 

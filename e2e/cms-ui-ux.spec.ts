@@ -137,7 +137,8 @@ test.describe('CMS móvil táctil UI/UX', () => {
     await expect(menu).toHaveAttribute('aria-hidden', 'false');
     const toggle = menu.getByRole('button', { name: 'Guías editables' });
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    for (let tab = 0; tab < 4; tab++) await page.keyboard.press('Tab');
+    // Cinco: en la portada la hoja lleva además «Datos para buscadores».
+    for (let tab = 0; tab < 5; tab++) await page.keyboard.press('Tab');
     await expect(toggle).toBeFocused();
 
     const axe = await new AxeBuilder({ page }).include('.hm-cms-shell').analyze();

@@ -23,10 +23,6 @@
       "title": "Hero clientes",
       "slug": "/clientes",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Referencias"
-        },
         "seoDescription": {
           "type": "textarea",
           "value": "Referencias de Hidromont Chile — empresas de los sectores eléctrico, construcción, minero e industrial que confían en nuestros servicios hidromecánicos."
@@ -42,6 +38,41 @@
         "title": {
           "type": "text",
           "value": "Clientes"
+        }
+      }
+    },
+    "clientes.lista": {
+      "title": "Lista de clientes",
+      "slug": "/clientes",
+      "fields": {
+        "nombres": {
+          "type": "list",
+          "value": [
+            "Acciona",
+            "AES Andes",
+            "Alstom",
+            "Arauco",
+            "Besalco",
+            "Colbún",
+            "Comercial CREO S.A.",
+            "Conpax",
+            "Constructora Renaico SpA",
+            "Dragados",
+            "Elecnor",
+            "Eléctrica Puntilla",
+            "Endesa",
+            "Ferrovial",
+            "GPE",
+            "Iberdrola",
+            "Gasco",
+            "Innergex",
+            "M.O.P. / D.O.H.",
+            "Nyrstar – El Toqui",
+            "OHL",
+            "Pacific Hydro",
+            "Potencia",
+            "Sociedad Concesionaria Ruta Nahuelbuta"
+          ]
         }
       }
     },
@@ -91,10 +122,6 @@
           "type": "image",
           "value": "/logos-clientes/constructora-renaico.svg"
         },
-        "logo-dragado": {
-          "type": "image",
-          "value": "/logos-clientes/dragado.png"
-        },
         "logo-dragados": {
           "type": "image",
           "value": "/logos-clientes/dragado.png"
@@ -123,14 +150,6 @@
             "height": 335
           }
         },
-        "logo-engie": {
-          "type": "image",
-          "value": "/logos-clientes/engie.png"
-        },
-        "logo-fcc": {
-          "type": "image",
-          "value": "/logos-clientes/fcc.png"
-        },
         "logo-ferrovial": {
           "type": "image",
           "value": "/logos-clientes/ferrovial.png",
@@ -140,10 +159,6 @@
             "width": 1600,
             "height": 350
           }
-        },
-        "logo-gas-natural-fenosa": {
-          "type": "image",
-          "value": "/logos-clientes/gas-natural-fenosa.png"
         },
         "logo-gasco": {
           "type": "image",
@@ -177,22 +192,6 @@
           "type": "image",
           "value": "/logos-clientes/mop-doh.jpeg"
         },
-        "logo-mop-doh": {
-          "type": "image",
-          "value": "/logos-clientes/mop-doh.jpeg"
-        },
-        "logo-naturener": {
-          "type": "image",
-          "value": "/logos-clientes/naturener.png"
-        },
-        "logo-navarro-sic": {
-          "type": "image",
-          "value": "/logos-clientes/navarro-sic.png"
-        },
-        "logo-norvento": {
-          "type": "image",
-          "value": "/logos-clientes/norvento.png"
-        },
         "logo-nyrstar-el-toqui": {
           "type": "image",
           "value": "/logos-clientes/nyrstar-el-toqui.png"
@@ -205,10 +204,6 @@
           "type": "image",
           "value": "/logos-clientes/pacific-hydro.png"
         },
-        "logo-plenium-partners": {
-          "type": "image",
-          "value": "/logos-clientes/plenium-partners.png"
-        },
         "logo-potencia": {
           "type": "image",
           "value": "/logos-clientes/potencia.png"
@@ -216,10 +211,6 @@
         "logo-sociedad-concesionaria-ruta-nahuelbuta": {
           "type": "image",
           "value": "/logos-clientes/ruta-nahuelbuta.jpg"
-        },
-        "logo-viesgo": {
-          "type": "image",
-          "value": "/logos-clientes/viesgo.png"
         }
       }
     },
@@ -230,10 +221,6 @@
         "eyebrow": {
           "type": "text",
           "value": "Nuestros clientes"
-        },
-        "title": {
-          "type": "text",
-          "value": "Referencias por sector"
         }
       }
     },
@@ -252,10 +239,6 @@
         "linkLabel": {
           "type": "text",
           "value": "Ver todos los clientes"
-        },
-        "title": {
-          "type": "text",
-          "value": "Empresas que confían en Hidromont"
         }
       }
     },
@@ -290,10 +273,6 @@
         "errorBody": {
           "type": "textarea",
           "value": "Ocurrió un error al enviar el formulario. Por favor intente nuevamente o escríbanos directamente."
-        },
-        "fromName": {
-          "type": "text",
-          "value": "Sitio web Hidromont Chile"
         },
         "genericInvalidError": {
           "type": "text",
@@ -397,9 +376,13 @@
           "type": "text",
           "value": "Correo electrónico"
         },
-        "note": {
-          "type": "textarea",
-          "value": "Envíenos sus antecedentes y nuestro equipo técnico responderá a la brevedad. Puede adjuntar planos, fichas técnicas o cualquier documento de referencia."
+        "enlaceGoogleMaps": {
+          "type": "text",
+          "value": "Google Maps"
+        },
+        "enlaceWaze": {
+          "type": "text",
+          "value": "Waze"
         },
         "phoneLabel": {
           "type": "text",
@@ -408,6 +391,32 @@
         "title": {
           "type": "text",
           "value": "Información de contacto"
+        }
+      }
+    },
+    "contact.ubicacion": {
+      "title": "Recuadro de ubicación",
+      "slug": "contact/ubicacion",
+      "fields": {
+        "mapaDescripcion": {
+          "type": "text",
+          "value": "Mapa de la ubicación de Hidromont Chile en Los Ángeles, Región del Biobío"
+        },
+        "mapaEnlace": {
+          "type": "text",
+          "value": "Abrir en Google Maps"
+        },
+        "mapaLugar": {
+          "type": "text",
+          "value": "Los Ángeles, Región del Biobío"
+        },
+        "mapaTitulo": {
+          "type": "text",
+          "value": "Ubicación de Hidromont Chile"
+        },
+        "ubicacionTitulo": {
+          "type": "text",
+          "value": "Hidromont Chile"
         }
       }
     },
@@ -457,10 +466,6 @@
           "type": "text",
           "value": "Datos de contacto"
         },
-        "infoTitle": {
-          "type": "text",
-          "value": "Información directa"
-        },
         "seoDescription": {
           "type": "textarea",
           "value": "Contáctese con el equipo técnico de Hidromont Chile para consultas de ingeniería, fabricación o montaje de equipos hidromecánicos."
@@ -493,10 +498,6 @@
       "title": "Hero empresa",
       "slug": "/empresa",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Quiénes somos"
-        },
         "image": {
           "type": "image",
           "value": "/fotos/curadas/taller-nave.webp",
@@ -526,6 +527,14 @@
         "title": {
           "type": "text",
           "value": "Empresa"
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -713,18 +722,6 @@
           "type": "text",
           "value": "EPC"
         },
-        "card4Desc": {
-          "type": "text",
-          "value": "Sistema de gestión"
-        },
-        "card4Label": {
-          "type": "text",
-          "value": "Calidad"
-        },
-        "card4Value": {
-          "type": "text",
-          "value": "ISO 9001"
-        },
         "ubicacionTitle": {
           "type": "text",
           "value": "Ubicación"
@@ -777,10 +774,6 @@
       "title": "CTA home",
       "slug": "/",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Contáctenos"
-        },
         "primaryLabel": {
           "type": "text",
           "value": "Ponerse en contacto"
@@ -806,6 +799,14 @@
         "eyebrow": {
           "type": "text",
           "value": "Especialistas en equipos hidromecánicos"
+        },
+        "image": {
+          "type": "image",
+          "value": ""
+        },
+        "imageAlt": {
+          "type": "text",
+          "value": "Vista aérea de las instalaciones de Hidromont Chile en Los Ángeles, Biobío"
         },
         "primaryLabel": {
           "type": "text",
@@ -913,6 +914,14 @@
           "type": "text",
           "value": "Experiencia"
         },
+        "sinProyectosBoton": {
+          "type": "text",
+          "value": "Consultar experiencia técnica"
+        },
+        "sinProyectosTexto": {
+          "type": "textarea",
+          "value": "Estamos actualizando nuestro catálogo de proyectos. Pronto podrá consultar nuestra experiencia completa en esta sección."
+        },
         "title": {
           "type": "text",
           "value": "Proyectos destacados"
@@ -945,13 +954,45 @@
           "type": "text",
           "value": "Hidromont Chile S.A."
         },
+        "derechos": {
+          "type": "text",
+          "value": "Todos los derechos reservados."
+        },
         "description": {
           "type": "textarea",
           "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas. Desde 1983 ejecutando proyectos complejos con precisión industrial."
         },
+        "enlaceQuienesSomos": {
+          "type": "text",
+          "value": "Quiénes somos"
+        },
         "location": {
           "type": "text",
           "value": "Los Ángeles, Región del Biobío, Chile"
+        },
+        "rotuloCorreo": {
+          "type": "text",
+          "value": "Correo"
+        },
+        "rotuloDireccion": {
+          "type": "text",
+          "value": "Dirección"
+        },
+        "rotuloTelefono": {
+          "type": "text",
+          "value": "Teléfono"
+        },
+        "tituloContacto": {
+          "type": "text",
+          "value": "Contacto"
+        },
+        "tituloEmpresa": {
+          "type": "text",
+          "value": "Empresa"
+        },
+        "tituloServicios": {
+          "type": "text",
+          "value": "Servicios"
         }
       }
     },
@@ -966,10 +1007,6 @@
         "ctaLabel": {
           "type": "text",
           "value": "Contáctenos"
-        },
-        "hrefCalidad": {
-          "type": "text",
-          "value": "/calidad"
         },
         "hrefClientes": {
           "type": "text",
@@ -1047,10 +1084,6 @@
           "type": "text",
           "value": "Abrir menú de navegación"
         },
-        "navCalidad": {
-          "type": "text",
-          "value": "Calidad"
-        },
         "navClientes": {
           "type": "text",
           "value": "Clientes"
@@ -1110,14 +1143,36 @@
         "navServiciosValvulas": {
           "type": "text",
           "value": "Válvulas"
-        },
-        "wordmarkPrimary": {
+        }
+      }
+    },
+    "page.404": {
+      "title": "Página no encontrada (404)",
+      "slug": "/404",
+      "fields": {
+        "botonContactar": {
           "type": "text",
-          "value": "HIDROMONT"
+          "value": "Contactar"
         },
-        "wordmarkSub": {
+        "botonInicio": {
           "type": "text",
-          "value": "Chile S.A."
+          "value": "Ir al inicio"
+        },
+        "codigo": {
+          "type": "text",
+          "value": "404"
+        },
+        "seoTitle": {
+          "type": "text",
+          "value": "Página no encontrada"
+        },
+        "texto": {
+          "type": "textarea",
+          "value": "La página que busca no existe o fue movida. Pruebe alguno de estos accesos."
+        },
+        "titulo": {
+          "type": "text",
+          "value": "Página no encontrada"
         }
       }
     },
@@ -1129,9 +1184,13 @@
           "type": "text",
           "value": "Próximamente se añadirán proyectos a esta galería."
         },
-        "eyebrow": {
+        "enlaceProyecto": {
           "type": "text",
-          "value": "Nuestro trabajo"
+          "value": "Ver Proyecto Relacionado"
+        },
+        "filtroTodas": {
+          "type": "text",
+          "value": "Todas las Categorías"
         },
         "image": {
           "type": "image",
@@ -1140,6 +1199,14 @@
         "imageAlt": {
           "type": "text",
           "value": "Galería de proyectos Hidromont Chile"
+        },
+        "mostrandoFotos": {
+          "type": "text",
+          "value": "Mostrando {visibles} de {total} fotos."
+        },
+        "mostrandoUna": {
+          "type": "text",
+          "value": "Mostrando {visibles} de {total} foto."
         },
         "noResults": {
           "type": "text",
@@ -1157,6 +1224,10 @@
           "type": "text",
           "value": "Galería de Proyectos"
         },
+        "sinFotos": {
+          "type": "text",
+          "value": "No se encontraron fotos."
+        },
         "subtitle": {
           "type": "textarea",
           "value": "Imágenes de nuestros proyectos, instalaciones y equipo."
@@ -1164,6 +1235,128 @@
         "title": {
           "type": "text",
           "value": "Galería"
+        }
+      }
+    },
+    "plantilla.proyecto": {
+      "title": "Fichas de proyecto — rótulos",
+      "slug": "/proyectos",
+      "fields": {
+        "enlaceServicio": {
+          "type": "text",
+          "value": "Ver servicio relacionado:"
+        },
+        "enlaceVolver": {
+          "type": "text",
+          "value": "Volver a proyectos"
+        },
+        "rotuloAcero": {
+          "type": "text",
+          "value": "Acero"
+        },
+        "rotuloCliente": {
+          "type": "text",
+          "value": "Cliente"
+        },
+        "rotuloContratista": {
+          "type": "text",
+          "value": "Contratista"
+        },
+        "rotuloDiametro": {
+          "type": "text",
+          "value": "Diámetro"
+        },
+        "rotuloDiametros": {
+          "type": "text",
+          "value": "Diámetros principales"
+        },
+        "rotuloLongitud": {
+          "type": "text",
+          "value": "Longitud"
+        },
+        "rotuloMandante": {
+          "type": "text",
+          "value": "Mandante"
+        },
+        "rotuloPeso": {
+          "type": "text",
+          "value": "Peso"
+        },
+        "rotuloUbicacion": {
+          "type": "text",
+          "value": "Ubicación"
+        },
+        "tituloDatosTecnicos": {
+          "type": "text",
+          "value": "Datos técnicos"
+        },
+        "tituloGaleria": {
+          "type": "text",
+          "value": "Galería de imágenes"
+        },
+        "tituloNormasAplicadas": {
+          "type": "text",
+          "value": "Normas aplicadas"
+        },
+        "tituloParticipantes": {
+          "type": "text",
+          "value": "Participantes"
+        }
+      }
+    },
+    "plantilla.servicio": {
+      "title": "Fichas de servicio — rótulos",
+      "slug": "/servicios",
+      "fields": {
+        "botonContacto": {
+          "type": "text",
+          "value": "Contacto"
+        },
+        "botonProyectos": {
+          "type": "text",
+          "value": "Ver proyectos"
+        },
+        "etiquetaServicio": {
+          "type": "text",
+          "value": "Servicio"
+        },
+        "obrasPrefijo": {
+          "type": "text",
+          "value": "Obras ejecutadas en"
+        },
+        "tituloAplicaciones": {
+          "type": "text",
+          "value": "Aplicaciones"
+        },
+        "tituloGaleria": {
+          "type": "text",
+          "value": "Galería de imágenes"
+        },
+        "tituloNormas": {
+          "type": "text",
+          "value": "Normas de referencia"
+        },
+        "tituloTipos": {
+          "type": "text",
+          "value": "Tipos"
+        }
+      }
+    },
+    "plantilla.tarjetas": {
+      "title": "Textos de las tarjetas",
+      "slug": "/",
+      "fields": {
+        "casoDestacado": {
+          "type": "text",
+          "value": "Caso Destacado"
+        },
+        "verDetalle": {
+          "type": "text",
+          "value": "Ver detalle"
+        },
+        "verServicio": {
+          "type": "text",
+          "value": "Ver servicio"
         }
       }
     },
@@ -1194,10 +1387,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1228,10 +1417,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1280,10 +1465,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Válvula azul ya instalada en línea con la tubería del túnel, con el destello de una soldadura en la base"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1332,10 +1513,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "El canal ya con agua, con la compuerta y su pasarela de rejilla instaladas en la desembocadura"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1366,10 +1543,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1400,10 +1573,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1434,10 +1603,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1486,10 +1651,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Contrapicado de las dos pasarelas peatonales terminadas cruzando sobre la ruta, con las cúpulas galvanizadas brillando al sol"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1538,10 +1699,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Cuerpo cilíndrico de tanque industrial con monturas de apoyo estructural"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1590,10 +1747,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Vista en perspectiva de tanque cilíndrico listo para tratamiento superficial"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -1616,6 +1769,14 @@
         "imageWidth": {
           "type": "number",
           "value": 429
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1638,6 +1799,14 @@
         "imageWidth": {
           "type": "number",
           "value": 441
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1666,6 +1835,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1086
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1688,6 +1865,14 @@
         "imageWidth": {
           "type": "number",
           "value": 605
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1716,6 +1901,14 @@
         "imageWidth": {
           "type": "number",
           "value": 960
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1744,6 +1937,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1425
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1772,6 +1973,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1800,6 +2009,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1828,6 +2045,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1200
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1856,6 +2081,40 @@
         "imageWidth": {
           "type": "number",
           "value": 1200
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
+        }
+      }
+    },
+    "proyectos.categorias": {
+      "title": "Nombres de las categorías de proyecto",
+      "slug": "/proyectos",
+      "fields": {
+        "compuertas": {
+          "type": "text",
+          "value": "Compuertas y Válvulas"
+        },
+        "electromecanicos": {
+          "type": "text",
+          "value": "Montajes Especiales"
+        },
+        "estructuras": {
+          "type": "text",
+          "value": "Estructuras y Tanques"
+        },
+        "limpiarrejas": {
+          "type": "text",
+          "value": "Limpiarrejas"
+        },
+        "tuberias": {
+          "type": "text",
+          "value": "Tuberías y Blindajes"
         }
       }
     },
@@ -1881,9 +2140,45 @@
       "title": "Banco proyectos",
       "slug": "/proyectos",
       "fields": {
+        "buscarEjemplo": {
+          "type": "text",
+          "value": "Proyecto, cliente, ubicación o alcance"
+        },
+        "buscarRotulo": {
+          "type": "text",
+          "value": "Buscar en el banco de proyectos"
+        },
+        "columnaAlcance": {
+          "type": "text",
+          "value": "Alcance"
+        },
+        "columnaCliente": {
+          "type": "text",
+          "value": "Cliente"
+        },
+        "columnaProyecto": {
+          "type": "text",
+          "value": "Proyecto"
+        },
         "eyebrow": {
           "type": "text",
           "value": "Banco de proyectos"
+        },
+        "filtroTodos": {
+          "type": "text",
+          "value": "Todos"
+        },
+        "limpiarFiltros": {
+          "type": "text",
+          "value": "Limpiar búsqueda y filtros"
+        },
+        "mostrandoProyectos": {
+          "type": "text",
+          "value": "Mostrando {visibles} de {total} proyectos."
+        },
+        "sinResultados": {
+          "type": "text",
+          "value": "No encontramos proyectos con estos criterios."
         },
         "subtitle": {
           "type": "textarea",
@@ -1892,6 +2187,14 @@
         "title": {
           "type": "text",
           "value": "Registro de obras hidráulicas e hidroeléctricas"
+        },
+        "verMasUno": {
+          "type": "text",
+          "value": "Ver 1 proyecto más"
+        },
+        "verMasVarios": {
+          "type": "text",
+          "value": "Ver {n} proyectos más"
         }
       }
     },
@@ -1927,10 +2230,6 @@
       "title": "Hero proyectos",
       "slug": "/proyectos",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Experiencia"
-        },
         "image": {
           "type": "image",
           "value": "/fotos/curadas/bifurcacion-t-taller.webp",
@@ -1960,6 +2259,14 @@
         "title": {
           "type": "text",
           "value": "Proyectos"
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -1990,10 +2297,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2066,10 +2369,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Detalle del guiado del peine y de las tuercas de bronce accionadas por los husillos"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2100,10 +2399,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2164,10 +2459,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2216,10 +2507,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": "Montaje de un turboalternador Francis"
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2250,10 +2537,6 @@
         "gallery3Alt": {
           "type": "text",
           "value": ""
-        },
-        "images": {
-          "type": "list",
-          "value": []
         }
       }
     },
@@ -2282,6 +2565,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1448
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2310,6 +2601,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2338,6 +2637,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1920
+        },
+        "video": {
+          "type": "video",
+          "value": "/videos/limpiarrejas-hero.mp4"
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": "Limpiarrejas Hidromont en operación en una obra hidroeléctrica"
         }
       }
     },
@@ -2366,6 +2673,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2394,6 +2709,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1600
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2422,6 +2745,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1849
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2450,6 +2781,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1448
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2478,6 +2817,14 @@
         "imageWidth": {
           "type": "number",
           "value": 1448
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2569,10 +2916,6 @@
       "title": "Hero servicios",
       "slug": "/servicios",
       "fields": {
-        "eyebrow": {
-          "type": "text",
-          "value": "Servicios"
-        },
         "image": {
           "type": "image",
           "value": "/fotos/curadas/otros-montajes.webp",
@@ -2602,6 +2945,14 @@
         "title": {
           "type": "text",
           "value": "Servicios hidromecánicos"
+        },
+        "video": {
+          "type": "video",
+          "value": ""
+        },
+        "videoAlt": {
+          "type": "text",
+          "value": ""
         }
       }
     },
@@ -2671,18 +3022,52 @@
         }
       }
     },
+    "site.accesibilidad": {
+      "title": "Textos para lectores de pantalla",
+      "slug": "site/accesibilidad",
+      "fields": {
+        "carruselPausar": {
+          "type": "text",
+          "value": "Pausar animación del carrusel de logos"
+        },
+        "carruselReanudar": {
+          "type": "text",
+          "value": "Reanudar animación del carrusel de logos"
+        },
+        "saltarContenido": {
+          "type": "text",
+          "value": "Ir al contenido principal"
+        },
+        "videoPausar": {
+          "type": "text",
+          "value": "Pausar video"
+        },
+        "videoReproducir": {
+          "type": "text",
+          "value": "Reproducir video"
+        },
+        "visorAnterior": {
+          "type": "text",
+          "value": "Imagen anterior (←)"
+        },
+        "visorCerrar": {
+          "type": "text",
+          "value": "Cerrar visor (Escape)"
+        },
+        "visorNombre": {
+          "type": "text",
+          "value": "Visor de imágenes de galería"
+        },
+        "visorSiguiente": {
+          "type": "text",
+          "value": "Siguiente imagen (→)"
+        }
+      }
+    },
     "site.company": {
       "title": "Datos corporativos",
       "slug": "company",
       "fields": {
-        "casillaPostal": {
-          "type": "text",
-          "value": "Casilla 48 — Los Ángeles, Región del Biobío"
-        },
-        "chileDesde": {
-          "type": "number",
-          "value": 1997
-        },
         "ciudad": {
           "type": "text",
           "value": "Los Ángeles, Región del Biobío, Chile"
@@ -2691,10 +3076,6 @@
           "type": "textarea",
           "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas."
         },
-        "descripcionLarga": {
-          "type": "textarea",
-          "value": "Realizamos ingeniería, fabricación y montaje de tuberías forzadas, blindajes, compuertas, válvulas, turbinas y limpiarrejas para obras hidráulicas e hidroeléctricas."
-        },
         "domicilio": {
           "type": "text",
           "value": "Av. Las Industrias N° 10.950, Longitudinal Sur, Km 513"
@@ -2702,18 +3083,6 @@
         "email": {
           "type": "text",
           "value": "hidromont@hidromont.cl"
-        },
-        "especialidad": {
-          "type": "textarea",
-          "value": "Ingeniería, fabricación y montaje de equipos hidromecánicos para embalses y centrales hidroeléctricas."
-        },
-        "fundacion": {
-          "type": "number",
-          "value": 1983
-        },
-        "modalidad": {
-          "type": "text",
-          "value": "Proyectos llave en mano / EPC"
         },
         "nombre": {
           "type": "text",

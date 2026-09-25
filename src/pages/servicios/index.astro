@@ -67,6 +67,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               description={s.data.resumen}
               href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
+              iconoPropio={s.data.iconoPropio}
               bullets={s.data.tipos}
               cmsEntry={`servicios.${entrySlug(s.id)}`}
             />

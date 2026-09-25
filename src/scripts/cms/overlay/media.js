@@ -13,7 +13,7 @@ import { escapeHtml } from './html';
 import { panelBody } from './shell';
 import { api } from './api';
 import { icon } from './icons';
-import { previsualizarEnfoque, previsualizarImagen } from './edicion';
+import { previsualizarEnfoque, previsualizarImagen, previsualizarVideo } from './edicion';
 import { posicionCss } from './encuadre';
 
 /**
@@ -50,18 +50,28 @@ export function schedulePreviewUpdate(valor) {
       preview.setAttribute('src', valor);
       previsualizarImagen(valor);
     }
+    // O a un video, en el editor de video.
+    const video = panelBody.querySelector('[data-video-preview]');
+    if (video && /^\/.+\.(mp4|webm)$/i.test(valor)) {
+      video.setAttribute('src', valor);
+      previsualizarVideo(valor);
+    }
   }, 400);
 }
 
 function mediaTileMarkup(item, { action, selected }) {
   // C-2: un asset cuyo archivo no está en disco se marca en vez de
   // renderizarse como una miniatura rota sin explicación.
+  const esVideo = String(item.mime || '').startsWith('video/');
   const cuerpo = item.missing
     ? `<span class="hm-cms-media-missing">${icon('alert')}Archivo no encontrado</span>`
-    : // alt vacío cuando no hay texto alternativo propio: el nombre del archivo
-      // ya va en el <span> de debajo, y repetirlo hacía que un lector de pantalla
-      // leyera dos veces lo mismo por cada miniatura (axe: image-redundant-alt).
-      `<img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || '')}" loading="lazy" />`;
+    : esVideo
+      ? // Un fotograma y quieto: una cuadrícula de videos moviéndose a la vez marea.
+        `<video src="${escapeHtml(item.path)}#t=0.5" muted playsinline preload="metadata" aria-hidden="true"></video>`
+      : // alt vacío cuando no hay texto alternativo propio: el nombre del archivo
+        // ya va en el <span> de debajo, y repetirlo hacía que un lector de pantalla
+        // leyera dos veces lo mismo por cada miniatura (axe: image-redundant-alt).
+        `<img src="${escapeHtml(item.path)}" alt="${escapeHtml(item.alt || '')}" loading="lazy" />`;
   return `
     <button
       type="button"
@@ -87,6 +97,7 @@ function activeMediaPicker() {
       action: 'gallery-select-media',
       selectedId: form?.querySelector('[name="mediaId"]')?.value || '',
       selectedPath: '',
+      tipo: 'imagen',
     };
   }
   const grid = panelBody.querySelector('[data-media-grid]');
@@ -97,6 +108,8 @@ function activeMediaPicker() {
     action: 'select-media',
     selectedId: '',
     selectedPath: form?.elements.value?.value || '',
+    // El editor de un video solo ofrece videos, y el de una foto, fotos.
+    tipo: form?.dataset.tipoMedio || 'imagen',
   };
 }
 
@@ -107,7 +120,13 @@ export function renderMediaPicker() {
   if (!state.mediaItems.length) {
     picker.grid.innerHTML = mediaPicker.loading
       ? '<p class="hm-cms-hint hm-cms-media-wide">Buscando…</p>'
-      : '<p class="hm-cms-hint hm-cms-media-wide">Ninguna imagen coincide con la búsqueda.</p>';
+      : `<p class="hm-cms-hint hm-cms-media-wide">${
+          picker.tipo !== 'video'
+            ? 'Ninguna imagen coincide con la búsqueda.'
+            : mediaPicker.query
+              ? 'Ningún video coincide con la búsqueda.'
+              : 'Todavía no hay videos en la biblioteca: sube uno arriba.'
+        }</p>`;
     return;
   }
 
@@ -149,6 +168,7 @@ export async function loadMediaPicker({ reset = true } = {}) {
       limit: String(MEDIA_PAGE_SIZE),
     });
     if (mediaPicker.query) params.set('q', mediaPicker.query);
+    params.set('tipo', picker.tipo);
     const data = await api(`/api/cms/media?${params}`);
     // Descartar respuestas fuera de orden: con LIKE sobre tres columnas sin
     // índice, escribir rápido las devuelve desordenadas.
@@ -183,9 +203,11 @@ export function applyMediaSelection(asset) {
   form.elements.mediaId.value = asset.id;
   form.dataset.medioNuevo = '1';
   if (form.elements.alt && asset.alt) form.elements.alt.value = asset.alt;
-  // La foto elegida se ve ya en la página, con su propio encuadre; si no se
-  // guarda, vuelve la anterior.
-  previsualizarImagen(asset.path);
+  // La foto (o el video) elegida se ve ya en la página, con su propio
+  // encuadre; si no se guarda, vuelve la anterior.
+  const esVideo = String(asset.mime || '').startsWith('video/');
+  if (esVideo) previsualizarVideo(asset.path);
+  else previsualizarImagen(asset.path);
   const enfoque = { x: asset.focalX ?? 0.5, y: asset.focalY ?? 0.5 };
   if (state.encuadre) {
     state.encuadre.fijar(enfoque, { inicial: true });
@@ -193,10 +215,12 @@ export function applyMediaSelection(asset) {
   }
   previsualizarEnfoque(posicionCss(enfoque));
 
-  const preview = panelBody.querySelector('[data-image-preview]');
+  const preview = panelBody.querySelector(
+    esVideo ? '[data-video-preview]' : '[data-image-preview]'
+  );
   if (preview) {
     preview.setAttribute('src', asset.path);
-    preview.setAttribute('alt', asset.alt || asset.name);
+    if (!esVideo) preview.setAttribute('alt', asset.alt || asset.name);
   }
 
   const label = panelBody.querySelector('[data-selected-media-label]');
