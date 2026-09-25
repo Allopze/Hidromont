@@ -100,11 +100,15 @@ const {
       </EditableText>
 
       <div class="flex flex-wrap gap-4" data-reveal style="--reveal-delay: 0.18s;">
-        <Button href={ctaPrimary.href} size="lg">{ctaPrimary.label}</Button>
+        <Button href={ctaPrimary.href} size="lg">
+          <EditableText entry={cmsEntry} field="primaryLabel">{ctaPrimary.label}</EditableText>
+        </Button>
         {
           ctaSecondary && (
             <Button href={ctaSecondary.href} variant="secondary-light" size="lg">
-              {ctaSecondary.label}
+              <EditableText entry={cmsEntry} field="secondaryLabel">
+                {ctaSecondary.label}
+              </EditableText>
             </Button>
           )
         }

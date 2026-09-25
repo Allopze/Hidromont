@@ -57,7 +57,8 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
         {
           /* UIUX-L10 fix: was slice(0, 4) here vs slice(0, 3) on the home
              page's ServiceCard grid — same component, same grid layout,
-             inconsistent truncation. Unified to 3. */
+             inconsistent truncation. Unified to 3, que ahora es el valor por
+             defecto de `maxBullets` en la propia tarjeta. */
         }
         {
           servicios.map((s) => (
@@ -66,7 +67,8 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
               description={s.data.resumen}
               href={`/servicios/${entrySlug(s.id)}`}
               icon={s.data.icono}
-              bullets={s.data.tipos?.slice(0, 3)}
+              bullets={s.data.tipos}
+              cmsEntry={`servicios.${entrySlug(s.id)}`}
             />
           ))
         }
@@ -116,12 +118,40 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
                el nowrap evita que parta por el espacio antes de m². -->
           <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
             <div>
-              <p class="font-mono font-bold text-accent text-xl whitespace-nowrap">3.000 m²</p>
-              <p class="text-xs text-white/70">Taller industrial</p>
+              <EditableText
+                as="p"
+                entry="servicios.index.banner"
+                field="stat1Value"
+                class="font-mono font-bold text-accent text-xl whitespace-nowrap"
+              >
+                {getCmsText('servicios.index.banner', 'stat1Value', '3.000 m²')}
+              </EditableText>
+              <EditableText
+                as="p"
+                entry="servicios.index.banner"
+                field="stat1Label"
+                class="text-xs text-white/70"
+              >
+                {getCmsText('servicios.index.banner', 'stat1Label', 'Taller industrial')}
+              </EditableText>
             </div>
             <div>
-              <p class="font-mono font-bold text-accent text-xl">5</p>
-              <p class="text-xs text-white/70">Puentes&nbsp;grúa de 10 a 20 t</p>
+              <EditableText
+                as="p"
+                entry="servicios.index.banner"
+                field="stat2Value"
+                class="font-mono font-bold text-accent text-xl"
+              >
+                {getCmsText('servicios.index.banner', 'stat2Value', '5')}
+              </EditableText>
+              <EditableText
+                as="p"
+                entry="servicios.index.banner"
+                field="stat2Label"
+                class="text-xs text-white/70"
+              >
+                {getCmsText('servicios.index.banner', 'stat2Label', 'Puentes grúa de 10 a 20 t')}
+              </EditableText>
             </div>
           </div>
         </div>
@@ -246,6 +276,7 @@ servicios.sort((a, b) => a.data.orden - b.data.orden);
     primary={{
       label: getCmsText('servicios.index.cta', 'buttonLabel', 'Contacto'),
       href: '/contacto',
+      field: 'buttonLabel',
     }}
   />
 </PageLayout>

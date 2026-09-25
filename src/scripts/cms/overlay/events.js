@@ -114,7 +114,15 @@ export function registerEvents() {
     'click',
     async (event) => {
       const target = event.target;
-      const editable = target instanceof Element ? target.closest('[data-cms-entry]') : null;
+      // Un enlace con un solo campo dentro (un botón, una entrada del menú) se
+      // resalta entero como editable: pulsar su relleno, fuera del texto,
+      // navegaba a otra página en vez de abrir el editor.
+      const editable =
+        target instanceof Element
+          ? (target.closest('[data-cms-entry]') ??
+            target.closest('[data-cms-editable-host]')?.querySelector('[data-cms-entry]') ??
+            null)
+          : null;
       const action =
         target instanceof Element ? target.closest('[data-action]')?.dataset.action : null;
 

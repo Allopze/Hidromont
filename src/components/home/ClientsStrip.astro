@@ -6,6 +6,7 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 import { getCmsText } from '../../data/cms';
+import { getClienteLogoByNombre } from '../../data/cliente-logos';
 
 interface ClienteItem {
   nombre: string;
@@ -18,7 +19,13 @@ interface Props {
 }
 
 const { clientes } = Astro.props;
-const lista: ClienteItem[] = clientes?.data?.items || [];
+// El logo pasa por el CMS igual que en /clientes. La franja lo leía directo de
+// la colección, así que un logo cambiado desde el panel se veía en /clientes y
+// no aquí: Acciona, Besalco, Colbún y Elecnor salían con dos logos distintos.
+const lista: ClienteItem[] = (clientes?.data?.items || []).map((c: ClienteItem) => ({
+  ...c,
+  logo: getClienteLogoByNombre(c.nombre, c.logo || '') || undefined,
+}));
 
 // Split into those with logos and those without
 const conLogo = lista.filter((c: ClienteItem) => c.logo);
@@ -32,10 +39,11 @@ const row2 = conLogo.slice(mid);
 
 <Container>
   <div class="text-center mb-10">
-    <Eyebrow
-      ><EditableText entry="clients.strip" field="eyebrow">Clientes y referencias</EditableText
-      ></Eyebrow
-    >
+    <Eyebrow>
+      <EditableText entry="clients.strip" field="eyebrow">
+        {getCmsText('clients.strip', 'eyebrow', 'Clientes y referencias')}
+      </EditableText>
+    </Eyebrow>
     {
       /* Sin H2. La misma frase se retiró de /clientes por orden expresa del
          dueño (ver el comentario en src/pages/clientes.astro), y aquí había

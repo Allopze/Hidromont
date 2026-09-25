@@ -8,6 +8,8 @@ interface CTAButton {
   label: string;
   href: string;
   variant?: 'primary' | 'secondary-light';
+  /** El campo de `cmsEntry` del que sale `label`, para editarlo pulsándolo. */
+  field?: string;
 }
 
 interface Props {
@@ -44,13 +46,26 @@ const { cmsEntry, title, subtitle, primary, secondary } = Astro.props;
       </EditableText>
       <div class="flex flex-wrap justify-center gap-4">
         <Button href={primary.href} size="lg" variant={primary.variant ?? 'primary'}>
-          {primary.label}
+          <EditableText entry={primary.field ? cmsEntry : undefined} field={primary.field ?? ''}>
+            {primary.label}
+          </EditableText>
         </Button>
-        {secondary && (
-          <Button href={secondary.href} size="lg" variant={secondary.variant ?? 'secondary-light'}>
-            {secondary.label}
-          </Button>
-        )}
+        {
+          secondary && (
+            <Button
+              href={secondary.href}
+              size="lg"
+              variant={secondary.variant ?? 'secondary-light'}
+            >
+              <EditableText
+                entry={secondary.field ? cmsEntry : undefined}
+                field={secondary.field ?? ''}
+              >
+                {secondary.label}
+              </EditableText>
+            </Button>
+          )
+        }
       </div>
     </div>
   </Container>

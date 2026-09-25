@@ -2,6 +2,7 @@
 import type { IconoServicio } from '../../data/content-vocabulary';
 import Button from '../ui/Button.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
+import EditableText from '../cms/EditableText.astro';
 
 interface Props {
   title: string;
@@ -9,10 +10,28 @@ interface Props {
   href: string;
   icon?: string;
   bullets?: string[];
+  /** Cuántos elementos de `bullets` se ven. */
+  maxBullets?: number;
   compact?: boolean;
+  /**
+   * La ficha del servicio en el CMS (`servicios.<slug>`). Con ella el título,
+   * el resumen y los tipos de la tarjeta se editan pulsándolos, igual que en
+   * la página del servicio; sin ella la tarjeta es solo texto.
+   */
+  cmsEntry?: string;
 }
 
-const { title, description, href, icon, bullets, compact = false } = Astro.props;
+const {
+  title,
+  description,
+  href,
+  icon,
+  bullets,
+  maxBullets = 3,
+  compact = false,
+  cmsEntry,
+} = Astro.props;
+const bulletsVisibles = bullets?.slice(0, maxBullets) ?? [];
 
 // A-7: tipado contra el vocabulario compartido, así el compilador falla si
 // las claves de este mapa y ICONO_SERVICIO divergen — que es justo lo que
@@ -106,24 +125,42 @@ const iconSvg = icons[icon as IconoServicio] ?? icons.pipe;
 
   <!-- Content -->
   <div class="flex-1">
-    <h3
+    <EditableText
+      as="h3"
+      entry={cmsEntry}
+      field="titulo"
       class="font-heading font-semibold text-primary-dark mb-2"
       style="font-size: var(--font-size-h4);"
     >
       {title}
-    </h3>
-    <p class="text-text-muted text-sm leading-relaxed">{description}</p>
+    </EditableText>
+    <EditableText
+      as="p"
+      entry={cmsEntry}
+      field="resumen"
+      type="textarea"
+      class="text-text-muted text-sm leading-relaxed"
+    >
+      {description}
+    </EditableText>
 
     {
-      !compact && bullets && bullets.length > 0 && (
-        <ul class="mt-4 space-y-1.5">
-          {bullets.slice(0, 4).map((b) => (
+      !compact && bulletsVisibles.length > 0 && (
+        <EditableText
+          as="ul"
+          entry={cmsEntry}
+          field="tipos"
+          type="list"
+          listMax={maxBullets}
+          class="mt-4 space-y-1.5"
+        >
+          {bulletsVisibles.map((b) => (
             <li class="flex items-start gap-2 text-sm text-text-muted">
               <span class="mt-1 shrink-0 w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
               {b}
             </li>
           ))}
-        </ul>
+        </EditableText>
       )
     }
   </div>

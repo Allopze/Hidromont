@@ -157,6 +157,22 @@ describe('renderizarPrevisualizacion', () => {
     expect(html).toContain('pulsa aquí');
   });
 
+  it('pinta las tablas con barras como tablas', () => {
+    const html = renderizarPrevisualizacion(
+      '| Parámetro | Valor |\n| --------- | ----- |\n| Fluido | **GLP** |\n| Cantidad | 3 |'
+    );
+    expect(html).toBe(
+      '<table><thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>' +
+        '<tbody><tr><td>Fluido</td><td><strong>GLP</strong></td></tr>' +
+        '<tr><td>Cantidad</td><td>3</td></tr></tbody></table>'
+    );
+  });
+
+  it('no confunde con una tabla un párrafo que solo empieza por barra', () => {
+    const html = renderizarPrevisualizacion('| suelto |\ntexto normal');
+    expect(html).not.toContain('<table>');
+  });
+
   it('mantiene los enlaces legítimos', () => {
     const html = renderizarPrevisualizacion('[Pangal](/proyectos/ch-pangal)');
     expect(html).toContain('<a href="/proyectos/ch-pangal"');

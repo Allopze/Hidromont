@@ -1,6 +1,8 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { formatDiameters } from '../../utils/format';
+import { entrySlug } from '../../utils/contentId';
+import EditableText from '../cms/EditableText.astro';
 
 interface Props {
   proyectos: CollectionEntry<'proyectos'>[];
@@ -8,6 +10,9 @@ interface Props {
 }
 
 const { proyectos, titulo } = Astro.props;
+// Los proyectos del banco no tienen página propia: esta tabla es el único
+// sitio donde se ven, así que es también donde se editan.
+const fichaDe = (p: CollectionEntry<'proyectos'>) => `proyectos.${entrySlug(p.id)}`;
 // El índice se normaliza igual que lo que se muestra: si no, buscar "Ø 2.200"
 // no encuentra una ficha que guarde "Ø2200", ni al revés.
 const searchText = (project: CollectionEntry<'proyectos'>) =>
@@ -70,41 +75,74 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
                 }
               >
                 <td class="px-5 py-4 align-top whitespace-nowrap">
-                  <span class="font-semibold text-text">{p.data.nombre}</span>
+                  <EditableText entry={fichaDe(p)} field="nombre" class="font-semibold text-text">
+                    {p.data.nombre}
+                  </EditableText>
                   {(p.data.diametro || p.data.peso || p.data.acero) && (
                     <div class="mt-1.5 flex flex-wrap gap-1.5">
                       {p.data.diametro && (
-                        <span class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5">
+                        <EditableText
+                          entry={fichaDe(p)}
+                          field="diametro"
+                          class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5"
+                        >
                           {formatDiameters(p.data.diametro)}
-                        </span>
+                        </EditableText>
                       )}
                       {p.data.acero && (
-                        <span class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5">
+                        <EditableText
+                          entry={fichaDe(p)}
+                          field="acero"
+                          class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5"
+                        >
                           {p.data.acero}
-                        </span>
+                        </EditableText>
                       )}
                       {p.data.peso && (
-                        <span class="inline-block font-mono text-xs font-semibold text-primary bg-accent/10 px-1.5 py-0.5">
+                        <EditableText
+                          entry={fichaDe(p)}
+                          field="peso"
+                          class="inline-block font-mono text-xs font-semibold text-primary bg-accent/10 px-1.5 py-0.5"
+                        >
                           {p.data.peso}
-                        </span>
+                        </EditableText>
                       )}
                     </div>
                   )}
                 </td>
                 <td class="px-5 py-4 text-text-muted leading-relaxed align-top">
-                  {formatDiameters(p.data.alcance)}
+                  <EditableText entry={fichaDe(p)} field="alcance" type="textarea">
+                    {formatDiameters(p.data.alcance)}
+                  </EditableText>
                 </td>
                 <td class="px-5 py-4 align-top whitespace-nowrap">
-                  <span class="text-text-muted">{p.data.contratista ?? p.data.cliente ?? '—'}</span>
+                  {p.data.contratista || p.data.cliente ? (
+                    <EditableText
+                      entry={fichaDe(p)}
+                      field={p.data.contratista ? 'contratista' : 'cliente'}
+                      class="text-text-muted"
+                    >
+                      {p.data.contratista ?? p.data.cliente}
+                    </EditableText>
+                  ) : (
+                    <span class="text-text-muted">—</span>
+                  )}
                   {p.data.mandante && (
                     <span class="block text-xs text-text-muted mt-0.5">
-                      Mandante: {p.data.mandante}
+                      Mandante:{' '}
+                      <EditableText entry={fichaDe(p)} field="mandante">
+                        {p.data.mandante}
+                      </EditableText>
                     </span>
                   )}
                   {p.data.ubicacion && p.data.ubicacion !== 'Chile' && (
-                    <span class="block font-mono text-xs text-primary mt-0.5">
+                    <EditableText
+                      entry={fichaDe(p)}
+                      field="ubicacion"
+                      class="block font-mono text-xs text-primary mt-0.5"
+                    >
                       {p.data.ubicacion}
-                    </span>
+                    </EditableText>
                   )}
                 </td>
               </tr>
@@ -124,44 +162,80 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
             data-project-search={searchText(p)}
           >
             <div class="flex items-start justify-between gap-3 mb-2">
-              <h4
+              <EditableText
+                as="h4"
+                entry={fichaDe(p)}
+                field="nombre"
                 class="font-heading font-semibold text-primary-dark leading-snug"
                 style="font-size: var(--font-size-h4);"
               >
                 {p.data.nombre}
-              </h4>
+              </EditableText>
               {(p.data.diametro || p.data.peso || p.data.acero) && (
                 <div class="shrink-0 flex flex-wrap gap-1 mt-0.5">
                   {p.data.diametro && (
-                    <span class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5">
+                    <EditableText
+                      entry={fichaDe(p)}
+                      field="diametro"
+                      class="inline-block font-mono text-xs font-semibold text-primary bg-primary-light px-1.5 py-0.5"
+                    >
                       {formatDiameters(p.data.diametro)}
-                    </span>
+                    </EditableText>
                   )}
                   {p.data.acero && (
-                    <span class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5">
+                    <EditableText
+                      entry={fichaDe(p)}
+                      field="acero"
+                      class="inline-block font-mono text-xs font-semibold text-text-muted bg-border px-1.5 py-0.5"
+                    >
                       {p.data.acero}
-                    </span>
+                    </EditableText>
                   )}
                   {p.data.peso && (
-                    <span class="inline-block font-mono text-xs font-semibold text-primary bg-accent/10 px-1.5 py-0.5">
+                    <EditableText
+                      entry={fichaDe(p)}
+                      field="peso"
+                      class="inline-block font-mono text-xs font-semibold text-primary bg-accent/10 px-1.5 py-0.5"
+                    >
                       {p.data.peso}
-                    </span>
+                    </EditableText>
                   )}
                 </div>
               )}
             </div>
 
-            <p class="text-sm text-text-muted leading-relaxed mb-3">
+            <EditableText
+              as="p"
+              entry={fichaDe(p)}
+              field="alcance"
+              type="textarea"
+              class="text-sm text-text-muted leading-relaxed mb-3"
+            >
               {formatDiameters(p.data.alcance)}
-            </p>
+            </EditableText>
 
             {(p.data.cliente || p.data.contratista || p.data.mandante) && (
               <div class="flex items-center gap-2 flex-wrap text-xs text-text-muted">
                 <span>{p.data.contratista ? 'Contratista:' : 'Cliente:'}</span>
-                <span class="font-medium text-text">{p.data.contratista ?? p.data.cliente}</span>
-                {p.data.mandante && <span>Mandante: {p.data.mandante}</span>}
+                <EditableText
+                  entry={fichaDe(p)}
+                  field={p.data.contratista ? 'contratista' : 'cliente'}
+                  class="font-medium text-text"
+                >
+                  {p.data.contratista ?? p.data.cliente}
+                </EditableText>
+                {p.data.mandante && (
+                  <span>
+                    Mandante:{' '}
+                    <EditableText entry={fichaDe(p)} field="mandante">
+                      {p.data.mandante}
+                    </EditableText>
+                  </span>
+                )}
                 {p.data.ubicacion && p.data.ubicacion !== 'Chile' && (
-                  <span class="font-mono text-primary">{p.data.ubicacion}</span>
+                  <EditableText entry={fichaDe(p)} field="ubicacion" class="font-mono text-primary">
+                    {p.data.ubicacion}
+                  </EditableText>
                 )}
               </div>
             )}

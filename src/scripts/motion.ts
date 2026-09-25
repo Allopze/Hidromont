@@ -134,6 +134,11 @@ function initParallax(): void {
 
 /* ── 3. Counter ───────────────────────────────────────────── */
 
+/** Un año («1997») se pinta sin punto de miles; una cantidad («3.000»), con él. */
+function formatCount(el: HTMLElement, n: number): string {
+  return el.dataset.countFormat === 'plain' ? String(n) : n.toLocaleString('es-CL');
+}
+
 function initCounters(): void {
   const counters = Array.from(document.querySelectorAll<HTMLElement>('[data-count]'));
   if (counters.length === 0) return;
@@ -143,7 +148,7 @@ function initCounters(): void {
     counters.forEach((el) => {
       const target = parseInt(el.dataset.count ?? '0', 10);
       const suffix = el.dataset.suffix ?? '';
-      el.textContent = `${target.toLocaleString('es-CL')}${suffix}`;
+      el.textContent = `${formatCount(el, target)}${suffix}`;
       el.style.visibility = 'visible';
     });
     return;
@@ -172,7 +177,7 @@ function initCounters(): void {
           // Ease-out cubic
           const progress = 1 - Math.pow(1 - elapsed / duration, 3);
           const current = Math.round(progress * target);
-          el.textContent = `${current.toLocaleString('es-CL')}${suffix}`;
+          el.textContent = `${formatCount(el, current)}${suffix}`;
           if (elapsed < duration) requestAnimationFrame(tick);
         }
 

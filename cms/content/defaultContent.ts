@@ -740,6 +740,12 @@ export const defaultContentEntries: EntrySeed[] = [
         type: 'text',
         value: 'Proceso de fabricacion y caldereria hidromecanica en taller',
       },
+      // Las dos cifras del banner estaban escritas en el .astro: como las de
+      // la home antes de E-1, solo se podían actualizar con un despliegue.
+      stat1Value: { type: 'text', value: '3.000 m²' },
+      stat1Label: { type: 'text', value: 'Taller industrial' },
+      stat2Value: { type: 'text', value: '5' },
+      stat2Label: { type: 'text', value: 'Puentes grúa de 10 a 20 t' },
     },
   },
   {
@@ -779,23 +785,8 @@ export const defaultContentEntries: EntrySeed[] = [
       },
     },
   },
-  {
-    id: 'contacto.hero',
-    kind: 'page',
-    slug: '/contacto',
-    locale: 'es-CL',
-    title: 'Hero contacto',
-    status: 'published',
-    fields: {
-      eyebrow: { type: 'text', value: 'Contacto' },
-      title: { type: 'text', value: 'Conversemos' },
-      subtitle: {
-        type: 'textarea',
-        value:
-          'Nuestro equipo puede apoyarle en ingeniería, fabricación, montaje y mantenimiento de equipos hidromecánicos para embalses, presas, conducciones y centrales hidroeléctricas.',
-      },
-    },
-  },
+  // `contacto.hero` («Conversemos») se retiró: /contacto no tiene cabecera
+  // desde ffa7674. Ver ENTRADAS_RETIRADAS en contentService.ts.
   {
     id: 'contacto.sections',
     kind: 'page',
@@ -1168,6 +1159,26 @@ export const defaultContentEntries: EntrySeed[] = [
       buttonLabel: { type: 'text', value: 'Contacto' },
     },
   },
+  // El recuadro azul del lateral de cada servicio. Estaba escrito en
+  // servicios/[slug].astro, así que cambiarlo exigía un despliegue y se
+  // repetía idéntico en las ocho fichas: una entrada común las cubre todas.
+  {
+    id: 'servicios.detalle.contacto',
+    kind: 'page',
+    slug: '/servicios',
+    locale: 'es-CL',
+    title: 'Fichas de servicio — recuadro de contacto',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: '¿Trabaja en proyectos de este tipo?' },
+      text: {
+        type: 'textarea',
+        value:
+          'Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje.',
+      },
+      buttonLabel: { type: 'text', value: 'Contactar' },
+    },
+  },
 
   // ─── Proyectos index ──────────────────────────────────────────────────────
 
@@ -1214,6 +1225,24 @@ export const defaultContentEntries: EntrySeed[] = [
         value: 'Hemos ejecutado obras en Chile, España, Honduras y Costa Rica.',
       },
       buttonLabel: { type: 'text', value: 'Contacto' },
+    },
+  },
+  // El mismo recuadro en las fichas de proyecto (ver servicios.detalle.contacto).
+  {
+    id: 'proyectos.detalle.contacto',
+    kind: 'page',
+    slug: '/proyectos',
+    locale: 'es-CL',
+    title: 'Fichas de proyecto — recuadro de contacto',
+    status: 'published',
+    fields: {
+      title: { type: 'text', value: '¿Trabaja en proyectos similares?' },
+      text: {
+        type: 'textarea',
+        value:
+          'Cuéntenos el alcance de su obra y revisaremos las alternativas de fabricación y montaje.',
+      },
+      buttonLabel: { type: 'text', value: 'Contactar' },
     },
   },
 

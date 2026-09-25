@@ -21,7 +21,15 @@ import { richtextMarkup } from './richtext';
 import { publishEnvironment } from './publish';
 import { dropzoneMarkup } from './dropzone';
 import { listEditorMarkup } from './list-editor';
-import { confirmarEdicion, empezarEdicion, escribirTexto, mostrarImagen } from './edicion';
+import {
+  confirmarEdicion,
+  empezarEdicion,
+  escribirFormato,
+  escribirLista,
+  escribirTexto,
+  mostrarImagen,
+} from './edicion';
+import { sePuedeVaciar } from './secciones';
 import { prepararEncuadre } from './encuadre-ui';
 
 export { listEditorMarkup, syncListValue } from './list-editor';
@@ -217,7 +225,7 @@ export async function selectElement(element) {
           <button type="button" class="ghost small" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>
         </div>
         ${
-          esImagen
+          !sePuedeVaciar(entry.kind, field, element.dataset.cmsType || 'text')
             ? ''
             : `<div class="hm-cms-edit-actions-danger">
           <button type="button" class="ghost destructive small" data-action="clear-field">${icon('trash')}Vaciar este texto</button>
@@ -464,7 +472,10 @@ export async function saveEdit(form) {
     // elemento (iconos, badges, spans) dentro de un <EditableText as="h1"> con slot
     // multi-nodo. Ahora editamos solo el textNode editable, preservando el resto.
     const newValue = updated.fields[field]?.value ?? value;
-    escribirTexto(element, newValue);
+    // Listas y Markdown no son un texto: cada uno se pinta a su manera.
+    if (element.dataset.cmsType === 'list') escribirLista(element, asList(newValue));
+    else if (element.dataset.cmsType === 'richtext') escribirFormato(element, newValue);
+    else escribirTexto(element, newValue);
   }
   // Lo que muestra la página ya está guardado: cerrar no debe revertirlo.
   confirmarEdicion();
@@ -474,7 +485,13 @@ export async function saveEdit(form) {
     setFormDirty(false);
     return;
   }
-  setEditStatus(form, 'success', mensajeGuardado());
+  setEditStatus(
+    form,
+    'success',
+    element.dataset.cmsType === 'richtext'
+      ? `${mensajeGuardado()} La página muestra una vista aproximada del formato.`
+      : mensajeGuardado()
+  );
   setGlobalState('unsaved');
   // A-11: este es el único guardado que no reabre el panel (los formularios
   // de colección y galería vuelven a su listado, y openPanel ya lo limpia).

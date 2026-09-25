@@ -4,7 +4,9 @@
  * 1. `procesos` de los servicios es una lista de grupos `{ titulo, descripcion }`.
  *    El formulario la pintaba con `String(item)` —«[object Object]»— y tocar un
  *    elemento y guardar reemplazaba los cuatro procesos por esa cadena.
- *    Reproducido el 24-09-2026 contra una copia de la base real.
+ *    Reproducido el 24-09-2026 contra una copia de la base real. Desde el
+ *    25-09-2026 la ficha ya no lo ofrece —ninguna página lo muestra desde
+ *    79f5257—, así que lo que se fija es que guardar la ficha no lo toque.
  *
  * 2. Las confirmaciones dejaron de ser `window.confirm`. La propia tiene que
  *    comportarse como un diálogo: foco dentro, Escape cancela sin cerrar el
@@ -64,51 +66,31 @@ test.describe('Listas de grupos', () => {
     });
   });
 
-  test('los procesos se editan como grupos y se guardan como grupos', async ({ page }) => {
+  test('la ficha ya no ofrece los procesos, que ninguna página muestra', async ({ page }) => {
     const form = await abrirFicha(page);
-    const procesos = form.locator('[data-field-key="procesos"]');
-    await expect(procesos).toBeVisible();
-    await expect(procesos).not.toContainText('[object Object]');
-
-    const grupos = procesos.locator('[data-list-group]');
-    await expect(grupos).toHaveCount(original.length);
-    await expect(grupos.first().locator('[data-group-key="titulo"]')).toHaveValue(
-      original[0].titulo
-    );
-
-    // Tocar un elemento era justo lo que disparaba la corrupción.
-    const descripcion = grupos.first().locator('[data-group-key="descripcion"]');
-    const editada = `${original[0].descripcion} Revisado en E2E.`;
-    await descripcion.fill(editada);
-
-    // Y agregar uno nuevo debe crear un grupo con las mismas claves.
-    await procesos.locator('[data-action="add-list-item"]').click();
-    await expect(grupos).toHaveCount(original.length + 1);
-    await grupos.last().locator('[data-group-key="titulo"]').fill('Puesta en marcha');
-    await grupos.last().locator('[data-group-key="descripcion"]').fill('Pruebas en obra.');
-
-    await form.locator('button[type="submit"]').click();
-    await expect(form.locator('[data-status]')).toHaveText(/^Guardado\./, { timeout: 15_000 });
-
-    const guardados = (await procesosGuardados(page)) as Proceso[];
-    expect(guardados).toHaveLength(original.length + 1);
-    expect(guardados[0]).toEqual({ titulo: original[0].titulo, descripcion: editada });
-    expect(guardados.at(-1)).toEqual({
-      titulo: 'Puesta en marcha',
-      descripcion: 'Pruebas en obra.',
-    });
-    expect(JSON.stringify(guardados)).not.toContain('[object Object]');
+    await expect(form.locator('[data-field-key="resumen"]')).toBeVisible();
+    await expect(form.locator('[data-field-key="procesos"]')).toHaveCount(0);
   });
 
-  test('quitar un grupo conserva los demás intactos', async ({ page }) => {
-    const form = await abrirFicha(page);
-    const grupos = form.locator('[data-field-key="procesos"] [data-list-group]');
-    await grupos.last().locator('[data-action="remove-list-item"]').click();
-    await expect(grupos).toHaveCount(original.length - 1);
+  test('guardar otro campo de la ficha deja los procesos intactos', async ({ page }) => {
+    // El formulario solo envía lo que cambia: que no se vean no puede
+    // significar que se borren o se conviertan en texto.
+    const entrada = await (await page.request.get(`${CMS_URL}/api/cms/entries/${ENTRADA}`)).json();
+    const normasOriginales = entrada.fields.normas.value as string[];
 
+    const form = await abrirFicha(page);
+    const primera = form.locator('[data-field-key="normas"] [data-list-item]').first();
+    await primera.fill(`${normasOriginales[0]} (E2E)`);
     await form.locator('button[type="submit"]').click();
     await expect(form.locator('[data-status]')).toHaveText(/^Guardado\./, { timeout: 15_000 });
-    expect(await procesosGuardados(page)).toEqual(original.slice(0, -1));
+
+    expect(await procesosGuardados(page)).toEqual(original);
+
+    const res = await page.request.patch(`${CMS_URL}/api/cms/entries/${ENTRADA}/fields/normas`, {
+      headers: { 'x-csrf-token': csrf, 'content-type': 'application/json' },
+      data: { value: normasOriginales },
+    });
+    expect(res.ok()).toBeTruthy();
   });
 });
 

@@ -3,11 +3,26 @@ interface Props {
   as?: keyof HTMLElementTagNameMap;
   entry?: string;
   field: string;
-  type?: 'text' | 'textarea' | 'richtext';
+  type?: 'text' | 'textarea' | 'richtext' | 'list';
+  /**
+   * Solo en listas: cuántos elementos pinta la página. Al guardar desde ella,
+   * el overlay repinta la lista y necesita saber dónde corta (la tarjeta de
+   * /servicios enseña tres tipos aunque el servicio tenga siete).
+   */
+  listMax?: number;
+  /**
+   * Al editar, el valor reemplaza todo el texto del elemento. Para los que
+   * pintan su valor repartido en varios nodos —la cifra «40+ años» separa los
+   * dígitos en su propio <span>— y en los que el contador de motion.ts
+   * reescribe el texto entero de todos modos.
+   */
+  wholeText?: boolean;
   class?: string;
   style?: string;
   light?: boolean;
   reveal?: boolean;
+  /** Otros `data-*` del elemento (el contador lee `data-count`). */
+  [atributo: `data-${string}`]: string | undefined;
 }
 
 const {
@@ -15,22 +30,29 @@ const {
   entry,
   field,
   type = 'text',
+  listMax,
+  wholeText = false,
   class: className,
   style,
   reveal = false,
+  light: _light,
+  ...dataAttrs
 } = Astro.props as Props;
 const Tag = as;
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
-const editableAttrs = cmsEditingEnabled && entry
-  ? {
-      'data-cms-entry': entry,
-      'data-cms-field': field,
-      'data-cms-type': type,
-    }
-  : {};
+const editableAttrs =
+  cmsEditingEnabled && entry
+    ? {
+        'data-cms-entry': entry,
+        'data-cms-field': field,
+        'data-cms-type': type,
+        'data-cms-list-max': type === 'list' && listMax ? String(listMax) : undefined,
+        'data-cms-texto-entero': wholeText ? '' : undefined,
+      }
+    : {};
 const revealAttrs = reveal ? { 'data-reveal': true } : {};
 ---
 
-<Tag class={className} style={style} {...revealAttrs} {...editableAttrs}>
+<Tag class={className} style={style} {...dataAttrs} {...revealAttrs} {...editableAttrs}>
   <slot />
 </Tag>

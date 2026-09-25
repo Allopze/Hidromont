@@ -1,5 +1,6 @@
 ---
 import { company } from '../../data/company';
+import EditableText from '../cms/EditableText.astro';
 
 interface Props {
   theme?: 'light' | 'dark';
@@ -124,7 +125,8 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
         theme === 'dark' ? 'text-white/75' : 'text-text-muted',
       ]}
     >
-      {company.domicilio}<br />{company.ciudad}
+      <EditableText entry="site.company" field="domicilio">{company.domicilio}</EditableText><br
+      /><EditableText entry="site.company" field="ciudad">{company.ciudad}</EditableText>
     </p>
     {
       showDirections && (

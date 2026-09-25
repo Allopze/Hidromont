@@ -46,6 +46,23 @@ Al arrancar, el CMS:
 5. En la ficha de un servicio o proyecto, la barra ofrece **«Editar este servicio/proyecto»**, que abre su formulario completo. `Cmd/Ctrl+S` guarda el formulario abierto.
 6. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la vista previa de esta página; los visitantes todavía no lo ven.
 
+Todo texto o foto que el sitio saca del CMS se edita pulsándolo donde aparece,
+también fuera de su ficha: las tarjetas de servicios y proyectos del inicio y de
+los índices, la tabla del banco de proyectos (esas 30 obras no tienen página
+propia), las cifras de la home, los botones, el recuadro de contacto de las
+fichas y la dirección del pie. En una ficha se editan también sus listas (tipos,
+aplicaciones, normas) y el cuerpo con formato; al guardarlos la página los
+repinta como lista o con formato (el cuerpo, de forma aproximada hasta publicar).
+
+- En las tarjetas que son un enlace entero (las de proyecto), pulsar un campo
+  abre el editor; el resto de la tarjeta sigue llevando a la ficha.
+- En un botón, pulsar cualquier punto del botón edita su texto.
+- «Vaciar este texto» no se ofrece donde vaciar rompería algo: imágenes, listas,
+  cuerpos con formato y el título o resumen de una ficha.
+
+Esto lo fija `e2e/cms-edicion-completa.spec.ts`. Hasta sep-2026 más de 600
+textos visibles salían de un campo del CMS sin poder pulsarse.
+
 > **Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. En producción se activa desde el subdominio `editor.*`; `?cms=1` no activa el CMS en el dominio público. El hosting estático de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada lleva `1`. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
 
 ## Tipos de campo editables
@@ -78,8 +95,9 @@ guarda.
 - El export lo escribe junto al campo en `cms-content.json` (`focal`), solo
   cuando no es el centro, y `EditableImage` lo aplica como `object-position`.
 - Una foto que se ve entera, como el logo, no ofrece encuadre.
-- La foto de fondo de inicio y las tarjetas de proyectos destacados no pasan
-  por el CMS (vienen del código), así que no se encuadran desde el panel.
+- La foto de fondo de inicio no pasa por el CMS (viene del código), así que no
+  se encuadra desde el panel. Las tarjetas de proyecto usan la misma foto que
+  la cabecera de su ficha, con su encuadre.
 
 Hasta sep-2026 el enfoque se guardaba pero ningún componente lo leía: se
 editaba con dos números («Foco X/Y») que no cambiaban nada en pantalla.
@@ -89,6 +107,8 @@ editaba con dos números («Foco X/Y») que no cambiaban nada en pantalla.
 Algunas listas no son de textos sueltos sino de grupos: los **procesos** de un
 servicio son pares título + descripción. El panel las muestra como un grupo por
 elemento, con un campo para cada parte, y las guarda con esa misma forma.
+(Desde sep-2026 la ficha no ofrece los procesos, porque ninguna página los
+muestra; el editor de grupos sigue ahí para cualquier lista de esa forma.)
 
 > **Hasta sep-2026 esto corrompía datos.** El formulario pintaba cada grupo como
 > «[object Object]» y, si se tocaba uno y se guardaba, los procesos quedaban
@@ -100,8 +120,8 @@ elemento, con un campo para cada parte, y las guarda con esa misma forma.
 ### El editor de texto con formato
 
 Los campos `richtext` son el **cuerpo de cada ficha** de servicio y proyecto: el
-texto largo que el visitante lee bajo la ficha técnica. Se editan desde
-**Colecciones → (un servicio o proyecto) → Contenido**.
+texto largo que el visitante lee bajo la ficha técnica. Se editan pulsándolo en
+la propia ficha o desde **Colecciones → (un servicio o proyecto) → Contenido**.
 
 La barra aplica negrita, cursiva, títulos, listas, cita, código y enlaces, con
 `Ctrl+B`, `Ctrl+I` y `Ctrl+K` como atajos. Pulsar dos veces el mismo botón
@@ -121,6 +141,21 @@ cambiar nada de lo escrito.
 panel**: el formulario de colección filtraba el tipo `richtext` y ningún
 componente lo exponía con `data-cms-type`. Existían en la base y se exportaban,
 pero solo se podían cambiar editando los `.md` a mano.
+
+### Fichas y campos que el sitio no usa
+
+La semilla (`defaultContent.ts`) solo añade: quitar de ella una ficha no la
+borra de una base viva, y el panel la seguía ofreciendo aunque editarla no
+cambiara nada. Las fichas de `ENTRADAS_RETIRADAS` (`cms/services/contentService.ts`)
+se borran al arrancar, con su contenido completo en la auditoría
+(`content.entry_retired`) por si hubiera que rehacerlas con
+`restoreDeletedEntry`. Hoy son `calidad.*`, `contacto.hero`, `galeria.hero` y
+`galeria.config`.
+
+El formulario de ficha tampoco ofrece los campos que ninguna plantilla pinta
+(`procesos` de los servicios, `anio` de los proyectos): siguen en la base y en
+el `.md`, pero no se muestran. Ver `SIN_USO_EN_EL_SITIO` en
+`src/scripts/cms/overlay/secciones.ts`.
 
 ### Deshacer un borrado
 

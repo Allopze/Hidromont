@@ -635,7 +635,25 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const estabaVacia =
     (db.prepare('SELECT COUNT(*) n FROM content_entries').get() as { n: number }).n === 0;
   const { inserted, fieldsInserted } = contentService.importMissingEntries();
-  if (inserted > 0 || fieldsInserted > 0) {
+  // La semilla solo añade; las fichas que ninguna página lee se retiran aquí.
+  // El snapshot queda en la auditoría por si hubiera que rehacer alguna.
+  const retiradas = contentService.retireObsoleteEntries();
+  for (const snapshot of retiradas) {
+    auditRepository.log({
+      action: 'content.entry_retired',
+      entityType: 'entry',
+      entityId: snapshot.entry.id,
+      data: snapshot,
+    });
+  }
+  if (retiradas.length > 0) {
+    app.log.info(
+      `[CMS] retiradas ${retiradas.length} ficha(s) sin uso en el sitio: ${retiradas
+        .map((r) => r.entry.id)
+        .join(', ')}.`
+    );
+  }
+  if (inserted > 0 || fieldsInserted > 0 || retiradas.length > 0) {
     app.log.info(
       `[CMS] seed: ${inserted} entrada(s) y ${fieldsInserted} campo(s) nuevo(s) importado(s).`
     );

@@ -3,6 +3,8 @@ import type { CollectionEntry } from 'astro:content';
 import Badge from '../ui/Badge.astro';
 import Button from '../ui/Button.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
+import EditableText from '../cms/EditableText.astro';
+import EditableImage from '../cms/EditableImage.astro';
 
 import { projectImages } from '../../data/project-images';
 import { categoriaLabels } from '../../data/categories';
@@ -20,21 +22,34 @@ const isDestacado = proyecto.data.tipo === 'destacado';
 
 const slug = entrySlug(proyecto.id);
 const photo = projectImages[slug];
+// La misma ficha y la misma foto que edita la página del proyecto.
+const cmsEntry = `proyectos.${slug}`;
 ---
 
+{
+  /* Toda la tarjeta es un enlace: el «Ver detalle» se estira con un ::before
+     por encima del contenido. `data-cms-tarjeta-enlace` le dice al overlay que
+     suba los campos editables por encima de ese enlace mientras se edita;
+     para el visitante no cambia nada. */
+}
 <article
   class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md"
   data-reveal
+  data-cms-tarjeta-enlace
 >
   <!-- Project photo (only for destacado projects that have a curated image) -->
   {
     isDestacado && photo && (
       <div class="relative overflow-hidden bg-background-alt" style="aspect-ratio: 16/9;">
-        <img
+        <EditableImage
+          entry={`project-image.${slug}`}
+          field="image"
+          altField="imageAlt"
           src={photo.src}
           alt={photo.alt}
           loading="lazy"
           decoding="async"
+          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
           class="w-full h-full object-cover transition-transform duration-slow ease-standard group-hover:scale-[1.02]"
           width="640"
           height="360"
@@ -57,16 +72,37 @@ const photo = projectImages[slug];
   <div class="p-6 flex flex-col flex-1 gap-4">
     <div class="flex items-center justify-between gap-2 flex-wrap">
       <Badge variant="muted">{categoriaLabels[categoria] || categoria}</Badge>
-      {cliente && <span class="text-xs text-text-muted font-body font-medium">{cliente}</span>}
+      {
+        cliente && (
+          <EditableText
+            entry={cmsEntry}
+            field="cliente"
+            class="text-xs text-text-muted font-body font-medium"
+          >
+            {cliente}
+          </EditableText>
+        )
+      }
     </div>
 
-    <h3 class="font-heading font-bold text-text text-xl group-hover:text-primary transition-colors">
+    <EditableText
+      as="h3"
+      entry={cmsEntry}
+      field="nombre"
+      class="font-heading font-bold text-text text-xl group-hover:text-primary transition-colors"
+    >
       {nombre}
-    </h3>
+    </EditableText>
 
-    <p class="text-text-muted text-sm leading-relaxed line-clamp-3">
+    <EditableText
+      as="p"
+      entry={cmsEntry}
+      field="alcance"
+      type="textarea"
+      class="text-text-muted text-sm leading-relaxed line-clamp-3"
+    >
       {formatDiameters(alcance)}
-    </p>
+    </EditableText>
 
     {
       /* UIUX-20 fix: emoji glyphs render inconsistently across platforms and
@@ -92,12 +128,18 @@ const photo = projectImages[slug];
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
-              {ubicacion}
+              <EditableText entry={cmsEntry} field="ubicacion">
+                {ubicacion}
+              </EditableText>
             </span>
           )}
           {/* El valor ya trae su propio prefijo (Ø para tubería y blindaje, DN para
               válvulas), así que anteponer ⌀ lo duplicaría. */}
-          {diametro && <span>{formatDiameters(diametro)}</span>}
+          {diametro && (
+            <EditableText entry={cmsEntry} field="diametro">
+              {formatDiameters(diametro)}
+            </EditableText>
+          )}
           {longitud && (
             <span class="inline-flex items-center gap-1">
               <svg
@@ -112,7 +154,9 @@ const photo = projectImages[slug];
               >
                 <path d="M2 12h20M2 12v4M22 12v4M2 12v-4M22 12v-4" />
               </svg>
-              {longitud}
+              <EditableText entry={cmsEntry} field="longitud">
+                {longitud}
+              </EditableText>
             </span>
           )}
         </div>
