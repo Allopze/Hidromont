@@ -105,7 +105,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     contentRepository,
     config.cms.contentRootDir,
     galleryRepository,
-    imageService
+    imageService,
+    mediaRepository
   );
   const publishService = new PublishService(exportService, publishJobRepository);
   const backupService = new BackupService(db, config.cms.backupDir);
@@ -306,6 +307,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       const { id } = request.params as { id: string };
+      const body = (request.body ?? {}) as Record<string, unknown>;
       await mediaController.update(request, reply);
       if (reply.statusCode === 200) {
         auditRepository.log({
@@ -313,6 +315,9 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
           userId: request.cmsSession?.user.id,
           entityType: 'media',
           entityId: id,
+          // El resumen de «qué se va a publicar» cuenta los cambios de
+          // encuadre: son los únicos de la biblioteca que se ven en el sitio.
+          data: { enfoque: typeof body.focalX === 'number' || typeof body.focalY === 'number' },
           ip: request.ip,
         });
       }

@@ -15,6 +15,11 @@ type CmsField = {
     width: number;
     height: number;
   };
+  /**
+   * El punto de enfoque de la foto (0 a 1 en cada eje), que la persona elige
+   * arrastrándola en el editor. Solo viene cuando no es el centro.
+   */
+  focal?: { x: number; y: number };
 };
 
 type CmsContent = {
@@ -110,6 +115,28 @@ export function getCmsImageDerived(
   // Sin warnIfMissing: la ausencia de derivados es normal y esperada, no un
   // aviso que el operador deba atender.
   return content.entries[entryId]?.fields?.[key]?.derived;
+}
+
+/**
+ * El `object-position` que respeta el enfoque elegido para la foto de un
+ * campo, o undefined si no hay (el navegador recorta al centro).
+ */
+export function getCmsImageObjectPosition(
+  entryId: string | undefined,
+  key: string
+): string | undefined {
+  if (!entryId) return undefined;
+  return objectPositionDeEnfoque(content.entries[entryId]?.fields?.[key]?.focal);
+}
+
+/** `{ x: 0.5, y: 0.2 }` → `"50% 20%"`. Sin enfoque válido, undefined. */
+export function objectPositionDeEnfoque(focal: unknown): string | undefined {
+  if (!focal || typeof focal !== 'object') return undefined;
+  const { x, y } = focal as { x?: unknown; y?: unknown };
+  if (typeof x !== 'number' || typeof y !== 'number') return undefined;
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return undefined;
+  const pct = (v: number) => `${Math.round(Math.min(1, Math.max(0, v)) * 100)}%`;
+  return `${pct(x)} ${pct(y)}`;
 }
 
 export function getCmsImage(entryId: string, fallback: CmsImageData): CmsImageData {

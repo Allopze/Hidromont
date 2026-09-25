@@ -13,6 +13,7 @@ vi.mock('../data/cms-content.json', () => ({
           vacioTextarea: { type: 'textarea', value: '' },
           imagenVacia: { type: 'image', value: '' },
           imagen: { type: 'image', value: '/fotos/real.webp' },
+          encuadrada: { type: 'image', value: '/fotos/alta.webp', focal: { x: 0.5, y: 0.2 } },
           noEsString: { type: 'text', value: 42 },
         },
       },
@@ -27,7 +28,8 @@ vi.mock('../data/cms-content.json', () => ({
   },
 }));
 
-const { getCmsText, getCmsImage } = await import('../data/cms');
+const { getCmsText, getCmsImage, getCmsImageObjectPosition, objectPositionDeEnfoque } =
+  await import('../data/cms');
 
 // warnIfMissing escribe en consola cuando la clave no existe (solo en DEV, y
 // vitest corre en DEV). Lo silenciamos para no ensuciar la salida del test.
@@ -89,5 +91,22 @@ describe('getCmsImage', () => {
     expect(img.src).toBe('/fotos/defecto.webp');
     expect(img.width).toBe(800); // este sí viene del CMS
     expect(img.height).toBe(630);
+  });
+});
+
+describe('punto de enfoque', () => {
+  it('el sitio recorta por donde se eligió al arrastrar la foto', () => {
+    expect(getCmsImageObjectPosition('test.entry', 'encuadrada')).toBe('50% 20%');
+  });
+
+  it('sin enfoque guardado recorta al centro, como antes', () => {
+    expect(getCmsImageObjectPosition('test.entry', 'imagen')).toBeUndefined();
+    expect(getCmsImageObjectPosition(undefined, 'imagen')).toBeUndefined();
+  });
+
+  it('ignora valores que no son un enfoque', () => {
+    expect(objectPositionDeEnfoque({ x: '0.2', y: 0.5 })).toBeUndefined();
+    expect(objectPositionDeEnfoque({ x: Number.NaN, y: 0.5 })).toBeUndefined();
+    expect(objectPositionDeEnfoque({ x: 1.4, y: -1 })).toBe('100% 0%');
   });
 });

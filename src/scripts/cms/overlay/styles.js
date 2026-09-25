@@ -213,6 +213,15 @@ export const overlayStyles = `
     flex: none;
     display: block;
   }
+  /* Solo para lectores de pantalla. */
+  .hm-cms-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 
   /* ─── Elementos base, sin especificidad ─────────────────────────────── */
   :where(.hm-cms-shell) button {
@@ -1135,6 +1144,57 @@ export const overlayStyles = `
    * dentro) y con filas «auto» el navegador las encogía hasta el mínimo de
    * cada ficha para caber en los 300 px. Salían franjas de 10 px.
    */
+  /*
+   * Marco de encuadre: tiene la proporción del hueco de la página (la fija
+   * encuadre-ui.js) y recorta igual que el sitio. La foto se arrastra dentro.
+   */
+  .hm-cms-encuadre-marco {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: var(--hm-cms-radius-sm);
+  }
+  .hm-cms-encuadre-marco.is-encuadre img {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .hm-cms-encuadre-marco.is-movible {
+    cursor: grab;
+    touch-action: none;
+    box-shadow: 0 0 0 1px var(--hm-cms-line-soft);
+  }
+  .hm-cms-encuadre-marco.is-arrastrando {
+    cursor: grabbing;
+  }
+  .hm-cms-encuadre-marco.is-movible:focus-visible {
+    outline: 3px solid var(--hm-cms-accent);
+    outline-offset: 2px;
+  }
+  /* Una pista visual de que se puede mover, solo mientras no se arrastra. */
+  .hm-cms-encuadre-marco.is-movible::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-encuadre-marco.is-movible:hover::after,
+  .hm-cms-encuadre-marco.is-arrastrando::after {
+    opacity: 1;
+  }
+  .hm-cms-encuadre-ayuda {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
   .hm-cms-media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));

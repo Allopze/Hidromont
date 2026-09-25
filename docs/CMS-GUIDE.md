@@ -63,6 +63,27 @@ Definidos en `cms/controllers/ContentController.ts` y el schema (`GET /api/cms/s
 | `list`     | Listas de textos (normas) o de grupos       | Filas de texto, o un grupo por elemento    |
 | `object`   | Estructuras complejas                       | JSON                                       |
 
+### Encuadre de las fotos
+
+Muchas fotos del sitio se recortan para llenar su hueco (`object-fit: cover`):
+una foto vertical en una tarjeta apaisada, una apaisada en una portada casi
+cuadrada. Al editar una de esas fotos, la vista previa del panel toma la forma
+de ese hueco y **se puede arrastrar la foto dentro** para elegir qué parte se
+ve (también con las flechas del teclado; «Centrar» vuelve al recorte por
+defecto). La página muestra el resultado al momento, y se revierte si no se
+guarda.
+
+- El encuadre se guarda **en la foto** (`media_assets.focal_x/focal_y`, de 0 a
+  1), así que vale para todos los lugares donde se use.
+- El export lo escribe junto al campo en `cms-content.json` (`focal`), solo
+  cuando no es el centro, y `EditableImage` lo aplica como `object-position`.
+- Una foto que se ve entera, como el logo, no ofrece encuadre.
+- La foto de fondo de inicio y las tarjetas de proyectos destacados no pasan
+  por el CMS (vienen del código), así que no se encuadran desde el panel.
+
+Hasta sep-2026 el enfoque se guardaba pero ningún componente lo leía: se
+editaba con dos números («Foco X/Y») que no cambiaban nada en pantalla.
+
 ### Listas de grupos
 
 Algunas listas no son de textos sueltos sino de grupos: los **procesos** de un

@@ -11,7 +11,7 @@
 import { apiBase, state } from './context';
 import { asList, escapeHtml } from './html';
 import { icon } from './icons';
-import { setFormDirty, setGlobalState } from './shell';
+import { panelBody, setFormDirty, setGlobalState } from './shell';
 import { clearDraft } from './drafts';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
@@ -22,6 +22,7 @@ import { publishEnvironment } from './publish';
 import { dropzoneMarkup } from './dropzone';
 import { listEditorMarkup } from './list-editor';
 import { confirmarEdicion, empezarEdicion, escribirTexto, mostrarImagen } from './edicion';
+import { prepararEncuadre } from './encuadre-ui';
 
 export { listEditorMarkup, syncListValue } from './list-editor';
 
@@ -80,18 +81,26 @@ function fieldEditor(element, entry, field) {
   if (cmsType === 'image') {
     const imagenPredeterminada = !current;
     const vistaPrevia = current || element.currentSrc || element.src;
-    // Orden de la tarea: ver la foto, cambiarla (subir o elegir), describirla.
-    // La ruta queda en «Opciones avanzadas»: funciona igual, pero no es lo
-    // primero que alguien debería tocar.
+    // Orden de la tarea: ver la foto y su encuadre, cambiarla (subir o
+    // elegir), describirla. La ruta queda en «Opciones avanzadas»: funciona
+    // igual, pero no es lo primero que alguien debería tocar.
     //
-    // Ya no se ofrece el «punto de enfoque»: se guardaba, pero ningún
-    // componente del sitio lo lee, así que moverlo no cambiaba nada en
-    // pantalla. Un control sin efecto es peor que no tenerlo.
+    // El marco toma la forma del hueco de la página (encuadre-ui.js). Donde
+    // la foto se ve entera, como un logo, es una vista previa normal.
     return `
       <div class="hm-cms-image-preview">
-        <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview />
+        <div class="hm-cms-encuadre-marco" data-encuadre-marco aria-label="Encuadre de la foto" aria-describedby="hm-cms-encuadre-ayuda">
+          <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview draggable="false" />
+        </div>
         <p class="hm-cms-hint" data-selected-media-label>${imagenPredeterminada ? 'Imagen predeterminada del sitio' : 'Imagen actual'}</p>
+        <div class="hm-cms-encuadre-ayuda" data-encuadre-ayuda hidden>
+          <p class="hm-cms-hint" id="hm-cms-encuadre-ayuda">Arrastra la foto para elegir qué parte se ve en este lugar del sitio.<span class="hm-cms-sr"> También con las flechas del teclado.</span></p>
+          <button type="button" class="ghost small" data-action="encuadre-centrar">Centrar</button>
+        </div>
+        <p class="hm-cms-hint" data-encuadre-bloqueado hidden>Esta foto no está en la biblioteca, así que su encuadre no se puede ajustar.</p>
       </div>
+      <input name="focalX" type="hidden" value="" />
+      <input name="focalY" type="hidden" value="" />
       ${dropzoneMarkup({ texto: 'Subir una imagen nueva' })}
       <div class="hm-cms-field-group">
         <label>Elegir de la biblioteca
@@ -233,8 +242,44 @@ export async function selectElement(element) {
   );
   empezarEdicion(element);
 
-  if (esImagen) {
+  const form = panelBody.querySelector('form[data-edit]');
+  if (form?.elements.alt) form.elements.alt.dataset.inicial = form.elements.alt.value;
+  state.encuadre = null;
+  if (esImagen && form) {
     loadMediaPicker();
+    iniciarEncuadre(form, element, entry.fields[field]?.value ?? '');
+  }
+}
+
+/**
+ * El marco de encuadre necesita saber qué foto de la biblioteca es la que se
+ * ve: el punto de enfoque se guarda en la foto. Si el campo usa la imagen
+ * predeterminada del sitio, se busca por la ruta que muestra la página.
+ */
+function iniciarEncuadre(form, element, valor) {
+  const encuadre = prepararEncuadre(form, element);
+  if (!encuadre) return;
+  state.encuadre = encuadre;
+  const ruta = String(valor || element.getAttribute('src') || '');
+  form.dataset.rutaActual = ruta;
+  buscarMedioPorRuta(ruta).then((asset) => {
+    if (!form.isConnected || state.encuadre !== encuadre) return;
+    if (asset) {
+      if (!form.elements.mediaId.value) form.elements.mediaId.value = asset.id;
+      encuadre.fijar({ x: asset.focalX ?? 0.5, y: asset.focalY ?? 0.5 }, { inicial: true });
+    }
+    encuadre.habilitar(Boolean(asset));
+  });
+}
+
+async function buscarMedioPorRuta(ruta) {
+  if (!/^\/[^?#]+\.(webp|jpe?g|png|avif)$/i.test(ruta)) return null;
+  try {
+    const nombre = ruta.split('/').pop();
+    const data = await api(`/api/cms/media?${new URLSearchParams({ q: nombre, limit: '20' })}`);
+    return (data.items || []).find((item) => item.path === ruta) || null;
+  } catch {
+    return null;
   }
 }
 
@@ -279,6 +324,13 @@ export async function saveEdit(form) {
     }
   }
 
+  const esImagen = element.dataset.cmsType === 'image';
+  const valorOriginal = state.entry.fields[field]?.value ?? '';
+  // El encuadre elegido antes de subir una foto nueva: la subida la registra
+  // con el centro y hay que devolverle el que la persona dejó.
+  const encuadreElegido = state.encuadre?.actual();
+  let guardoAlgo = false;
+
   if (file) {
     const payload = new FormData();
     payload.append('file', file);
@@ -299,24 +351,51 @@ export async function saveEdit(form) {
     state.mediaItems = [uploaded, ...state.mediaItems.filter((item) => item.id !== uploaded.id)];
     setGlobalState('unsaved');
     applyMediaSelection(uploaded);
+    if (encuadreElegido) state.encuadre?.fijar(encuadreElegido);
     // Ya subida: si se vuelve a guardar no debe subirse otra vez.
     form.elements.file.value = '';
     form.elements.file.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  // Sin los controles de enfoque ya no viaja focalX/focalY: mandar el 0.5 por
-  // defecto habría pisado el valor guardado de la foto en cada guardado.
-  if (
-    element.dataset.cmsType === 'image' &&
-    form.elements.mediaId?.value &&
-    form.elements.alt?.value.trim()
-  ) {
-    await api(`/api/cms/media/${encodeURIComponent(form.elements.mediaId.value)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ alt: form.elements.alt.value.trim() }),
-    });
-    setGlobalState('unsaved');
+  // La foto de la biblioteca guarda su descripción y su encuadre. Solo viaja
+  // lo que cambió: mandar siempre el centro habría pisado el encuadre guardado.
+  const mediaId = form.elements.mediaId?.value;
+  const [focalX, focalY] = [form.elements.focalX, form.elements.focalY];
+  const encuadreCambiado =
+    Boolean(focalX?.value) &&
+    (focalX.value !== focalX.dataset.inicial || focalY.value !== focalY.dataset.inicial);
+  if (esImagen && mediaId) {
+    const cambios = {};
+    const alt = form.elements.alt;
+    if (
+      alt?.value.trim() &&
+      (form.dataset.medioNuevo === '1' || alt.value !== alt.dataset.inicial)
+    ) {
+      cambios.alt = alt.value.trim();
+    }
+    if (encuadreCambiado) {
+      cambios.focalX = Number(focalX.value);
+      cambios.focalY = Number(focalY.value);
+    }
+    if (Object.keys(cambios).length) {
+      await api(`/api/cms/media/${encodeURIComponent(mediaId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cambios),
+      });
+      if (focalX) focalX.dataset.inicial = focalX.value;
+      if (focalY) focalY.dataset.inicial = focalY.value;
+      guardoAlgo = true;
+      setGlobalState('unsaved');
+    }
+  }
+
+  // Un campo con la imagen predeterminada del sitio no tiene ruta propia: al
+  // ajustarle el encuadre se le da la que ya mostraba, para que el sitio sepa
+  // a qué foto aplicarlo.
+  if (esImagen && !value && encuadreCambiado && form.dataset.rutaActual) {
+    value = form.dataset.rutaActual;
+    form.elements.value.value = value;
   }
 
   // A-3: el servidor ya sabía detectar ediciones concurrentes
@@ -324,41 +403,49 @@ export async function saveEdit(form) {
   // versión actual y lanza un conflicto detallado), pero el overlay nunca
   // se la enviaba: con dos pestañas abiertas ganaba la última escritura,
   // en silencio y sin rastro visible.
-  let updated;
-  try {
-    updated = await api(
-      `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        // A-4: `mediaId` alimenta media_usages, que es lo que permite
-        // avisar de en qué páginas se usa una foto antes de borrarla.
-        body: JSON.stringify({
-          value,
-          expectedVersion: state.entry.version,
-          mediaId: form.elements.mediaId?.value || undefined,
-        }),
+  // En una imagen, cambiar solo el encuadre o la descripción no toca el
+  // campo: reenviarlo creaba una revisión idéntica y el resumen de
+  // publicación lo contaba como un cambio más.
+  let updated = state.entry;
+  const cambiaCampo = !esImagen || Boolean(file) || value !== valorOriginal;
+  if (cambiaCampo) {
+    try {
+      updated = await api(
+        `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(field)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          // A-4: `mediaId` alimenta media_usages, que es lo que permite
+          // avisar de en qué páginas se usa una foto antes de borrarla.
+          body: JSON.stringify({
+            value,
+            expectedVersion: state.entry.version,
+            mediaId: form.elements.mediaId?.value || undefined,
+          }),
+        }
+      );
+    } catch (error) {
+      if (error.status === 409) {
+        // No se re-renderiza el formulario: lo que el editor escribió sigue
+        // en pantalla y puede copiarlo antes de decidir.
+        renderConflict(form, entryId, field, error.message);
+        return;
       }
-    );
-  } catch (error) {
-    if (error.status === 409) {
-      // No se re-renderiza el formulario: lo que el editor escribió sigue
-      // en pantalla y puede copiarlo antes de decidir.
-      renderConflict(form, entryId, field, error.message);
-      return;
+      throw error;
     }
-    throw error;
+    guardoAlgo = true;
   }
   // Imprescindible: sin esto el segundo guardado del mismo panel mandaría
   // una versión rancia y el editor entraría en conflicto consigo mismo.
   state.entry = updated;
   setGlobalState('unsaved');
 
-  if (element.dataset.cmsType === 'image') {
-    if (value) mostrarImagen(element, value);
+  if (esImagen) {
+    if (value && value !== valorOriginal) mostrarImagen(element, value);
     const altField = element.dataset.cmsAltField;
-    if (altField && form.elements.alt) {
-      const altValue = form.elements.alt.value;
+    const alt = form.elements.alt;
+    if (altField && alt && alt.value !== alt.dataset.inicial) {
+      const altValue = alt.value;
       state.entry = await api(
         `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(altField)}`,
         {
@@ -368,6 +455,8 @@ export async function saveEdit(form) {
         }
       );
       element.setAttribute('alt', altValue);
+      alt.dataset.inicial = altValue;
+      guardoAlgo = true;
     }
   } else {
     // X-001: actualizar el contenido de texto sin destruir markup anidado.
@@ -380,6 +469,11 @@ export async function saveEdit(form) {
   // Lo que muestra la página ya está guardado: cerrar no debe revertirlo.
   confirmarEdicion();
 
+  if (esImagen && !guardoAlgo) {
+    setEditStatus(form, 'idle', 'No hay cambios que guardar.');
+    setFormDirty(false);
+    return;
+  }
   setEditStatus(form, 'success', mensajeGuardado());
   setGlobalState('unsaved');
   // A-11: este es el único guardado que no reabre el panel (los formularios
