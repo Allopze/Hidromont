@@ -457,6 +457,38 @@ export const overlayStyles = `
     font-size: 13.5px;
     white-space: nowrap;
   }
+  /* Menú «Más»: Historial, Administrar y Salir, que se usan de vez en cuando. */
+  .hm-cms-bar-more {
+    position: relative;
+  }
+  .hm-cms-bar-more > button > .hm-cms-icon {
+    transition: transform var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-bar-more > button[aria-expanded="true"] > .hm-cms-icon {
+    transform: rotate(180deg);
+  }
+  .hm-cms-bar-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    display: grid;
+    gap: 2px;
+    min-width: 230px;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--hm-cms-radius-lg);
+    background: var(--hm-cms-dark);
+    box-shadow: var(--hm-cms-shadow-lg);
+  }
+  .hm-cms-bar .hm-cms-bar-menu button {
+    justify-content: flex-start;
+    width: 100%;
+    border-color: transparent;
+    background: transparent;
+  }
+  .hm-cms-bar .hm-cms-bar-menu button:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
   .hm-cms-bar button[aria-pressed="true"] {
     border-color: var(--hm-cms-accent);
     box-shadow: 0 0 0 2px rgba(0, 166, 214, 0.18);
@@ -534,6 +566,10 @@ export const overlayStyles = `
     --hm-btn-bg: transparent;
     --hm-btn-line: transparent;
   }
+  /* Mientras se publica el panel no se puede cerrar: la X no se ofrece. */
+  .hm-cms-panel:has(.hm-cms-progress) .hm-cms-panel-head [data-action="close"] {
+    visibility: hidden;
+  }
   .hm-cms-panel-body {
     flex: 1;
     display: flex;
@@ -568,12 +604,12 @@ export const overlayStyles = `
    * Un formulario con pie ocupa todo el alto del panel: si es corto, el pie
    * queda abajo, donde se espera, y no flotando a media pantalla.
    */
-  .hm-cms-panel-body > form:has(> .hm-cms-footer) {
+  .hm-cms-panel-body > :is(form, .hm-cms-view):has(> .hm-cms-footer) {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
   }
-  .hm-cms-panel-body > form > .hm-cms-footer {
+  .hm-cms-panel-body > :is(form, .hm-cms-view) > .hm-cms-footer {
     margin-top: auto;
   }
   .hm-cms-footer .hm-cms-save-state:not(:empty) {
@@ -985,46 +1021,6 @@ export const overlayStyles = `
     align-items: center;
     gap: 2px;
     flex: none;
-  }
-
-  /* Portada de galería: tres destinos con su recuento. */
-  .hm-cms-nav-list {
-    display: grid;
-    gap: 8px;
-  }
-  .hm-cms-nav-row {
-    width: 100%;
-    min-height: 68px;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border: 1px solid var(--hm-cms-line-softer);
-    border-radius: var(--hm-cms-radius);
-    background: #fff;
-    text-align: left;
-    font-weight: 400;
-  }
-  .hm-cms-nav-row:hover {
-    border-color: var(--hm-cms-primary);
-    background: #fff;
-    box-shadow: var(--hm-cms-shadow-sm);
-  }
-  .hm-cms-nav-text {
-    display: grid;
-    gap: 2px;
-  }
-  .hm-cms-nav-title {
-    font: 600 14.5px/1.3 var(--hm-cms-font);
-    color: var(--hm-cms-ink);
-  }
-  .hm-cms-nav-detail {
-    font-size: 12.5px;
-    color: var(--hm-cms-muted-soft);
-  }
-  .hm-cms-nav-count {
-    font: 700 18px/1 var(--hm-cms-font);
-    color: var(--hm-cms-primary);
-    font-variant-numeric: tabular-nums;
   }
 
   /* ─── Secciones de la ficha ─────────────────────────────────────────── */
@@ -1654,6 +1650,99 @@ export const overlayStyles = `
   .hm-cms-undo-btn {
     min-height: 34px;
     white-space: nowrap;
+  }
+
+  /* ─── Publicación ───────────────────────────────────────────────────── */
+  .hm-cms-pending-list {
+    display: grid;
+    gap: 1px;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-pending-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fff;
+  }
+  .hm-cms-pending-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .hm-cms-pending-text strong {
+    font-weight: 600;
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-pending-text span,
+  .hm-cms-pending-when {
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-pending-when {
+    flex: none;
+    white-space: nowrap;
+  }
+  .hm-cms-progress {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding: 40px 16px;
+    text-align: center;
+  }
+  .hm-cms-progress > div {
+    display: grid;
+    gap: 6px;
+  }
+  .hm-cms-spinner-lg {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+    color: var(--hm-cms-primary);
+  }
+  .hm-cms-progress-clock {
+    font: 600 20px/1 var(--hm-cms-font);
+    font-variant-numeric: tabular-nums;
+    color: var(--hm-cms-ink-soft);
+  }
+  .hm-cms-result {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--hm-cms-line);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-result > div {
+    display: grid;
+    gap: 4px;
+  }
+  .hm-cms-result h3 {
+    font: 600 16px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-result.is-ok { border-color: var(--hm-cms-ok-line); background: var(--hm-cms-ok-bg); }
+  .hm-cms-result.is-ok > .hm-cms-icon { color: var(--hm-cms-ok-ink); }
+  .hm-cms-result.is-warn { border-color: var(--hm-cms-warn-line); background: var(--hm-cms-warn-bg); }
+  .hm-cms-result.is-warn > .hm-cms-icon { color: var(--hm-cms-warn-icon); }
+  .hm-cms-result.is-danger { border-color: var(--hm-cms-danger-line); background: var(--hm-cms-danger-bg); }
+  .hm-cms-result.is-danger > .hm-cms-icon { color: var(--hm-cms-danger-ink); }
+  .hm-cms-count-pill {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--hm-cms-surface-soft);
+    color: var(--hm-cms-ink-softer);
+    font-size: 11.5px;
+    font-weight: 600;
   }
 
   /* ─── Etiqueta al pasar el puntero ──────────────────────────────────── */

@@ -98,12 +98,21 @@ test('axe CMS collections, gallery and history scenes', async ({ page }) => {
   for (const [action, label] of [
     ['collections', 'CMS collections'],
     ['gallery', 'CMS gallery'],
-    ['jobs', 'CMS history'],
+    ['publish', 'CMS publish summary'],
   ] as const) {
     await page.locator(`.hm-cms-bar [data-action="${action}"]`).click();
     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
     await expectNoSeriousViolations(page, label, '.hm-cms-shell');
   }
+
+  // Historial vive en el menú «Más»: se revisa también el menú abierto.
+  await page.locator('.hm-cms-panel-head [data-action="close"]').click();
+  await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
+  await expect(page.locator('#hm-cms-bar-menu')).toBeVisible();
+  await expectNoSeriousViolations(page, 'CMS bar menu', '.hm-cms-shell');
+  await page.locator('.hm-cms-bar [data-action="jobs"]').click();
+  await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
+  await expectNoSeriousViolations(page, 'CMS history', '.hm-cms-shell');
 });
 
 /**

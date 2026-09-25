@@ -17,11 +17,44 @@ const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
 const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD ?? 'Hidromont-Admin-ChangeMe';
 
+let csrf = '';
+let restaurar: (() => Promise<unknown>) | null = null;
+
 async function apiLogin(page: Page) {
   const res = await page.request.post(`${CMS_URL}/api/cms/login`, {
     data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
   });
   expect(res.ok()).toBeTruthy();
+  csrf = (await res.json()).csrfToken;
+}
+
+/**
+ * El formulario ya solo envía lo que cambió: sin tocar nada, Guardar no manda
+ * ningún PATCH y no habría tanda que duplicar. Se cambian dos campos y se
+ * dejan como estaban al terminar.
+ */
+async function tocarDosCampos(page: Page, panel: import('@playwright/test').Locator) {
+  const form = panel.locator('[data-entry-form]');
+  const entryId = (await form.getAttribute('data-entry-id'))!;
+  const entrada = await (await page.request.get(`${CMS_URL}/api/cms/entries/${entryId}`)).json();
+  const resumen = entrada.fields.resumen.value as string;
+  const aplicaciones = entrada.fields.aplicaciones.value as string[];
+  await form.locator('textarea[name="field:resumen"]').fill(`${resumen} `);
+  await form
+    .locator('[data-field-key="aplicaciones"] [data-list-item]')
+    .first()
+    .fill(`${aplicaciones[0]} `);
+  restaurar = async () => {
+    for (const [key, value] of [
+      ['resumen', resumen],
+      ['aplicaciones', aplicaciones],
+    ] as const) {
+      await page.request.patch(`${CMS_URL}/api/cms/entries/${entryId}/fields/${key}`, {
+        headers: { 'x-csrf-token': csrf, 'content-type': 'application/json' },
+        data: { value },
+      });
+    }
+  };
 }
 
 async function abrirPrimerServicio(page: Page) {
@@ -35,9 +68,15 @@ async function abrirPrimerServicio(page: Page) {
 }
 
 test.describe('Doble envío', () => {
+  test.afterEach(async () => {
+    await restaurar?.();
+    restaurar = null;
+  });
+
   test('dos clics seguidos en Guardar producen una sola tanda de PATCH', async ({ page }) => {
     await apiLogin(page);
     const panel = await abrirPrimerServicio(page);
+    await tocarDosCampos(page, panel);
 
     const patches: string[] = [];
     page.on('request', (r) => {
@@ -61,11 +100,14 @@ test.describe('Doble envío', () => {
       patches.length,
       `se enviaron ${patches.length} PATCH para ${unicos.size} campos distintos`
     ).toBe(unicos.size);
+    // Y solo los dos campos que cambiaron, no los nueve de la ficha.
+    expect(unicos.size).toBe(2);
   });
 
   test('el guardado informa de su avance campo a campo', async ({ page }) => {
     await apiLogin(page);
     const panel = await abrirPrimerServicio(page);
+    await tocarDosCampos(page, panel);
 
     // Se observa el nodo en vez de muestrearlo: con nueve PATCH que pueden
     // resolverse en menos de un intervalo de sondeo, muestrear se pierde
@@ -109,6 +151,7 @@ test.describe('Doble envío', () => {
   test('el panel no se cierra mientras está guardando', async ({ page }) => {
     await apiLogin(page);
     const panel = await abrirPrimerServicio(page);
+    await tocarDosCampos(page, panel);
 
     await panel.locator('button[type="submit"]').click();
     // Inmediatamente: la tanda de PATCH sigue viva.

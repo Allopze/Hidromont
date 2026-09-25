@@ -202,6 +202,7 @@ test.describe('CMS overlay flow', () => {
     await apiLogin(page);
     await page.goto('/?cms=1');
 
+    await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     await page.locator('.hm-cms-bar [data-action="admin"]').click();
     const panel = page.locator('.hm-cms-panel.open');
     await expect(panel).toBeVisible();

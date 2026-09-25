@@ -9,7 +9,7 @@
  */
 
 import { apiBase, state } from './context';
-import { escapeHtml, formatDate } from './html';
+import { escapeHtml } from './html';
 import { isFormDirty, panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
 import { editando, previsualizarImagen, previsualizarTexto } from './edicion';
 import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
@@ -42,12 +42,7 @@ import {
 } from './list-editor';
 import { confirmar, hayConfirmacionAbierta } from './confirm';
 import { mostrarArchivoElegido, registrarArrastre } from './dropzone';
-import {
-  exportNoticeMarkup,
-  loadPublishJobs,
-  publishEnvironment,
-  renderPublishJobs,
-} from './publish';
+import { abrirPublicacion, exportNoticeMarkup, loadPublishJobs, publicar } from './publish';
 import { ADMIN_AUDIT_PAGE, adminState, loadAdmin, loadRevisions, renderAdmin } from './admin';
 import {
   GALLERY_PAGE_SIZE,
@@ -75,6 +70,24 @@ import {
 } from './collections';
 
 // ─── Fin CRUD colecciones ────────────────────────────────────────────────
+
+function menuBarra() {
+  return shell.querySelector('#hm-cms-bar-menu');
+}
+
+function menuBarraAbierto() {
+  return menuBarra()?.hidden === false;
+}
+
+/** Abre, cierra o alterna el menú «Más» de la barra. */
+function alternarMenuBarra(abrir = !menuBarraAbierto()) {
+  const menu = menuBarra();
+  const boton = shell.querySelector('[data-action="bar-menu"]');
+  if (!menu || !boton) return;
+  menu.hidden = !abrir;
+  boton.setAttribute('aria-expanded', String(abrir));
+  if (abrir) menu.querySelector('button:not([hidden])')?.focus();
+}
 
 /**
  * Un formulario que se autoguarda acaba de cambiar: estado sucio (el punto de
@@ -105,6 +118,19 @@ export function registerEvents() {
       const action =
         target instanceof Element ? target.closest('[data-action]')?.dataset.action : null;
 
+      // Menú «Más» de la barra: se abre con su botón y se cierra al elegir
+      // una opción o al pulsar en cualquier otro sitio.
+      if (action === 'bar-menu') {
+        event.preventDefault();
+        alternarMenuBarra();
+        return;
+      }
+      if (
+        menuBarraAbierto() &&
+        !(target instanceof Element && target.closest('.hm-cms-bar-more [data-action="bar-menu"]'))
+      ) {
+        alternarMenuBarra(false);
+      }
       if (action === 'rt-format' && target instanceof Element) {
         event.preventDefault();
         const boton = target.closest('[data-action="rt-format"]');
@@ -142,8 +168,10 @@ export function registerEvents() {
         // guarda anti-encogimiento de galería) moría como promesa rechazada
         // sin manejar: el panel no cambiaba y el editor creía haber exportado.
         const btn = target instanceof Element ? target.closest('button') : null;
-        const status = panelBody.querySelector('[data-status]');
-        setButtonLoading(btn, true, 'Preparando...');
+        const status =
+          btn?.closest('section, form')?.querySelector('[data-status]') ||
+          panelBody.querySelector('[data-status]');
+        setButtonLoading(btn, true, 'Preparando…');
         try {
           const result = await api('/api/cms/export', { method: 'POST' });
           const aviso = exportNoticeMarkup(result.exported);
@@ -484,73 +512,13 @@ export function registerEvents() {
         return;
       }
       if (action === 'publish') {
-        if (!(await ensureSession())) return;
-        const btn = target instanceof Element ? target.closest('button') : null;
-        setButtonLoading(btn, true, 'Publicando...');
-        openPanel(
-          '<p class="hm-cms-muted"><span class="hm-cms-spinner"></span> Preparando archivos y compilando el sitio. Puede tardar varios minutos.</p>'
-        );
-        try {
-          const result = await api('/api/cms/publish', { method: 'POST' });
-          renderPublishJobs(result.job ? [result.job] : []);
-          // A-6: decir desde cuándo es el sitio que se está sirviendo, para
-          // que «falta desplegar» deje de ser una afirmación sin fecha.
-          if (result.siteBuiltAt) {
-            panelBody.insertAdjacentHTML(
-              'afterbegin',
-              `<p class="hm-cms-muted">Sitio servido: compilado el ${escapeHtml(formatDate(result.siteBuiltAt))}.</p>`
-            );
-          }
-          const jobStatus = result.job?.status;
-          const entorno = publishEnvironment();
-          const conOmisiones =
-            (result.exported?.skipped || []).length > 0 ||
-            (result.exported?.revertedToFallback || []).length > 0;
-          if (jobStatus === 'succeeded') {
-            const mensaje = conOmisiones
-              ? entorno === 'production'
-                ? 'El proceso terminó con omisiones. Revisa los avisos antes de confirmar que el sitio quedó actualizado.'
-                : entorno === 'local'
-                  ? 'La compilación local terminó con omisiones. Revisa los avisos; aún falta desplegarla para actualizar hidromontchile.cl.'
-                  : 'La compilación terminó con omisiones. Revisa los avisos; no se confirma una actualización de hidromontchile.cl.'
-              : entorno === 'production'
-                ? 'Sitio actualizado en hidromontchile.cl.'
-                : entorno === 'local'
-                  ? 'Compilación local completada. Aún falta desplegarla para actualizar hidromontchile.cl.'
-                  : 'Compilación completada en este entorno. No se confirma una actualización de hidromontchile.cl; despliega los cambios en producción.';
-            panelBody.insertAdjacentHTML(
-              'afterbegin',
-              `<p class="hm-cms-muted" role="status" aria-live="polite" aria-atomic="true">${escapeHtml(mensaje)}</p>`
-            );
-          } else {
-            panelBody.insertAdjacentHTML(
-              'afterbegin',
-              '<p class="hm-cms-error" role="alert">La publicación no terminó correctamente. Revisa el registro de abajo antes de volver a intentar.</p>'
-            );
-          }
-          const aviso = exportNoticeMarkup(result.exported);
-          if (aviso) panelBody.insertAdjacentHTML('afterbegin', aviso);
-          setGlobalState(
-            jobStatus !== 'succeeded'
-              ? 'error'
-              : entorno === 'production'
-                ? conOmisiones
-                  ? 'published-warning'
-                  : 'published'
-                : entorno === 'local'
-                  ? conOmisiones
-                    ? 'local-warning'
-                    : 'local-built'
-                  : conOmisiones
-                    ? 'other-warning'
-                    : 'other-built'
-          );
-        } catch (error) {
-          openPanel(`<p class="hm-cms-error" role="alert">${escapeHtml(error.message)}</p>`);
-          setGlobalState('error');
-        } finally {
-          setButtonLoading(btn, false);
-        }
+        // Primero el resumen de lo que va a salir; se publica al confirmar.
+        abrirPublicacion();
+      }
+      if (action === 'confirm-publish') {
+        event.preventDefault();
+        publicar();
+        return;
       }
       // A-9: la afordancia correcta para «quiero que este rótulo desaparezca».
       // Vaciar el campo sí lo borra del sitio (getCmsText distingue clave
@@ -1112,6 +1080,11 @@ export function registerEvents() {
     // abierto es suyo, no del panel. Lo mismo una confirmación en pantalla.
     if (shell.querySelector('.hm-cms-mobile-sheet.open')) return;
     if (hayConfirmacionAbierta()) return;
+    if (menuBarraAbierto()) {
+      alternarMenuBarra(false);
+      shell.querySelector('[data-action="bar-menu"]')?.focus();
+      return;
+    }
     closePanel();
   });
 }

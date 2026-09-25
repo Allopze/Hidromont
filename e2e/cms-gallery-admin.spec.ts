@@ -51,7 +51,7 @@ test.describe('CMS Gallery Administration', () => {
     await expect(panel).toBeVisible();
 
     // 2. Entrar a Categorías
-    await panel.getByRole('button', { name: 'Gestionar categorías' }).click();
+    await panel.locator('.hm-cms-tab[data-action="gallery-cats"]').click();
     await expect(panel.locator('[data-action="gallery-new-cat"]')).toBeVisible();
 
     // 3. Crear nueva categoría
@@ -130,7 +130,7 @@ test.describe('CMS Gallery Administration', () => {
     await expect(panel).toBeVisible();
 
     // Entrar a Álbumes
-    await panel.getByRole('button', { name: 'Gestionar álbumes' }).click();
+    await panel.locator('.hm-cms-tab[data-action="gallery-albums"]').click();
     await expect(panel.locator('[data-action="gallery-new-album"]')).toBeVisible();
 
     // Crear nuevo álbum
@@ -204,7 +204,7 @@ test.describe('CMS Gallery Administration', () => {
     await expect(panel).toBeVisible();
 
     // Entrar a Imágenes
-    await panel.getByRole('button', { name: 'Gestionar imágenes' }).click();
+    await panel.locator('.hm-cms-tab[data-action="gallery-items"]').click();
     await expect(panel.locator('[data-action="gallery-new-item"]')).toBeVisible();
 
     // Click en Agregar imagen

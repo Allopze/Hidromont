@@ -37,7 +37,7 @@ async function crearCategoria(page: Page, csrf: string, nombre: string) {
 async function abrirCategorias(page: Page) {
   await page.goto('/?cms=1');
   await page.locator('.hm-cms-bar [data-action="gallery"]').click();
-  await page.getByRole('button', { name: 'Gestionar categorías' }).click();
+  await page.locator('.hm-cms-tab[data-action="gallery-cats"]').click();
   await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
 }
 
@@ -119,7 +119,7 @@ test.describe('Deshacer', () => {
     await expect(aviso).toHaveAttribute('aria-live', 'polite');
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
-    await page.getByRole('button', { name: 'Gestionar categorías' }).click();
+    await page.locator('.hm-cms-tab[data-action="gallery-cats"]').click();
     await aceptarConfirmaciones(page);
     await page.locator(`[data-action="gallery-delete-cat"][data-cat-name="${nombre}"]`).click();
     await expect(aviso).toBeVisible();

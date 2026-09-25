@@ -260,12 +260,6 @@ function campoMarkup(key, f, enums, esTitulo = false) {
 export async function showEntryForm(entryId = null, kind = activeCollectionKind) {
   if (!(await ensureSession())) return;
   const schema = await getSchema();
-  const enums = schema.enumFields?.[kind] || {};
-  const draftGroup = kind === 'servicio' || kind === 'proyecto' ? 'collection' : 'page';
-  const draft = schema.draftEffect?.[draftGroup] || {
-    label: 'Borrador',
-    warning: '',
-  };
   let entry = null;
   if (entryId) {
     try {
@@ -274,7 +268,16 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
       return;
     }
+    // Manda el tipo de la entrada, no el de la pestaña activa: desde «Editar
+    // esta ficha» o desde el resumen de publicación puede ser otro.
+    kind = entry.kind || kind;
   }
+  const enums = schema.enumFields?.[kind] || {};
+  const draftGroup = kind === 'servicio' || kind === 'proyecto' ? 'collection' : 'page';
+  const draft = schema.draftEffect?.[draftGroup] || {
+    label: 'Borrador',
+    warning: '',
+  };
 
   setPanelTitle(entry ? 'Editar entrada' : 'Nueva entrada');
 
@@ -353,12 +356,37 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
   `,
     { wide: true }
   );
+  const formulario = panelBody.querySelector('[data-entry-form]');
+  if (formulario) recordarValoresIniciales(formulario);
   const slug = panelBody.querySelector('[data-entry-form] [name="slug"]');
   if (slug) {
     slug.addEventListener('input', () => mostrarRutaSugerida(kind, slug.value));
     mostrarRutaSugerida(kind, slug.value);
   }
   if (!entry) sugerirIdentificadores(kind);
+}
+
+/**
+ * El valor con que se abrió cada control, para mandar solo lo que cambió.
+ *
+ * No sirve `defaultValue`: en un `<input type="hidden">` —el de las listas—
+ * asignar `value` reescribe también el atributo, así que el valor «por
+ * defecto» cambia con cada tecla y nunca habría diferencia que detectar.
+ */
+function recordarValoresIniciales(form) {
+  for (const el of form.elements) {
+    if (el.name) el.dataset.inicial = el.value;
+  }
+}
+
+function cambio(input) {
+  return (
+    Boolean(input) && input.dataset.inicial !== undefined && input.value !== input.dataset.inicial
+  );
+}
+
+function marcarGuardado(input) {
+  if (input) input.dataset.inicial = input.value;
 }
 
 /** El nombre visible de un control del formulario, para los mensajes de error. */
@@ -415,65 +443,74 @@ export async function saveEntryForm(form) {
       clearDraft(form);
       return;
     } else {
-      await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, slug, status: entryStatus }),
-      });
-      // Los metadatos ya quedaron guardados aunque un PATCH de campo posterior
-      // falle. Reflejarlo en la barra evita dejar un estado «publicado» falso.
-      setGlobalState('unsaved');
+      // Solo viaja lo que cambió. Antes cada guardado reenviaba los nueve
+      // campos y los datos de la entrada aunque se hubiera tocado uno: nueve
+      // revisiones idénticas por guardado, y el resumen de «qué se va a
+      // publicar» decía que había cambiado todo.
+      const meta = [form.elements.title, form.elements.slug, form.elements.status];
+      const campos = Object.entries(form.elements).filter(
+        ([name, input]) => typeof name === 'string' && name.startsWith('field:') && cambio(input)
+      );
+      if (!meta.some(cambio) && campos.length === 0) {
+        if (status) status.textContent = 'No hay cambios que guardar.';
+        clearDraft(form);
+        return;
+      }
+
+      if (meta.some(cambio)) {
+        await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, slug, status: entryStatus }),
+        });
+        meta.forEach(marcarGuardado);
+        // Los metadatos ya quedaron guardados aunque un PATCH de campo
+        // posterior falle: la barra no debe seguir diciendo «publicado».
+        setGlobalState('unsaved');
+      }
 
       // A-3: secuencial y SIN `expectedVersion`, a diferencia de saveEdit.
       // Cada PATCH incrementa la versión de la misma entrada, así que en
       // paralelo y con control de concurrencia estos guardados se
-      // conflictuarían entre sí. En serie el orden es además determinista:
-      // con Promise.all se generaban N revisiones en orden indeterminado.
+      // conflictuarían entre sí. En serie el orden es además determinista.
       // El bucle ya sabe cuántos campos va a mandar, así que puede decirlo.
-      // Antes eran hasta nueve peticiones en serie bajo un único «Guardando...»
-      // que no cambiaba nunca: sin señal de avance y sin forma de saber si
-      // seguía vivo. Es el único flujo largo del panel que no informaba.
-      const campos = Object.entries(form.elements).filter(
-        ([name]) => typeof name === 'string' && name.startsWith('field:')
-      );
       let hechos = 0;
 
       for (const [name, input] of campos) {
-        {
-          const key = name.slice(6);
-          // A-8: el servidor valida que el valor case con el tipo declarado
-          // del campo, así que un número no puede viajar como cadena.
-          const fieldType = input.dataset?.fieldType;
-          let value = input.value;
-          if (fieldType === 'number') {
-            value = input.value === '' ? null : Number(input.value);
-          } else if (fieldType === 'list') {
-            try {
-              value = JSON.parse(input.value || '[]');
-            } catch {
-              value = [];
-            }
-          }
+        const key = name.slice(6);
+        // A-8: el servidor valida que el valor case con el tipo declarado
+        // del campo, así que un número no puede viajar como cadena.
+        const fieldType = input.dataset?.fieldType;
+        let value = input.value;
+        if (fieldType === 'number') {
+          value = input.value === '' ? null : Number(input.value);
+        } else if (fieldType === 'list') {
           try {
-            await api(
-              `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
-              {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ value }),
-              }
-            );
-          } catch (error) {
-            // El servidor nombra la clave («orden»); quien edita ve el rótulo
-            // («Orden de aparición»). Se dice cuál falló y cuántos sí entraron.
-            const rotulo = rotuloDeCampo(input, key);
-            throw new Error(
-              `No se pudo guardar «${rotulo}»: ${error.message}${hechos ? ` (los ${hechos} campos anteriores sí se guardaron)` : ''}`
-            );
+            value = JSON.parse(input.value || '[]');
+          } catch {
+            value = [];
           }
-          hechos += 1;
-          if (status) status.textContent = `Guardando campo ${hechos} de ${campos.length}...`;
         }
+        try {
+          await api(
+            `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
+            {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ value }),
+            }
+          );
+        } catch (error) {
+          // El servidor nombra la clave («orden»); quien edita ve el rótulo
+          // («Orden de aparición»). Se dice cuál falló y cuántos sí entraron.
+          const rotulo = rotuloDeCampo(input, key);
+          throw new Error(
+            `No se pudo guardar «${rotulo}»: ${error.message}${hechos ? ` (los ${hechos} campos anteriores sí se guardaron)` : ''}`
+          );
+        }
+        marcarGuardado(input);
+        hechos += 1;
+        if (status) status.textContent = `Guardando campo ${hechos} de ${campos.length}...`;
       }
     }
 

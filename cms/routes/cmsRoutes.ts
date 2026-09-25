@@ -32,6 +32,7 @@ import { ExportService } from '../services/exportService';
 import { GalleryService } from '../services/galleryService';
 import { ImageService } from '../services/imageService';
 import { MediaService } from '../services/mediaService';
+import { PendingService } from '../services/pendingService';
 import { PublishService } from '../services/publishService';
 import { ErrorDeshacer, UndoService } from '../services/undoService';
 import { captureException } from '../utils/errorTracking';
@@ -114,6 +115,7 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const undoService = new UndoService(auditRepository, contentService, galleryService);
   const mediaController = new MediaController(mediaService);
   const publishController = new PublishController(publishService, backupService);
+  const pendingService = new PendingService(db, contentService);
 
   // CMS-L6: this endpoint is intentionally unauthenticated (monitoring/CI need to
   // reach it without credentials), so it must not leak business data — entry and
@@ -364,6 +366,11 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   );
   app.get('/api/cms/publish/jobs', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     publishController.listJobs(request, reply)
+  );
+  // Lo que saldrá al publicar: el panel lo enseña antes de confirmar y la
+  // barra lo cuenta, también al recargar.
+  app.get('/api/cms/publish/pending', { preHandler: [requireAuth(authService)] }, () =>
+    pendingService.pendientes()
   );
   app.get(
     '/api/cms/publish/jobs/:id',

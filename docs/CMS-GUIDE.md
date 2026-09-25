@@ -42,8 +42,9 @@ Al arrancar, el CMS:
 1. Arranca `npm run dev:cms` (requiere `PUBLIC_ENABLE_CMS=1` en `.env`).
 2. Abre `http://editor.localhost:4321` o, solo en desarrollo, `http://localhost:4321/?cms=1`.
 3. Inicia sesión con el usuario y la contraseña configurados por quien administra el CMS.
-4. Los elementos editables muestran un cursor de cruz al hacer hover. Click → panel lateral con el editor del campo.
-5. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la vista previa de esta página; los visitantes todavía no lo ven.
+4. Al pasar el puntero sobre algo editable aparece una etiqueta («Editar texto» o «Cambiar imagen»). Al pulsarlo se abre el panel lateral con su editor, sin oscurecer la página: el elemento queda resaltado y muestra lo que se escribe. Si se cierra sin guardar, vuelve a como estaba.
+5. En la ficha de un servicio o proyecto, la barra ofrece **«Editar este servicio/proyecto»**, que abre su formulario completo. `Cmd/Ctrl+S` guarda el formulario abierto.
+6. Guarda (escribe a SQLite al instante). El cambio se ve reflejado en la vista previa de esta página; los visitantes todavía no lo ven.
 
 > **Importante:** el overlay **solo se incluye en el build si `PUBLIC_ENABLE_CMS=1`**. En producción se activa desde el subdominio `editor.*`; `?cms=1` no activa el CMS en el dominio público. El hosting estático de Cloudflare debe llevar `PUBLIC_ENABLE_CMS=0`; la instalación Node integrada lleva `1`. El CI verifica el build estático con `e2e/build-gate.spec.ts`.
 
@@ -130,7 +131,7 @@ Edita campos en el overlay. Los cambios se guardan en la base SQLite de esta ins
 
 ### 2. Exportar archivos
 
-El botón **Exportar** del editor ejecuta `POST /api/cms/export`. Solo prepara estos archivos; no compila ni actualiza el sitio:
+**Administrar → Herramientas avanzadas → Exportar archivos** ejecuta `POST /api/cms/export`. Hasta sep-2026 estaba en el editor de cada campo, donde se confundía con «Publicar cambios». Solo prepara estos archivos; no compila ni actualiza el sitio:
 
 - `src/data/cms-content.json` — entradas page/layout/component/settings.
 - `src/data/gallery.json` — items + categorías de galería con derivadas de imagen.
@@ -143,7 +144,16 @@ La escritura es **atómica** (`.tmp` + rename) y crea directorios recursivamente
 
 ### 3. Publicar cambios
 
-El botón **Publicar cambios** ejecuta `POST /api/cms/publish`: exporta el
+La barra cuenta los cambios pendientes («3 cambios sin publicar»), también
+después de recargar: lo calcula `GET /api/cms/publish/pending` a partir del
+registro de actividad desde la última publicación correcta.
+
+**Publicar cambios** abre primero un resumen de qué va a salir (qué fichas,
+páginas y fotos cambiaron) y qué pasará al confirmar. Al confirmar se ve el
+avance con un reloj —el panel no se puede cerrar mientras dura— y al terminar
+un resultado en palabras; el registro técnico queda en «Detalles técnicos».
+
+Por debajo, confirmar ejecuta `POST /api/cms/publish`: exporta el
 contenido y luego corre `CMS_PUBLISH_CHECK_COMMAND` (en producción,
 `npm run build`). Si estás editando en local, esto compila localmente; todavía
 hay que desplegar el resultado para actualizar el sitio público. Si abriste el
@@ -192,7 +202,7 @@ CRUD completo de categorías, álbumes e items:
 - **Álbumes:** una obra con sus fotos. Nombre editable, slug fijo, posición (reorderable). El slug no se puede cambiar porque es lo que enlaza las fotos con `/proyectos/<slug>`; para mover fotos entre álbumes se cambia el álbum en cada foto. Un álbum con fotos no se puede borrar: el CMS responde cuántas hay que mover primero.
 - **Items:** media, categoría, álbum, alt (obligatorio, validado 1-500 chars), featured, status, posición (reorderable). Las fotos no llevan título ni descripción: la galería las muestra agrupadas por álbum y nada más. El alt no se ve en pantalla — es lo que leen los lectores de pantalla y sobre lo que busca el filtro de la galería.
 
-Galería → **Gestionar álbumes** para renombrar una obra sin tocar código; Galería → **Gestionar imágenes** para asignar cada foto a su álbum.
+**Galería** abre directamente en **Imágenes**, con pestañas para **Álbumes** (renombrar una obra sin tocar código) y **Categorías**. Cada foto se asigna a su álbum desde su ficha en Imágenes.
 
 El export genera derivadas de imagen (640/1024/1600px + LQIP base64) vía sharp.
 
@@ -239,7 +249,7 @@ El guard H2 detectó `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0`. Opciones: HTTPS
 
 ### Cambios no aparecen en el sitio
 
-Editar guarda en SQLite. **Exportar** prepara los archivos fuente, pero no los compila. Usa **Publicar cambios**; si el CMS está en local, despliega luego el resultado para actualizar el sitio público.
+Editar guarda en SQLite. Usa **Publicar cambios**: el resumen dice qué saldrá. Si el CMS está en local, despliega luego el resultado para actualizar el sitio público. (**Exportar**, en Administrar, solo prepara los archivos fuente y no los compila.)
 
 ### Clave CMS falta (warn en consola de dev)
 
