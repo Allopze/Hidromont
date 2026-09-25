@@ -13,6 +13,7 @@ import { escapeHtml } from './html';
 import { panelBody } from './shell';
 import { api } from './api';
 import { icon } from './icons';
+import { previsualizarImagen } from './edicion';
 
 /**
  * A-2 — Un solo selector de medios, paginado y con búsqueda en el servidor.
@@ -46,6 +47,7 @@ export function schedulePreviewUpdate(valor) {
     // Solo cuando parece una ruta completa a una imagen.
     if (preview && /^\/.+\.(webp|jpe?g|png|svg|avif)$/i.test(valor)) {
       preview.setAttribute('src', valor);
+      previsualizarImagen(valor);
     }
   }, 400);
 }
@@ -179,8 +181,8 @@ export function applyMediaSelection(asset) {
   form.elements.value.value = asset.path;
   form.elements.mediaId.value = asset.id;
   if (form.elements.alt && asset.alt) form.elements.alt.value = asset.alt;
-  if (form.elements.focalX) form.elements.focalX.value = asset.focalX ?? 0.5;
-  if (form.elements.focalY) form.elements.focalY.value = asset.focalY ?? 0.5;
+  // La foto elegida se ve ya en la página; si no se guarda, vuelve la anterior.
+  previsualizarImagen(asset.path);
 
   const preview = panelBody.querySelector('[data-image-preview]');
   if (preview) {

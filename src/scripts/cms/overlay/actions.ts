@@ -24,9 +24,21 @@ export interface AccionBarra {
   soloTactil?: boolean;
   /** Marca un control con estado pulsado alternable. */
   pulsable?: boolean;
+  /**
+   * Solo tiene sentido en la página de un servicio o proyecto: se muestra
+   * cuando `ficha.js` reconoce la entrada de la página y le pone su id.
+   */
+  requiereFicha?: boolean;
 }
 
 export const ACCIONES_BARRA: readonly AccionBarra[] = [
+  {
+    accion: 'edit-page-entry',
+    etiqueta: 'Editar esta ficha',
+    secundario: true,
+    titulo: 'Abre el formulario de esta página: títulos, textos, listas y datos de la ficha.',
+    requiereFicha: true,
+  },
   { accion: 'collections', etiqueta: 'Colecciones', secundario: true },
   { accion: 'gallery', etiqueta: 'Galería', secundario: true },
   { accion: 'jobs', etiqueta: 'Historial', secundario: true },
@@ -69,6 +81,7 @@ export function botonesDeBarra({ conTitulo = true }: { conTitulo?: boolean } = {
     const titulo = conTitulo && a.titulo ? ` title="${escaparAtributo(a.titulo)}"` : '';
     const soloTactil = a.soloTactil ? ' data-touch-only' : '';
     const pressed = a.pulsable ? ' aria-pressed="false"' : '';
-    return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}${soloTactil}${pressed}>${a.etiqueta}</button>`;
+    const ficha = a.requiereFicha ? ' data-page-entry' : '';
+    return `<button type="button"${clase} data-action="${a.accion}" data-auth hidden${titulo}${soloTactil}${pressed}${ficha}>${a.etiqueta}</button>`;
   }).join('\n      ');
 }

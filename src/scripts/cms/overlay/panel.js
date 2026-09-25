@@ -12,6 +12,7 @@ import { state } from './context';
 import { isFormDirty, panel, panelBody, setFormDirty, shell } from './shell';
 import { offerDraft } from './drafts';
 import { confirmar } from './confirm';
+import { terminarEdicion } from './edicion';
 
 const backdrop = shell.querySelector('[data-cms-backdrop]');
 
@@ -30,15 +31,23 @@ panel.tabIndex = -1;
  *   Con `'panel'` el foco va al propio panel: en Administración el primer
  *   campo es «Contraseña actual», al fondo de la vista, y enfocarlo desplazaba
  *   el panel hasta allí nada más abrirlo.
+ * @param modal Oscurecer la página detrás. Al editar un campo va a `false`:
+ *   la página es la vista previa, y taparla era justo lo contrario de lo que
+ *   se necesita para ver el cambio.
+ * @param wide Panel ancho, para las fichas de colección: con cuerpo en
+ *   Markdown y cuatro listas no cabían en 440 px.
  */
-export function openPanel(html, { autofocus = true } = {}) {
+export function openPanel(html, { autofocus = true, modal = true, wide = false } = {}) {
   if (document.activeElement && !panel.contains(document.activeElement)) {
     lastActiveElement = document.activeElement;
   }
   // Cada openPanel destruye el formulario anterior: arrastrar el estado
-  // sucio de una vista a la siguiente siempre sería incorrecto.
+  // sucio de una vista a la siguiente siempre sería incorrecto. Lo mismo la
+  // vista previa en la página: si no se guardó, vuelve a como estaba.
   setFormDirty(false);
+  terminarEdicion();
   panelBody.innerHTML = html;
+  panel.classList.toggle('is-wide', wide);
   // E-2: un solo punto para los tres formularios que se autoguardan. Si hay
   // una copia local que difiere de lo que se acaba de pintar, se ofrece
   // aquí, antes de que el editor empiece a escribir encima.
@@ -48,7 +57,7 @@ export function openPanel(html, { autofocus = true } = {}) {
     offerDraft(form);
   }
   panel.classList.add('open');
-  if (backdrop) backdrop.classList.add('visible');
+  if (backdrop) backdrop.classList.toggle('visible', modal);
   panel.inert = false;
   panel.removeAttribute('aria-hidden');
   // B-2: solo mientras está abierto. Marcarlo siempre haría que un lector
@@ -168,6 +177,7 @@ export async function closePanel(force = false) {
     return false;
   }
   setFormDirty(false);
+  terminarEdicion();
   panel.classList.remove('open');
   if (backdrop) backdrop.classList.remove('visible');
   panel.inert = true;

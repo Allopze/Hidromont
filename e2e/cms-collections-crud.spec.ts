@@ -88,8 +88,11 @@ test.describe('CMS Collections CRUD', () => {
     await itemCreado.locator('[data-action="edit-entry"]').click();
     await expect(entryForm).toBeVisible();
 
+    // Un solo título: el campo que usa el sitio. El nombre en la lista lo
+    // sigue solo, así que cambiarlo aquí debe renombrar la fila.
     const nuevoTitulo = `${TEST_TITLE} Modificado`;
-    await entryForm.locator('input[name="title"]').fill(nuevoTitulo);
+    await expect(entryForm.locator('input[name="title"]')).toHaveAttribute('type', 'hidden');
+    await entryForm.locator('input[name="field:titulo"]').fill(nuevoTitulo);
 
     // Si tiene campos de lista (ej: aplicaciones o items), probar añadir y remover
     const listEditor = entryForm.locator('[data-list-editor]').first();

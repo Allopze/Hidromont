@@ -10,7 +10,8 @@
 
 import { apiBase, state } from './context';
 import { escapeHtml, formatDate } from './html';
-import { panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
+import { isFormDirty, panel, panelBody, setFormDirty, setGlobalState, shell } from './shell';
+import { editando, previsualizarImagen, previsualizarTexto } from './edicion';
 import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
 import { api, ejecutarUnaVez, setButtonLoading } from './api';
 import { deshacer, ofrecerDeshacer } from './undo';
@@ -32,7 +33,13 @@ import {
   refrescarPrevisualizacion,
 } from './richtext';
 import { ESTADOS_DE_CAMPO, saveEdit, selectElement, setEditStatus, syncLinkValue } from './fields';
-import { agregarElemento, quitarElemento, repintarLista, syncListValue } from './list-editor';
+import {
+  agregarElemento,
+  moverElemento,
+  quitarElemento,
+  repintarLista,
+  syncListValue,
+} from './list-editor';
 import { confirmar, hayConfirmacionAbierta } from './confirm';
 import { mostrarArchivoElegido, registrarArrastre } from './dropzone';
 import {
@@ -202,6 +209,10 @@ export function registerEvents() {
           renderAdmin({ autofocus: false });
         }
       }
+      if (action === 'edit-page-entry' && target instanceof Element) {
+        const boton = target.closest('[data-page-entry]');
+        if (boton?.dataset.entryId) showEntryForm(boton.dataset.entryId, boton.dataset.kind);
+      }
       if (action === 'collections') {
         loadCollections();
       }
@@ -347,6 +358,7 @@ export function registerEvents() {
               (preview.closest('[data-gallery-preview-box]') || preview).hidden = false;
             }
             renderMediaPicker();
+            markDirty(form);
           }
         }
         return;
@@ -405,6 +417,13 @@ export function registerEvents() {
         event.stopPropagation();
         agregarElemento(target.closest('[data-list-editor]'));
         markDirty(target.closest('form'));
+        return;
+      }
+      if (action === 'move-list-item' && target instanceof Element) {
+        event.preventDefault();
+        event.stopPropagation();
+        const boton = target.closest('[data-action="move-list-item"]');
+        if (boton && moverElemento(boton)) markDirty(boton.closest('form'));
         return;
       }
       if (action === 'remove-list-item' && target instanceof Element) {
@@ -558,6 +577,7 @@ export function registerEvents() {
           campo.focus();
           setFormDirty(true);
           setEditStatus(form, 'dirty', ESTADOS_DE_CAMPO.sucio);
+          previsualizarTexto('');
         }
         return;
       }
@@ -619,13 +639,38 @@ export function registerEvents() {
         event.stopPropagation();
         const mediaId = target.closest('[data-media-id]')?.dataset.mediaId;
         const asset = state.mediaItems.find((item) => item.id === mediaId);
-        if (asset) applyMediaSelection(asset);
+        if (asset) {
+          applyMediaSelection(asset);
+          // Elegir otra foto es un cambio sin guardar, como escribir: sin esto
+          // el panel decía «Todo guardado» y cerrar no avisaba.
+          markDirty(panelBody.querySelector('form[data-edit]'));
+        }
         return;
       }
 
       if (editable && !panel.contains(editable)) {
         event.preventDefault();
         event.stopPropagation();
+        // El mismo elemento que ya se está editando: no se recarga (se
+        // perdería lo escrito), solo se vuelve al campo.
+        if (editando(editable) && panel.classList.contains('open')) {
+          panelBody.querySelector('form[data-edit] [name="value"]:not([type="hidden"])')?.focus();
+          return;
+        }
+        // Con la página visible detrás del panel se puede pulsar otro campo
+        // en cualquier momento: si hay algo sin guardar, se pregunta antes.
+        if (
+          isFormDirty &&
+          !(await confirmar({
+            titulo: 'Tienes cambios sin guardar',
+            mensaje:
+              'Si pasas a otro elemento, quedará una copia local que podrás recuperar al volver a este.',
+            aceptar: 'Cambiar de elemento',
+            cancelar: 'Seguir editando',
+          }))
+        ) {
+          return;
+        }
         selectElement(editable).catch((error) => loginView(error.message));
       }
     },
@@ -954,8 +999,10 @@ export function registerEvents() {
     const file = target.files?.[0];
     if (!file || !form?.matches('[data-edit]')) return;
     markDirty(form);
+    const local = URL.createObjectURL(file);
     const preview = form.querySelector('[data-image-preview]');
-    if (preview) preview.src = URL.createObjectURL(file);
+    if (preview) preview.src = local;
+    previsualizarImagen(local);
   });
 
   // Handle file upload preview in gallery item form
@@ -999,7 +1046,16 @@ export function registerEvents() {
     }
 
     if (target.name === 'value' && target.form?.matches('[data-edit]')) {
-      schedulePreviewUpdate(target.value);
+      const tipo = state.selected?.dataset.cmsType || 'text';
+      if (tipo === 'image') schedulePreviewUpdate(target.value);
+      // El texto se ve en la página mientras se escribe. El Markdown no: en
+      // crudo no es una vista previa, es ruido.
+      else if (tipo === 'text' || tipo === 'textarea') previsualizarTexto(target.value);
+    }
+    // Título de la ficha: el nombre en la lista sigue al campo que usa el sitio.
+    if (target.matches('[data-sync-title]') && target.form?.elements.title) {
+      const titulo = target.form.elements.title;
+      titulo.value = target.value.trim() || titulo.dataset.anterior || '';
     }
     if (target.name === 'alt' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');
@@ -1025,6 +1081,21 @@ export function registerEvents() {
 
   // Ctrl+B/I/K dentro del editor de texto con formato. Solo consume la
   // pulsación si había un editor enfocado; si no, sigue siendo del navegador.
+  // Cmd/Ctrl+S guarda el formulario abierto, como en cualquier editor. Se
+  // consume siempre que el panel está abierto: el «Guardar página» del
+  // navegador no tiene sentido aquí y descargaba el HTML.
+  document.addEventListener('keydown', (event) => {
+    if (!(event.metaKey || event.ctrlKey) || event.altKey || event.key.toLowerCase() !== 's') {
+      return;
+    }
+    if (!panel.classList.contains('open') || hayConfirmacionAbierta()) return;
+    event.preventDefault();
+    const form = panelBody.querySelector(
+      'form[data-edit], form[data-entry-form], form[data-gallery-item-form], form[data-gallery-cat-form], form[data-gallery-album-form]'
+    );
+    form?.requestSubmit();
+  });
+
   document.addEventListener('keydown', (event) => {
     if (manejarAtajo(event)) {
       event.preventDefault();

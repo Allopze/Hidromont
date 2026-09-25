@@ -18,6 +18,7 @@ import { richtextMarkup } from './richtext';
 import { fieldLabelMarkup, listEditorMarkup, mensajeGuardado } from './fields';
 import { confirmar } from './confirm';
 import { icon } from './icons';
+import { campoTituloDe, seccionesDeFicha } from './secciones';
 
 // ─── CRUD de colecciones ─────────────────────────────────────────────────
 const COLLECTION_KINDS = [
@@ -200,6 +201,62 @@ async function getSchema() {
   return schemaCache;
 }
 
+/**
+ * Un campo del formulario de ficha.
+ *
+ * @param esTitulo El campo que el sitio usa como título: arrastra el nombre de
+ *   la entrada en la lista del panel (`data-sync-title`).
+ */
+function campoMarkup(key, f, enums, esTitulo = false) {
+  const name = `field:${escapeHtml(key)}`;
+  const rotulo = fieldLabelMarkup(key, f);
+  // A-7: los campos de enumeración eran texto libre, y un valor mal escrito
+  // hacía que el export omitiera la entrada en silencio.
+  if (enums[key]) {
+    const actual = String(f.value ?? '');
+    const conocido = enums[key].some((o) => o.value === actual);
+    return `<label data-field-key="${escapeHtml(key)}">${rotulo}
+      <select name="${name}" data-field-type="text">
+        ${
+          !conocido && actual
+            ? `<option value="${escapeHtml(actual)}" selected>⚠ ${escapeHtml(actual)} (valor inválido)</option>`
+            : ''
+        }
+        ${enums[key]
+          .map(
+            (o) =>
+              `<option value="${escapeHtml(o.value)}"${o.value === actual ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
+          )
+          .join('')}
+      </select>
+    </label>`;
+  }
+  // Una lista no cabe dentro de un <label>: son varios controles. Su nombre va
+  // en un <fieldset>, que es lo que un lector de pantalla anuncia al entrar.
+  if (f.type === 'list') {
+    return `<fieldset class="hm-cms-fieldset" data-field-key="${escapeHtml(key)}">
+      <legend>${rotulo}</legend>
+      ${listEditorMarkup(asList(f.value), name, { clave: key })}
+    </fieldset>`;
+  }
+  // El cuerpo va a ancho completo y con su propia barra de formato.
+  if (f.type === 'richtext') {
+    return richtextMarkup(f.value, name, rotulo);
+  }
+  const valor = escapeHtml(String(f.value ?? ''));
+  const control =
+    f.type === 'textarea'
+      ? `<textarea name="${name}" data-field-type="textarea">${valor}</textarea>`
+      : f.type === 'number'
+        ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${valor}" />`
+        : `<input name="${name}" data-field-type="text" value="${valor}"${esTitulo ? ' data-sync-title required' : ''} />`;
+  return `<label data-field-key="${escapeHtml(key)}">${rotulo}${control}</label>${
+    esTitulo
+      ? '<p class="hm-cms-hint">Es el título que se ve en el sitio y en la lista del panel.</p>'
+      : ''
+  }`;
+}
+
 export async function showEntryForm(entryId = null, kind = activeCollectionKind) {
   if (!(await ensureSession())) return;
   const schema = await getSchema();
@@ -220,11 +277,50 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
   }
 
   setPanelTitle(entry ? 'Editar entrada' : 'Nueva entrada');
-  openPanel(`
+
+  // A-8: `number` y `list` estaban excluidos, así que `orden` no era editable
+  // en ninguna parte del CMS. `richtext` estaba excluido por el mismo
+  // descuido, y era peor: es el cuerpo de la ficha, el texto que el visitante
+  // lee, y los 48 cuerpos no se podían editar desde ninguna parte del panel.
+  const campos = Object.fromEntries(
+    Object.entries(entry?.fields || {}).filter(([, f]) =>
+      ['text', 'textarea', 'richtext', 'number', 'list'].includes(f.type)
+    )
+  );
+  const campoTitulo = entry ? campoTituloDe(kind, Object.keys(campos)) : null;
+  const secciones = entry ? seccionesDeFicha(kind, Object.keys(campos)) : [];
+
+  openPanel(
+    `
     <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-kind="${escapeHtml(kind)}">
-      <label>Título
+      ${
+        // Un solo título: el que muestra el sitio. El de la entrada es el
+        // nombre en la lista del panel y lo sigue en silencio (events.js).
+        campoTitulo
+          ? `<input type="hidden" name="title" value="${escapeHtml(entry.title || '')}" data-anterior="${escapeHtml(entry.title || '')}" />`
+          : `<label>Título
         <input name="title" value="${escapeHtml(entry?.title || '')}" required />
-      </label>
+      </label>`
+      }
+      ${
+        !entryId && (kind === 'servicio' || kind === 'proyecto')
+          ? `
+        <p class="hm-cms-notice is-info">
+          Al crearla, se abrirá aquí el formulario con campos de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Complétalos y guarda antes de «Publicar cambios».
+        </p>`
+          : ''
+      }
+      ${secciones
+        .map(
+          (seccion) => `
+        <section class="hm-cms-form-section">
+          ${seccion.titulo ? `<h3 class="hm-cms-form-section-title">${escapeHtml(seccion.titulo)}</h3>` : ''}
+          ${seccion.claves
+            .map((key) => campoMarkup(key, campos[key], enums, key === campoTitulo))
+            .join('')}
+        </section>`
+        )
+        .join('')}
       <details class="hm-cms-advanced" ${!entryId ? 'open' : ''}>
         <summary>Dirección y publicación</summary>
       ${
@@ -247,80 +343,6 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       </label>
       <p class="hm-cms-notice is-warn" data-draft-warning hidden>${escapeHtml(draft.warning)}</p>
       </details>
-      ${
-        !entryId && (kind === 'servicio' || kind === 'proyecto')
-          ? `
-        <p class="hm-cms-notice is-info">
-          Al crearla, se abrirá aquí el formulario con campos de ejemplo (${kind === 'servicio' ? 'resumen, icono, orden' : 'alcance, categoría, orden'}). Complétalos y guarda antes de «Publicar cambios».
-        </p>`
-          : ''
-      }
-      ${
-        entry
-          ? Object.entries(entry.fields || {})
-              // A-8: `number` y `list` estaban excluidos, así que `orden` no
-              // era editable en ninguna parte del CMS y no había forma de
-              // reordenar servicios ni proyectos, que es justo por lo que la
-              // home y /servicios ordenan sus tarjetas.
-              //
-              // `richtext` estaba excluido por el mismo descuido, y era peor:
-              // es el cuerpo en Markdown de la ficha —el texto que el visitante
-              // lee— y ningún componente lo expone con `data-cms-type`, así que
-              // los 48 cuerpos de servicios y proyectos no se podían editar
-              // desde ninguna parte del panel.
-              .filter(([, f]) =>
-                ['text', 'textarea', 'richtext', 'number', 'list'].includes(f.type)
-              )
-              .map(([key, f]) => {
-                const name = `field:${escapeHtml(key)}`;
-                // A-7: los campos de enumeración eran texto libre, y un
-                // valor mal escrito hacía que el export omitiera la entrada
-                // en silencio mientras el job se cerraba como correcto.
-                if (enums[key]) {
-                  const actual = String(f.value ?? '');
-                  const conocido = enums[key].some((o) => o.value === actual);
-                  return `<label data-field-key="${escapeHtml(key)}">${fieldLabelMarkup(key, f)}
-                    <select name="${name}" data-field-type="text">
-                      ${
-                        !conocido && actual
-                          ? `<option value="${escapeHtml(actual)}" selected>⚠ ${escapeHtml(actual)} (valor inválido)</option>`
-                          : ''
-                      }
-                      ${enums[key]
-                        .map(
-                          (o) =>
-                            `<option value="${escapeHtml(o.value)}"${o.value === actual ? ' selected' : ''}>${escapeHtml(o.label)}</option>`
-                        )
-                        .join('')}
-                    </select>
-                  </label>`;
-                }
-                // Una lista no cabe dentro de un <label>: son varios controles.
-                // Su nombre va en un <fieldset>, que es lo que un lector de
-                // pantalla anuncia al entrar en cualquiera de ellos.
-                if (f.type === 'list') {
-                  return `<fieldset class="hm-cms-fieldset" data-field-key="${escapeHtml(key)}">
-                    <legend>${fieldLabelMarkup(key, f)}</legend>
-                    ${listEditorMarkup(asList(f.value), name, { clave: key })}
-                  </fieldset>`;
-                }
-                // El cuerpo va a ancho completo y con su propia barra, no
-                // dentro de un <label> como el resto: es el campo donde se
-                // escriben párrafos, no un dato de una línea.
-                if (f.type === 'richtext') {
-                  return richtextMarkup(f.value, name, fieldLabelMarkup(key, f));
-                }
-                const control =
-                  f.type === 'textarea'
-                    ? `<textarea name="${name}" data-field-type="textarea">${escapeHtml(String(f.value ?? ''))}</textarea>`
-                    : f.type === 'number'
-                      ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${escapeHtml(String(f.value ?? ''))}" />`
-                      : `<input name="${name}" data-field-type="text" value="${escapeHtml(String(f.value ?? ''))}" />`;
-                return `<label data-field-key="${escapeHtml(key)}">${fieldLabelMarkup(key, f)}${control}</label>`;
-              })
-              .join('')
-          : ''
-      }
       <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
         <button type="button" class="ghost" data-action="back-to-collections">${icon('arrowLeft')}Volver</button>
@@ -328,7 +350,9 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
         <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
     </form>
-  `);
+  `,
+    { wide: true }
+  );
   const slug = panelBody.querySelector('[data-entry-form] [name="slug"]');
   if (slug) {
     slug.addEventListener('input', () => mostrarRutaSugerida(kind, slug.value));

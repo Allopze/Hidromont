@@ -85,7 +85,9 @@ document.body.classList.add('hm-cms-active');
 // haber entrado, y Colecciones/Galería/Historial invitaban a clicks fallidos).
 export function setAuthenticatedUI(isAuthenticated) {
   shell.querySelectorAll('[data-auth]').forEach((el) => {
-    el.hidden = !isAuthenticated;
+    // «Editar esta ficha» necesita además saber qué entrada es la página.
+    const faltaFicha = el.hasAttribute('data-page-entry') && !el.dataset.entryId;
+    el.hidden = !isAuthenticated || faltaFicha;
   });
 }
 
