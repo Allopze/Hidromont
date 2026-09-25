@@ -84,13 +84,13 @@ export const mobileMenuStyles = `
       justify-content: center;
       min-width: 48px;
       min-height: 48px;
-      padding: 8px 12px;
-      border: 1px solid var(--hm-cms-line);
-      border-radius: 0;
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
       background: var(--hm-cms-dark);
       color: #fff;
       box-shadow: 0 12px 32px rgba(15, 36, 51, 0.28);
-      font: 800 14px/1 Inter, system-ui, sans-serif;
+      font: 700 14px/1 var(--hm-cms-font, Inter, system-ui, sans-serif);
       cursor: pointer;
     }
     /* Sin sesión el launcher queda oculto: el atributo hidden debe ganarle a
@@ -116,8 +116,8 @@ export const mobileMenuStyles = `
       max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
       overflow-y: auto;
       padding: 16px;
-      border: 1px solid var(--hm-cms-line);
-      border-radius: 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--hm-cms-radius-lg, 12px);
       background: var(--hm-cms-dark);
       color: #fff;
       box-shadow: 0 20px 48px rgba(15, 36, 51, 0.36);
@@ -137,19 +137,21 @@ export const mobileMenuStyles = `
       gap: 8px;
     }
     .hm-cms-mobile-sheet button {
+      justify-content: flex-start;
       min-width: 44px;
       min-height: 48px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      border-radius: 0;
-      padding: 10px 12px;
+      border: 1px solid var(--hm-cms-primary);
+      border-radius: var(--hm-cms-radius-sm, 6px);
+      padding: 10px 14px;
       background: var(--hm-cms-primary);
       color: #fff;
-      font: 700 14px/1.2 Inter, system-ui, sans-serif;
+      font: 600 15px/1.2 var(--hm-cms-font, Inter, system-ui, sans-serif);
       text-align: left;
       cursor: pointer;
     }
     .hm-cms-mobile-sheet button.secondary {
-      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
     }
     .hm-cms-mobile-sheet button[aria-pressed="true"] {
       border-color: var(--hm-cms-accent);
@@ -157,6 +159,7 @@ export const mobileMenuStyles = `
     }
     .hm-cms-mobile-sheet [data-mobile-close] {
       width: auto;
+      justify-content: center;
       text-align: center;
     }
     .hm-cms-mobile-state:empty {
@@ -211,7 +214,7 @@ export function mountMobileMenu(): void {
       <button type="button" class="secondary" data-mobile-close aria-label="Cerrar menú CMS">Cerrar</button>
     </div>
     <span class="hm-cms-badge hm-cms-mobile-state" data-mobile-state role="status" aria-live="polite" aria-atomic="true"></span>
-    <p class="hm-cms-mobile-help">Guardar conserva el cambio en el CMS. «Publicar cambios» actualiza el sitio en producción; en local compila aquí y luego debes desplegarlo. «Guías editables» muestra las zonas que puedes tocar.</p>
+    <p class="hm-cms-mobile-help">Toca un texto o una imagen del sitio para editarlo. Lo que guardes se verá en el sitio cuando pulses «Publicar cambios». «Guías editables» marca lo que se puede tocar.</p>
     <div class="hm-cms-mobile-sheet-actions">
       ${botonesDeBarra({ conTitulo: false })}
     </div>

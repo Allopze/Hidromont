@@ -13,6 +13,7 @@
  */
 
 import { escapeHtml } from './html';
+import { icon } from './icons';
 import {
   alternarEnvoltura,
   alternarLista,
@@ -34,11 +35,11 @@ const BOTONES = [
   { accion: 'h2', etiqueta: 'H2', titulo: 'Título de sección' },
   { accion: 'h3', etiqueta: 'H3', titulo: 'Subtítulo' },
   { separador: true },
-  { accion: 'ul', etiqueta: '•', titulo: 'Lista con viñetas' },
-  { accion: 'ol', etiqueta: '1.', titulo: 'Lista numerada' },
-  { accion: 'quote', etiqueta: '❝', titulo: 'Cita' },
-  { accion: 'code', etiqueta: '</>', titulo: 'Código' },
-  { accion: 'link', etiqueta: '🔗', titulo: 'Enlace (Ctrl+K)' },
+  { accion: 'ul', icono: 'list', titulo: 'Lista con viñetas' },
+  { accion: 'ol', icono: 'listOrdered', titulo: 'Lista numerada' },
+  { accion: 'quote', icono: 'quote', titulo: 'Cita' },
+  { accion: 'code', icono: 'code', titulo: 'Código' },
+  { accion: 'link', icono: 'link', titulo: 'Enlace (Ctrl+K)' },
 ];
 
 /** Qué transformación aplica cada botón. */
@@ -79,7 +80,7 @@ export function richtextMarkup(valor, name = 'value', etiqueta = 'Contenido') {
            data-format="${b.accion}" title="${escapeHtml(b.titulo)}" tabindex="${
              b.accion === BOTONES.find((x) => !x.separador).accion ? '0' : '-1'
            }"
-           aria-label="${escapeHtml(b.titulo)}">${escapeHtml(b.etiqueta)}</button>`
+           aria-label="${escapeHtml(b.titulo)}">${b.icono ? icon(b.icono) : escapeHtml(b.etiqueta)}</button>`
   ).join('');
 
   return `
@@ -95,9 +96,8 @@ export function richtextMarkup(valor, name = 'value', etiqueta = 'Contenido') {
         data-richtext-input rows="14" spellcheck="true">${escapeHtml(String(valor ?? ''))}</textarea>
       <div class="hm-cms-rt-preview" data-richtext-preview hidden></div>
       <p class="hm-cms-rt-help">
-        Se guarda en Markdown: <code>**negrita**</code>, <code>*cursiva*</code>,
-        <code>## título</code>, <code>- lista</code>. La vista previa es orientativa;
-        el aspecto final lo da el sitio.
+        Selecciona texto y usa los botones para darle formato. «Vista previa» muestra
+        cómo queda; el aspecto final lo da el sitio.
       </p>
     </div>
   `;

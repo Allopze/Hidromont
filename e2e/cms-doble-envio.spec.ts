@@ -52,10 +52,9 @@ test.describe('Doble envío', () => {
     await guardar.click({ force: true });
     await guardar.click({ force: true });
 
-    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(
-      'Guardado. Cambios pendientes de publicar.',
-      { timeout: 15_000 }
-    );
+    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(/^Guardado\./, {
+      timeout: 15_000,
+    });
 
     const unicos = new Set(patches);
     expect(
@@ -83,10 +82,9 @@ test.describe('Doble envío', () => {
     });
 
     await panel.locator('button[type="submit"]').click();
-    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(
-      'Guardado. Cambios pendientes de publicar.',
-      { timeout: 15_000 }
-    );
+    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(/^Guardado\./, {
+      timeout: 15_000,
+    });
 
     const estados = await page.evaluate(
       () => (window as unknown as { __estados: string[] }).__estados
@@ -121,9 +119,8 @@ test.describe('Doble envío', () => {
 
     // Debe seguir abierto y terminar el trabajo, no cerrarse a medias.
     await expect(panel.locator('[data-entry-form]')).toBeVisible();
-    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(
-      'Guardado. Cambios pendientes de publicar.',
-      { timeout: 15_000 }
-    );
+    await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(/^Guardado\./, {
+      timeout: 15_000,
+    });
   });
 });

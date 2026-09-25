@@ -247,14 +247,17 @@ test.describe('CMS overlay flow', () => {
     const form = panel.locator('form[data-entry-form]');
     await expect(form).toBeVisible();
 
-    // `orden` sale con su nombre legible y conserva la clave como pista,
-    // porque es la que aparece en los mensajes de error del servidor.
+    // `orden` sale con su nombre legible. La clave ya no se muestra al lado
+    // —quien edita la leía como parte del nombre—, pero queda en el marcado
+    // para quien da soporte.
     const orden = form.locator('label', { hasText: 'Orden de aparición' });
     await expect(orden).toBeVisible();
-    await expect(orden.locator('.hm-cms-field-key')).toHaveText('orden');
+    await expect(orden).toHaveAttribute('data-field-key', 'orden');
+    await expect(orden).not.toContainText(/\borden\b/);
 
     // Y cuando la etiqueta es la clave capitalizada no se repite al lado.
-    const aplicaciones = form.locator('label', { hasText: /^Aplicaciones$/ });
+    // Las listas se rotulan con <legend>: son varios controles, no uno.
+    const aplicaciones = form.locator('legend', { hasText: /^Aplicaciones$/ });
     await expect(aplicaciones).toHaveCount(1);
 
     // El desplegable de icono describe el dibujo, no el identificador.
@@ -272,13 +275,13 @@ test.describe('CMS overlay flow', () => {
     await apiLogin(page);
     await page.goto('/?cms=1');
 
-    const avisos: string[] = [];
-    page.on('dialog', (d) => {
-      avisos.push(d.message());
-      d.accept();
-    });
+    // El aviso de salir con cambios (beforeunload) sigue siendo nativo.
+    page.on('dialog', (d) => d.accept());
+    const confirmacion = page.locator('[data-cms-dialog]');
 
-    const editable = page.locator('[data-cms-entry][data-cms-field]').first();
+    const editable = page
+      .locator('[data-cms-entry][data-cms-field][data-cms-type="text"]:visible')
+      .first();
     await editable.click();
     const campo = page.locator('form[data-edit] [name="value"]');
     await expect(campo).toBeVisible();
@@ -300,8 +303,9 @@ test.describe('CMS overlay flow', () => {
 
     // Cerrar descartando: el aviso ya anuncia que la copia queda.
     await page.locator('.hm-cms-panel [data-action="close"]').click();
+    await expect(confirmacion).toContainText(/copia local que podrás recuperar/i);
+    await confirmacion.locator('[data-dialog-ok]').click();
     await expect(page.locator('.hm-cms-panel.open')).not.toBeVisible();
-    expect(avisos.join(' ')).toMatch(/copia local que podrás recuperar/i);
 
     // Al reabrir se ofrece, y el formulario sigue mostrando el valor del
     // servidor: la copia no se aplica sin decidirlo.
@@ -317,6 +321,7 @@ test.describe('CMS overlay flow', () => {
 
     // Y «Descartar» borra la copia de verdad.
     await page.locator('.hm-cms-panel [data-action="close"]').click();
+    await confirmacion.locator('[data-dialog-ok]').click();
     await editable.click();
     await page.locator('[data-action="discard-draft"]').click();
     await expect

@@ -8,17 +8,47 @@
  * está activo en `editor.*` (o por `?cms=1` en desarrollo), de modo que un visitante normal no descarga nada.
  */
 
+/*
+ * Cómo está organizada esta hoja (sep-2026).
+ *
+ * La versión anterior pintaba cada <button> del panel como botón azul de
+ * llamada a la acción con una regla de elemento, `.hm-cms-panel button`
+ * (especificidad 0,1,1). Cualquier componente construido sobre un <button>
+ * —pestañas, miniaturas, la barra del editor de texto, las tarjetas— perdía
+ * contra ella y había que calificarlo con `.hm-cms-panel` para empatar: los
+ * comentarios de la hoja documentaban cinco de esas peleas, y el resultado
+ * era un panel donde casi todo parecía igual de importante.
+ *
+ * Ahora las reglas base de elementos llevan el ámbito dentro de `:where()`:
+ * `:where(.hm-cms-shell) button` pesa lo mismo que un selector de elemento
+ * (0,0,1). Empata con el reset del sitio (`input { padding: 0; font: inherit }`,
+ * `p { margin-bottom }`) y le gana por orden, porque esta hoja se inyecta al
+ * final; y pierde contra cualquier clase, que es lo que se buscaba. Los
+ * estados (:hover, :disabled…) van también dentro de `:where()` para no subir
+ * ese peso. Ojo: con todo el selector dentro de `:where()` el peso sería 0 y
+ * el reset del sitio ganaría — pasó con los campos de texto, que perdieron el
+ * relleno y heredaban la negrita del rótulo.
+ *
+ * Un botón sin clase es neutro; lo que destaca lo declara:
+ *
+ *   button            neutro (borde, fondo claro)
+ *   .primary          la acción principal de la vista; los submit lo son solos
+ *   .secondary        neutro explícito
+ *   .ghost            solo texto, para Volver, Cancelar, herramientas
+ *   .destructive      borrar; con .ghost es discreto, con .strong es rotundo
+ *   .small / .icon    tamaños
+ *
+ * Los colores de los botones neutros salen de variables (--hm-btn-*), que las
+ * superficies oscuras (barra, cabecera del panel, aviso de deshacer)
+ * redefinen. Así el mismo botón sirve sobre claro y sobre oscuro sin clases
+ * distintas.
+ */
 export const overlayStyles = `
   /*
-   * B-3: la barra y el panel pintaban con 40 colores escritos a mano, nueve
-   * de ellos copias literales de los tokens del sitio. Cambiar el azul de
-   * marca dejaba la interfaz de administración con el anterior.
-   *
-   * Los nueve pasan a leer el token, con el literal como respaldo: el overlay
-   * también se inyecta en páginas que podrían no cargar tokens.css, y sin el
-   * respaldo se quedaría sin color. Los demás son grises y colores de aviso
-   * que el sitio no declara; se nombran aquí para que haya un solo sitio
-   * donde cambiarlos.
+   * B-3: los colores de marca leen los tokens del sitio, con el literal como
+   * respaldo: el overlay también se inyecta en páginas que podrían no cargar
+   * tokens.css. Los grises y colores de aviso no existen en el sitio; se
+   * nombran aquí para que haya un solo sitio donde cambiarlos.
    */
   :root {
     --hm-cms-primary: var(--color-primary, #0065A9);
@@ -33,28 +63,26 @@ export const overlayStyles = `
     --hm-cms-success: var(--color-success, #2E7D32);
     --hm-cms-primary-light: var(--color-primary-light, #E6F2FA);
 
-    /* Grises del panel: sin equivalente en los tokens del sitio. */
     --hm-cms-line-soft: #cbd5e1;
     --hm-cms-line-softer: #e2e8f0;
     --hm-cms-ink-soft: #334155;
     --hm-cms-ink-softer: #475569;
     /*
      * #64748b daba 4.46:1 sobre el fondo claro del panel (#f5f8fa): por debajo
-     * del 4.5 que pide WCAG 2.2 SC 1.4.3, y lo usan los rótulos de recuento y
-     * las pistas de campo. Un escalón más oscuro del mismo gris lo deja en
-     * 5.7:1 sin cambiar el aspecto.
+     * del 4.5 que pide WCAG 2.2 SC 1.4.3. Un escalón más oscuro lo deja en 5.7:1.
      */
     --hm-cms-muted-soft: #55627a;
     --hm-cms-dark-hover: #172331;
     --hm-cms-surface-soft: #f1f5f9;
 
-    /* Avisos: fondo, borde y texto de cada estado. */
     --hm-cms-warn-bg: #fffbeb;
     --hm-cms-warn-line: #fde68a;
     --hm-cms-warn-ink: #f59e0b;
+    --hm-cms-warn-text: #92400e;
     --hm-cms-danger-bg: #fee2e2;
     --hm-cms-danger-line: #fecaca;
     --hm-cms-danger-ink: #991b1b;
+    --hm-cms-danger-solid: #b42318;
     --hm-cms-info-bg: #eff8ff;
     --hm-cms-info-line: #bae6fd;
     --hm-cms-ok-bg: #e8f5e9;
@@ -62,7 +90,6 @@ export const overlayStyles = `
     --hm-cms-ok-ink: #1b5e20;
     --hm-cms-error-bg: #ffebee;
 
-    /* Distintivos de estado de la lista de entradas. */
     --hm-cms-badge-draft-bg: #fef3c7;
     --hm-cms-badge-draft-ink: #92400e;
     --hm-cms-badge-published-bg: #dcfce7;
@@ -70,21 +97,54 @@ export const overlayStyles = `
     --hm-cms-badge-dark-bg: #0f172a;
     --hm-cms-badge-dark-ink: #dbeafe;
 
+    /* Tonos de apoyo: placeholder, bordes al pasar, iconos de aviso. */
+    --hm-cms-placeholder: #7a8795;
+    --hm-cms-line-hover: #a9b6c6;
+    --hm-cms-danger-line-hover: #f5a3a3;
+    --hm-cms-danger-solid-hover: #912018;
+    --hm-cms-warn-icon: #b45309;
+    --hm-cms-tabs-bg: #e6ecf2;
+    --hm-cms-checker: #eef2f6;
+
+    /* Texto de estado sobre superficies oscuras (barra, aviso de deshacer). */
+    --hm-cms-on-dark: #e2e8f0;
+    --hm-cms-on-dark-warn: #fcd34d;
+    --hm-cms-on-dark-ok: #86efac;
+    --hm-cms-on-dark-error: #fca5a5;
+
+    --hm-cms-font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --hm-cms-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
     /*
-     * UI-01: el sitio público usa radius 0px como decisión de diseño
-     * industrial, pero el CMS es una herramienta interna: un radio
-     * suave lo hace más amigable como espacio de trabajo sin afectar
+     * UI-01: el sitio público usa radio 0 como decisión industrial; el CMS es
+     * una herramienta interna y un radio suave lo hace más amable sin tocar
      * la estética pública.
      */
-    --hm-cms-radius: 6px;
-    --hm-cms-radius-sm: 4px;
-    --hm-cms-radius-lg: 10px;
+    --hm-cms-radius: 8px;
+    --hm-cms-radius-sm: 6px;
+    --hm-cms-radius-lg: 12px;
 
-    /* Transiciones consistentes para todo el overlay. */
+    /* Alto de los controles. Con puntero grueso sube a 44 px (WCAG 2.5.5). */
+    --hm-cms-control: 38px;
+    --hm-cms-control-sm: 32px;
+
+    --hm-cms-ring: 0 0 0 3px rgba(0, 101, 169, 0.22);
+    --hm-cms-shadow-sm: 0 1px 2px rgba(15, 36, 51, 0.06);
+    --hm-cms-shadow-md: 0 4px 16px rgba(15, 36, 51, 0.1);
+    --hm-cms-shadow-lg: 0 16px 48px rgba(15, 36, 51, 0.28);
+
     --hm-cms-ease: cubic-bezier(0.2, 0, 0, 1);
     --hm-cms-duration: 150ms;
     --hm-cms-duration-panel: 240ms;
   }
+  @media (pointer: coarse) {
+    :root {
+      --hm-cms-control: 44px;
+      --hm-cms-control-sm: 40px;
+    }
+  }
+
+  /* ─── Zonas editables de la página ─────────────────────────────────────── */
   [data-cms-entry] {
     cursor: crosshair;
     outline-offset: 4px;
@@ -113,13 +173,249 @@ export const overlayStyles = `
   @media (hover: hover) {
     [data-touch-only] { display: none !important; }
   }
+  /* La barra flotante tapa el final de la página: damos aire al contenido. */
+  body.hm-cms-active {
+    padding-bottom: 84px;
+  }
+
+  /* ─── Shell ──────────────────────────────────────────────────────────── */
   .hm-cms-shell {
     position: fixed;
     z-index: 99999;
     inset: 0;
     pointer-events: none;
-    font-family: Inter, system-ui, sans-serif;
+    font-family: var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+    -webkit-font-smoothing: antialiased;
   }
+  /*
+   * «hidden» tiene que ganar siempre. Los avisos y las notas se muestran con
+   * display:flex o grid, y sin esto el atributo no los ocultaba: el aviso de
+   * «Borrador» salía aunque la entrada estuviera publicada.
+   */
+  .hm-cms-shell [hidden] {
+    display: none !important;
+  }
+  .hm-cms-icon {
+    flex: none;
+    display: block;
+  }
+
+  /* ─── Elementos base, sin especificidad ─────────────────────────────── */
+  :where(.hm-cms-shell) button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: var(--hm-cms-control);
+    min-width: var(--hm-cms-control);
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--hm-btn-line, var(--hm-cms-line-soft));
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-btn-bg, #fff);
+    color: var(--hm-btn-ink, var(--hm-cms-ink));
+    font: 600 14px/1.2 var(--hm-cms-font);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--hm-cms-duration) var(--hm-cms-ease),
+      border-color var(--hm-cms-duration) var(--hm-cms-ease),
+      box-shadow var(--hm-cms-duration) var(--hm-cms-ease),
+      color var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  :where(.hm-cms-shell) button:where(:hover:not([disabled])) {
+    background: var(--hm-btn-bg-hover, var(--hm-cms-surface-soft));
+  }
+  :where(.hm-cms-shell) button:where(:active:not([disabled])) {
+    transform: translateY(1px);
+  }
+  :where(.hm-cms-shell) button:where(:focus-visible) {
+    outline: 2px solid var(--hm-cms-accent);
+    outline-offset: 2px;
+  }
+  :where(.hm-cms-shell) button:where([disabled]) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  :where(.hm-cms-shell) input:where(:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"])),
+  :where(.hm-cms-shell) select,
+  :where(.hm-cms-shell) textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--hm-cms-control);
+    margin: 0;
+    padding: 8px 11px;
+    border: 1px solid var(--hm-cms-line-soft);
+    border-radius: var(--hm-cms-radius-sm);
+    background: #fff;
+    color: var(--hm-cms-ink);
+    font: 400 15px/1.45 var(--hm-cms-font);
+    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
+      box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  /* 0,0,2 como el reset («input::placeholder»), para ganarle por orden. */
+  :where(.hm-cms-shell) input::placeholder,
+  :where(.hm-cms-shell) textarea::placeholder {
+    opacity: 1;
+    color: var(--hm-cms-placeholder);
+  }
+  :where(.hm-cms-shell) input:where(:hover:not(:focus)),
+  :where(.hm-cms-shell) select:where(:hover:not(:focus)),
+  :where(.hm-cms-shell) textarea:where(:hover:not(:focus)) {
+    border-color: var(--hm-cms-line-hover);
+  }
+  /* El contorno transparente reaparece en modo de alto contraste. */
+  :where(.hm-cms-shell) input:where(:focus-visible),
+  :where(.hm-cms-shell) select:where(:focus-visible),
+  :where(.hm-cms-shell) textarea:where(:focus-visible) {
+    outline: 2px solid transparent;
+    border-color: var(--hm-cms-primary);
+    box-shadow: var(--hm-cms-ring);
+  }
+  :where(.hm-cms-shell) input:where([readonly]) {
+    background: var(--hm-cms-surface-soft);
+    color: var(--hm-cms-ink-softer);
+  }
+  :where(.hm-cms-shell) textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  :where(.hm-cms-shell) input:where([type="checkbox"]) {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--hm-cms-primary);
+  }
+
+  /*
+   * El texto del <label> es el nombre del campo y el control va dentro. Los
+   * hijos de un grid no bajan de su min-content sin min-width:0, y el de un
+   * <select> es su opción más larga: sin esto, «Tuberías Forzadas y
+   * Blindajes» estiraba el panel y empujaba columnas fuera de la vista.
+   */
+  :where(.hm-cms-shell) label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    font: 600 13px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink-soft);
+  }
+  :where(.hm-cms-shell) label > * {
+    min-width: 0;
+  }
+  :where(.hm-cms-shell) form {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+  }
+  :where(.hm-cms-shell) p,
+  :where(.hm-cms-shell) h2,
+  :where(.hm-cms-shell) h3,
+  :where(.hm-cms-shell) ul,
+  :where(.hm-cms-shell) ol,
+  :where(.hm-cms-shell) pre {
+    margin: 0;
+    line-height: inherit;
+  }
+  :where(.hm-cms-shell) code {
+    font: 12.5px/1.4 var(--hm-cms-mono);
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--hm-cms-surface-soft);
+    color: var(--hm-cms-ink-soft);
+    overflow-wrap: anywhere;
+  }
+
+  /* ─── Botones: variantes ─────────────────────────────────────────────── */
+  :where(.hm-cms-shell) :is(button.primary, button[type="submit"]) {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-primary);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 75, 125, 0.25);
+  }
+  :where(.hm-cms-shell) :is(button.primary, button[type="submit"]):where(:hover:not([disabled])) {
+    border-color: var(--hm-cms-primary-dark);
+    background: var(--hm-cms-primary-dark);
+  }
+  :where(.hm-cms-shell) button.secondary {
+    border-color: var(--hm-btn-line, var(--hm-cms-line-soft));
+    background: var(--hm-btn-bg, #fff);
+    color: var(--hm-btn-ink, var(--hm-cms-ink));
+  }
+  :where(.hm-cms-shell) button.secondary:where(:hover:not([disabled])) {
+    background: var(--hm-btn-bg-hover, var(--hm-cms-surface-soft));
+  }
+  :where(.hm-cms-shell) button.ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--hm-ghost-ink, var(--hm-cms-primary-dark));
+    box-shadow: none;
+  }
+  :where(.hm-cms-shell) button.ghost:where(:hover:not([disabled])) {
+    background: var(--hm-ghost-hover, var(--hm-cms-primary-light));
+  }
+  :where(.hm-cms-shell) button.destructive {
+    border-color: var(--hm-cms-danger-line);
+    background: #fff;
+    color: var(--hm-cms-danger-ink);
+    box-shadow: none;
+  }
+  :where(.hm-cms-shell) button.destructive:where(:hover:not([disabled])) {
+    border-color: var(--hm-cms-danger-line-hover);
+    background: var(--hm-cms-danger-bg);
+  }
+  :where(.hm-cms-shell) button.ghost.destructive {
+    border-color: transparent;
+    background: transparent;
+  }
+  :where(.hm-cms-shell) button.ghost.destructive:where(:hover:not([disabled])) {
+    background: var(--hm-cms-danger-bg);
+  }
+  :where(.hm-cms-shell) button.destructive.strong {
+    border-color: var(--hm-cms-danger-solid);
+    background: var(--hm-cms-danger-solid);
+    color: #fff;
+  }
+  :where(.hm-cms-shell) button.destructive.strong:where(:hover:not([disabled])) {
+    border-color: var(--hm-cms-danger-solid-hover);
+    background: var(--hm-cms-danger-solid-hover);
+  }
+  :where(.hm-cms-shell) button.small {
+    min-height: var(--hm-cms-control-sm);
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  :where(.hm-cms-shell) button.icon {
+    min-width: var(--hm-cms-control);
+    padding: 0;
+  }
+  :where(.hm-cms-shell) button.icon.small {
+    min-width: var(--hm-cms-control-sm);
+  }
+  :where(.hm-cms-shell) button[data-loading] {
+    opacity: 0.75;
+    cursor: progress;
+    pointer-events: none;
+  }
+
+  /* Superficies oscuras: los botones neutros pasan a translúcidos. */
+  .hm-cms-bar,
+  .hm-cms-panel-head,
+  .hm-cms-undo {
+    --hm-btn-bg: rgba(255, 255, 255, 0.08);
+    --hm-btn-bg-hover: rgba(255, 255, 255, 0.16);
+    --hm-btn-line: rgba(255, 255, 255, 0.14);
+    --hm-btn-ink: #fff;
+    --hm-ghost-ink: #fff;
+    --hm-ghost-hover: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ─── Barra ─────────────────────────────────────────────────────────── */
   .hm-cms-bar {
     pointer-events: auto;
     position: fixed;
@@ -128,882 +424,30 @@ export const overlayStyles = `
     bottom: 16px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
+    gap: 6px;
+    padding: 6px;
     background: var(--hm-cms-dark);
-    color: white;
-    border: 1px solid var(--hm-cms-line);
-    border-radius: var(--hm-cms-radius);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
-  }
-  .hm-cms-bar button,
-  .hm-cms-panel button {
-    border: 0;
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 9px 12px;
-    min-height: 44px;
-    min-width: 44px;
-    font-weight: 700;
-    background: var(--hm-cms-primary);
     color: #fff;
-    cursor: pointer;
-    transition: background-color var(--hm-cms-duration) var(--hm-cms-ease),
-               box-shadow var(--hm-cms-duration) var(--hm-cms-ease),
-               transform var(--hm-cms-duration) var(--hm-cms-ease);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--hm-cms-radius-lg);
+    box-shadow: var(--hm-cms-shadow-lg);
   }
-  .hm-cms-bar button:active:not([disabled]),
-  .hm-cms-panel button:active:not([disabled]) {
-    transform: scale(0.97);
+  .hm-cms-brand {
+    padding: 0 8px 0 10px;
+    font: 700 13px/1 var(--hm-cms-font);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
   }
-  /* UI-02: sombra sutil en botones primarios para distinguirlos de secundarios. */
-  .hm-cms-panel button[type="submit"],
-  .hm-cms-bar button:not(.secondary):not(.destructive) {
-    box-shadow: 0 1px 3px rgba(0,101,169,0.3);
-  }
-  .hm-cms-panel button[type="submit"]:hover,
-  .hm-cms-bar button:not(.secondary):not(.destructive):hover {
-    box-shadow: 0 2px 8px rgba(0,101,169,0.4);
-  }
-  .hm-cms-bar button:hover,
-  .hm-cms-panel button:hover {
-    background: var(--hm-cms-primary-dark);
-  }
-  /* H-03: estilos :focus-visible para navegacion por teclado (WCAG 2.2 SC 2.4.7) */
-  .hm-cms-bar button:focus-visible,
-  .hm-cms-panel button:focus-visible {
-    outline: 2px solid var(--hm-cms-accent);
-    outline-offset: 2px;
-  }
-  .hm-cms-bar button.secondary,
-  .hm-cms-panel button.secondary {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-  }
-  .hm-cms-bar button.secondary:hover,
-  .hm-cms-panel button.secondary:hover {
-    background: rgba(255,255,255,0.2);
+  .hm-cms-bar button {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 13.5px;
+    white-space: nowrap;
   }
   .hm-cms-bar button[aria-pressed="true"] {
-    border: 1px solid var(--hm-cms-accent);
-    box-shadow: 0 0 0 2px rgba(0,166,214,0.18);
+    border-color: var(--hm-cms-accent);
+    box-shadow: 0 0 0 2px rgba(0, 166, 214, 0.18);
   }
-  /* H-06: estilo destructivo consistente para botones de eliminacion.
-   * UI-02: se añade borde rojo suave y sombra en hover para que no pueda
-   * confundirse con un botón inocuo. */
-  .hm-cms-bar button.destructive,
-  .hm-cms-panel button.destructive {
-    background: var(--hm-cms-danger-bg);
-    color: var(--hm-cms-danger-ink);
-    border: 1px solid var(--hm-cms-danger-line);
-  }
-  .hm-cms-bar button.destructive:hover,
-  .hm-cms-panel button.destructive:hover {
-    background: var(--hm-cms-danger-line);
-    box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
-  }
-  /* La barra flotante tapa el final de la página: damos aire al contenido. */
-  body.hm-cms-active {
-    padding-bottom: 84px;
-  }
-  .hm-cms-panel {
-    pointer-events: auto;
-    position: fixed;
-    z-index: 30;
-    top: 0;
-    right: 0;
-    width: min(420px, 100vw);
-    height: 100dvh;
-    background: var(--hm-cms-alt);
-    color: var(--hm-cms-ink);
-    border-left: 1px solid var(--hm-cms-line);
-    box-shadow: -8px 0 32px rgba(15,36,51,0.18), -1px 0 0 var(--hm-cms-line);
-    transform: translateX(104%);
-    transition: transform var(--hm-cms-duration-panel) var(--hm-cms-ease);
-    display: flex;
-    flex-direction: column;
-  }
-  .hm-cms-panel.open {
-    transform: translateX(0);
-  }
-  /* UI-03: borde inferior azul crea transición visual clara entre header
-   * oscuro y body claro; el panel deja de sentirse como dos bloques pegados. */
-  .hm-cms-panel-head {
-    padding: 16px 18px;
-    background: var(--hm-cms-dark);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    border-bottom: 3px solid var(--hm-cms-primary);
-  }
-  .hm-cms-panel-head h2 {
-    font-size: 16px;
-    margin: 0;
-    color: #fff;
-  }
-  .hm-cms-panel-body {
-    padding: 18px;
-    overflow: auto;
-    display: grid;
-    gap: 14px;
-  }
-  .hm-cms-panel label {
-    display: grid;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--hm-cms-ink);
-    /* Los hijos de un grid no bajan de su min-content sin esto, y el
-       min-content de un <select> es el texto de su opción más larga. */
-    min-width: 0;
-  }
-  .hm-cms-panel label > * {
-    min-width: 0;
-  }
-  /*
-   * <select> estaba fuera de esta regla desde el principio: solo la aplicaban
-   * input y textarea. Las consecuencias eran dos y ninguna evidente.
-   *
-   * De ancho: un desplegable se dimensionaba a su opción más larga, así que los
-   * filtros de la galería —nombres de álbum como "Tuberías Forzadas y
-   * Blindajes"— estiraban el panel y empujaban la tercera columna de la
-   * cuadrícula, el filtro de categoría y el botón de agregar fuera de la vista.
-   *
-   * De alto: sin el padding ni el borde de los demás campos, los desplegables
-   * medían 18 px donde un input mide 42. Quedaban por debajo del mínimo de
-   * WCAG 2.2 SC 2.5.8 y el formulario se veía desalineado.
-   */
-  .hm-cms-panel input,
-  .hm-cms-panel select,
-  .hm-cms-panel textarea {
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid var(--hm-cms-line);
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 10px;
-    font: inherit;
-    color: var(--hm-cms-ink);
-    background: white;
-  }
-  .hm-cms-panel input:focus-visible,
-  .hm-cms-panel textarea:focus-visible,
-  .hm-cms-panel select:focus-visible {
-    outline: 2px solid var(--hm-cms-primary);
-    outline-offset: 0;
-    border-color: var(--hm-cms-primary);
-    box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
-  }
-  .hm-cms-panel textarea {
-    min-height: 150px;
-    resize: vertical;
-  }
-  .hm-cms-error {
-    color: var(--hm-cms-error);
-    font-size: 13px;
-  }
-  .hm-cms-muted {
-    color: var(--hm-cms-muted);
-    font-size: 12px;
-    line-height: 1.5;
-  }
-  .hm-cms-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .hm-cms-edit-actions {
-    display: grid;
-    gap: 10px;
-  }
-  .hm-cms-edit-actions-primary,
-  .hm-cms-edit-actions-secondary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .hm-cms-edit-actions-danger {
-    padding-top: 8px;
-    border-top: 1px solid var(--hm-cms-line);
-  }
-  /* E-2: aviso de que hay una copia local sin guardar. */
-  .hm-cms-draft-notice {
-    background: var(--hm-cms-warn-bg);
-    border: 1px solid var(--hm-cms-warn-line);
-    padding: 10px 12px;
-    font-size: 13px;
-    color: var(--hm-cms-ink);
-  }
-  /* E-3: la clave de la base, en pequeño, junto al nombre legible. */
-  .hm-cms-field-key {
-    font-weight: 400;
-    font-size: 11px;
-    color: var(--hm-cms-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  /* M-6: panel de administración (registro, respaldos, contraseña). */
-  .hm-cms-admin {
-    display: grid;
-    gap: 10px;
-  }
-  .hm-cms-admin h3 {
-    margin: 8px 0 0;
-    font-size: 14px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--hm-cms-dark);
-    border-bottom: 1px solid var(--hm-cms-line);
-    padding-bottom: 6px;
-  }
-  .hm-cms-admin h3:first-child {
-    margin-top: 0;
-  }
-  .hm-cms-ok {
-    color: var(--hm-cms-ok-ink);
-    background: var(--hm-cms-ok-bg);
-    border: 1px solid var(--hm-cms-ok-line);
-    padding: 8px 10px;
-    font-size: 13px;
-    margin: 0;
-  }
-  /*
-   * tabindex 0 porque la lista tiene su propio scroll: sin él, quien navega
-   * con teclado no puede desplazarla y el registro de actividad queda
-   * truncado a lo que quepa en pantalla (axe: scrollable-region-focusable).
-   */
-  .hm-cms-admin-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 1px;
-    background: var(--hm-cms-line);
-    border: 1px solid var(--hm-cms-line);
-    max-height: 320px;
-    overflow-y: auto;
-  }
-  .hm-cms-admin-list li {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 4px 12px;
-    background: white;
-    padding: 6px 8px;
-    font-size: 13px;
-  }
-  /* Los eventos de acceso se distinguen: son los que se revisan cuando se
-     sospecha de un intento de entrada ajeno. */
-  .hm-cms-admin-list li[data-security] {
-    border-left: 3px solid var(--hm-cms-accent);
-  }
-  /* H-05: spinner para operaciones asincronas */
-  @keyframes hm-cms-spin {
-    to { transform: rotate(360deg); }
-  }
-  .hm-cms-spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.35);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: hm-cms-spin 0.7s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-  button[data-loading] {
-    opacity: 0.7;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-  .hm-cms-job-list {
-    display: grid;
-    gap: 10px;
-  }
-  .hm-cms-job {
-    display: grid;
-    gap: 8px;
-    padding: 10px;
-    border: 1px solid var(--hm-cms-line);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-  }
-  .hm-cms-job-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--hm-cms-ink);
-  }
-  .hm-cms-badge {
-    display: inline-flex;
-    align-items: center;
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 3px 8px;
-    background: var(--hm-cms-primary-light);
-    color: var(--hm-cms-primary-dark);
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-  .hm-cms-badge.succeeded {
-    background: var(--hm-cms-ok-bg);
-    color: var(--hm-cms-success);
-  }
-  .hm-cms-badge.failed {
-    background: var(--hm-cms-error-bg);
-    color: var(--hm-cms-error);
-  }
-  .hm-cms-log {
-    max-height: 150px;
-    overflow: auto;
-    margin: 0;
-    padding: 8px;
-    border-radius: var(--hm-cms-radius-sm);
-    background: var(--hm-cms-badge-dark-bg);
-    color: var(--hm-cms-badge-dark-ink);
-    font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    white-space: pre-wrap;
-  }
-  .hm-cms-image-preview {
-    display: grid;
-    gap: 8px;
-    padding: 10px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-  }
-  .hm-cms-image-preview img {
-    width: 100%;
-    max-height: 180px;
-    object-fit: contain;
-    background: var(--hm-cms-line-softer);
-    border-radius: var(--hm-cms-radius-sm);
-  }
-  .hm-cms-media-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    max-height: 260px;
-    overflow: auto;
-    padding-right: 2px;
-  }
-  /*
-   * OJO con la especificidad al construir componentes a partir de <button>:
-   * ".hm-cms-panel button" (0,1,1) pinta el azul de llamada a la acción y gana
-   * a cualquier clase suelta (0,1,0). A esta ficha le ganaba desde el
-   * principio: salía azul en vez de blanca y el nombre del archivo quedaba en
-   * gris sobre azul, 1.23:1 —ilegible— debajo de cada miniatura.
-   *
-   * Calificar con ".hm-cms-panel" empata en especificidad y gana por orden. Le
-   * pasó lo mismo a la barra del editor de texto; si aparece un tercer
-   * componente-botón, califíquelo igual.
-   */
-  .hm-cms-panel .hm-cms-media-item {
-    display: grid;
-    gap: 6px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 6px;
-    min-height: 0;
-    font-weight: 400;
-    background: white;
-    color: var(--hm-cms-dark-hover);
-    text-align: left;
-    cursor: pointer;
-  }
-  .hm-cms-panel .hm-cms-media-item:hover,
-  .hm-cms-panel .hm-cms-media-item.selected {
-    background: white;
-    border-color: var(--hm-cms-primary);
-    box-shadow: 0 0 0 3px rgba(0,101,169,0.16);
-  }
-  .hm-cms-media-item img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    border-radius: var(--hm-cms-radius-sm);
-    background: var(--hm-cms-line-softer);
-  }
-  .hm-cms-media-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 11px;
-    color: var(--hm-cms-ink-softer);
-  }
-  /*
-   * "minmax(0, 1fr)" y no "1fr": un "1fr" nunca baja del min-content de su
-   * contenido, y el min-content de un <select> es el texto de su opción más
-   * larga. Con los filtros de la galería —nombres de álbum como «Tuberías
-   * Forzadas y Blindajes»— esta fila se negaba a encoger, estiraba la columna
-   * del panel de 383 a 541 px y empujaba TODO 140 px fuera del panel: la
-   * tercera columna de la cuadrícula, el filtro de categoría y el botón de
-   * agregar imagen quedaban cortados, alcanzables solo con scroll horizontal.
-   *
-   * "min-width: 0" en los hijos es la otra mitad: sin él, cada columna vuelve
-   * a plantarse en su min-content aunque la pista ya no se estire.
-   */
-  .hm-cms-two {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 8px;
-  }
-  .hm-cms-two > * {
-    min-width: 0;
-  }
-  .hm-cms-revisions {
-    display: grid;
-    gap: 8px;
-  }
-  .hm-cms-revision-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-  }
-  .hm-cms-revision-item.current {
-    border-color: var(--hm-cms-primary);
-    background: var(--hm-cms-info-bg);
-  }
-  .hm-cms-revision-info {
-    display: grid;
-    gap: 2px;
-  }
-  .hm-cms-revision-version {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--hm-cms-ink-soft);
-  }
-  .hm-cms-revision-date {
-    font-size: 11px;
-    color: var(--hm-cms-muted-soft);
-  }
-  .hm-cms-collection-list {
-    display: grid;
-    gap: 6px;
-  }
-  .hm-cms-collection-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-  }
-  .hm-cms-collection-item:hover {
-    border-color: var(--hm-cms-primary);
-  }
-  .hm-cms-collection-info {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
-  }
-  .hm-cms-collection-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--hm-cms-dark-hover);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .hm-cms-collection-meta {
-    font-size: 11px;
-    color: var(--hm-cms-muted-soft);
-  }
-  .hm-cms-collection-actions {
-    display: flex;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .hm-cms-collection-actions button {
-    font-size: 12px;
-    padding: 5px 9px;
-  }
-  .hm-cms-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    background: var(--hm-cms-line-softer);
-    border-radius: var(--hm-cms-radius-sm);
-    margin-bottom: 12px;
-  }
-  .hm-cms-tab {
-    flex: 1;
-    padding: 7px 8px;
-    border: 0;
-    border-radius: var(--hm-cms-radius-sm);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    background: transparent;
-    color: var(--hm-cms-ink-softer);
-  }
-  .hm-cms-tab.active {
-    background: white;
-    color: var(--hm-cms-dark-hover);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-  /* Sin este relevo de especificidad, la regla genérica
-     ".hm-cms-panel button" (azul) pisaba a ".hm-cms-tab": las pestañas
-     inactivas se veían rellenas de azul y la activa blanca, al revés. */
-  .hm-cms-panel .hm-cms-tab {
-    background: transparent;
-    color: var(--hm-cms-ink-softer);
-    border: 0;
-  }
-  .hm-cms-panel .hm-cms-tab.active {
-    background: white;
-    color: var(--hm-cms-dark-hover);
-  }
-  /* Los botones secundarios del cuerpo claro del panel (Editar, Volver,
-     Cancelar) necesitan fondo visible: el "secondary" blanco al 10% está
-     pensado para el header oscuro y aquí desaparecía. */
-  .hm-cms-panel-body button.secondary {
-    background: white;
-    color: var(--hm-cms-ink);
-    border: 1px solid var(--hm-cms-line-soft);
-  }
-  .hm-cms-panel-body button.secondary:hover {
-    background: var(--hm-cms-surface-soft);
-  }
-  .hm-cms-entry-form {
-    display: grid;
-    gap: 12px;
-  }
-  .hm-cms-entry-form label {
-    display: grid;
-    gap: 5px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--hm-cms-ink-soft);
-  }
-  .hm-cms-entry-form input,
-  .hm-cms-entry-form select,
-  .hm-cms-entry-form textarea {
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 9px 10px;
-    font: inherit;
-    color: var(--hm-cms-dark-hover);
-    background: white;
-  }
-  .hm-cms-entry-form textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
-  .hm-cms-panel-body .hm-cms-entry-form > .hm-cms-actions {
-    position: sticky;
-    bottom: 0;
-    z-index: 1;
-    margin: 0 -18px -18px;
-    padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
-    border-top: 1px solid var(--hm-cms-line);
-    background: var(--hm-cms-alt);
-    box-shadow: 0 -8px 20px rgba(15,36,51,0.1);
-  }
-  .hm-cms-badge.draft { background: var(--hm-cms-badge-draft-bg); color: var(--hm-cms-badge-draft-ink); }
-  .hm-cms-badge.published { background: var(--hm-cms-badge-published-bg); color: var(--hm-cms-badge-published-ink); }
-  .hm-cms-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
-  }
-  .hm-cms-gallery-thumb {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    border-radius: var(--hm-cms-radius-sm);
-    border: 2px solid transparent;
-    cursor: pointer;
-    background: var(--hm-cms-line-softer);
-  }
-  .hm-cms-panel .hm-cms-gallery-thumb {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    padding: 0;
-    border: 2px solid transparent;
-    border-radius: 0;
-    background: var(--hm-cms-line-softer);
-    color: inherit;
-    font-weight: 400;
-    line-height: normal;
-    text-align: left;
-    transition: none;
-  }
-  .hm-cms-gallery-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .hm-cms-panel .hm-cms-gallery-thumb:hover {
-    border-color: var(--hm-cms-primary);
-    background: var(--hm-cms-line-softer);
-  }
-  .hm-cms-panel .hm-cms-gallery-thumb:focus-visible {
-    outline: 3px solid var(--hm-cms-primary);
-    outline-offset: 2px;
-    border-color: var(--hm-cms-primary);
-    box-shadow: 0 0 0 3px rgba(0,101,169,0.2);
-  }
-  .hm-cms-gallery-thumb .hm-cms-gallery-featured {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    background: var(--hm-cms-accent);
-    color: white;
-    font-size: 9px;
-    font-weight: 800;
-    padding: 1px 4px;
-    border-radius: var(--hm-cms-radius-sm);
-    text-transform: uppercase;
-  }
-  .hm-cms-gallery-cat-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    padding: 8px 10px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-    cursor: pointer;
-    text-align: left;
-    font: inherit;
-    font-size: 13px;
-    color: var(--hm-cms-dark-hover);
-  }
-  .hm-cms-gallery-cat-btn[hidden] { display: none; }
-  .hm-cms-gallery-cat-btn:hover { border-color: var(--hm-cms-primary); }
-  .hm-cms-gallery-cat-name { font-weight: 700; }
-  .hm-cms-gallery-cat-slug { font-size: 11px; color: var(--hm-cms-muted-soft); font-family: ui-monospace, monospace; }
-  @media (max-width: 640px) {
-    .hm-cms-bar {
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
-      justify-content: space-between;
-    }
-    .hm-cms-panel {
-      width: 100vw;
-    }
-  }
-  /*
-   * Editor de texto con formato (campos de tipo richtext).
-   *
-   * Los colores salen de los mismos tokens que el resto del panel; no se
-   * introduce ninguno nuevo.
-   */
-  .hm-cms-rt {
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    background: white;
-    margin-bottom: 12px;
-  }
-  .hm-cms-rt-bar {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    padding: 4px 6px;
-    border-bottom: 1px solid var(--hm-cms-line-softer);
-    background: var(--hm-cms-surface-soft);
-    flex-wrap: wrap;
-  }
-  /*
-   * La especificidad importa: ".hm-cms-panel button" (0,1,1) gana a
-   * ".hm-cms-rt-btn" (0,1,0), así que los once botones de la barra salían
-   * pintados como CTA primarios azules de 44 px y la barra ocupaba dos filas.
-   * Se califica con el panel para empatar en especificidad y ganar por orden.
-   *
-   * 32 px queda por encima del mínimo de 24 px de WCAG 2.2 SC 2.5.8 y deja la
-   * barra en una sola fila; con puntero grueso vuelven a 44 px más abajo.
-   */
-  .hm-cms-panel .hm-cms-rt-btn {
-    border: 1px solid transparent;
-    background: transparent;
-    color: var(--hm-cms-ink-soft);
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 0 7px;
-    min-width: 32px;
-    min-height: 32px;
-    height: 32px;
-    font-weight: 600;
-    cursor: pointer;
-    font: inherit;
-    font-size: 13px;
-    line-height: 1;
-  }
-  .hm-cms-panel .hm-cms-rt-btn:hover {
-    background: white;
-    border-color: var(--hm-cms-line-soft);
-    color: var(--hm-cms-primary-dark);
-  }
-  .hm-cms-panel .hm-cms-rt-btn:focus-visible {
-    outline: 2px solid var(--hm-cms-primary);
-    outline-offset: -2px;
-  }
-  .hm-cms-panel .hm-cms-rt-btn[aria-pressed='true'] {
-    background: var(--hm-cms-primary-light);
-    border-color: var(--hm-cms-primary);
-    color: var(--hm-cms-primary-dark);
-  }
-  .hm-cms-rt-bold { font-weight: 800; }
-  .hm-cms-rt-italic { font-style: italic; }
-  .hm-cms-rt-sep {
-    width: 1px;
-    height: 18px;
-    margin: 0 4px;
-    background: var(--hm-cms-line-soft);
-  }
-  .hm-cms-rt-spacer { flex: 1; }
-  @media (pointer: coarse) {
-    .hm-cms-panel .hm-cms-rt-btn {
-      min-height: 44px;
-      height: 44px;
-      min-width: 44px;
-    }
-  }
-  .hm-cms-rt textarea {
-    display: block;
-    width: 100%;
-    border: 0;
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 10px 12px;
-    font: inherit;
-    font-family: ui-monospace, monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    resize: vertical;
-  }
-  .hm-cms-rt textarea:focus-visible { outline: 2px solid var(--hm-cms-primary); outline-offset: -2px; }
-  /*
-   * La vista previa se acerca al sitio sin copiarlo: es una ayuda para no
-   * publicar a ciegas, no una maqueta fiel. Decirlo evita la queja de «en el
-   * panel se veía de otra manera».
-   */
-  .hm-cms-rt-preview {
-    padding: 12px;
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--hm-cms-ink);
-    max-height: 420px;
-    overflow-y: auto;
-  }
-  .hm-cms-rt-preview h2 { font-size: 18px; margin: 0 0 8px; color: var(--hm-cms-dark); }
-  .hm-cms-rt-preview h3 { font-size: 15px; margin: 12px 0 6px; color: var(--hm-cms-dark); }
-  .hm-cms-rt-preview p { margin: 0 0 10px; }
-  .hm-cms-rt-preview ul,
-  .hm-cms-rt-preview ol { margin: 0 0 10px; padding-left: 20px; }
-  .hm-cms-rt-preview li { margin-bottom: 4px; }
-  .hm-cms-rt-preview blockquote {
-    margin: 0 0 10px;
-    padding: 6px 12px;
-    border-left: 3px solid var(--hm-cms-primary);
-    background: var(--hm-cms-alt);
-    color: var(--hm-cms-ink-softer);
-  }
-  .hm-cms-rt-preview code {
-    background: var(--hm-cms-surface-soft);
-    padding: 1px 4px;
-    font-family: ui-monospace, monospace;
-    font-size: 12px;
-  }
-  .hm-cms-rt-preview a { color: var(--hm-cms-primary); }
-  .hm-cms-rt-preview :first-child { margin-top: 0; }
-  .hm-cms-rt-preview :last-child { margin-bottom: 0; }
-  .hm-cms-rt-help {
-    margin: 0;
-    padding: 6px 12px 8px;
-    border-top: 1px solid var(--hm-cms-line-softer);
-    font-size: 11px;
-    color: var(--hm-cms-muted-soft);
-  }
-  .hm-cms-rt-help code {
-    background: var(--hm-cms-surface-soft);
-    padding: 0 3px;
-    font-family: ui-monospace, monospace;
-  }
-
-  /*
-   * Aviso de deshacer. Se ancla encima de la barra, que es fija abajo a la
-   * izquierda. "pointer-events: auto" porque el shell entero es "none".
-   *
-   * Sin transición ni animación: no hay ningún bloque prefers-reduced-motion en
-   * esta hoja, y no es este el cambio donde abrir esa deuda.
-   */
-  .hm-cms-undo {
-    pointer-events: auto;
-    position: fixed;
-    z-index: 40;
-    left: 16px;
-    bottom: 76px;
-    max-width: min(420px, calc(100vw - 32px));
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--hm-cms-dark);
-    color: #fff;
-    border: 1px solid var(--hm-cms-line);
-    border-radius: var(--hm-cms-radius-sm);
-    font-size: 13px;
-    line-height: 1.4;
-    box-shadow: 0 6px 20px rgba(15, 36, 51, 0.28);
-  }
-  .hm-cms-undo[hidden] { display: none; }
-  .hm-cms-undo-texto { flex: 1; }
-  .hm-cms-undo-aviso {
-    display: block;
-    margin-top: 2px;
-    color: var(--hm-cms-warn-ink);
-    font-size: 12px;
-  }
-  .hm-cms-undo-cuenta {
-    font-variant-numeric: tabular-nums;
-    color: var(--hm-cms-line-soft);
-    font-size: 12px;
-  }
-  .hm-cms-panel .hm-cms-undo-btn,
-  .hm-cms-undo-btn {
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: transparent;
-    color: #fff;
-    border-radius: var(--hm-cms-radius-sm);
-    padding: 6px 12px;
-    min-height: 36px;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .hm-cms-undo-btn:hover { background: rgba(255, 255, 255, 0.14); }
-  .hm-cms-undo-btn:focus-visible {
-    outline: 2px solid var(--hm-cms-accent);
-    outline-offset: 2px;
-  }
-  @media (max-width: 640px) {
-    .hm-cms-undo {
-      left: 8px;
-      right: 8px;
-      bottom: 68px;
-      max-width: none;
-    }
-  }
-
-  /* H-08: indicador de cambios sin guardar */
   .hm-cms-autosave-indicator {
     display: inline-block;
     width: 8px;
@@ -1018,206 +462,1240 @@ export const overlayStyles = `
     opacity: 1;
   }
 
-  /*
-   * ═══════════════════════════════════════════════════════════════════════════
-   * UI-03: Backdrop overlay — fondo semitransparente al abrir el panel.
-   * Enfoca la atención del editor y permite cerrar con clic fuera.
-   * ═══════════════════════════════════════════════════════════════════════════
-   */
+  /* ─── Panel ─────────────────────────────────────────────────────────── */
   .hm-cms-backdrop {
     pointer-events: none;
     position: fixed;
     inset: 0;
-    background: rgba(15,36,51,0.3);
+    z-index: 10;
+    background: rgba(15, 36, 51, 0.3);
     opacity: 0;
     transition: opacity var(--hm-cms-duration-panel) var(--hm-cms-ease);
-    z-index: 10;
   }
   .hm-cms-backdrop.visible {
     pointer-events: auto;
     opacity: 1;
   }
-
-  /*
-   * ═══════════════════════════════════════════════════════════════════════════
-   * UI-03: Breadcrumb y separadores de acciones.
-   * ═══════════════════════════════════════════════════════════════════════════
-   */
-  .hm-cms-breadcrumb {
+  .hm-cms-panel {
+    pointer-events: auto;
+    position: fixed;
+    z-index: 30;
+    top: 0;
+    right: 0;
+    width: min(440px, 100vw);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--hm-cms-alt);
+    color: var(--hm-cms-ink);
+    border-left: 1px solid var(--hm-cms-line);
+    box-shadow: -12px 0 40px rgba(15, 36, 51, 0.18);
+    transform: translateX(104%);
+    transition: transform var(--hm-cms-duration-panel) var(--hm-cms-ease);
+  }
+  .hm-cms-panel.open {
+    transform: translateX(0);
+  }
+  .hm-cms-panel:focus {
+    outline: none;
+  }
+  .hm-cms-panel-head {
+    flex: none;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--hm-cms-muted-soft);
-    padding: 8px 12px;
-    background: white;
-    border: 1px solid var(--hm-cms-line-softer);
-    border-radius: var(--hm-cms-radius-sm);
-    margin-bottom: 4px;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 10px 8px 20px;
+    background: var(--hm-cms-dark);
+    color: #fff;
   }
-  .hm-cms-breadcrumb-sep {
-    color: var(--hm-cms-line-soft);
+  .hm-cms-panel-head h2 {
+    font: 600 15px/1.3 var(--hm-cms-font);
+    color: #fff;
   }
-  .hm-cms-action-sep {
-    width: 1px;
-    align-self: stretch;
-    background: var(--hm-cms-line-softer);
-    margin: 4px 0;
+  .hm-cms-panel-head button.icon {
+    --hm-btn-bg: transparent;
+    --hm-btn-line: transparent;
+  }
+  .hm-cms-panel-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   /*
-   * ═══════════════════════════════════════════════════════════════════════════
-   * UI-04: Indicador de campo modificado, status bar con niveles, skeleton.
-   * ═══════════════════════════════════════════════════════════════════════════
+   * Pie fijo con la acción principal. Sin él, «Guardar» quedaba debajo de la
+   * biblioteca de imágenes y había que desplazarse para encontrarlo.
    */
-  .hm-cms-panel input.modified,
-  .hm-cms-panel textarea.modified,
-  .hm-cms-panel select.modified {
-    border-left: 3px solid var(--hm-cms-accent);
+  .hm-cms-panel-body .hm-cms-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 -20px -20px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--hm-cms-line);
+    background: #fff;
+    box-shadow: 0 -6px 18px rgba(15, 36, 51, 0.06);
   }
-  .hm-cms-status {
+  /*
+   * Un formulario con pie ocupa todo el alto del panel: si es corto, el pie
+   * queda abajo, donde se espera, y no flotando a media pantalla.
+   */
+  .hm-cms-panel-body > form:has(> .hm-cms-footer) {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .hm-cms-panel-body > form > .hm-cms-footer {
+    margin-top: auto;
+  }
+  .hm-cms-footer .hm-cms-save-state:not(:empty) {
+    flex-basis: 100%;
+  }
+  .hm-cms-edit-actions-primary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+  .hm-cms-footer .hm-cms-edit-actions-primary .hm-cms-save-state {
+    flex: 1 1 0;
+    flex-basis: auto;
+  }
+  .hm-cms-edit-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 8px;
+    margin: -6px -8px 0;
+  }
+  .hm-cms-edit-actions-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  /* ─── Texto ─────────────────────────────────────────────────────────── */
+  .hm-cms-muted {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--hm-cms-muted);
+  }
+  .hm-cms-hint {
+    font: 400 12.5px/1.5 var(--hm-cms-font);
+    color: var(--hm-cms-muted-soft);
+  }
+  /* Una pista pertenece al campo que la precede, no al hueco entre campos. */
+  :where(.hm-cms-shell) :where(label, .hm-cms-drop, .hm-cms-fieldset) + .hm-cms-hint {
+    margin-top: -10px;
+  }
+  .hm-cms-block {
+    display: block;
+    margin-top: 8px;
+  }
+  .hm-cms-label {
+    font: 600 13px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink-soft);
+  }
+  .hm-cms-error {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--hm-cms-danger-ink);
+  }
+  .hm-cms-count {
+    margin-top: -6px;
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-empty {
+    padding: 24px 16px;
+    border: 1px dashed var(--hm-cms-line-soft);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+    color: var(--hm-cms-muted);
+    font-size: 13.5px;
+    text-align: center;
+  }
+  .hm-cms-context {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 6px;
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-context strong {
+    font-weight: 600;
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-context-sep {
+    color: var(--hm-cms-line-soft);
+  }
+  .hm-cms-section-title {
+    margin-bottom: 2px;
+    font: 600 15px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+
+  /* ─── Disposición ───────────────────────────────────────────────────── */
+  .hm-cms-stack {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+  }
+  .hm-cms-toolbar {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .hm-cms-grow {
+    flex: 1;
+    min-width: 0;
+  }
+  .hm-cms-back {
+    justify-self: start;
+    align-self: flex-start;
+    margin-left: -8px;
+  }
+  .hm-cms-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .hm-cms-field-group {
+    display: grid;
+    gap: 8px;
+  }
+  /*
+   * "minmax(0, 1fr)" y no "1fr": un "1fr" nunca baja del min-content de su
+   * contenido, y el de un <select> es el texto de su opción más larga.
+   */
+  .hm-cms-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .hm-cms-two > * {
+    min-width: 0;
+  }
+  .hm-cms-fieldset {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .hm-cms-fieldset > legend {
+    margin-bottom: 6px;
+    padding: 0;
+    font: 600 13px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink-soft);
+  }
+  .hm-cms-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    color: var(--hm-cms-ink);
+    cursor: pointer;
+  }
+
+  /* Secciones plegables: opciones avanzadas y detalles técnicos. */
+  .hm-cms-advanced {
+    padding: 0 12px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-advanced[open] {
+    padding-bottom: 12px;
+  }
+  .hm-cms-advanced > :not(summary) + :not(summary) {
+    margin-top: 12px;
+  }
+  .hm-cms-advanced > summary,
+  .hm-cms-tech > summary {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    border-radius: var(--hm-cms-radius-sm);
-    transition: background-color var(--hm-cms-duration) var(--hm-cms-ease);
+    min-height: 40px;
+    list-style: none;
+    cursor: pointer;
+    font: 600 13px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink-soft);
   }
-  .hm-cms-status[data-level="idle"] {
-    background: transparent;
+  .hm-cms-advanced > summary::-webkit-details-marker,
+  .hm-cms-tech > summary::-webkit-details-marker {
+    display: none;
+  }
+  .hm-cms-advanced > summary::before,
+  .hm-cms-tech > summary::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin: 0 2px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-advanced[open] > summary::before,
+  .hm-cms-tech[open] > summary::before {
+    transform: rotate(45deg);
+  }
+  .hm-cms-advanced > summary:focus-visible,
+  .hm-cms-tech > summary:focus-visible {
+    outline: 2px solid var(--hm-cms-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .hm-cms-tech {
+    font-size: 12.5px;
     color: var(--hm-cms-muted-soft);
   }
-  .hm-cms-status[data-level="saving"] {
+  .hm-cms-tech > summary {
+    min-height: 32px;
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-tech > :not(summary) + :not(summary) {
+    margin-top: 8px;
+  }
+
+  /* ─── Avisos ────────────────────────────────────────────────────────── */
+  .hm-cms-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--hm-cms-line);
+    border-radius: var(--hm-cms-radius-sm);
+    background: #fff;
+    color: var(--hm-cms-ink);
+    font: 400 13.5px/1.5 var(--hm-cms-font);
+  }
+  .hm-cms-notice > .hm-cms-icon {
+    margin-top: 2px;
+  }
+  .hm-cms-notice > div {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .hm-cms-notice.is-info { border-color: var(--hm-cms-info-line); background: var(--hm-cms-info-bg); }
+  .hm-cms-notice.is-info > .hm-cms-icon { color: var(--hm-cms-primary); }
+  .hm-cms-notice.is-warn { border-color: var(--hm-cms-warn-line); background: var(--hm-cms-warn-bg); }
+  .hm-cms-notice.is-warn > .hm-cms-icon { color: var(--hm-cms-warn-icon); }
+  .hm-cms-notice.is-ok { border-color: var(--hm-cms-ok-line); background: var(--hm-cms-ok-bg); color: var(--hm-cms-ok-ink); }
+  .hm-cms-notice.is-danger { border-color: var(--hm-cms-danger-line); background: var(--hm-cms-danger-bg); color: var(--hm-cms-danger-ink); }
+  .hm-cms-notice-list {
+    display: grid;
+    gap: 6px;
+    padding-left: 18px;
+    list-style: disc;
+  }
+
+  /* ─── Estado del guardado ───────────────────────────────────────────── */
+  .hm-cms-save-state {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-save-state[data-level]::before {
+    content: "";
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
+  .hm-cms-save-state[data-level="error"]::before {
+    display: none;
+  }
+  .hm-cms-save-state[data-level="error"] {
+    display: grid;
+    gap: 8px;
+  }
+  .hm-cms-save-state[data-level="dirty"] { color: var(--hm-cms-warn-text); }
+  .hm-cms-save-state[data-level="saving"] { color: var(--hm-cms-primary); }
+  .hm-cms-save-state[data-level="success"] { color: var(--hm-cms-ok-ink); }
+
+  /* ─── Distintivos ───────────────────────────────────────────────────── */
+  .hm-cms-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--hm-cms-primary-light);
+    color: var(--hm-cms-primary-dark);
+    font: 600 12px/1.3 var(--hm-cms-font);
+    white-space: nowrap;
+  }
+  .hm-cms-badge.draft,
+  .hm-cms-badge.pending,
+  .hm-cms-badge.warning,
+  .hm-cms-badge.running,
+  .hm-cms-badge.queued {
+    background: var(--hm-cms-badge-draft-bg);
+    color: var(--hm-cms-badge-draft-ink);
+  }
+  .hm-cms-badge.published,
+  .hm-cms-badge.succeeded {
+    background: var(--hm-cms-badge-published-bg);
+    color: var(--hm-cms-badge-published-ink);
+  }
+  .hm-cms-badge.failed {
+    background: var(--hm-cms-error-bg);
+    color: var(--hm-cms-error);
+  }
+  .hm-cms-state::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  /* Sobre la barra oscura, los mismos estados en versión translúcida. */
+  .hm-cms-bar .hm-cms-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--hm-cms-on-dark);
+  }
+  .hm-cms-bar .hm-cms-badge.pending,
+  .hm-cms-bar .hm-cms-badge.warning { background: rgba(245, 158, 11, 0.16); color: var(--hm-cms-on-dark-warn); }
+  .hm-cms-bar .hm-cms-badge.succeeded { background: rgba(34, 197, 94, 0.16); color: var(--hm-cms-on-dark-ok); }
+  .hm-cms-bar .hm-cms-badge.failed { background: rgba(239, 68, 68, 0.18); color: var(--hm-cms-on-dark-error); }
+
+  /* ─── Listas de entradas, categorías y álbumes ──────────────────────── */
+  .hm-cms-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--hm-cms-radius);
+    background: var(--hm-cms-tabs-bg);
+  }
+  .hm-cms-tab {
+    flex: 1;
+    min-height: 34px;
+    border: 0;
+    background: transparent;
+    color: var(--hm-cms-ink-softer);
+    font-size: 13px;
+    box-shadow: none;
+  }
+  .hm-cms-tab:hover {
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-tab.active,
+  .hm-cms-tab.active:hover {
+    background: #fff;
+    color: var(--hm-cms-ink);
+    box-shadow: 0 1px 2px rgba(15, 36, 51, 0.14);
+  }
+  .hm-cms-collection-list {
+    display: grid;
+    gap: 6px;
+  }
+  .hm-cms-collection-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 56px;
+    padding: 8px 8px 8px 14px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
+      box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-collection-item:hover {
+    border-color: var(--hm-cms-line-soft);
+    box-shadow: var(--hm-cms-shadow-sm);
+  }
+  .hm-cms-collection-info {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .hm-cms-collection-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 14px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-collection-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+    white-space: nowrap;
+  }
+  .hm-cms-collection-meta > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hm-cms-collection-meta .hm-cms-badge {
+    padding: 1px 7px;
+    font-size: 11.5px;
+  }
+  .hm-cms-collection-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: none;
+  }
+
+  /* Portada de galería: tres destinos con su recuento. */
+  .hm-cms-nav-list {
+    display: grid;
+    gap: 8px;
+  }
+  .hm-cms-nav-row {
+    width: 100%;
+    min-height: 68px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+    text-align: left;
+    font-weight: 400;
+  }
+  .hm-cms-nav-row:hover {
+    border-color: var(--hm-cms-primary);
+    background: #fff;
+    box-shadow: var(--hm-cms-shadow-sm);
+  }
+  .hm-cms-nav-text {
+    display: grid;
+    gap: 2px;
+  }
+  .hm-cms-nav-title {
+    font: 600 14.5px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-nav-detail {
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-nav-count {
+    font: 700 18px/1 var(--hm-cms-font);
+    color: var(--hm-cms-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── Editor de listas ──────────────────────────────────────────────── */
+  .hm-cms-list {
+    display: grid;
+    gap: 8px;
+  }
+  .hm-cms-list-items {
+    display: grid;
+    gap: 6px;
+    padding: 0;
+    list-style: none;
+  }
+  .hm-cms-list-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .hm-cms-list-row > input {
+    flex: 1;
+  }
+  .hm-cms-group {
+    display: grid;
+    gap: 10px;
+    padding: 8px 8px 12px 12px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-group > label {
+    margin-right: 4px;
+  }
+  .hm-cms-group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .hm-cms-group-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 13.5px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-group textarea {
+    min-height: 76px;
+  }
+  .hm-cms-add-item {
+    width: 100%;
+    justify-content: flex-start;
+    border: 1px dashed var(--hm-cms-line-soft);
+    background: transparent;
+    color: var(--hm-cms-primary-dark);
+    box-shadow: none;
+  }
+  .hm-cms-add-item:hover {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-primary-light);
+  }
+
+  /* ─── Imágenes ──────────────────────────────────────────────────────── */
+  .hm-cms-image-preview {
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-image-preview img {
+    display: block;
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: var(--hm-cms-radius-sm);
+    /* Cuadriculado: deja ver los logos con fondo transparente. */
+    background: repeating-conic-gradient(var(--hm-cms-checker) 0 25%, #fff 0 50%) 50% / 16px 16px;
+  }
+  /*
+   * Filas a «max-content»: la cuadrícula tiene alto acotado (se desplaza por
+   * dentro) y con filas «auto» el navegador las encogía hasta el mínimo de
+   * cada ficha para caber en los 300 px. Salían franjas de 10 px.
+   */
+  .hm-cms-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    grid-auto-rows: max-content;
+    gap: 6px;
+    max-height: 300px;
+    margin: 0 -2px;
+    padding: 2px;
+    overflow: auto;
+  }
+  .hm-cms-media-item {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    min-height: auto;
+    padding: 4px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius-sm);
+    background: #fff;
+    color: var(--hm-cms-ink);
+    font-weight: 400;
+    text-align: left;
+  }
+  .hm-cms-media-item:hover {
+    border-color: var(--hm-cms-primary);
+    background: #fff;
+  }
+  .hm-cms-media-item.selected {
+    border-color: var(--hm-cms-primary);
+    box-shadow: 0 0 0 2px var(--hm-cms-primary);
+  }
+  .hm-cms-media-item img {
+    display: block;
+    width: 100%;
+    height: 84px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-media-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11.5px;
+    line-height: 1.3;
+    color: var(--hm-cms-ink-softer);
+  }
+  .hm-cms-media-usage {
+    font: 600 10.5px/1.2 var(--hm-cms-font);
+    color: var(--hm-cms-primary-dark);
+  }
+  .hm-cms-media-missing {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 4px;
+    height: 84px;
+    border-radius: 4px;
+    background: var(--hm-cms-surface-soft);
+    color: var(--hm-cms-danger-ink);
+    font: 600 11px/1.3 var(--hm-cms-font);
+    text-align: center;
+  }
+  .hm-cms-media-wide {
+    grid-column: 1 / -1;
+  }
+  .hm-cms-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .hm-cms-gallery-thumb {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-cms-line-softer);
+    transition: none;
+  }
+  .hm-cms-gallery-thumb:hover {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-gallery-thumb:focus-visible {
+    outline: 3px solid var(--hm-cms-primary);
+    outline-offset: 2px;
+  }
+  .hm-cms-gallery-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hm-cms-gallery-featured {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(15, 36, 51, 0.78);
+    color: var(--hm-cms-on-dark-warn);
+  }
+
+  /* Zona para subir: el input queda oculto; el rótulo es la superficie. */
+  .hm-cms-drop {
+    position: relative;
+    display: grid;
+    gap: 6px;
+  }
+  .hm-cms-drop-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .hm-cms-drop-label {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 16px 12px;
+    border: 1.5px dashed var(--hm-cms-line-soft);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+    color: var(--hm-cms-ink-soft);
+    font: 400 13.5px/1.4 var(--hm-cms-font);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
+      background-color var(--hm-cms-duration) var(--hm-cms-ease);
+  }
+  .hm-cms-drop-label strong {
+    font-weight: 600;
+    color: var(--hm-cms-primary-dark);
+  }
+  .hm-cms-drop-label > .hm-cms-icon {
+    color: var(--hm-cms-primary);
+  }
+  .hm-cms-drop-label:hover,
+  .hm-cms-drop.is-over .hm-cms-drop-label {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-primary-light);
+  }
+  .hm-cms-drop-input:focus-visible + .hm-cms-drop-label {
+    border-color: var(--hm-cms-primary);
+    box-shadow: var(--hm-cms-ring);
+  }
+  .hm-cms-drop-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--hm-cms-ok-line);
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-cms-ok-bg);
+    color: var(--hm-cms-ok-ink);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  /* ─── Editor de texto con formato ───────────────────────────────────── */
+  .hm-cms-rt {
+    overflow: hidden;
+    border: 1px solid var(--hm-cms-line-soft);
+    border-radius: var(--hm-cms-radius-sm);
+    background: #fff;
+  }
+  .hm-cms-rt:focus-within {
+    border-color: var(--hm-cms-primary);
+    box-shadow: var(--hm-cms-ring);
+  }
+  .hm-cms-rt-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--hm-cms-line-softer);
+    background: var(--hm-cms-surface-soft);
+  }
+  /*
+   * 32 px queda por encima del mínimo de 24 px de WCAG 2.2 SC 2.5.8 y deja la
+   * barra en una sola fila; con puntero grueso vuelven a 44 px más abajo.
+   */
+  .hm-cms-rt-btn {
+    min-width: 32px;
+    min-height: 32px;
+    height: 32px;
+    padding: 0 7px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--hm-cms-ink-soft);
+    font-size: 13px;
+    line-height: 1;
+    box-shadow: none;
+  }
+  .hm-cms-rt-btn:hover {
+    border-color: var(--hm-cms-line-soft);
+    background: #fff;
+    color: var(--hm-cms-primary-dark);
+  }
+  .hm-cms-rt-btn:focus-visible {
+    outline: 2px solid var(--hm-cms-primary);
+    outline-offset: -2px;
+  }
+  .hm-cms-rt-btn[aria-pressed="true"] {
+    border-color: var(--hm-cms-primary);
+    background: var(--hm-cms-primary-light);
+    color: var(--hm-cms-primary-dark);
+  }
+  .hm-cms-rt-bold { font-weight: 800; }
+  .hm-cms-rt-italic { font-style: italic; font-family: Georgia, serif; }
+  .hm-cms-rt-sep {
+    width: 1px;
+    height: 18px;
+    margin: 0 4px;
+    background: var(--hm-cms-line-soft);
+  }
+  .hm-cms-rt-spacer { flex: 1; }
+  @media (pointer: coarse) {
+    .hm-cms-rt-btn {
+      min-width: 44px;
+      min-height: 44px;
+      height: 44px;
+    }
+  }
+  .hm-cms-rt textarea {
+    display: block;
+    width: 100%;
+    min-height: 260px;
+    padding: 12px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font: 400 14.5px/1.65 var(--hm-cms-font);
+    resize: vertical;
+  }
+  .hm-cms-rt textarea:focus-visible {
+    box-shadow: none;
+  }
+  /*
+   * La vista previa se acerca al sitio sin copiarlo: es una ayuda para no
+   * publicar a ciegas, no una maqueta fiel.
+   */
+  .hm-cms-rt-preview {
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-rt-preview h2 { margin: 0 0 8px; font-size: 18px; color: var(--hm-cms-dark); }
+  .hm-cms-rt-preview h3 { margin: 12px 0 6px; font-size: 15px; color: var(--hm-cms-dark); }
+  .hm-cms-rt-preview p { margin: 0 0 10px; }
+  .hm-cms-rt-preview ul,
+  .hm-cms-rt-preview ol { margin: 0 0 10px; padding-left: 20px; }
+  .hm-cms-rt-preview ul { list-style: disc; }
+  .hm-cms-rt-preview ol { list-style: decimal; }
+  .hm-cms-rt-preview li { margin-bottom: 4px; }
+  .hm-cms-rt-preview blockquote {
+    margin: 0 0 10px;
+    padding: 6px 12px;
+    border-left: 3px solid var(--hm-cms-primary);
+    background: var(--hm-cms-alt);
+    color: var(--hm-cms-ink-softer);
+  }
+  .hm-cms-rt-preview a { color: var(--hm-cms-primary); }
+  .hm-cms-rt-preview :first-child { margin-top: 0; }
+  .hm-cms-rt-preview :last-child { margin-bottom: 0; }
+  .hm-cms-rt-help {
+    padding: 6px 12px 8px;
+    border-top: 1px solid var(--hm-cms-line-softer);
+    font-size: 12px;
+    color: var(--hm-cms-muted-soft);
+  }
+
+  /* ─── Revisiones, historial y administración ────────────────────────── */
+  .hm-cms-revisions,
+  .hm-cms-job-list {
+    display: grid;
+    gap: 8px;
+  }
+  .hm-cms-revision-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 10px 10px 14px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-revision-item.current {
+    border-color: var(--hm-cms-info-line);
+    background: var(--hm-cms-info-bg);
+  }
+  .hm-cms-revision-info {
+    display: grid;
+    gap: 2px;
+  }
+  .hm-cms-revision-version {
+    font: 600 13.5px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-revision-date {
+    font-size: 12.5px;
+    color: var(--hm-cms-muted-soft);
+  }
+  .hm-cms-job {
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-job-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font: 600 14px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-log {
+    max-height: 150px;
+    overflow: auto;
+    padding: 8px;
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-cms-badge-dark-bg);
+    color: var(--hm-cms-badge-dark-ink);
+    font: 11px/1.5 var(--hm-cms-mono);
+    white-space: pre-wrap;
+  }
+  .hm-cms-admin {
+    display: grid;
+    gap: 12px;
+  }
+  .hm-cms-admin-section {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-admin h3 {
+    font: 600 14.5px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  /*
+   * tabindex 0 porque la lista tiene su propio scroll: sin él, quien navega
+   * con teclado no puede desplazarla (axe: scrollable-region-focusable).
+   */
+  .hm-cms-admin-list {
+    display: grid;
+    gap: 1px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius-sm);
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-admin-list li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2px 12px;
+    padding: 7px 10px;
+    background: #fff;
+    font-size: 13px;
+  }
+  /* Los eventos de acceso se distinguen: son los que se revisan cuando se
+     sospecha de un intento de entrada ajeno. */
+  .hm-cms-admin-list li[data-security] {
+    box-shadow: inset 3px 0 0 var(--hm-cms-accent);
+  }
+
+  /* ─── Acceso ────────────────────────────────────────────────────────── */
+  .hm-cms-login-form {
+    width: 100%;
+    max-width: 340px;
+    margin: 24px auto 0;
+  }
+  .hm-cms-login-head {
+    display: grid;
+    gap: 4px;
+  }
+  .hm-cms-login-head h3 {
+    font: 600 18px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-login-form button[type="submit"] {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* ─── Confirmaciones ────────────────────────────────────────────────── */
+  .hm-cms-dialog-layer {
+    pointer-events: auto;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(15, 36, 51, 0.45);
+    animation: hm-cms-fade 120ms var(--hm-cms-ease);
+  }
+  .hm-cms-dialog {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px 14px;
+    width: min(440px, 100%);
+    padding: 20px;
+    border-radius: var(--hm-cms-radius-lg);
+    background: #fff;
+    color: var(--hm-cms-ink);
+    box-shadow: var(--hm-cms-shadow-lg);
+    animation: hm-cms-rise 160ms var(--hm-cms-ease);
+  }
+  .hm-cms-dialog-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     background: var(--hm-cms-info-bg);
     color: var(--hm-cms-primary);
   }
-  .hm-cms-status[data-level="success"] {
-    background: var(--hm-cms-ok-bg);
-    color: var(--hm-cms-ok-ink);
-  }
-  .hm-cms-status[data-level="error"] {
+  .hm-cms-dialog.is-danger .hm-cms-dialog-icon {
     background: var(--hm-cms-danger-bg);
     color: var(--hm-cms-danger-ink);
   }
+  .hm-cms-dialog-body {
+    display: grid;
+    gap: 6px;
+    padding-top: 6px;
+  }
+  .hm-cms-dialog-body h2 {
+    font: 600 16px/1.35 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  .hm-cms-dialog-body p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--hm-cms-ink-softer);
+  }
+  .hm-cms-dialog-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  @keyframes hm-cms-fade {
+    from { opacity: 0; }
+  }
+  @keyframes hm-cms-rise {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  }
+
+  /* ─── Aviso de deshacer ─────────────────────────────────────────────── */
+  /*
+   * Se ancla encima de la barra, que es fija abajo a la izquierda.
+   * "pointer-events: auto" porque el shell entero es "none".
+   */
+  .hm-cms-undo {
+    pointer-events: auto;
+    position: fixed;
+    z-index: 40;
+    left: 16px;
+    bottom: 80px;
+    max-width: min(440px, calc(100vw - 32px));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 10px 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--hm-cms-radius);
+    background: var(--hm-cms-dark);
+    color: #fff;
+    font-size: 13.5px;
+    line-height: 1.4;
+    box-shadow: var(--hm-cms-shadow-lg);
+  }
+  .hm-cms-undo-texto { flex: 1; }
+  .hm-cms-undo-aviso {
+    display: block;
+    margin-top: 2px;
+    color: var(--hm-cms-on-dark-warn);
+    font-size: 12px;
+  }
+  .hm-cms-undo-cuenta {
+    font-variant-numeric: tabular-nums;
+    color: var(--hm-cms-line-soft);
+    font-size: 12px;
+  }
+  .hm-cms-undo-btn {
+    min-height: 34px;
+    white-space: nowrap;
+  }
+
+  /* ─── Pequeñas piezas ───────────────────────────────────────────────── */
+  /* H-05: spinner para operaciones asíncronas. Toma el color del botón. */
+  @keyframes hm-cms-spin {
+    to { transform: rotate(360deg); }
+  }
+  .hm-cms-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    opacity: 0.85;
+    animation: hm-cms-spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
   .hm-cms-skeleton {
+    height: 44px;
+    border-radius: var(--hm-cms-radius-sm);
     background: linear-gradient(90deg, var(--hm-cms-line-softer) 25%, var(--hm-cms-surface-soft) 50%, var(--hm-cms-line-softer) 75%);
     background-size: 200% 100%;
     animation: hm-cms-shimmer 1.5s ease infinite;
-    border-radius: var(--hm-cms-radius-sm);
-    height: 44px;
   }
   @keyframes hm-cms-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
-  /*
-   * ═══════════════════════════════════════════════════════════════════════════
-   * UI-05: Stat cards para galería, transiciones en colecciones,
-   * formulario de login centrado, secciones de admin en cards.
-   * ═══════════════════════════════════════════════════════════════════════════
-   */
-  .hm-cms-stat-card {
-    padding: 20px 16px;
-    border: 1px solid var(--hm-cms-line-soft);
-    border-radius: var(--hm-cms-radius);
-    background: white;
-    cursor: pointer;
-    text-align: center;
-    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
-                box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
+  /* ─── Pantallas pequeñas y táctiles ─────────────────────────────────── */
+  @media (max-width: 640px) {
+    .hm-cms-bar {
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      justify-content: space-between;
+    }
+    .hm-cms-panel {
+      width: 100vw;
+    }
+    .hm-cms-panel-body {
+      padding: 16px;
+    }
+    .hm-cms-panel-body .hm-cms-footer {
+      margin: 0 -16px -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .hm-cms-undo {
+      left: 8px;
+      right: 8px;
+      bottom: 72px;
+      max-width: none;
+    }
+    .hm-cms-dialog-actions {
+      flex-direction: column-reverse;
+    }
+    .hm-cms-dialog-actions button {
+      width: 100%;
+    }
   }
-  .hm-cms-panel button.hm-cms-stat-card,
-  .hm-cms-panel .hm-cms-stat-card {
-    background: white;
-    border: 1px solid var(--hm-cms-line-soft);
-    font-weight: 400;
-    color: var(--hm-cms-ink);
-    min-height: auto;
-    min-width: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .hm-cms-stat-card:hover {
-    border-color: var(--hm-cms-primary);
-    box-shadow: 0 2px 8px rgba(0,101,169,0.12);
-  }
-  .hm-cms-panel button.hm-cms-stat-card:hover,
-  .hm-cms-panel .hm-cms-stat-card:hover {
-    background: white;
-    border-color: var(--hm-cms-primary);
-  }
-  .hm-cms-stat-value {
-    display: block;
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--hm-cms-primary);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .hm-cms-stat-label {
-    font-size: 12px;
-    color: var(--hm-cms-ink-softer);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 600;
-  }
-  .hm-cms-collection-item {
-    transition: border-color var(--hm-cms-duration) var(--hm-cms-ease),
-                box-shadow var(--hm-cms-duration) var(--hm-cms-ease);
-  }
-  .hm-cms-collection-item:hover {
-    box-shadow: 0 2px 8px rgba(0,101,169,0.1);
-  }
-  .hm-cms-login-form {
-    display: grid;
-    gap: 16px;
-    max-width: 320px;
-    margin: 0 auto;
-    padding-top: 24px;
-  }
-  .hm-cms-admin-section {
-    padding: 16px;
-    background: white;
-    border: 1px solid var(--hm-cms-line-softer);
-    border-radius: var(--hm-cms-radius);
+  /* 16 px evita que iOS amplíe la página al enfocar un campo. */
+  @media (pointer: coarse) {
+    :where(.hm-cms-shell) input,
+    :where(.hm-cms-shell) select,
+    :where(.hm-cms-shell) textarea {
+      font-size: 16px;
+    }
   }
 
   /*
-   * ═══════════════════════════════════════════════════════════════════════════
-   * UI-01: prefers-reduced-motion — desactivar TODAS las animaciones
-   * y transiciones cuando el usuario lo pide.
-   * ═══════════════════════════════════════════════════════════════════════════
+   * UI-01: prefers-reduced-motion — sin transiciones ni animaciones cuando
+   * la persona lo pide.
    */
   @media (prefers-reduced-motion: reduce) {
-    .hm-cms-panel {
-      transition-duration: 0ms;
-    }
+    .hm-cms-shell *,
+    .hm-cms-shell *::before,
+    .hm-cms-panel,
     .hm-cms-backdrop {
-      transition-duration: 0ms;
+      transition-duration: 0ms !important;
+      animation: none !important;
     }
-    .hm-cms-bar button,
-    .hm-cms-panel button {
-      transition: none;
-    }
-    .hm-cms-bar button:active:not([disabled]),
-    .hm-cms-panel button:active:not([disabled]) {
+    :where(.hm-cms-shell) button:where(:active:not([disabled])) {
       transform: none;
     }
-    .hm-cms-collection-item,
-    .hm-cms-stat-card,
-    .hm-cms-status {
-      transition: none;
-    }
     .hm-cms-skeleton {
-      animation: none;
       background: var(--hm-cms-line-softer);
-    }
-    .hm-cms-autosave-indicator {
-      transition: none;
     }
   }
 `;

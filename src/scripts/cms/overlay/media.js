@@ -12,6 +12,7 @@ import { state } from './context';
 import { escapeHtml } from './html';
 import { panelBody } from './shell';
 import { api } from './api';
+import { icon } from './icons';
 
 /**
  * A-2 — Un solo selector de medios, paginado y con búsqueda en el servidor.
@@ -53,7 +54,7 @@ function mediaTileMarkup(item, { action, selected }) {
   // C-2: un asset cuyo archivo no está en disco se marca en vez de
   // renderizarse como una miniatura rota sin explicación.
   const cuerpo = item.missing
-    ? `<span class="hm-cms-media-name" style="display:grid;place-items:center;aspect-ratio:4/3;background:var(--hm-cms-surface-soft);color:var(--hm-cms-danger-ink);text-align:center">⚠ archivo<br />no encontrado</span>`
+    ? `<span class="hm-cms-media-missing">${icon('alert')}Archivo no encontrado</span>`
     : // alt vacío cuando no hay texto alternativo propio: el nombre del archivo
       // ya va en el <span> de debajo, y repetirlo hacía que un lector de pantalla
       // leyera dos veces lo mismo por cada miniatura (axe: image-redundant-alt).
@@ -68,7 +69,7 @@ function mediaTileMarkup(item, { action, selected }) {
     >
       ${cuerpo}
       <span class="hm-cms-media-name">${escapeHtml(item.name)}</span>
-      ${item.usageCount > 0 ? `<span class="hm-cms-badge" style="font-size:10px;align-self:start">Usado: ${item.usageCount}</span>` : ''}
+      ${item.usageCount > 0 ? `<span class="hm-cms-media-usage">En uso · ${item.usageCount}</span>` : ''}
     </button>
   `;
 }
@@ -102,8 +103,8 @@ export function renderMediaPicker() {
 
   if (!state.mediaItems.length) {
     picker.grid.innerHTML = mediaPicker.loading
-      ? '<p class="hm-cms-muted">Buscando...</p>'
-      : '<p class="hm-cms-muted">No hay medios que coincidan.</p>';
+      ? '<p class="hm-cms-hint hm-cms-media-wide">Buscando…</p>'
+      : '<p class="hm-cms-hint hm-cms-media-wide">Ninguna imagen coincide con la búsqueda.</p>';
     return;
   }
 
@@ -119,10 +120,10 @@ export function renderMediaPicker() {
         })
       )
       .join('') +
-    `<p class="hm-cms-muted" style="grid-column:1/-1;margin:4px 0 0">Mostrando ${state.mediaItems.length} de ${mediaPicker.total}.</p>` +
+    `<p class="hm-cms-hint hm-cms-media-wide">Mostrando ${state.mediaItems.length} de ${mediaPicker.total}.</p>` +
     (restantes > 0
-      ? `<button type="button" class="secondary" data-action="load-more-media" style="grid-column:1/-1">${
-          mediaPicker.loading ? 'Cargando...' : `Cargar más (${restantes} restantes)`
+      ? `<button type="button" class="secondary small hm-cms-media-wide" data-action="load-more-media">${
+          mediaPicker.loading ? 'Cargando…' : `Ver más (quedan ${restantes})`
         }</button>`
       : '');
 }

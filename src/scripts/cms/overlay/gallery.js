@@ -14,6 +14,8 @@ import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
 import { loadMediaPicker } from './media';
+import { icon } from './icons';
+import { dropzoneMarkup } from './dropzone';
 
 // ─── Gallery management ──────────────────────────────────────────────────
 // Gallery view state tracking
@@ -30,26 +32,25 @@ export async function loadGallery() {
     const cats = catsData.items || [];
     const albums = albumsData.items || [];
     const items = itemsData.items || [];
+    // Tres filas de navegación, cada una con su recuento y qué contiene. Antes
+    // eran tres tarjetas de cifras más tres botones primarios idénticos que
+    // hacían lo mismo que las tarjetas: seis controles para tres destinos.
+    const destino = (accion, titulo, cuenta, detalle) => `
+      <button type="button" class="hm-cms-nav-row" data-action="${accion}">
+        <span class="hm-cms-nav-text">
+          <span class="hm-cms-nav-title">${escapeHtml(titulo)}</span>
+          <span class="hm-cms-nav-detail">${escapeHtml(detalle)}</span>
+        </span>
+        <span class="hm-cms-nav-count">${cuenta}</span>
+      </button>`;
     openPanel(`
-      <div style="display:grid;gap:12px">
-        <p class="hm-cms-muted">Gestiona las imágenes que aparecen en la página de galería del sitio.</p>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <button type="button" class="hm-cms-stat-card" data-action="gallery-cats">
-            <span class="hm-cms-stat-value">${cats.length}</span>
-            <span class="hm-cms-stat-label">Categorías</span>
-          </button>
-          <button type="button" class="hm-cms-stat-card" data-action="gallery-albums">
-            <span class="hm-cms-stat-value">${albums.length}</span>
-            <span class="hm-cms-stat-label">Álbumes</span>
-          </button>
-          <button type="button" class="hm-cms-stat-card" data-action="gallery-items">
-            <span class="hm-cms-stat-value">${items.length}</span>
-            <span class="hm-cms-stat-label">Imágenes</span>
-          </button>
+      <div class="hm-cms-stack">
+        <p class="hm-cms-hint">Las fotos que aparecen en la página «Galería» del sitio.</p>
+        <div class="hm-cms-nav-list">
+          ${destino('gallery-items', 'Gestionar imágenes', items.length, 'Agregar, describir o quitar fotos')}
+          ${destino('gallery-albums', 'Gestionar álbumes', albums.length, 'Una obra con sus fotos')}
+          ${destino('gallery-cats', 'Gestionar categorías', cats.length, 'Los filtros de la galería')}
         </div>
-        <button type="button" data-action="gallery-cats">Gestionar categorías</button>
-        <button type="button" data-action="gallery-albums">Gestionar álbumes</button>
-        <button type="button" data-action="gallery-items">Gestionar imágenes</button>
       </div>
     `);
   } catch (error) {
@@ -146,35 +147,34 @@ export async function loadGalleryCategories() {
     const cats = data.items || [];
     galleryCategoriesListCache = cats;
     openPanel(`
-      <div style="display:grid;gap:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <p class="hm-cms-muted" role="status" aria-live="polite" data-gallery-category-count style="margin:0;font-size:13px;color:var(--hm-cms-muted-soft)"></p>
-          <button type="button" data-action="gallery-new-cat">+ Nueva categoría</button>
+      <div class="hm-cms-stack">
+        <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+        <div class="hm-cms-toolbar">
+          <label class="hm-cms-grow">Buscar categoría
+            <input name="galleryCategorySearch" type="search" data-gallery-category-search
+              placeholder="Nombre" value="${escapeHtml(galleryCategorySearch)}" />
+          </label>
+          <button type="button" class="primary" data-action="gallery-new-cat">${icon('plus')}Nueva categoría</button>
         </div>
-        <label>Buscar categoría
-          <input name="galleryCategorySearch" type="search" data-gallery-category-search
-            placeholder="Nombre o slug" value="${escapeHtml(galleryCategorySearch)}" />
-        </label>
-        <div style="display:grid;gap:6px">
+        <p class="hm-cms-count" role="status" aria-live="polite" data-gallery-category-count></p>
+        <div class="hm-cms-collection-list">
           ${cats
             .map(
               (cat) => `
-            <div class="hm-cms-gallery-cat-btn" data-gallery-category-row data-gallery-search-text="${escapeHtml(`${cat.name} ${cat.slug}`)}" data-cat-id="${escapeHtml(cat.id)}">
-              <div>
-                <span class="hm-cms-gallery-cat-name">${escapeHtml(cat.name)}</span>
-                <span class="hm-cms-gallery-cat-slug">${escapeHtml(cat.slug)}</span>
+            <div class="hm-cms-collection-item" data-gallery-category-row data-gallery-search-text="${escapeHtml(`${cat.name} ${cat.slug}`)}" data-cat-id="${escapeHtml(cat.id)}">
+              <div class="hm-cms-collection-info">
+                <span class="hm-cms-collection-title">${escapeHtml(cat.name)}</span>
               </div>
-              <div style="display:flex;gap:4px">
-                <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">Editar</button>
-                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}" aria-label="Eliminar categoría: ${escapeHtml(cat.name)}" title="Eliminar categoría: ${escapeHtml(cat.name)}">×</button>
+              <div class="hm-cms-collection-actions">
+                <button type="button" class="secondary small" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">${icon('pencil')}Editar</button>
+                <button type="button" class="icon ghost destructive" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}" aria-label="Eliminar categoría: ${escapeHtml(cat.name)}" title="Eliminar categoría: ${escapeHtml(cat.name)}">${icon('trash')}</button>
               </div>
             </div>
           `
             )
             .join('')}
         </div>
-        <p class="hm-cms-muted" data-gallery-category-empty hidden></p>
-        <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+        <p class="hm-cms-empty" data-gallery-category-empty hidden></p>
       </div>
     `);
     filterGalleryCategories(galleryCategorySearch);
@@ -202,15 +202,18 @@ export async function showGalleryCategoryForm(catId = null) {
       <label>Nombre
         <input name="name" value="${escapeHtml(cat.name)}" required />
       </label>
-      <label>Slug (URL)
-        <input name="slug" value="${escapeHtml(cat.slug)}" pattern="[a-z0-9-]+" placeholder="auto-generado" />
-      </label>
-      <p class="hm-cms-muted">El slug se usa en la URL y los filtros. Solo letras minúsculas, números y guiones.</p>
-      <div class="hm-cms-actions">
+      <details class="hm-cms-advanced">
+        <summary>Opciones avanzadas</summary>
+        <label>Identificador en la dirección
+          <input name="slug" value="${escapeHtml(cat.slug)}" pattern="[a-z0-9-]+" placeholder="Se genera a partir del nombre" />
+        </label>
+        <p class="hm-cms-hint">Se usa en la dirección de los filtros. Solo minúsculas, números y guiones.</p>
+      </details>
+      <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${catId ? 'Guardar cambios' : 'Crear categoría'}</button>
-        <button type="button" class="secondary" data-action="gallery-cats">Cancelar</button>
+        <button type="button" class="ghost" data-action="gallery-cats">Cancelar</button>
+        <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 
@@ -239,36 +242,36 @@ export async function loadGalleryAlbums() {
     const albums = data.items || [];
     galleryAlbumsListCache = albums;
     openPanel(`
-      <div style="display:grid;gap:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <p class="hm-cms-muted" role="status" aria-live="polite" data-gallery-album-count style="margin:0;font-size:13px;color:var(--hm-cms-muted-soft)"></p>
-          <button type="button" data-action="gallery-new-album">+ Nuevo álbum</button>
+      <div class="hm-cms-stack">
+        <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+        <p class="hm-cms-hint">Un álbum agrupa las fotos de una obra; su nombre es el que ve el visitante. Las fotos se asignan desde «Gestionar imágenes».</p>
+        <div class="hm-cms-toolbar">
+          <label class="hm-cms-grow">Buscar álbum
+            <input name="galleryAlbumSearch" type="search" data-gallery-album-search
+              placeholder="Nombre" value="${escapeHtml(galleryAlbumSearch)}" />
+          </label>
+          <button type="button" class="primary" data-action="gallery-new-album">${icon('plus')}Nuevo álbum</button>
         </div>
-        <label>Buscar álbum
-          <input name="galleryAlbumSearch" type="search" data-gallery-album-search
-            placeholder="Nombre o slug" value="${escapeHtml(galleryAlbumSearch)}" />
-        </label>
-        <div style="display:grid;gap:6px">
+        <p class="hm-cms-count" role="status" aria-live="polite" data-gallery-album-count></p>
+        <div class="hm-cms-collection-list">
           ${albums
             .map(
               (album) => `
-            <div class="hm-cms-gallery-cat-btn" data-gallery-album-row data-gallery-search-text="${escapeHtml(`${album.name} ${album.slug}`)}" data-album-slug="${escapeHtml(album.slug)}">
-              <div>
-                <span class="hm-cms-gallery-cat-name">${escapeHtml(album.name)}</span>
-                <span class="hm-cms-gallery-cat-slug">${escapeHtml(album.slug)} · ${album.itemCount} foto${album.itemCount === 1 ? '' : 's'}</span>
+            <div class="hm-cms-collection-item" data-gallery-album-row data-gallery-search-text="${escapeHtml(`${album.name} ${album.slug}`)}" data-album-slug="${escapeHtml(album.slug)}">
+              <div class="hm-cms-collection-info">
+                <span class="hm-cms-collection-title">${escapeHtml(album.name)}</span>
+                <span class="hm-cms-collection-meta">${album.itemCount} ${album.itemCount === 1 ? 'foto' : 'fotos'}</span>
               </div>
-              <div style="display:flex;gap:4px">
-                <button type="button" class="secondary" style="font-size:11px;padding:4px 8px" data-action="gallery-edit-album" data-album-slug="${escapeHtml(album.slug)}">Editar</button>
-                <button type="button" class="secondary destructive" style="font-size:11px;padding:4px 8px" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}" aria-label="Eliminar álbum: ${escapeHtml(album.name)}" title="Eliminar álbum: ${escapeHtml(album.name)}">×</button>
+              <div class="hm-cms-collection-actions">
+                <button type="button" class="secondary small" data-action="gallery-edit-album" data-album-slug="${escapeHtml(album.slug)}">${icon('pencil')}Editar</button>
+                <button type="button" class="icon ghost destructive" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}" aria-label="Eliminar álbum: ${escapeHtml(album.name)}" title="Eliminar álbum: ${escapeHtml(album.name)}">${icon('trash')}</button>
               </div>
             </div>
           `
             )
             .join('')}
         </div>
-        <p class="hm-cms-muted" data-gallery-album-empty hidden></p>
-        <p class="hm-cms-muted">El álbum agrupa las fotos de una obra y su nombre es el que ve el visitante. Las fotos se asignan desde "Gestionar imágenes".</p>
-        <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
+        <p class="hm-cms-empty" data-gallery-album-empty hidden></p>
       </div>
     `);
     filterGalleryAlbums(galleryAlbumSearch);
@@ -296,19 +299,24 @@ export async function showGalleryAlbumForm(albumSlug = null) {
       <label>Nombre
         <input name="name" value="${escapeHtml(album.name)}" required />
       </label>
-      <label>Slug (URL del proyecto)
-        <input name="slug" value="${escapeHtml(album.slug)}" pattern="[a-z0-9-]+" placeholder="auto-generado" ${albumSlug ? 'readonly' : ''} />
-      </label>
-      <p class="hm-cms-muted">${
-        albumSlug
-          ? 'El slug no se puede cambiar: es lo que enlaza las fotos del álbum con /proyectos/&lt;slug&gt;. El nombre sí, y es el que ve el visitante.'
-          : 'El slug enlaza el álbum con la página del proyecto (/proyectos/&lt;slug&gt;). Solo letras minúsculas, números y guiones.'
-      }</p>
-      <div class="hm-cms-actions">
+      <details class="hm-cms-advanced" ${albumSlug ? '' : 'open'}>
+        <summary>Enlace con el proyecto</summary>
+        <label>Identificador del proyecto
+          <input name="slug" value="${escapeHtml(album.slug)}" pattern="[a-z0-9-]+" placeholder="Se genera a partir del nombre" ${albumSlug ? 'readonly' : ''} />
+        </label>
+        <p class="hm-cms-hint">${
+          albumSlug
+            ? 'No se puede cambiar: es lo que une las fotos del álbum con la página /proyectos/' +
+              escapeHtml(album.slug) +
+              '. El nombre sí se puede cambiar.'
+            : 'Debe coincidir con la dirección del proyecto (/proyectos/…) para que sus fotos aparezcan allí. Solo minúsculas, números y guiones.'
+        }</p>
+      </details>
+      <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${albumSlug ? 'Guardar cambios' : 'Crear álbum'}</button>
-        <button type="button" class="secondary" data-action="gallery-albums">Cancelar</button>
+        <button type="button" class="ghost" data-action="gallery-albums">Cancelar</button>
+        <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 
@@ -392,21 +400,15 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
 
   openPanel(
     `
-    <div style="display:grid;gap:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-        <span style="font-size:13px;color:var(--hm-cms-muted-soft)">
-          ${
-            filtrados.length === galleryItemsCache.length
-              ? `${galleryItemsCache.length} imágenes`
-              : `${filtrados.length} de ${galleryItemsCache.length}`
-          }
-        </span>
-        <button type="button" data-action="gallery-new-item">+ Agregar imagen</button>
+    <div class="hm-cms-stack">
+      <button type="button" class="ghost small hm-cms-back" data-action="gallery">${icon('arrowLeft')}Volver a Galería</button>
+      <div class="hm-cms-toolbar">
+        <label class="hm-cms-grow">Buscar
+          <input name="galleryFilterQ" type="search" data-gallery-filter-q
+            placeholder="Descripción, álbum o categoría" value="${escapeHtml(galleryFilter.q)}" />
+        </label>
+        <button type="button" class="primary" data-action="gallery-new-item">${icon('plus')}Agregar imagen</button>
       </div>
-      <label>Buscar
-        <input name="galleryFilterQ" type="search" data-gallery-filter-q
-          placeholder="Texto alternativo, álbum o categoría" value="${escapeHtml(galleryFilter.q)}" />
-      </label>
       <div class="hm-cms-two">
         <label>Álbum
           <select data-gallery-filter-album>
@@ -421,16 +423,21 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
           </select>
         </label>
       </div>
+      <p class="hm-cms-count">${
+        filtrados.length === galleryItemsCache.length
+          ? `${galleryItemsCache.length} imágenes`
+          : `${filtrados.length} de ${galleryItemsCache.length} imágenes`
+      }</p>
       ${
         filtrados.length === 0
-          ? '<p class="hm-cms-muted">Ninguna foto coincide con el filtro.</p>'
+          ? '<p class="hm-cms-empty">Ninguna foto coincide con el filtro.</p>'
           : `<div class="hm-cms-gallery-grid">
               ${visibles
                 .map(
                   (item) => `
                 <button type="button" class="hm-cms-gallery-thumb" data-action="gallery-edit-item" data-item-id="${escapeHtml(item.id)}" aria-label="Editar imagen: ${escapeHtml(item.alt || 'sin descripción')}" title="${escapeHtml(item.alt)}">
                   <img src="${escapeHtml(item.mediaPath)}" alt="" loading="lazy" />
-                  ${item.featured ? '<span class="hm-cms-gallery-featured">★</span>' : ''}
+                  ${item.featured ? `<span class="hm-cms-gallery-featured" title="Destacada">${icon('star', { size: 12 })}</span>` : ''}
                 </button>
               `
                 )
@@ -442,7 +449,6 @@ function renderGalleryItemsList(albums, cats, { autofocus = true } = {}) {
                 : ''
             }`
       }
-      <button type="button" class="secondary" data-action="gallery">← Volver a galería</button>
     </div>
   `,
     { autofocus }
@@ -504,21 +510,22 @@ export async function showGalleryItemForm(itemId = null) {
   openPanel(`
     <form data-gallery-item-form data-item-id="${itemId ? escapeHtml(itemId) : ''}">
       <input name="mediaId" type="hidden" value="${escapeHtml(item.mediaId || '')}" />
-      <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt=""
-        style="width:100%;max-height:180px;object-fit:contain;background:var(--hm-cms-line-softer);border-radius:var(--hm-cms-radius-sm);${item.mediaPath ? '' : 'display:none'}" />
-      <label>Seleccionar imagen
-        <input name="mediaSearch" type="search" placeholder="Buscar en la biblioteca de medios..." data-gallery-media-search />
-      </label>
-      <label>O subir nueva imagen
-        <input name="file" type="file" accept="image/png,image/jpeg,image/webp" data-gallery-upload />
-      </label>
-      <div data-gallery-media-grid class="hm-cms-media-grid" style="max-height:200px">
-        <p class="hm-cms-muted">Cargando medios...</p>
+      <div class="hm-cms-image-preview" ${item.mediaPath ? '' : 'hidden'} data-gallery-preview-box>
+        <img data-gallery-media-preview src="${item.mediaPath ? escapeHtml(item.mediaPath) : ''}" alt="" />
       </div>
-      <label>Texto alternativo (accesibilidad)
-        <input name="alt" value="${escapeHtml(item.alt)}" required />
+      ${dropzoneMarkup({ atributos: 'data-gallery-upload', texto: itemId ? 'Reemplazar por otra imagen' : 'Subir una imagen' })}
+      <div class="hm-cms-field-group">
+        <label>O elegir de la biblioteca
+          <input name="mediaSearch" type="search" placeholder="Buscar por nombre o descripción" data-gallery-media-search />
+        </label>
+        <div data-gallery-media-grid class="hm-cms-media-grid">
+          <p class="hm-cms-hint">Cargando imágenes…</p>
+        </div>
+      </div>
+      <label>Descripción de la foto
+        <input name="alt" value="${escapeHtml(item.alt)}" required aria-describedby="hm-cms-gallery-alt-hint" />
       </label>
-      <p class="hm-cms-muted">La galería muestra las fotos agrupadas por álbum, sin título ni descripción. El texto alternativo no se ve en pantalla: es lo que leen los lectores de pantalla y lo que busca el filtro de la galería.</p>
+      <p class="hm-cms-hint" id="hm-cms-gallery-alt-hint">No se ve en pantalla: la leen quienes no pueden ver la foto, y es lo que busca el filtro de la galería.</p>
       <label>Categoría
         <select name="categoryId">
           <option value="">Sin categoría</option>
@@ -531,24 +538,28 @@ export async function showGalleryItemForm(itemId = null) {
           ${albums.map((album) => `<option value="${escapeHtml(album.slug)}" ${album.slug === item.projectSlug ? 'selected' : ''}>${escapeHtml(album.name)}</option>`).join('')}
         </select>
       </label>
-      <div class="hm-cms-two">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input name="featured" type="checkbox" ${item.featured ? 'checked' : ''} />
-          Destacada
-        </label>
-        <label>Estado
-          <select name="status">
-            <option value="published" ${item.status === 'published' ? 'selected' : ''}>Publicada</option>
-            <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Borrador</option>
-          </select>
-        </label>
+      <label>Estado
+        <select name="status">
+          <option value="published" ${item.status === 'published' ? 'selected' : ''}>Visible en el sitio</option>
+          <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Oculta (borrador)</option>
+        </select>
+      </label>
+      <label class="hm-cms-check">
+        <input name="featured" type="checkbox" ${item.featured ? 'checked' : ''} />
+        Destacada
+      </label>
+      ${
+        itemId
+          ? `<div class="hm-cms-edit-actions-danger">
+          <button type="button" class="ghost destructive small" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.alt)}">${icon('trash')}Quitar de la galería</button>
+        </div>`
+          : ''
+      }
+      <div class="hm-cms-actions hm-cms-footer">
+        <button type="submit">${itemId ? 'Guardar cambios' : 'Agregar a la galería'}</button>
+        <button type="button" class="ghost" data-action="gallery-items">Cancelar</button>
+        <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
-      <div class="hm-cms-actions">
-        <button type="submit">${itemId ? 'Guardar cambios' : 'Agregar a galería'}</button>
-        ${itemId ? `<button type="button" class="secondary destructive" data-action="gallery-delete-item" data-item-id="${escapeHtml(itemId)}" data-item-title="${escapeHtml(item.alt)}">Eliminar</button>` : ''}
-        <button type="button" class="secondary" data-action="gallery-items">Cancelar</button>
-      </div>
-      <p class="hm-cms-muted" role="status" aria-live="polite" data-status></p>
     </form>
   `);
 

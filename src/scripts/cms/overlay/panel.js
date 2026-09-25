@@ -11,6 +11,7 @@
 import { state } from './context';
 import { isFormDirty, panel, panelBody, setFormDirty, shell } from './shell';
 import { offerDraft } from './drafts';
+import { confirmar } from './confirm';
 
 const backdrop = shell.querySelector('[data-cms-backdrop]');
 
@@ -26,6 +27,9 @@ panel.tabIndex = -1;
  * @param autofocus Mover el foco al primer control del panel. Se desactiva
  *   al repintar una lista filtrada: el foco debe quedarse en el buscador que
  *   el operador está usando, y este autofoco (diferido 50 ms) se lo robaba.
+ *   Con `'panel'` el foco va al propio panel: en Administración el primer
+ *   campo es «Contraseña actual», al fondo de la vista, y enfocarlo desplazaba
+ *   el panel hasta allí nada más abrirlo.
  */
 export function openPanel(html, { autofocus = true } = {}) {
   if (document.activeElement && !panel.contains(document.activeElement)) {
@@ -56,6 +60,11 @@ export function openPanel(html, { autofocus = true } = {}) {
   if (!autofocus) return;
   setTimeout(() => {
     if (!panel.classList.contains('open') || panel.inert) return;
+    if (autofocus === 'panel') {
+      panelBody.scrollTop = 0;
+      panel.focus();
+      return;
+    }
 
     // Prioriza el campo que la persona vino a editar. En las vistas sin
     // campos (por ejemplo, una lista) enfoca el primer control de su contenido,
@@ -122,7 +131,11 @@ shell.addEventListener('keydown', (event) => {
   manejarTab(event);
 });
 
-export function closePanel(force = false) {
+/**
+ * Cierra el panel. Devuelve si se cerró: con cambios sin guardar pregunta
+ * antes, y la respuesta llega de forma asíncrona.
+ */
+export async function closePanel(force = false) {
   /*
    * Mientras hay una escritura en curso, cerrar no es una opción.
    *
@@ -135,20 +148,24 @@ export function closePanel(force = false) {
    * escrito sigue a salvo en el borrador local, aquí se perdería a medias.
    */
   const ocupado = panelBody.querySelector('[data-busy="true"]');
-  if (ocupado) return;
+  if (ocupado) return false;
 
   // A-11: Escape y «Cerrar» descartaban lo escrito sin preguntar, aunque el
   // estado sucio ya se estaba registrando para el aviso del navegador.
+  // E-2: cerrar ya no pierde nada, así que el aviso lo dice. Antes ponía
+  // «¿Cerrar y descartarlos?», que era cierto y por eso daba miedo.
   if (
     !force &&
     isFormDirty &&
-    // E-2: cerrar ya no pierde nada, así que el aviso lo dice. Antes ponía
-    // «¿Cerrar y descartarlos?», que era cierto y por eso daba miedo.
-    !window.confirm(
-      'Hay cambios sin guardar. Se cerrará el panel y quedará una copia local que podrás recuperar al volver a abrir este formulario. ¿Cerrar?'
-    )
+    !(await confirmar({
+      titulo: 'Tienes cambios sin guardar',
+      mensaje:
+        'Si cierras ahora, quedará una copia local que podrás recuperar al volver a abrir este formulario.',
+      aceptar: 'Cerrar de todos modos',
+      cancelar: 'Seguir editando',
+    }))
   ) {
-    return;
+    return false;
   }
   setFormDirty(false);
   panel.classList.remove('open');
@@ -165,6 +182,7 @@ export function closePanel(force = false) {
     lastActiveElement.focus();
     lastActiveElement = null;
   }
+  return true;
 }
 
 export function setPanelTitle(title) {

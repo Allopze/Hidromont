@@ -3,6 +3,7 @@
  * Cubre: subida multipart de archivos sintéticos y selector de medios en la UI.
  */
 import { test, expect } from '@playwright/test';
+import { aceptarConfirmaciones } from './helpers/confirmaciones';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
@@ -29,7 +30,7 @@ test.describe('CMS Media & Uploads', () => {
   test.beforeEach(async ({ page }) => {
     csrfToken = undefined;
     uploadedMediaId = undefined;
-    page.on('dialog', (d) => d.accept());
+    await aceptarConfirmaciones(page);
     await page.goto('/');
     await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
   });

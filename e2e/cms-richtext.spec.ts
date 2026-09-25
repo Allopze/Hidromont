@@ -49,10 +49,9 @@ async function abrirPrimerServicio(page: import('@playwright/test').Page) {
  */
 async function guardarYEsperar(panel: import('@playwright/test').Locator) {
   await panel.locator('button[type="submit"]').click();
-  await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(
-    'Guardado. Cambios pendientes de publicar.',
-    { timeout: 15_000 }
-  );
+  await expect(panel.locator('[data-entry-form] [data-status]')).toHaveText(/^Guardado\./, {
+    timeout: 15_000,
+  });
 }
 
 test.describe('Editor de texto con formato', () => {

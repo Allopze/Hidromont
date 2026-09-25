@@ -31,7 +31,10 @@ import {
   navegarBarra,
   refrescarPrevisualizacion,
 } from './richtext';
-import { saveEdit, selectElement, syncLinkValue, syncListValue } from './fields';
+import { ESTADOS_DE_CAMPO, saveEdit, selectElement, setEditStatus, syncLinkValue } from './fields';
+import { agregarElemento, quitarElemento, repintarLista, syncListValue } from './list-editor';
+import { confirmar, hayConfirmacionAbierta } from './confirm';
+import { mostrarArchivoElegido, registrarArrastre } from './dropzone';
 import {
   exportNoticeMarkup,
   loadPublishJobs,
@@ -65,6 +68,18 @@ import {
 } from './collections';
 
 // ─── Fin CRUD colecciones ────────────────────────────────────────────────
+
+/**
+ * Un formulario que se autoguarda acaba de cambiar: estado sucio (el punto de
+ * la barra y el aviso al cerrar), copia local y, en el editor de un campo, el
+ * rótulo junto a «Guardar».
+ */
+function markDirty(form) {
+  if (!form?.matches?.('[data-edit], [data-entry-form], [data-gallery-item-form]')) return;
+  setFormDirty(true);
+  scheduleDraftSave(form);
+  if (form.matches('[data-edit]')) setEditStatus(form, 'dirty', ESTADOS_DE_CAMPO.sucio);
+}
 /**
  * Registra la delegación de eventos del overlay.
  *
@@ -131,7 +146,7 @@ export function registerEvents() {
             (result.exported?.revertedToFallback || []).length > 0;
           if (status && !conOmisiones)
             status.textContent =
-              `Archivos preparados. El sitio todavía no muestra estos cambios; usa «Publicar cambios» para compilarlo. Si este CMS está en local, después debes desplegar el resultado. Job ${result.job?.id || ''}`.trim();
+              'Archivos preparados. El sitio todavía no muestra estos cambios: para eso, usa «Publicar cambios».';
           if (status && conOmisiones)
             status.textContent =
               'Archivos preparados con omisiones. Revisa los avisos antes de publicar.';
@@ -154,9 +169,7 @@ export function registerEvents() {
         const form = target.closest('form');
         if (form) {
           applyDraft(form);
-          const status = form.querySelector('[data-edit-status]');
-          if (status)
-            status.textContent = 'Borrador local recuperado; cambios sin guardar en el CMS.';
+          setEditStatus(form, 'dirty', 'Recuperaste lo que habías escrito. Falta guardarlo.');
         }
       }
       if (action === 'discard-draft' && target instanceof Element) {
@@ -219,20 +232,31 @@ export function registerEvents() {
             method: 'DELETE',
           });
           setGlobalState('unsaved');
-          loadGalleryCategories();
+          // El aviso sale DESPUÉS del repintado. Antes aparecía mientras la
+          // lista aún se estaba recargando: quien tabulaba hasta él perdía el
+          // foco cuando el panel se repintaba debajo.
+          await loadGalleryCategories();
           ofrecerDeshacer(r.undo, () => loadGalleryCategories());
         } catch (error) {
           // M-3: el servidor rechaza con 409 si la categoría tiene fotos, y
           // dice cuántas. Antes la confirmación no mencionaba ninguna
           // consecuencia y las fotos quedaban sin categoría en silencio.
-          if (error.status === 409 && window.confirm(`${error.message}\n\n¿Borrarla igualmente?`)) {
+          if (
+            error.status === 409 &&
+            (await confirmar({
+              titulo: '¿Eliminar la categoría de todos modos?',
+              mensaje: error.message,
+              aceptar: 'Eliminar igualmente',
+              peligro: true,
+            }))
+          ) {
             try {
               const forzado = await api(
                 `/api/cms/gallery/categories/${encodeURIComponent(catId)}?confirm=1`,
                 { method: 'DELETE' }
               );
               setGlobalState('unsaved');
-              loadGalleryCategories();
+              await loadGalleryCategories();
               ofrecerDeshacer(forzado.undo, () => loadGalleryCategories());
               return;
             } catch (segundo) {
@@ -267,7 +291,7 @@ export function registerEvents() {
             method: 'DELETE',
           });
           setGlobalState('unsaved');
-          loadGalleryAlbums();
+          await loadGalleryAlbums();
           ofrecerDeshacer(r.undo, () => loadGalleryAlbums());
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
@@ -295,7 +319,7 @@ export function registerEvents() {
             method: 'DELETE',
           });
           setGlobalState('unsaved');
-          loadGalleryItemsList();
+          await loadGalleryItemsList();
           ofrecerDeshacer(r.undo, () => loadGalleryItemsList());
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
@@ -320,7 +344,7 @@ export function registerEvents() {
             if (altInput && !altInput.value) altInput.value = asset.alt || '';
             if (preview) {
               preview.src = asset.path;
-              preview.style.display = 'block';
+              (preview.closest('[data-gallery-preview-box]') || preview).hidden = false;
             }
             renderMediaPicker();
           }
@@ -353,16 +377,20 @@ export function registerEvents() {
         // Se mantiene la confirmación porque aquí el deshacer NO es íntegro: el
         // historial de revisiones se pierde con la entrada y no vuelve. El
         // texto anterior decía «no se puede deshacer», que ya es falso.
-        const confirmed = window.confirm(
-          `¿Eliminar la entrada "${title}"?\n\nPodrá deshacerlo durante unos segundos, pero su historial de revisiones no se recupera.`
-        );
+        const confirmed = await confirmar({
+          titulo: `¿Eliminar «${title}»?`,
+          mensaje:
+            'Podrás deshacerlo durante unos segundos, pero su historial de revisiones no se recupera.',
+          aceptar: 'Eliminar',
+          peligro: true,
+        });
         if (!confirmed) return;
         try {
           const r = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
             method: 'DELETE',
           });
           setGlobalState('unsaved');
-          loadCollections(activeCollectionKind);
+          await loadCollections(activeCollectionKind);
           ofrecerDeshacer(r.undo, () => loadCollections(activeCollectionKind));
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
@@ -375,44 +403,23 @@ export function registerEvents() {
       if (action === 'add-list-item' && target instanceof Element) {
         event.preventDefault();
         event.stopPropagation();
-        const editor = target.closest('[data-list-editor]');
-        const container = editor?.querySelector('[data-list-items]');
-        if (!container || !editor) return;
-        const idx = container.querySelectorAll('[data-list-item]').length;
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;gap:6px;align-items:center';
-        row.innerHTML = `
-        <input type="text" data-list-item="${idx}" value="" aria-label="Elemento ${idx + 1} de la lista" style="flex:1;border:1px solid var(--hm-cms-line-soft);border-radius:var(--hm-cms-radius-sm);padding:8px 10px;font:inherit" />
-        <button type="button" data-action="remove-list-item" data-index="${idx}" aria-label="Quitar el elemento ${idx + 1}" style="border:0;background:var(--hm-cms-danger-bg);color:var(--hm-cms-danger-ink);border-radius:var(--hm-cms-radius-sm);padding:6px 10px;cursor:pointer;font-weight:700">×</button>
-      `;
-        container.appendChild(row);
-        row.querySelector('input')?.focus();
-        syncListValue(editor);
+        agregarElemento(target.closest('[data-list-editor]'));
+        markDirty(target.closest('form'));
         return;
       }
       if (action === 'remove-list-item' && target instanceof Element) {
         event.preventDefault();
         event.stopPropagation();
-        const editor = target.closest('[data-list-editor]');
-        const row = target.closest('div');
-        if (row && editor) {
-          row.remove();
-          // Re-index remaining items
-          const container = editor.querySelector('[data-list-items]');
-          if (container) {
-            container.querySelectorAll('[data-list-item]').forEach((input, i) => {
-              input.setAttribute('data-list-item', String(i));
-              const btn = input.nextElementSibling;
-              if (btn) btn.setAttribute('data-index', String(i));
-            });
-          }
-          syncListValue(editor);
-        }
+        const boton = target.closest('[data-action="remove-list-item"]');
+        const form = boton?.closest('form');
+        if (boton) quitarElemento(boton);
+        markDirty(form);
         return;
       }
       if (action === 'revisions' && target instanceof Element) {
-        const entryId = target.closest('[data-entry-id]')?.dataset.entryId;
-        if (entryId) loadRevisions(entryId);
+        const origen = target.closest('[data-entry-id]');
+        const entryId = origen?.dataset.entryId;
+        if (entryId) loadRevisions(entryId, origen.dataset.entryTitle || '');
       }
       if (action === 'back-to-editor') {
         if (state.selected && state.entry) {
@@ -431,9 +438,12 @@ export function registerEvents() {
         const version = btn.dataset.revisionVersion;
         if (!entryId || !revisionId) return;
 
-        const confirmed = window.confirm(
-          `¿Restaurar la entrada "${entryId}" a la versión ${version}?\nEsta acción sobreescribirá los campos actuales en la base de datos.`
-        );
+        const confirmed = await confirmar({
+          titulo: `¿Volver a la versión ${version}?`,
+          mensaje:
+            'Los textos actuales se reemplazarán por los de esa versión. La versión actual queda en el historial por si quieres recuperarla.',
+          aceptar: 'Restaurar',
+        });
         if (!confirmed) return;
 
         setButtonLoading(btn, true, 'Restaurando...');
@@ -534,13 +544,20 @@ export function registerEvents() {
         event.preventDefault();
         const form = panelBody.querySelector('[data-edit]');
         if (!form) return;
-        if (!window.confirm('¿Vaciar este texto? Dejará de aparecer en el sitio.')) return;
+        const vaciar = await confirmar({
+          titulo: '¿Vaciar este texto?',
+          mensaje:
+            'Dejará de aparecer en el sitio. No se aplica hasta que pulses «Guardar», y luego podrás recuperarlo desde «Revisiones».',
+          aceptar: 'Vaciar',
+          peligro: true,
+        });
+        if (!vaciar) return;
         const campo = form.elements.value;
         if (campo) {
           campo.value = '';
+          campo.focus();
           setFormDirty(true);
-          const status = form.querySelector('[data-edit-status]');
-          if (status) status.textContent = 'Cambios sin guardar.';
+          setEditStatus(form, 'dirty', ESTADOS_DE_CAMPO.sucio);
         }
         return;
       }
@@ -567,7 +584,7 @@ export function registerEvents() {
           const remote = await api(`/api/cms/entries/${encodeURIComponent(btn.dataset.entryId)}`);
           const remoteValue = remote.fields?.[btn.dataset.field]?.value ?? '';
           box.innerHTML = `
-            <span class="hm-cms-muted" style="display:block;margin-top:8px">Valor actual en el servidor (v${escapeHtml(remote.version)}):</span>
+            <span class="hm-cms-hint hm-cms-block">Lo que está guardado ahora:</span>
             <pre class="hm-cms-log">${escapeHtml(typeof remoteValue === 'string' ? remoteValue : JSON.stringify(remoteValue, null, 2))}</pre>
           `;
         } catch (error) {
@@ -660,9 +677,12 @@ export function registerEvents() {
         form,
         () =>
           saveEdit(form).catch((error) => {
-            const status = form.querySelector('[data-edit-status]');
-            if (status)
-              status.innerHTML = `<span class="hm-cms-error" role="alert">No se pudo guardar: ${escapeHtml(error.message)}</span>`;
+            setEditStatus(
+              form,
+              'error',
+              `<span class="hm-cms-error" role="alert">No se pudo guardar: ${escapeHtml(error.message)}</span>`,
+              { html: true }
+            );
           }),
         { boton: form.querySelector('button[type="submit"]'), textoCarga: 'Guardando...' }
       );
@@ -922,6 +942,22 @@ export function registerEvents() {
     }
   });
 
+  registrarArrastre();
+
+  // Elegir un archivo en el editor de un campo de imagen: se muestra qué foto
+  // quedó elegida y se ve en la vista previa antes de guardar.
+  document.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || target.type !== 'file') return;
+    mostrarArchivoElegido(target);
+    const form = target.form;
+    const file = target.files?.[0];
+    if (!file || !form?.matches('[data-edit]')) return;
+    markDirty(form);
+    const preview = form.querySelector('[data-image-preview]');
+    if (preview) preview.src = URL.createObjectURL(file);
+  });
+
   // Handle file upload preview in gallery item form
   document.addEventListener('change', (event) => {
     const target = event.target;
@@ -940,7 +976,7 @@ export function registerEvents() {
       const reader = new FileReader();
       reader.onload = () => {
         preview.src = String(reader.result);
-        preview.style.display = 'block';
+        (preview.closest('[data-gallery-preview-box]') || preview).hidden = false;
       };
       reader.readAsDataURL(file);
     }
@@ -956,12 +992,7 @@ export function registerEvents() {
         target.form.matches('[data-entry-form]') ||
         target.form.matches('[data-gallery-item-form]'))
     ) {
-      setFormDirty(true);
-      scheduleDraftSave(target.form);
-      if (target.form.matches('[data-edit]')) {
-        const status = target.form.querySelector('[data-edit-status]');
-        if (status) status.textContent = 'Cambios sin guardar.';
-      }
+      markDirty(target.form);
       if (target.matches('[data-richtext-input]')) {
         refrescarPrevisualizacion(target.closest('[data-richtext]'));
       }
@@ -975,9 +1006,15 @@ export function registerEvents() {
       if (preview) preview.setAttribute('alt', target.value);
     }
 
-    // Sync list items to hidden input on every keystroke
-    if (target instanceof HTMLInputElement && target.hasAttribute('data-list-item')) {
+    // Los controles de un editor de lista se vuelcan en su hidden a cada tecla.
+    if (target.matches('[data-list-item], [data-group-key]')) {
       syncListValue(target);
+    }
+    // Y al revés: si algo escribe el hidden desde fuera (recuperar un borrador),
+    // la lista se repinta desde él. Sin esto la copia entraba en el hidden pero
+    // la pantalla seguía mostrando lo anterior, y la siguiente tecla la pisaba.
+    if (target instanceof HTMLInputElement && target.matches('[data-field-type="list"]')) {
+      repintarLista(target.closest('[data-list-editor]'));
     }
 
     // Sync link fields to hidden input
@@ -1001,8 +1038,9 @@ export function registerEvents() {
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     // El sheet móvil registra su propio Escape en mobile-menu.ts; si está
-    // abierto es suyo, no del panel.
+    // abierto es suyo, no del panel. Lo mismo una confirmación en pantalla.
     if (shell.querySelector('.hm-cms-mobile-sheet.open')) return;
+    if (hayConfirmacionAbierta()) return;
     closePanel();
   });
 }

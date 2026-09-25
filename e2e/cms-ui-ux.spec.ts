@@ -46,11 +46,15 @@ test.describe('CMS UI/UX de edición', () => {
     const original = await input.inputValue();
     const updated = `${original} · revisión E2E ${Date.now()}`;
 
-    await expect(status).toHaveText('Campo guardado en el CMS.');
-    await expect(save).not.toHaveClass(/secondary/);
-    await expect(exportButton).toHaveClass(/secondary/);
-    await expect(revisions).toHaveClass(/secondary/);
+    await expect(status).toHaveText('Todo guardado.');
+    // Una sola acción principal; las herramientas son discretas y «Vaciar» se
+    // distingue como destructiva.
+    await expect(save).not.toHaveClass(/secondary|ghost/);
+    await expect(exportButton).toHaveClass(/ghost/);
+    await expect(revisions).toHaveClass(/ghost/);
     await expect(clear).toHaveClass(/destructive/);
+    // «Vaciar» no comparte grupo con «Guardar».
+    await expect(form.locator('.hm-cms-footer [data-action="clear-field"]')).toHaveCount(0);
 
     for (const width of [420, 390]) {
       await page.setViewportSize({ width, height: width === 420 ? 900 : 844 });
@@ -62,11 +66,15 @@ test.describe('CMS UI/UX de edición', () => {
       const revisionBox = await revisions.boundingBox();
       const clearBox = await clear.boundingBox();
       expect(saveBox && exportBox && revisionBox && clearBox).toBeTruthy();
-      expect(saveBox!.x).toBeGreaterThanOrEqual(panelBox!.x);
-      expect(clearBox!.x + clearBox!.width).toBeLessThanOrEqual(panelBox!.x + panelBox!.width);
-      expect(saveBox!.y).toBeLessThan(exportBox!.y);
+      for (const box of [saveBox!, exportBox!, revisionBox!, clearBox!]) {
+        expect(box.x).toBeGreaterThanOrEqual(panelBox!.x);
+        expect(box.x + box.width).toBeLessThanOrEqual(panelBox!.x + panelBox!.width);
+      }
+      // Revisiones y Exportar comparten fila; Guardar va aparte, en el pie
+      // fijo, y se ve sin desplazarse.
       expect(exportBox!.y).toBe(revisionBox!.y);
-      expect(clearBox!.y).toBeGreaterThan(revisionBox!.y);
+      expect(saveBox!.y).toBeGreaterThan(exportBox!.y);
+      expect(saveBox!.y + saveBox!.height).toBeLessThanOrEqual(panelBox!.y + panelBox!.height);
     }
 
     await input.fill(updated);
@@ -95,9 +103,9 @@ test.describe('CMS UI/UX de edición', () => {
     try {
       await save.click();
       await pauseSave;
-      await expect(status).toHaveText('Guardando...');
+      await expect(status).toHaveText('Guardando…');
       releaseSave();
-      await expect(status).toContainText('Guardado en CMS.');
+      await expect(status).toContainText('Guardado.');
       saved = true;
     } finally {
       releaseSave();
@@ -105,7 +113,7 @@ test.describe('CMS UI/UX de edición', () => {
       if (saved) {
         await input.fill(original);
         await save.click();
-        await expect(status).toContainText('Guardado en CMS.');
+        await expect(status).toContainText('Guardado.');
       }
     }
   });
@@ -179,7 +187,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
     const panel = page.locator('.hm-cms-panel.open');
     const search = panel.getByRole('searchbox', { name: 'Buscar categoría' });
     const count = panel.locator('[data-gallery-category-count]');
-    await panel.getByRole('button', { name: 'Nueva categoría' }).focus();
+    await panel.getByRole('button', { name: 'Volver a Galería' }).focus();
     await page.keyboard.press('Tab');
     await expect(search).toBeFocused();
     await page.keyboard.type(category.name);
@@ -204,7 +212,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
       'Ninguna categoría coincide'
     );
 
-    await panel.getByRole('button', { name: '← Volver a galería' }).click();
+    await panel.getByRole('button', { name: 'Volver a Galería' }).click();
     await panel.getByRole('button', { name: 'Gestionar álbumes' }).click();
     const albumsResponse = await page.request.get(`${CMS_URL}/api/cms/gallery/albums`);
     expect(albumsResponse.ok()).toBeTruthy();
@@ -214,7 +222,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
     const albumSearch = panel.getByRole('searchbox', { name: 'Buscar álbum' });
     const albumCount = panel.locator('[data-gallery-album-count]');
 
-    await panel.getByRole('button', { name: 'Nuevo álbum' }).focus();
+    await panel.getByRole('button', { name: 'Volver a Galería' }).focus();
     await page.keyboard.press('Tab');
     await expect(albumSearch).toBeFocused();
     await page.keyboard.type(album.name);
@@ -224,7 +232,10 @@ test.describe('CMS móvil táctil UI/UX', () => {
 
     await albumSearch.press(SELECT_ALL);
     await page.keyboard.type(album.slug);
-    await expect(panel.locator('[data-gallery-album-row]', { hasText: album.slug })).toBeVisible();
+    // El identificador ya no se muestra en la fila, pero sigue sirviendo para buscar.
+    await expect(
+      panel.locator('[data-gallery-album-row][data-gallery-search-text*="' + album.slug + '"]')
+    ).toBeVisible();
 
     await albumSearch.press(SELECT_ALL);
     await page.keyboard.type('sin-coincidencias-xyz');

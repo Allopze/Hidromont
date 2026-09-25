@@ -178,14 +178,14 @@ export function offerDraft(form) {
 
   form.insertAdjacentHTML(
     'afterbegin',
-    `<div class="hm-cms-draft-notice" data-draft-notice>
-      <p style="margin:0 0 6px">
-        Hay cambios sin guardar de este formulario, escritos ${escapeHtml(formatDraftAge(copia.at))}.
-      </p>
-      <span class="hm-cms-actions">
-        <button type="button" class="secondary" data-action="restore-draft">Recuperar lo escrito</button>
-        <button type="button" class="secondary" data-action="discard-draft">Descartar</button>
-      </span>
+    `<div class="hm-cms-notice is-warn hm-cms-draft-notice" data-draft-notice>
+      <div>
+        <p>Hay cambios sin guardar de este formulario, escritos ${escapeHtml(formatDraftAge(copia.at))}.</p>
+        <span class="hm-cms-actions">
+          <button type="button" class="secondary small" data-action="restore-draft">Recuperar lo escrito</button>
+          <button type="button" class="ghost small" data-action="discard-draft">Descartar</button>
+        </span>
+      </div>
     </div>`
   );
 }
