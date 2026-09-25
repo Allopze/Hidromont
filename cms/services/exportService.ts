@@ -5,6 +5,7 @@ import prettier from 'prettier';
 import { config } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import type { GalleryRepository } from '../repositories/GalleryRepository';
+import type { MediaRepository } from '../repositories/MediaRepository';
 import type { ImageService } from './imageService';
 import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import type { CmsEntry } from '../types/cms';
@@ -175,8 +176,28 @@ export class ExportService {
     private readonly contentRepository: ContentRepository,
     private readonly rootDir: string = config.rootDir,
     private readonly galleryRepository?: GalleryRepository,
-    private readonly imageService?: ImageService
+    private readonly imageService?: ImageService,
+    private readonly mediaRepository?: MediaRepository
   ) {}
+
+  /**
+   * El punto de enfoque de la foto de un campo, para que el sitio la recorte
+   * por donde la persona eligió al arrastrarla.
+   *
+   * Hasta sep-2026 el enfoque se guardaba en la biblioteca pero no salía de
+   * ahí: los campos de imagen se exportaban solo con la ruta y todo se
+   * recortaba al centro. Se omite cuando es el centro, que es lo que el
+   * navegador hace por defecto: así el archivo no cambia para las fotos que
+   * nadie ha tocado.
+   */
+  private enfoqueDe(value: unknown): { x: number; y: number } | undefined {
+    if (!this.mediaRepository || typeof value !== 'string' || !value) return undefined;
+    const asset = this.mediaRepository.findByPath(value);
+    if (!asset) return undefined;
+    const x = Math.round(Math.min(1, Math.max(0, asset.focalX ?? 0.5)) * 100) / 100;
+    const y = Math.round(Math.min(1, Math.max(0, asset.focalY ?? 0.5)) * 100) / 100;
+    return x === 0.5 && y === 0.5 ? undefined : { x, y };
+  }
 
   async exportContent(): Promise<{
     files: string[];
@@ -326,11 +347,15 @@ export class ExportService {
                       return [key, { type: field.type, value: field.value }] as const;
                     }
                     const derived = await this.deriveImageField(field.value);
+                    const focal = this.enfoqueDe(field.value);
                     return [
                       key,
-                      derived
-                        ? { type: field.type, value: field.value, derived }
-                        : { type: field.type, value: field.value },
+                      {
+                        type: field.type,
+                        value: field.value,
+                        ...(derived ? { derived } : {}),
+                        ...(focal ? { focal } : {}),
+                      },
                     ] as const;
                   })
                 )

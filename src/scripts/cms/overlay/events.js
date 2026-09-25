@@ -515,6 +515,11 @@ export function registerEvents() {
         // Primero el resumen de lo que va a salir; se publica al confirmar.
         abrirPublicacion();
       }
+      if (action === 'encuadre-centrar') {
+        event.preventDefault();
+        state.encuadre?.centrar();
+        return;
+      }
       if (action === 'confirm-publish') {
         event.preventDefault();
         publicar();
@@ -971,6 +976,9 @@ export function registerEvents() {
     const preview = form.querySelector('[data-image-preview]');
     if (preview) preview.src = local;
     previsualizarImagen(local);
+    // Una foto nueva todavía no está en la biblioteca, pero se puede encuadrar:
+    // el encuadre se le aplica en cuanto se sube, al guardar.
+    state.encuadre?.habilitar(true);
   });
 
   // Handle file upload preview in gallery item form

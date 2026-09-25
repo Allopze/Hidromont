@@ -1,5 +1,5 @@
 ---
-import { getCmsImageDerived } from '../../data/cms';
+import { getCmsImageDerived, getCmsImageObjectPosition } from '../../data/cms';
 
 interface Props {
   entry?: string;
@@ -62,6 +62,14 @@ const finalSrc = usaDerivado ? derived.src : src;
 const finalWidth = width ?? (usaDerivado ? derived.width : undefined);
 const finalHeight = height ?? (usaDerivado ? derived.height : undefined);
 
+// El punto de enfoque: qué parte de la foto se conserva al recortarla con
+// object-fit: cover. Va delante del `style` del llamador para que este pueda
+// imponerse si alguna vez necesita un encuadre fijo.
+const posicion = getCmsImageObjectPosition(entry, field);
+const finalStyle =
+  [posicion ? `object-position:${posicion}` : '', style ?? ''].filter(Boolean).join(';') ||
+  undefined;
+
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
 const editableAttrs =
   cmsEditingEnabled && entry
@@ -85,6 +93,6 @@ const editableAttrs =
   fetchpriority={fetchpriority}
   decoding={decoding}
   class={className}
-  style={style}
+  style={finalStyle}
   {...editableAttrs}
 />

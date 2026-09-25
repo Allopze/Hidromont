@@ -13,7 +13,8 @@ import { escapeHtml } from './html';
 import { panelBody } from './shell';
 import { api } from './api';
 import { icon } from './icons';
-import { previsualizarImagen } from './edicion';
+import { previsualizarEnfoque, previsualizarImagen } from './edicion';
+import { posicionCss } from './encuadre';
 
 /**
  * A-2 — Un solo selector de medios, paginado y con búsqueda en el servidor.
@@ -180,9 +181,17 @@ export function applyMediaSelection(asset) {
 
   form.elements.value.value = asset.path;
   form.elements.mediaId.value = asset.id;
+  form.dataset.medioNuevo = '1';
   if (form.elements.alt && asset.alt) form.elements.alt.value = asset.alt;
-  // La foto elegida se ve ya en la página; si no se guarda, vuelve la anterior.
+  // La foto elegida se ve ya en la página, con su propio encuadre; si no se
+  // guarda, vuelve la anterior.
   previsualizarImagen(asset.path);
+  const enfoque = { x: asset.focalX ?? 0.5, y: asset.focalY ?? 0.5 };
+  if (state.encuadre) {
+    state.encuadre.fijar(enfoque, { inicial: true });
+    state.encuadre.habilitar(true);
+  }
+  previsualizarEnfoque(posicionCss(enfoque));
 
   const preview = panelBody.querySelector('[data-image-preview]');
   if (preview) {

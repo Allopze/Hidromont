@@ -55,6 +55,8 @@ function capturar(element) {
       srcset: element.getAttribute('srcset'),
       sizes: element.getAttribute('sizes'),
       alt: element.getAttribute('alt'),
+      // El encuadre vive en `style` (object-position).
+      style: element.getAttribute('style'),
     };
   }
   return { html: element.innerHTML };
@@ -89,6 +91,13 @@ export function previsualizarTexto(valor) {
 export function previsualizarImagen(src) {
   if (!actual || !(actual.element instanceof HTMLImageElement) || !src) return;
   mostrarImagen(actual.element, src);
+  actual.pendiente = true;
+}
+
+/** Muestra en la página el encuadre que se está eligiendo. */
+export function previsualizarEnfoque(posicion) {
+  if (!actual || !(actual.element instanceof HTMLImageElement)) return;
+  actual.element.style.objectPosition = posicion;
   actual.pendiente = true;
 }
 

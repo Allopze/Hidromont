@@ -28,6 +28,7 @@ export const ACCIONES_QUE_PUBLICAN = [
   'gallery.category.update',
   'gallery.category.delete',
   'undo.restore',
+  'media.update',
 ] as const;
 
 export interface EventoDeCambio {
@@ -69,6 +70,9 @@ const ACCION_DE_ENTRADA: Record<string, string> = {
   'undo.restore': 'Se recuperó tras borrarla',
 };
 
+/** Cambios de la biblioteca que sí se ven en el sitio: el encuadre. */
+const ENCUADRE: [string, string] = ['foto', 'fotos'];
+
 const GALERIA: Record<string, [string, string]> = {
   gallery_item: ['foto', 'fotos'],
   gallery_album: ['álbum', 'álbumes'],
@@ -84,9 +88,19 @@ export function resumirCambios(eventos: EventoDeCambio[], nombres: Nombres): Cam
   const porClave = new Map<string, Acumulado>();
   const galeria = new Map<string, Set<string>>();
   let ultimoGaleria = '';
+  const encuadres = new Set<string>();
+  let ultimoEncuadre = '';
 
   for (const e of eventos) {
     const tipo = e.entityType ?? '';
+    if (e.action === 'media.update') {
+      // Cambiar solo la descripción de la foto no se ve en el sitio.
+      if (e.data?.enfoque === true && e.entityId) {
+        encuadres.add(e.entityId);
+        if (e.createdAt > ultimoEncuadre) ultimoEncuadre = e.createdAt;
+      }
+      continue;
+    }
     if (tipo in GALERIA) {
       if (!galeria.has(tipo)) galeria.set(tipo, new Set());
       galeria.get(tipo)!.add(e.entityId ?? e.createdAt);
@@ -139,6 +153,15 @@ export function resumirCambios(eventos: EventoDeCambio[], nombres: Nombres): Cam
     if (!existe && borrada) detalle = [ACCION_DE_ENTRADA['entry.delete']];
     else if (creada) detalle = [ACCION_DE_ENTRADA['entry.create']];
     cambios.push({ ...c, detalle });
+  }
+  if (encuadres.size) {
+    const n = encuadres.size;
+    cambios.push({
+      clave: 'encuadre',
+      titulo: 'Encuadre de fotos',
+      detalle: [`${n} ${n === 1 ? ENCUADRE[0] : ENCUADRE[1]}`],
+      ultimo: ultimoEncuadre,
+    });
   }
   if (galeria.size) {
     cambios.push({

@@ -2,6 +2,7 @@ import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
 import { ContentRepository } from '../repositories/ContentRepository';
 import { GalleryRepository } from '../repositories/GalleryRepository';
+import { MediaRepository } from '../repositories/MediaRepository';
 import { ExportService } from '../services/exportService';
 import { ImageService } from '../services/imageService';
 import { captureException, initErrorTracking } from '../utils/errorTracking';
@@ -16,7 +17,13 @@ async function main() {
     const galleryRepo = new GalleryRepository(db);
     const imageService = new ImageService();
 
-    const exportService = new ExportService(contentRepo, undefined, galleryRepo, imageService);
+    const exportService = new ExportService(
+      contentRepo,
+      undefined,
+      galleryRepo,
+      imageService,
+      new MediaRepository(db)
+    );
 
     const contentResult = await exportService.exportContent();
     process.stdout.write(`Content export: ${JSON.stringify(contentResult)}\n`);
