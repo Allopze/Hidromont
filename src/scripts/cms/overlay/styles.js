@@ -145,13 +145,26 @@ export const overlayStyles = `
   }
 
   /* ─── Zonas editables de la página ─────────────────────────────────────── */
-  [data-cms-entry] {
-    cursor: crosshair;
+  /*
+   * Solo con sesión: [data-cms-editable-ready] lo pone
+   * inline-edit-accessibility.js al iniciarla. Antes el contorno y el cursor
+   * en cruz salían también en la pantalla de acceso, sobre elementos que aún
+   * no se podían editar. El cursor pasa a la mano: pulsar abre el editor.
+   */
+  [data-cms-editable-ready] {
+    cursor: pointer;
     outline-offset: 4px;
   }
-  [data-cms-entry]:hover {
+  [data-cms-editable-ready]:hover {
     outline: 2px solid var(--hm-cms-primary);
     box-shadow: 0 0 0 4px rgba(0,101,169,0.2);
+  }
+  /* El elemento que se está editando: se ve con el panel abierto al lado. */
+  [data-cms-entry].hm-cms-editing,
+  [data-cms-editable-ready]:has(> .hm-cms-editing) {
+    outline: 2px solid var(--hm-cms-accent);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 6px rgba(0, 166, 214, 0.2);
   }
   [data-cms-editable-ready]:focus-visible {
     outline: 3px solid var(--hm-cms-primary);
@@ -495,6 +508,9 @@ export const overlayStyles = `
   }
   .hm-cms-panel.open {
     transform: translateX(0);
+  }
+  .hm-cms-panel.is-wide {
+    width: min(680px, 100vw);
   }
   .hm-cms-panel:focus {
     outline: none;
@@ -1011,6 +1027,24 @@ export const overlayStyles = `
     font-variant-numeric: tabular-nums;
   }
 
+  /* ─── Secciones de la ficha ─────────────────────────────────────────── */
+  .hm-cms-form-section {
+    display: grid;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    background: #fff;
+  }
+  .hm-cms-form-section-title {
+    font: 600 14.5px/1.3 var(--hm-cms-font);
+    color: var(--hm-cms-ink);
+  }
+  /* Dentro de una sección blanca, las filas y grupos se separan con gris. */
+  .hm-cms-form-section .hm-cms-group {
+    background: var(--hm-cms-alt);
+  }
+
   /* ─── Editor de listas ──────────────────────────────────────────────── */
   .hm-cms-list {
     display: grid;
@@ -1029,6 +1063,13 @@ export const overlayStyles = `
   }
   .hm-cms-list-row > input {
     flex: 1;
+  }
+  .hm-cms-move {
+    display: inline-flex;
+    flex: none;
+  }
+  .hm-cms-group-head .hm-cms-move {
+    margin-left: auto;
   }
   .hm-cms-group {
     display: grid;
@@ -1056,6 +1097,11 @@ export const overlayStyles = `
   }
   .hm-cms-group textarea {
     min-height: 76px;
+  }
+  /* Las áreas de texto crecen con lo escrito (donde el navegador lo admite). */
+  :where(.hm-cms-shell) textarea {
+    field-sizing: content;
+    max-height: 60vh;
   }
   .hm-cms-add-item {
     width: 100%;
@@ -1610,6 +1656,25 @@ export const overlayStyles = `
     white-space: nowrap;
   }
 
+  /* ─── Etiqueta al pasar el puntero ──────────────────────────────────── */
+  .hm-cms-chip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 15;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--hm-cms-dark);
+    color: #fff;
+    font: 600 12px/1.2 var(--hm-cms-font);
+    white-space: nowrap;
+    box-shadow: var(--hm-cms-shadow-md);
+    pointer-events: none;
+  }
+
   /* ─── Pequeñas piezas ───────────────────────────────────────────────── */
   /* H-05: spinner para operaciones asíncronas. Toma el color del botón. */
   @keyframes hm-cms-spin {
@@ -1656,6 +1721,10 @@ export const overlayStyles = `
       margin: 0 -16px -16px;
       padding-left: 16px;
       padding-right: 16px;
+    }
+    /* Más ancho para los campos: en 390 px cada píxel de relleno cuenta. */
+    .hm-cms-form-section {
+      padding: 12px;
     }
     .hm-cms-undo {
       left: 8px;

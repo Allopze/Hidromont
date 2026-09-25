@@ -14,6 +14,7 @@ import { panel, panelBody, setAuthenticatedUI } from './shell';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
 import { setInlineEditAccessibility } from './inline-edit-accessibility';
+import { detectarFicha } from './ficha';
 
 export function loginView(error = '', email = '') {
   // Si el formulario ya está en pantalla y no hay un error nuevo que mostrar,
@@ -61,6 +62,7 @@ export async function ensureSession() {
     state.csrfToken = session.csrfToken;
     setAuthenticatedUI(true);
     setInlineEditAccessibility(true);
+    detectarFicha();
     return true;
   } catch (error) {
     setAuthenticatedUI(false);

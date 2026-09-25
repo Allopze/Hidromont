@@ -27,10 +27,22 @@ function botonQuitar(i) {
   return `<button type="button" class="icon ghost destructive" data-action="remove-list-item" data-index="${i}" aria-label="Quitar el elemento ${i + 1}" title="Quitar">${icon('x')}</button>`;
 }
 
+/**
+ * Subir y bajar con botones, no arrastrando: funciona igual con teclado, con
+ * el dedo y con lector de pantalla, y no necesita una librería.
+ */
+function botonesMover(i) {
+  return `<span class="hm-cms-move">
+      <button type="button" class="icon small ghost" data-action="move-list-item" data-dir="up" aria-label="Subir el elemento ${i + 1}" title="Subir">${icon('chevronUp')}</button>
+      <button type="button" class="icon small ghost" data-action="move-list-item" data-dir="down" aria-label="Bajar el elemento ${i + 1}" title="Bajar">${icon('chevronDown')}</button>
+    </span>`;
+}
+
 function filaDeTexto(valor, i) {
   return `
     <li class="hm-cms-list-row">
       <input type="text" data-list-item="${i}" value="${escapeHtml(String(valor ?? ''))}" aria-label="Elemento ${i + 1} de la lista" />
+      ${botonesMover(i)}
       ${botonQuitar(i)}
     </li>`;
 }
@@ -63,6 +75,7 @@ function filaDeGrupo(grupo, i, claves, tipos, largas) {
     <li class="hm-cms-group" data-list-group>
       <div class="hm-cms-group-head">
         <span class="hm-cms-group-title" data-group-title>${escapeHtml(tituloDeGrupo(grupo, claves, i))}</span>
+        ${botonesMover(i)}
         ${botonQuitar(i)}
       </div>
       ${controles}
@@ -200,6 +213,42 @@ export function agregarElemento(editor) {
   syncListValue(editor);
 }
 
+/** Pone al día números y rótulos tras quitar o mover un elemento. */
+function renumerar(contenedor) {
+  [...contenedor.children].forEach((hijo, i) => {
+    const texto = hijo.querySelector('[data-list-item]');
+    texto?.setAttribute('data-list-item', String(i));
+    texto?.setAttribute('aria-label', `Elemento ${i + 1} de la lista`);
+    const quitar = hijo.querySelector('[data-action="remove-list-item"]');
+    quitar?.setAttribute('data-index', String(i));
+    quitar?.setAttribute('aria-label', `Quitar el elemento ${i + 1}`);
+    hijo.querySelector('[data-dir="up"]')?.setAttribute('aria-label', `Subir el elemento ${i + 1}`);
+    hijo
+      .querySelector('[data-dir="down"]')
+      ?.setAttribute('aria-label', `Bajar el elemento ${i + 1}`);
+  });
+}
+
+/**
+ * Sube o baja un elemento una posición. Devuelve si se movió: en los
+ * extremos no hay adónde, y entonces no cuenta como cambio.
+ */
+export function moverElemento(boton) {
+  const editor = boton.closest('[data-list-editor]');
+  const fila = boton.closest('[data-list-group], .hm-cms-list-row');
+  if (!editor || !fila) return false;
+  const sube = boton.dataset.dir === 'up';
+  const vecino = sube ? fila.previousElementSibling : fila.nextElementSibling;
+  if (!vecino) return false;
+  if (sube) vecino.before(fila);
+  else vecino.after(fila);
+  renumerar(fila.parentElement);
+  syncListValue(editor);
+  // El foco sigue al elemento movido, para poder pulsar varias veces seguidas.
+  boton.focus();
+  return true;
+}
+
 /** Quita el elemento del botón pulsado y renumera los que quedan. */
 export function quitarElemento(boton) {
   const editor = boton.closest('[data-list-editor]');
@@ -207,16 +256,7 @@ export function quitarElemento(boton) {
   if (!editor || !fila) return;
   const contenedor = fila.parentElement;
   fila.remove();
-
-  [...contenedor.children].forEach((hijo, i) => {
-    hijo.querySelector('[data-list-item]')?.setAttribute('data-list-item', String(i));
-    hijo
-      .querySelector('[data-list-item]')
-      ?.setAttribute('aria-label', `Elemento ${i + 1} de la lista`);
-    const quitar = hijo.querySelector('[data-action="remove-list-item"]');
-    quitar?.setAttribute('data-index', String(i));
-    quitar?.setAttribute('aria-label', `Quitar el elemento ${i + 1}`);
-  });
+  renumerar(contenedor);
   syncListValue(editor);
 
   // El foco no puede quedarse en un botón que ya no existe.

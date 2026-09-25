@@ -21,6 +21,7 @@ import { richtextMarkup } from './richtext';
 import { publishEnvironment } from './publish';
 import { dropzoneMarkup } from './dropzone';
 import { listEditorMarkup } from './list-editor';
+import { confirmarEdicion, empezarEdicion, escribirTexto, mostrarImagen } from './edicion';
 
 export { listEditorMarkup, syncListValue } from './list-editor';
 
@@ -80,8 +81,12 @@ function fieldEditor(element, entry, field) {
     const imagenPredeterminada = !current;
     const vistaPrevia = current || element.currentSrc || element.src;
     // Orden de la tarea: ver la foto, cambiarla (subir o elegir), describirla.
-    // La ruta y el punto de enfoque numérico quedan en «Opciones avanzadas»:
-    // funcionan igual, pero no son lo primero que alguien debería tocar.
+    // La ruta queda en «Opciones avanzadas»: funciona igual, pero no es lo
+    // primero que alguien debería tocar.
+    //
+    // Ya no se ofrece el «punto de enfoque»: se guardaba, pero ningún
+    // componente del sitio lo lee, así que moverlo no cambiaba nada en
+    // pantalla. Un control sin efecto es peor que no tenerlo.
     return `
       <div class="hm-cms-image-preview">
         <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview />
@@ -110,15 +115,6 @@ function fieldEditor(element, entry, field) {
         <label>Ruta del archivo
           <input name="value" value="${escapeHtml(String(current))}" />
         </label>
-        <div class="hm-cms-two">
-          <label>Enfoque horizontal
-            <input name="focalX" type="number" min="0" max="1" step="0.01" value="0.5" />
-          </label>
-          <label>Enfoque vertical
-            <input name="focalY" type="number" min="0" max="1" step="0.01" value="0.5" />
-          </label>
-        </div>
-        <p class="hm-cms-hint">El enfoque va de 0 a 1 e indica qué parte de la foto se conserva al recortarla.</p>
       </details>
     `;
   }
@@ -198,7 +194,8 @@ export async function selectElement(element) {
   // biblioteca entera y había que desplazarse para encontrarlo. «Vaciar» se
   // aparta del pie a propósito: es la única acción destructiva y no debe
   // compartir grupo con la que se pulsa siempre.
-  openPanel(`
+  openPanel(
+    `
     <form class="hm-cms-edit-form" data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}">
       <p class="hm-cms-context">
         <span>${escapeHtml(entry.title || entryId)}</span>
@@ -230,44 +227,15 @@ export async function selectElement(element) {
         </div>
       </div>
     </form>
-  `);
+  `,
+    // Sin fondo oscuro: la página se sigue viendo, con el elemento resaltado y
+    // mostrando lo que se escribe.
+    { modal: false }
+  );
+  empezarEdicion(element);
 
   if (esImagen) {
     loadMediaPicker();
-  }
-}
-
-/**
- * X-001: actualiza el contenido de texto editable de un elemento sin destruir
- * markup anidado (iconos, badges, spans hermanos).
- *
- * Estrategia:
- *   - Si el elemento tiene un unico child node de tipo texto, lo actualiza in place.
- *   - Si tiene varios nodos, busca el primer textNode directo y lo actualiza,
- *     preservando el resto. Si no hay textNode directo, inserta uno al inicio.
- *   - Solo recurre a `textContent` cuando el elemento no tiene hijos elemento
- *     (caso texto plano, el mas comun).
- */
-function updateEditableText(element, newValue) {
-  const children = Array.from(element.childNodes);
-  const elementChildren = children.filter((node) => node.nodeType === Node.ELEMENT_NODE);
-
-  // Caso simple: solo texto (o vacio). textNode seguro, no destruye nada.
-  if (elementChildren.length === 0) {
-    element.textContent = newValue;
-    return;
-  }
-
-  // Hay markup anidado: preservarlo, actualizar solo el texto editable.
-  const textNodes = children.filter(
-    (node) => node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim().length > 0
-  );
-  if (textNodes.length > 0) {
-    // Actualizar el primer textNode significativo.
-    textNodes[0].nodeValue = newValue;
-  } else {
-    // No habia textNode directo: insertar uno antes del primer elemento hijo.
-    element.insertBefore(document.createTextNode(newValue), elementChildren[0]);
   }
 }
 
@@ -337,15 +305,17 @@ export async function saveEdit(form) {
     form.elements.file.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  if (element.dataset.cmsType === 'image' && form.elements.mediaId?.value) {
+  // Sin los controles de enfoque ya no viaja focalX/focalY: mandar el 0.5 por
+  // defecto habría pisado el valor guardado de la foto en cada guardado.
+  if (
+    element.dataset.cmsType === 'image' &&
+    form.elements.mediaId?.value &&
+    form.elements.alt?.value.trim()
+  ) {
     await api(`/api/cms/media/${encodeURIComponent(form.elements.mediaId.value)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        alt: form.elements.alt?.value || undefined,
-        focalX: Number.parseFloat(form.elements.focalX?.value || '0.5'),
-        focalY: Number.parseFloat(form.elements.focalY?.value || '0.5'),
-      }),
+      body: JSON.stringify({ alt: form.elements.alt.value.trim() }),
     });
     setGlobalState('unsaved');
   }
@@ -386,7 +356,7 @@ export async function saveEdit(form) {
   setGlobalState('unsaved');
 
   if (element.dataset.cmsType === 'image') {
-    if (value) element.setAttribute('src', value);
+    if (value) mostrarImagen(element, value);
     const altField = element.dataset.cmsAltField;
     if (altField && form.elements.alt) {
       const altValue = form.elements.alt.value;
@@ -406,8 +376,10 @@ export async function saveEdit(form) {
     // elemento (iconos, badges, spans) dentro de un <EditableText as="h1"> con slot
     // multi-nodo. Ahora editamos solo el textNode editable, preservando el resto.
     const newValue = updated.fields[field]?.value ?? value;
-    updateEditableText(element, newValue);
+    escribirTexto(element, newValue);
   }
+  // Lo que muestra la página ya está guardado: cerrar no debe revertirlo.
+  confirmarEdicion();
 
   setEditStatus(form, 'success', mensajeGuardado());
   setGlobalState('unsaved');

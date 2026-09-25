@@ -9,11 +9,13 @@
 import { pruneDrafts } from './drafts';
 import { ensureSession } from './auth';
 import { registerEvents } from './events';
+import { registrarChip } from './chip';
 import { mountMobileMenu } from '../mobile-menu';
 
 export function mount() {
   registerEvents();
   mountMobileMenu();
+  registrarChip();
 
   // E-2: limpieza de las copias caducadas, una vez por carga. Va antes de
   // ensureSession() para que nunca se ofrezca una copia de hace un mes.
