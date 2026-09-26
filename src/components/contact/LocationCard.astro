@@ -12,7 +12,7 @@ interface Props {
    * acción en todas las páginas; en /contacto ayuda a planificar la visita.
    */
   showDirections?: boolean;
-  /** Use a local location panel in the footer; reserve the embedded map for /contacto desktop. */
+  /** Mapa de Google incrustado (solo desde md; en móvil se ve el panel con el enlace). */
   showEmbeddedMap?: boolean;
 }
 
@@ -115,7 +115,9 @@ const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(destino)}&
         {texto.mapaLugar}
       </EditableText>
       {
-        !showEmbeddedMap && (
+        // En móvil el mapa no se incrusta: sin «Cómo llegar» al lado (el pie),
+        // este enlace es la única forma de abrirlo.
+        (!showEmbeddedMap || !showDirections) && (
           <a
             href={mapsUrl}
             target="_blank"
