@@ -538,6 +538,24 @@ export class GalleryRepository {
     this.db.prepare('DELETE FROM gallery_items WHERE id = ?').run(id);
   }
 
+  /**
+   * Ids de foto que el CMS conoce: las que existen en la base (en cualquier
+   * estado, también sin imagen) y las que se borraron desde el panel, que
+   * quedan en la auditoría. La guarda del export (P0-01) solo protege lo que
+   * NO está aquí: fotos del gallery.json que nunca pasaron por el CMS.
+   */
+  knownItemIds(): Set<string> {
+    const rows = this.db
+      .prepare(
+        `SELECT id FROM gallery_items
+         UNION
+         SELECT entity_id AS id FROM audit_events
+          WHERE action = 'gallery.item.delete' AND entity_id IS NOT NULL`
+      )
+      .all() as { id: string }[];
+    return new Set(rows.map((row) => row.id));
+  }
+
   reorderItems(ids: string[]): void {
     const stmt = this.db.prepare(
       'UPDATE gallery_items SET position = ?, updated_at = ? WHERE id = ?'

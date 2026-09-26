@@ -46,6 +46,13 @@ export const ACCIONES_BARRA: readonly AccionBarra[] = [
     requiereFicha: true,
   },
   { accion: 'collections', etiqueta: 'Colecciones', secundario: true },
+  {
+    accion: 'pages',
+    etiqueta: 'Ir a otra página',
+    secundario: true,
+    titulo: 'Lista las páginas del sitio para abrir la que quieras editar.',
+    enMenu: true,
+  },
   { accion: 'gallery', etiqueta: 'Galería', secundario: true },
   { accion: 'jobs', etiqueta: 'Historial de publicaciones', secundario: true, enMenu: true },
   {

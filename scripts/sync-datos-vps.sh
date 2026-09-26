@@ -8,6 +8,12 @@
 #
 # Se puede repetir cuantas veces haga falta: rsync solo manda lo que cambió.
 #
+# CUIDADO: la base del servidor es la fuente de verdad del contenido (la edita
+# el cliente desde el panel). Subir la local la SUSTITUYE. Por eso el script
+# (P1-06, auditoría 2026-09) compara fechas, pide confirmación escribiendo
+# SOBRESCRIBIR y guarda antes una copia de la base remota en
+# cms/data/backups/ del servidor. `--forzar` salta solo la confirmación.
+#
 # Por qué no un rsync directo del .sqlite: better-sqlite3 corre en modo WAL,
 # así que las últimas escrituras viven en hidromont-cms.sqlite-wal y copiar
 # solo el .sqlite deja una base atrasada o rota. `npm run cms:backup` usa la
@@ -15,6 +21,7 @@
 set -euo pipefail
 
 DESTINO=""
+FORZAR=""
 PUERTO=""
 RUTA_REMOTA=/srv/hidromont
 
@@ -24,6 +31,7 @@ Uso: sync-datos-vps.sh (alias-ssh | usuario@host) [-p PUERTO] [-d RUTA_REMOTA]
 
   -p PUERTO   puerto SSH (innecesario si usas un alias de ~/.ssh/config)
   -d RUTA     directorio de la aplicación en el servidor (por defecto /srv/hidromont)
+  --forzar    no pedir confirmación (la copia de la base remota se hace igual)
 USO
   exit 1
 }
@@ -32,6 +40,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     -p|--puerto) PUERTO="${2:-}"; shift 2 ;;
     -d|--destino) RUTA_REMOTA="${2:-}"; shift 2 ;;
+    --forzar) FORZAR="1"; shift ;;
     -h|--help) uso ;;
     -*) echo "Opción desconocida: $1" >&2; uso ;;
     # El primer argumento suelto es usuario@host; un segundo suelto casi
@@ -76,10 +85,37 @@ npm run --silent cms:backup >/dev/null
 BACKUP="$(ls -t cms/data/backups/hidromont-cms-*.sqlite | head -1)"
 echo "    $BACKUP"
 
+# Última modificación de contenido de una base (max de updated_at). Se lee con
+# better-sqlite3 porque el servidor no tiene por qué tener el CLI de sqlite3.
+ULTIMA_EDICION_JS="const D=require('better-sqlite3');const db=new D(process.argv[1],{readonly:true,fileMustExist:true});const r=db.prepare(\"SELECT MAX(t) m FROM (SELECT MAX(updated_at) t FROM content_fields UNION ALL SELECT MAX(updated_at) FROM gallery_items UNION ALL SELECT MAX(updated_at) FROM media_assets)\").get();console.log(r.m||'')"
+LOCAL_ULTIMA="$(node -e "$ULTIMA_EDICION_JS" "$BACKUP" 2>/dev/null || true)"
+REMOTA_ULTIMA="$("${SSH[@]}" "$DESTINO" "cd '$RUTA_REMOTA' 2>/dev/null && test -f cms/data/hidromont-cms.sqlite && node -e \"\$(cat)\" cms/data/hidromont-cms.sqlite" <<<"$ULTIMA_EDICION_JS" 2>/dev/null || true)"
+
+if [[ -n "$REMOTA_ULTIMA" ]]; then
+  echo "==> El servidor ya tiene una base"
+  echo "    última edición en el servidor: $REMOTA_ULTIMA"
+  echo "    última edición en esta copia:  ${LOCAL_ULTIMA:-?}"
+  if [[ -n "$LOCAL_ULTIMA" && "$REMOTA_ULTIMA" > "$LOCAL_ULTIMA" ]]; then
+    printf '\033[33m    El servidor tiene cambios MÁS NUEVOS que esta copia: se perderían.\033[0m\n'
+  fi
+  if [[ -z "$FORZAR" ]]; then
+    read -r -p "    Escribe SOBRESCRIBIR para sustituir la base del servidor: " RESPUESTA
+    [[ "$RESPUESTA" == "SOBRESCRIBIR" ]] || { echo "Cancelado: no se ha tocado nada." >&2; exit 1; }
+  fi
+fi
+
 echo "==> Deteniendo el servicio en el servidor"
 # La primera vez el servicio todavía no existe: eso no es un error.
 "${SSH[@]}" "$DESTINO" "${SUDO}systemctl stop hidromont" 2>/dev/null \
   || echo "    (el servicio no estaba activo; normal en el primer despliegue)"
+
+if [[ -n "$REMOTA_ULTIMA" ]]; then
+  echo "==> Guardando una copia de la base del servidor"
+  # Con el servicio parado, copiar la base con su -wal y -shm da una copia
+  # coherente sin depender de nada instalado en el servidor.
+  SELLO="$(date +%Y-%m-%dT%H-%M-%S)"
+  "${SSH[@]}" "$DESTINO" "cd '$RUTA_REMOTA/cms/data' && mkdir -p backups && for f in hidromont-cms.sqlite hidromont-cms.sqlite-wal hidromont-cms.sqlite-shm; do [ -f \"\$f\" ] && cp -p \"\$f\" \"backups/antes-de-sync-$SELLO-\$f\"; done; ls backups/antes-de-sync-$SELLO-*"
+fi
 
 echo "==> Subiendo la base"
 "${SSH[@]}" "$DESTINO" "mkdir -p '$RUTA_REMOTA/cms/data' '$RUTA_REMOTA/uploads/cms' && rm -f '$RUTA_REMOTA/cms/data/hidromont-cms.sqlite-wal' '$RUTA_REMOTA/cms/data/hidromont-cms.sqlite-shm'"

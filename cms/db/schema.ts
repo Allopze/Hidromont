@@ -152,6 +152,25 @@ export function migrate(db: Database.Database = getDb()): void {
       FOREIGN KEY (media_id) REFERENCES media_assets(id) ON DELETE SET NULL,
       FOREIGN KEY (category_id) REFERENCES gallery_categories(id) ON DELETE SET NULL
     );
+
+    -- P1-03 (auditoría 2026-09): todo slug que ha tenido cada ficha de
+    -- colección. Sin FK a propósito: sobrevive al borrado de la ficha, que es
+    -- justo cuando más falta hace (podar su .md y no reimportarlo al arrancar).
+    CREATE TABLE IF NOT EXISTS collection_slugs (
+      kind TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      entry_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (kind, slug)
+    );
+
+    -- P1-03: redirecciones 301 que crea el CMS al cambiar la dirección de una
+    -- ficha publicada. Las sirve cms/staticSite.ts junto a public/_redirects.
+    CREATE TABLE IF NOT EXISTS redirects (
+      from_path TEXT PRIMARY KEY,
+      to_path TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
 
   migrateGalleryItemsProjectSlug(db);
@@ -160,6 +179,7 @@ export function migrate(db: Database.Database = getDb()): void {
   migratePublishJobsAction(db);
   migrateCollectionSlugUniqueness(db);
   migrateMediaPathUniqueness(db);
+  migrateSessionsLastSeen(db);
 }
 
 /**
@@ -313,6 +333,18 @@ function migrateGalleryItemsOnDeleteSetNull(db: ReturnType<typeof getDb>): void 
  * Migracion A1-009: anade la columna updated_at a publish_jobs para poder detectar
  * jobs trabados en 'running' tras un crash del proceso. Idempotente.
  */
+/**
+ * P3-01 (auditoría 2026-09): las sesiones duraban 7 días aunque nadie las
+ * usara. `last_seen_at` permite caducarlas por inactividad. Las existentes
+ * toman su fecha de creación. Idempotente.
+ */
+function migrateSessionsLastSeen(db: ReturnType<typeof getDb>): void {
+  const cols = db.prepare('PRAGMA table_info(sessions)').all() as Array<{ name: string }>;
+  if (cols.some((c) => c.name === 'last_seen_at')) return;
+  db.exec(`ALTER TABLE sessions ADD COLUMN last_seen_at TEXT;
+           UPDATE sessions SET last_seen_at = created_at WHERE last_seen_at IS NULL;`);
+}
+
 function migratePublishJobsUpdatedAt(db: ReturnType<typeof getDb>): void {
   const cols = db.prepare('PRAGMA table_info(publish_jobs)').all() as Array<{ name: string }>;
   if (cols.some((c) => c.name === 'updated_at')) return;

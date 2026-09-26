@@ -24,6 +24,40 @@ panel.inert = true;
 panel.setAttribute('aria-hidden', 'true');
 panel.tabIndex = -1;
 
+/*
+ * P2-21 (auditoría 2026-09): el panel, fijo a la derecha, tapaba lo que se
+ * estaba editando si quedaba en la mitad derecha (el botón «Contáctenos», las
+ * listas de una ficha) y, con una ficha abierta, cortaba la barra en
+ * «Publica…». En escritorio la página cede el ancho del panel mientras está
+ * abierto; en pantallas estrechas el panel ocupa todo y no hay nada que ceder.
+ */
+const ESCRITORIO = window.matchMedia('(min-width: 1101px)');
+
+function reservarEspacio() {
+  const html = document.documentElement;
+  const abierto = panel.classList.contains('open');
+  if (!abierto || !ESCRITORIO.matches) {
+    html.classList.remove('hm-cms-con-panel');
+    html.style.removeProperty('--hm-cms-reserva');
+    return;
+  }
+  const ancho = panel.classList.contains('is-wide') ? 680 : 440;
+  html.style.setProperty('--hm-cms-reserva', `${Math.min(ancho, window.innerWidth)}px`);
+  html.classList.add('hm-cms-con-panel');
+}
+
+/** Si lo que se edita quedó fuera de la vista al estrecharse la página, se trae. */
+function mostrarLoEditado() {
+  const el = document.querySelector('.hm-cms-editing');
+  if (!(el instanceof HTMLElement)) return;
+  const caja = el.getBoundingClientRect();
+  if (caja.top < 0 || caja.bottom > window.innerHeight) {
+    el.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }
+}
+
+ESCRITORIO.addEventListener('change', reservarEspacio);
+
 /**
  * @param autofocus Mover el foco al primer control del panel. Se desactiva
  *   al repintar una lista filtrada: el foco debe quedarse en el buscador que
@@ -57,6 +91,9 @@ export function openPanel(html, { autofocus = true, modal = true, wide = false }
     offerDraft(form);
   }
   panel.classList.add('open');
+  reservarEspacio();
+  // `empezarEdicion` marca el elemento justo después de abrir el panel.
+  requestAnimationFrame(mostrarLoEditado);
   if (backdrop) backdrop.classList.toggle('visible', modal);
   panel.inert = false;
   panel.removeAttribute('aria-hidden');
@@ -69,6 +106,11 @@ export function openPanel(html, { autofocus = true, modal = true, wide = false }
   if (!autofocus) return;
   setTimeout(() => {
     if (!panel.classList.contains('open') || panel.inert) return;
+    // Si en estos 50 ms la persona ya se puso en un campo del panel, no se le
+    // quita el foco: lo que escribiera iría a parar a otro campo (pasaba con
+    // el acceso: la contraseña acababa pegada al correo).
+    const activo = document.activeElement;
+    if (activo && activo !== panel && panel.contains(activo)) return;
     if (autofocus === 'panel') {
       panelBody.scrollTop = 0;
       panel.focus();
@@ -88,6 +130,16 @@ export function openPanel(html, { autofocus = true, modal = true, wide = false }
       panel;
     if (firstFocusable && typeof firstFocusable.focus === 'function') {
       firstFocusable.focus();
+      // P3-11 (auditoría 2026-09): el cursor quedaba al principio y lo que se
+      // tecleaba se anteponía al texto (se guardó « xIngeniería…»).
+      if (
+        (firstFocusable instanceof HTMLInputElement &&
+          ['text', 'search', 'url', 'tel'].includes(firstFocusable.type)) ||
+        firstFocusable instanceof HTMLTextAreaElement
+      ) {
+        const fin = firstFocusable.value.length;
+        firstFocusable.setSelectionRange(fin, fin);
+      }
     }
   }, 50);
 }
@@ -179,6 +231,7 @@ export async function closePanel(force = false) {
   setFormDirty(false);
   terminarEdicion();
   panel.classList.remove('open');
+  reservarEspacio();
   if (backdrop) backdrop.classList.remove('visible');
   panel.inert = true;
   panel.setAttribute('aria-hidden', 'true');

@@ -70,6 +70,47 @@ test.describe('Navegación pública e interactividad', () => {
     await expect(dropdownToggle).toBeFocused();
   });
 
+  test('P2-29: tabular por «Servicios» no abre el submenú; Intro en el chevron sí', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    const chevron = page.locator('[data-dropdown-toggle]').first();
+    const group = chevron.locator('xpath=ancestor::*[@data-dropdown-group][1]');
+    const panel = group.locator('.dropdown-panel');
+    const enlace = group.locator('a').first();
+
+    await enlace.focus();
+    await expect(panel).not.toHaveClass(/is-open/);
+    await page.keyboard.press('Tab');
+    await expect(chevron).toBeFocused();
+    await expect(panel).not.toHaveClass(/is-open/);
+
+    await page.keyboard.press('Enter');
+    await expect(panel).toHaveClass(/is-open/);
+    // Salir tabulando del grupo lo cierra.
+    const enlacesDelPanel = await panel.locator('a').count();
+    for (let i = 0; i <= enlacesDelPanel; i++) await page.keyboard.press('Tab');
+    await expect(group.locator(':focus')).toHaveCount(0);
+    await expect(panel).not.toHaveClass(/is-open/);
+  });
+
+  test('P2-29: Escape cierra el submenú aunque el foco no esté en él', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    const chevron = page.locator('[data-dropdown-toggle]').first();
+    const panel = chevron
+      .locator('xpath=ancestor::*[@data-dropdown-group][1]')
+      .locator('.dropdown-panel');
+    await chevron.click();
+    await expect(panel).toHaveClass(/is-open/);
+    // Como deja Safari el foco tras pulsar el chevron.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.mouse.move(5, 700);
+    await page.keyboard.press('Escape');
+    await expect(panel).not.toHaveClass(/is-open/);
+  });
+
   test('control de pausa de carrusel de logos (MarqueePauseToggle)', async ({ page }) => {
     await page.goto('/clientes');
 

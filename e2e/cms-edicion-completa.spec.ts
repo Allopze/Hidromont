@@ -112,7 +112,7 @@ test.describe('Tarjetas del inicio', () => {
     );
     await cifra.scrollIntoViewIfNeeded();
     // El contador anima la cifra al entrar en pantalla; se espera a que acabe.
-    await page.waitForTimeout(1_500);
+    await expect(cifra).toHaveAttribute('data-contado', '1');
     await cifra.click();
     const panel = page.locator('.hm-cms-panel.open');
     await panel.locator('form[data-edit] [name="value"]').fill('45+ años');
@@ -192,7 +192,20 @@ test.describe('Fichas de servicio y proyecto', () => {
     const cuerpo = page.locator(`[data-cms-entry="${entrada}"][data-cms-field="body"]`);
     await cuerpo.click();
     const panel = page.locator('.hm-cms-panel.open');
-    await panel.locator('textarea[name="value"]').fill(`${original}\n\n## Revisión E2E`);
+    // P2-23: el cuerpo se edita en el editor visual; se añade un título al final.
+    const visual = panel.locator('[data-richtext-visual]');
+    await visual.evaluate((el) => {
+      el.focus();
+      const rango = document.createRange();
+      rango.selectNodeContents(el);
+      rango.collapse(false);
+      window.getSelection()!.removeAllRanges();
+      window.getSelection()!.addRange(rango);
+    });
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('Revisión E2E');
+    await panel.locator('[data-format="h2"]').click();
+    await expect(panel.locator('textarea[name="value"]')).toHaveValue(/\n\n## Revisión E2E$/);
     await guardar(page);
     await expect(panel.locator('[data-edit-status]')).toContainText('vista aproximada');
 
@@ -275,7 +288,11 @@ test.describe('Contador de cifras de la portada', () => {
       await page.goto('/');
       const cifras = page.locator('[data-count]');
       await cifras.first().scrollIntoViewIfNeeded();
-      await page.waitForTimeout(1_800);
+      await expect(cifras.first()).toHaveAttribute('data-contado', '1');
+      for (const cifra of await cifras.all()) {
+        await cifra.scrollIntoViewIfNeeded();
+        await expect(cifra).toHaveAttribute('data-contado', '1');
+      }
       // Pintaba «40 + años» y «1.997».
       expect(await cifras.allTextContents()).toEqual(esperadas);
       await context.close();

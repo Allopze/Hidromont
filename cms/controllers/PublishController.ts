@@ -1,3 +1,4 @@
+import { ErrorDeUsuario } from '../utils/errorDeUsuario';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,7 +46,10 @@ export class PublishController extends BaseController {
       this.handleSuccess(reply, { ...result, siteBuiltAt: siteBuiltAt() });
     } catch (error) {
       if (!isMissingGalleryTables(error)) {
-        captureException(error, { action: 'exportContentWithGallery' });
+        // Un ErrorDeUsuario (p. ej. otra publicación en curso) no es un fallo.
+        if (!(error instanceof ErrorDeUsuario)) {
+          captureException(error, { action: 'exportContentWithGallery' });
+        }
         this.handleError(error, reply, 'exportContentWithGallery');
         return;
       }

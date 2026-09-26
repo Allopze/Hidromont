@@ -25,6 +25,9 @@ declare module 'fastify' {
 
 export function registerCors(app: FastifyInstance): void {
   app.addHook('onRequest', async (request, reply) => {
+    // P3-01: las cabeceras CORS solo tienen sentido en la API; el HTML del
+    // sitio no debe anunciarlas.
+    if (!request.url.startsWith('/api/')) return;
     const origin = request.headers.origin;
     const isAllowed = !origin || config.cms.allowedOrigins.includes(origin);
 

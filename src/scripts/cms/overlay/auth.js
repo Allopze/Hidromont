@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Parte de la interfaz del CMS. Antes esto era `src/scripts/cms-overlay.js`:
  * 3.500 líneas en un solo archivo, inyectadas como string por `set:html`.
@@ -51,6 +52,21 @@ export function loginView(error = '', email = '') {
   `);
 }
 
+let limitesPedidos = false;
+/** P3-04: una vez por carga, los topes de subida del servidor. */
+function cargarLimites() {
+  if (limitesPedidos) return;
+  limitesPedidos = true;
+  api('/api/cms/schema')
+    .then((schema) => {
+      const l = schema?.limites;
+      if (l && Number.isFinite(l.fotoBytes) && Number.isFinite(l.videoBytes)) state.limites = l;
+    })
+    .catch(() => {
+      limitesPedidos = false;
+    });
+}
+
 export async function ensureSession() {
   try {
     const session = await api('/api/cms/session');
@@ -61,6 +77,7 @@ export async function ensureSession() {
       return false;
     }
     state.csrfToken = session.csrfToken;
+    cargarLimites();
     setAuthenticatedUI(true);
     setInlineEditAccessibility(true);
     detectarFicha();
@@ -69,7 +86,32 @@ export async function ensureSession() {
   } catch (error) {
     setAuthenticatedUI(false);
     setInlineEditAccessibility(false);
-    loginView(error.message);
+    loginView(error instanceof Error ? error.message : String(error));
     return false;
   }
+}
+
+/**
+ * P2-04/P2-18 (auditoría 2026-09): cualquier fallo al abrir un campo (404, 500,
+ * red caída) mostraba la pantalla de «Acceso» aunque la sesión siguiera
+ * abierta, y la persona volvía a escribir su contraseña sin motivo. Solo un
+ * 401 pide entrar de nuevo; el resto se explica en el panel.
+ */
+/** @param {any} error */
+export function errorAlAbrir(error) {
+  if (error?.status === 401) {
+    setAuthenticatedUI(false);
+    setInlineEditAccessibility(false);
+    loginView('Tu sesión terminó. Vuelve a entrar para seguir editando.');
+    return;
+  }
+  setPanelTitle('No se pudo abrir');
+  openPanel(`
+    <div class="hm-cms-view hm-cms-stack">
+      <p class="hm-cms-notice is-danger" role="alert">No se pudo abrir este elemento. ${escapeHtml(error?.message || '')}</p>
+      <div class="hm-cms-actions">
+        <button type="button" class="ghost" data-action="close">Cerrar</button>
+      </div>
+    </div>
+  `);
 }

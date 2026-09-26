@@ -64,6 +64,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* P3-10: al tabular hacia atrás, lo enfocado no queda bajo la cabecera fija. */
+  scroll-padding-top: 6.5rem;
 }
 
 body {

@@ -9,7 +9,7 @@
  */
 
 import { asList, escapeHtml } from './html';
-import { panelBody, setGlobalState } from './shell';
+import { panelBody, setFormDirty, setGlobalState } from './shell';
 import { clearDraft } from './drafts';
 import { api } from './api';
 import { openPanel, setPanelTitle } from './panel';
@@ -19,12 +19,14 @@ import { fieldLabelMarkup, listEditorMarkup, mensajeGuardado } from './fields';
 import { confirmar } from './confirm';
 import { icon } from './icons';
 import { FICHAS_DEL_SITIO, campoTituloDe, esFichaDelSitio, seccionesDeFicha } from './secciones';
+import { nombreDeFicha } from '../../../data/entry-names';
 
 // ─── CRUD de colecciones ─────────────────────────────────────────────────
 const COLLECTION_KINDS = [
   { id: 'servicio', label: 'Servicios', nueva: 'Nuevo servicio' },
   { id: 'proyecto', label: 'Proyectos', nueva: 'Nuevo proyecto' },
-  { id: 'page', label: 'Páginas', nueva: 'Nueva página' },
+  // P2-22: sin «nueva»: ninguna plantilla pinta una página creada aquí.
+  { id: 'page', label: 'Páginas' },
   // Sin «nueva»: son las fichas fijas de FICHAS_DEL_SITIO, no se crean ni se borran.
   { id: 'sitio', label: 'Textos del sitio' },
 ];
@@ -103,7 +105,8 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
     const entries = data.entries || [];
     const tabs = COLLECTION_KINDS.map(
       (k) =>
-        `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}">${escapeHtml(k.label)}</button>`
+        // P3-11: la pestaña activa se anuncia, como en Galería.
+        `<button type="button" class="hm-cms-tab${k.id === kind ? ' active' : ''}" data-action="tab-kind" data-kind="${escapeHtml(k.id)}"${k.id === kind ? ' aria-current="true"' : ''}>${escapeHtml(k.label)}</button>`
     ).join('');
 
     openPanel(
@@ -137,7 +140,7 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
                 (e) => `
               <div class="hm-cms-collection-item">
                 <div class="hm-cms-collection-info">
-                  <span class="hm-cms-collection-title">${escapeHtml(e.title)}</span>
+                  <span class="hm-cms-collection-title">${escapeHtml(nombreDeFicha(e.id, e.title))}</span>
                   <span class="hm-cms-collection-meta">
                     ${
                       // Solo se marca la excepción: con todas en «Publicado»,
@@ -146,13 +149,13 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
                         ? ''
                         : `<span class="hm-cms-badge ${escapeHtml(e.status)}">${escapeHtml(ROTULOS_DE_ESTADO[e.status] || e.status)}</span>`
                     }
-                    ${esSitio ? '' : `<span>/${escapeHtml(String(e.slug).replace(/^\//, ''))}</span>`}
+                    ${esSitio || kind === 'page' ? '' : `<span>${escapeHtml(direccionCompleta(kind, e.slug))}</span>`}
                   </span>
                 </div>
                 <div class="hm-cms-collection-actions">
                   <button type="button" class="secondary small" data-action="edit-entry" data-entry-id="${escapeHtml(e.id)}">${icon('pencil')}Editar</button>
                   ${
-                    esSitio
+                    esSitio || kind === 'page'
                       ? ''
                       : `<button type="button" class="icon ghost destructive" data-action="delete-entry" data-entry-id="${escapeHtml(e.id)}" data-entry-title="${escapeHtml(e.title)}" aria-label="Eliminar: ${escapeHtml(e.title)}" title="Eliminar">${icon('trash')}</button>`
                   }
@@ -178,6 +181,13 @@ export async function loadCollections(kind = activeCollectionKind, { mantenerFoc
  */
 let schemaCache = null;
 
+/** «compuertas» → «/servicios/compuertas»: la dirección que ve el visitante. */
+function direccionCompleta(kind, slug) {
+  const limpio = String(slug ?? '').replace(/^\/+/, '');
+  const coleccion = { servicio: 'servicios', proyecto: 'proyectos' }[kind];
+  return coleccion ? `/${coleccion}/${limpio}` : `/${limpio}`;
+}
+
 function slugDesdeTitulo(titulo) {
   return titulo
     .toLowerCase()
@@ -192,7 +202,7 @@ function mostrarRutaSugerida(kind, slug) {
   if (!ruta) return;
   const coleccion = { servicio: 'servicios', proyecto: 'proyectos' }[kind];
   ruta.hidden = !coleccion || !slug;
-  ruta.textContent = coleccion && slug ? `Ruta sugerida: /${coleccion}/${slug}` : '';
+  ruta.textContent = coleccion && slug ? `Se verá en: /${coleccion}/${slug}` : '';
 }
 
 function sugerirIdentificadores(kind) {
@@ -202,7 +212,9 @@ function sugerirIdentificadores(kind) {
   const slug = form?.elements.slug;
   if (!titulo || !id || !slug) return;
 
-  const prefijo = { servicio: 'servicio', proyecto: 'proyecto', page: 'page' }[kind] || kind;
+  // P1-02 (auditoría 2026-09): en plural, como lo construyen las plantillas
+  // del sitio (`proyectos.<slug>`). El servidor lo impone igualmente.
+  const prefijo = { servicio: 'servicios', proyecto: 'proyectos', page: 'page' }[kind] || kind;
   let mantenerSugerencia = true;
   const actualizar = () => {
     if (!mantenerSugerencia) return;
@@ -236,7 +248,24 @@ async function getSchema() {
  * @param esTitulo El campo que el sitio usa como título: arrastra el nombre de
  *   la entrada en la lista del panel (`data-sync-title`).
  */
-function campoMarkup(key, f, enums, esTitulo = false) {
+/**
+ * P3-12 (auditoría 2026-09): qué hace cada campo de mecánica, dicho junto a él.
+ * Un destacado nuevo (orden 100) no salía en la portada y nada lo explicaba.
+ */
+const AYUDAS = {
+  proyecto: {
+    tipo: 'Destacado: tiene página propia y puede salir en la portada. Banco: solo aparece en la tabla de /proyectos; si era destacado, su página pasa a llevar al listado.',
+    orden: 'Número menor, antes. La portada muestra los 6 destacados con el número más bajo.',
+  },
+  servicio: {
+    orden: 'Número menor, antes: en el menú, en la portada y en /servicios.',
+  },
+};
+
+function campoMarkup(key, f, enums, esTitulo = false, kind = '') {
+  const ayuda = AYUDAS[kind]?.[key]
+    ? `<p class="hm-cms-hint">${escapeHtml(AYUDAS[kind][key])}</p>`
+    : '';
   const name = `field:${escapeHtml(key)}`;
   const rotulo = fieldLabelMarkup(key, f);
   // A-7: los campos de enumeración eran texto libre, y un valor mal escrito
@@ -258,7 +287,7 @@ function campoMarkup(key, f, enums, esTitulo = false) {
           )
           .join('')}
       </select>
-    </label>`;
+    </label>${ayuda}`;
   }
   // Una lista no cabe dentro de un <label>: son varios controles. Su nombre va
   // en un <fieldset>, que es lo que un lector de pantalla anuncia al entrar.
@@ -278,12 +307,14 @@ function campoMarkup(key, f, enums, esTitulo = false) {
       ? `<textarea name="${name}" data-field-type="textarea">${valor}</textarea>`
       : f.type === 'number'
         ? `<input name="${name}" type="number" step="any" data-field-type="number" value="${valor}" />`
-        : `<input name="${name}" data-field-type="text" value="${valor}"${esTitulo ? ' data-sync-title required' : ''} />`;
+        : // P3-12: el nombre se copia al título interno, que admite 240
+          // caracteres; pasarse abortaba todo el guardado con un error técnico.
+          `<input name="${name}" data-field-type="text" value="${valor}"${esTitulo ? ' data-sync-title required maxlength="240"' : ''} />`;
   return `<label data-field-key="${escapeHtml(key)}">${rotulo}${control}</label>${
     esTitulo
       ? '<p class="hm-cms-hint">Es el título que se ve en el sitio y en la lista del panel.</p>'
       : ''
-  }`;
+  }${ayuda}`;
 }
 
 export async function showEntryForm(entryId = null, kind = activeCollectionKind) {
@@ -324,8 +355,10 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
   // Ajustes del sitio: ni su nombre en el panel, ni una dirección, ni un
   // estado tienen efecto en el sitio. Pasarlos a borrador vaciaba la cabecera
   // o el pie, así que viajan fijos y ocultos.
-  const delSitio = Boolean(entry) && esFichaDelSitio(kind);
-  const nombreDelSitio = FICHAS_DEL_SITIO.find((f) => f.id === entryId)?.nombre;
+  // P2-22: las fichas de página, igual: su «Título» y su «Dirección» no
+  // tenían ningún efecto en el sitio, que solo lee sus campos.
+  const delSitio = Boolean(entry) && (esFichaDelSitio(kind) || kind === 'page');
+  const nombreDelSitio = entry ? nombreDeFicha(entryId, entry.title) : '';
 
   openPanel(
     `
@@ -358,7 +391,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
         <section class="hm-cms-form-section">
           ${seccion.titulo ? `<h3 class="hm-cms-form-section-title">${escapeHtml(seccion.titulo)}</h3>` : ''}
           ${seccion.claves
-            .map((key) => campoMarkup(key, campos[key], enums, key === campoTitulo))
+            .map((key) => campoMarkup(key, campos[key], enums, key === campoTitulo, kind))
             .join('')}
         </section>`
         )
@@ -369,15 +402,12 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
           : `<details class="hm-cms-advanced" ${!entryId ? 'open' : ''}>
         <summary>Dirección y publicación</summary>
       ${
-        !entryId
-          ? `<label>ID interno
-        <input name="id" value="" required pattern="[a-z0-9._-]+" title="Minúsculas, números, puntos, guiones" />
-      </label>
-      <p class="hm-cms-hint">Se sugiere según el título y el tipo de entrada.</p>`
-          : `<p class="hm-cms-hint">Identificador interno: <code>${escapeHtml(entryId)}</code></p>`
+        // P2-22: el identificador interno se deduce de la dirección (el
+        // servidor lo impone igualmente) y no se enseña.
+        !entryId ? '<input type="hidden" name="id" value="" />' : ''
       }
       <label>Dirección en el sitio
-        <input name="slug" value="${escapeHtml(entry?.slug || '')}" required />
+        <input name="slug" value="${escapeHtml(entry?.slug || '')}" required pattern="[a-z0-9]+(-[a-z0-9]+)*" title="Solo minúsculas, números y guiones" />
       </label>
       <p class="hm-cms-hint" data-suggested-path hidden></p>
       <label>Estado de publicación
@@ -392,7 +422,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
       <div class="hm-cms-actions hm-cms-footer">
         <button type="submit">${entry ? 'Guardar cambios' : 'Crear entrada'}</button>
         <button type="button" class="ghost" data-action="back-to-collections">${icon('arrowLeft')}Volver</button>
-        ${entry ? `<button type="button" class="ghost" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>` : ''}
+        ${entry ? `<button type="button" class="ghost" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(nombreDeFicha(entryId, entry.title))}" data-origen="ficha">${icon('history')}Revisiones</button>` : ''}
         <p class="hm-cms-save-state" role="status" aria-live="polite" data-status></p>
       </div>
     </form>
@@ -469,16 +499,39 @@ export async function saveEntryForm(form) {
     }
   }
 
+  // P3-12 (auditoría 2026-09): de destacado a banco la ficha pierde su página.
+  const tipo = form.elements['field:tipo'];
+  if (
+    kind === 'proyecto' &&
+    tipo &&
+    tipo.dataset.inicial === 'destacado' &&
+    tipo.value === 'banco'
+  ) {
+    const seguir = await confirmar({
+      titulo: '¿Pasar el proyecto al banco?',
+      mensaje:
+        'Su página dejará de existir: quien la tenga enlazada llegará al listado de proyectos. Seguirá en la tabla de /proyectos, y puedes volver a hacerlo destacado cuando quieras.',
+      aceptar: 'Pasar al banco',
+      peligro: true,
+    });
+    if (!seguir) {
+      if (status) status.textContent = '';
+      return;
+    }
+  }
+
   try {
     if (!entryId) {
       const id = form.elements.id?.value.trim();
-      await api('/api/cms/entries', {
+      const creada = await api('/api/cms/entries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, kind, slug, title, status: entryStatus }),
       });
       setGlobalState('unsaved');
-      await showEntryForm(id, kind);
+      // P1-02: el id de una ficha de colección lo decide el servidor
+      // (`proyectos.<slug>`): se sigue con el que devuelve, no con el tecleado.
+      await showEntryForm(creada?.id || id, kind);
       const nuevoEstado = panelBody.querySelector('[data-status]');
       if (nuevoEstado)
         nuevoEstado.textContent =
@@ -497,6 +550,7 @@ export async function saveEntryForm(form) {
       if (!meta.some(cambio) && campos.length === 0) {
         if (status) status.textContent = 'No hay cambios que guardar.';
         clearDraft(form);
+        setFormDirty(false);
         return;
       }
 
@@ -560,6 +614,10 @@ export async function saveEntryForm(form) {
     if (status) status.textContent = mensajeGuardado();
     setGlobalState('unsaved');
     clearDraft(form);
+    // P2-16 (auditoría 2026-09): tras «Guardado» seguía el punto ámbar y
+    // cerrar preguntaba «Tienes cambios sin guardar». El editor de un campo
+    // suelto sí lo limpiaba; la ficha no.
+    setFormDirty(false);
   } catch (error) {
     if (status)
       status.innerHTML = `<span class="hm-cms-error" role="alert">${escapeHtml(error.message)}</span>`;

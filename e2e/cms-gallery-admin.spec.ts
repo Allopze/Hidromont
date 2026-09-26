@@ -43,6 +43,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de categorías: crear, editar y eliminar', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await aceptarConfirmaciones(page);
 
     // 1. Abrir menú de Galería
@@ -76,7 +77,7 @@ test.describe('CMS Gallery Administration', () => {
     const count = panel.locator('[data-gallery-category-count]');
     await search.focus();
     await search.pressSequentially(TEST_CAT_NAME);
-    await expect(count).toHaveText(/1 de \d+ categorías/);
+    await expect(count).toHaveText(/1 de \d+ categorías?/);
     await expect(
       panel.locator('[data-gallery-category-row]', { hasText: TEST_CAT_NAME })
     ).toBeVisible();
@@ -84,14 +85,14 @@ test.describe('CMS Gallery Administration', () => {
 
     await search.press(SELECT_ALL);
     await search.pressSequentially(TEST_CAT_SLUG);
-    await expect(count).toHaveText(/1 de \d+ categorías/);
+    await expect(count).toHaveText(/1 de \d+ categorías?/);
     await expect(
       panel.locator('[data-gallery-category-row]', { hasText: TEST_CAT_NAME })
     ).toBeVisible();
 
     await search.press(SELECT_ALL);
     await search.pressSequentially('sin-coincidencias-xyz');
-    await expect(count).toHaveText(/0 de \d+ categorías/);
+    await expect(count).toHaveText(/0 de \d+ categorías?/);
     await expect(panel.locator('[data-gallery-category-empty]')).toContainText('Ninguna categoría');
     await search.press(SELECT_ALL);
     await search.pressSequentially(TEST_CAT_NAME);
@@ -123,6 +124,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de álbumes: crear, editar y eliminar', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await aceptarConfirmaciones(page);
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
@@ -153,21 +155,21 @@ test.describe('CMS Gallery Administration', () => {
     const count = panel.locator('[data-gallery-album-count]');
     await search.focus();
     await search.pressSequentially('album e2e automatizado');
-    await expect(count).toHaveText(/1 de \d+ álbumes/);
+    await expect(count).toHaveText(/1 de \d+ (álbum|álbumes)/);
     await expect(
       panel.locator('[data-gallery-album-row]', { hasText: TEST_ALBUM_NAME })
     ).toBeVisible();
 
     await search.press(SELECT_ALL);
     await search.pressSequentially(TEST_ALBUM_SLUG);
-    await expect(count).toHaveText(/1 de \d+ álbumes/);
+    await expect(count).toHaveText(/1 de \d+ (álbum|álbumes)/);
     await expect(
       panel.locator('[data-gallery-album-row]', { hasText: TEST_ALBUM_NAME })
     ).toBeVisible();
 
     await search.press(SELECT_ALL);
     await search.pressSequentially('sin-coincidencias-xyz');
-    await expect(count).toHaveText(/0 de \d+ álbumes/);
+    await expect(count).toHaveText(/0 de \d+ (álbum|álbumes)/);
     await expect(panel.locator('[data-gallery-album-empty]')).toContainText('Ningún álbum');
     await search.press(SELECT_ALL);
     await search.pressSequentially(TEST_ALBUM_NAME);
@@ -197,6 +199,7 @@ test.describe('CMS Gallery Administration', () => {
   test('gestión de imágenes: agregar imagen, buscarla y eliminarla', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await aceptarConfirmaciones(page);
 
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();

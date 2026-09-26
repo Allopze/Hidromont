@@ -1,37 +1,51 @@
 import { defineCollection, z } from 'astro:content';
 import { glob, file } from 'astro/loaders';
 // A-7: vocabulario compartido con el CMS, que antes lo duplicaba a mano.
-import {
-  CATEGORIA_PROYECTO,
-  ICONO_SERVICIO,
-  SERVICIO_SLUG,
-  TIPO_PROYECTO,
-} from './data/content-vocabulary';
+import { CATEGORIA_PROYECTO, ICONO_SERVICIO, TIPO_PROYECTO } from './data/content-vocabulary';
 
 const categoriaProyecto = z.enum(CATEGORIA_PROYECTO);
+
+/*
+ * P3-12 (auditoría 2026-09): un valor de solo espacios contaba como relleno:
+ * `mandante: "   "` pintaba «Mandante» vacío y ocultaba el cliente, y una norma
+ * en blanco, una insignia vacía. Se recortan y los vacíos desaparecen.
+ */
+const textoOpcional = z
+  .string()
+  .optional()
+  .transform((v) => v?.trim() || undefined);
+const listaDeTextos = z
+  .array(z.string())
+  .optional()
+  .transform((lista) => lista?.map((t) => t.trim()).filter(Boolean));
 
 const proyectos = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/proyectos' }),
   schema: () =>
     z.object({
       nombre: z.string(),
-      cliente: z.string().optional(),
-      mandante: z.string().optional(),
-      contratista: z.string().optional(),
+      cliente: textoOpcional,
+      mandante: textoOpcional,
+      contratista: textoOpcional,
       alcance: z.string(),
       categoria: categoriaProyecto,
       // Sin declararlo aquí, Zod hace strip y el campo desaparecería en
       // silencio del frontmatter. Opcional: solo lo llevan las fichas cuya
       // categoría no basta para deducir el servicio.
-      servicio: z.enum(SERVICIO_SLUG).optional(),
+      //
+      // P1-02 (auditoría 2026-09): era un enum fijo de 8 slugs, así que un
+      // servicio creado desde el panel no se podía asignar. El CMS valida el
+      // valor contra los servicios que existen y el export omite uno que no
+      // esté publicado; la ficha solo enlaza si el servicio existe.
+      servicio: z.string().optional(),
       tipo: z.enum(TIPO_PROYECTO).default('banco'),
-      ubicacion: z.string().optional(),
+      ubicacion: textoOpcional,
       anio: z.number().optional(),
-      diametro: z.string().optional(),
-      longitud: z.string().optional(),
-      peso: z.string().optional(),
-      acero: z.string().optional(),
-      normas: z.array(z.string()).optional(),
+      diametro: textoOpcional,
+      longitud: textoOpcional,
+      peso: textoOpcional,
+      acero: textoOpcional,
+      normas: listaDeTextos,
       orden: z.number().default(100),
     }),
 });
@@ -47,9 +61,9 @@ const servicios = defineCollection({
       // Un icono subido desde el CMS (ruta de la biblioteca). Si está, se usa en
       // lugar del de la lista; vacío o ausente, el de `icono`.
       iconoPropio: z.string().optional(),
-      tipos: z.array(z.string()).optional(),
-      aplicaciones: z.array(z.string()).optional(),
-      normas: z.array(z.string()).optional(),
+      tipos: listaDeTextos,
+      aplicaciones: listaDeTextos,
+      normas: listaDeTextos,
       procesos: z
         .array(
           z.object({

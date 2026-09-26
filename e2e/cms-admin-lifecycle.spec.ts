@@ -27,6 +27,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
   test('cierre de sesión (logout) desactiva la barra y revoca la sesión', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // Verificar que los botones administrativos están visibles
     // Salir vive en el menú «Más» de la barra.
@@ -52,6 +53,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
   test('creación de respaldo en vivo desde el panel de administración', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     await page.locator('.hm-cms-bar [data-action="admin"]').click();
@@ -75,6 +77,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
   test('historial de publicaciones y jobs', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // Abrir historial de publicaciones (jobs)
     await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
@@ -90,6 +93,7 @@ test.describe('CMS Admin Lifecycle & Sessions', () => {
   test('manejo de sesión expirada al intentar guardar cambios', async ({ page, context }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // Clic en cualquier elemento editable de texto para abrir el formulario
     const editable = page

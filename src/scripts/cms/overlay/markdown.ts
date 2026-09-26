@@ -282,10 +282,20 @@ function enLinea(texto: string): string {
   // aparecer en un texto escrito por el operador ni tiene significado en HTML.
   const MARCA = '\uE000';
   const codigos: string[] = [];
-  const conMarcadores = texto.replace(/`([^`]+)`/g, (_, contenido) => {
-    codigos.push(`<code>${escapar(contenido)}</code>`);
-    return `${MARCA}${codigos.length - 1}${MARCA}`;
-  });
+  // P2-23: el editor visual escribe `\*`, `\[`… cuando el texto lleva esos
+  // caracteres de verdad; aquí se muestran tal cual, sin la barra, igual que
+  // en el sitio. Van aparte con su propio marcador (U+E001).
+  const ESCAPE = '\uE001';
+  const escapados: string[] = [];
+  const conMarcadores = texto
+    .replace(/`([^`]+)`/g, (_, contenido) => {
+      codigos.push(`<code>${escapar(contenido)}</code>`);
+      return `${MARCA}${codigos.length - 1}${MARCA}`;
+    })
+    .replace(/\\([\\`*_[\]#+\-.!|>()])/g, (_, caracter) => {
+      escapados.push(escapar(caracter));
+      return `${ESCAPE}${escapados.length - 1}${ESCAPE}`;
+    });
 
   let html = escapar(conMarcadores)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
@@ -302,5 +312,6 @@ function enLinea(texto: string): string {
 
   return html
     .replace(/\n/g, '<br />')
-    .replace(new RegExp(`${MARCA}(\\d+)${MARCA}`, 'g'), (_, i) => codigos[Number(i)]);
+    .replace(new RegExp(`${MARCA}(\\d+)${MARCA}`, 'g'), (_, i) => codigos[Number(i)])
+    .replace(new RegExp(`${ESCAPE}(\\d+)${ESCAPE}`, 'g'), (_, i) => escapados[Number(i)]);
 }

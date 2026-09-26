@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Parte de la interfaz del CMS. Antes esto era `src/scripts/cms-overlay.js`:
  * 3.500 líneas en un solo archivo, inyectadas como string por `set:html`.
@@ -17,4 +18,10 @@ export const state = {
   selected: null,
   entry: null,
   mediaItems: [],
+  /**
+   * P3-04: los topes de subida que publica el servidor en `/api/cms/schema`.
+   * Hasta que llegan valen los de por defecto de `unifiedConfig.ts`.
+   * @type {{ fotoBytes: number, videoBytes: number }}
+   */
+  limites: { fotoBytes: 8 * 1024 * 1024, videoBytes: 60 * 1024 * 1024 },
 };

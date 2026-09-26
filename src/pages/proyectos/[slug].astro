@@ -1,4 +1,5 @@
 ---
+import { SERVICIO_DE_CATEGORIA } from '../../data/servicio-proyectos';
 import PageLayout from '../../layouts/PageLayout.astro';
 import Section from '../../components/ui/Section.astro';
 import Container from '../../components/ui/Container.astro';
@@ -8,6 +9,7 @@ import PageHero from '../../components/ui/PageHero.astro';
 import { getCollection, render } from 'astro:content';
 import { projectImages } from '../../data/project-images';
 import { projectGalleries } from '../../data/project-galleries';
+import Lightbox from '../../components/gallery/Lightbox.astro';
 import EditableImage from '../../components/cms/EditableImage.astro';
 import EditableText from '../../components/cms/EditableText.astro';
 import { getCmsText } from '../../data/cms';
@@ -94,21 +96,25 @@ const participantSummary = contratista
 // Respaldo por categoría para las 34 fichas que no declaran `servicio`.
 // `estructuras` sigue cayendo aquí en Otros Montajes, que es lo correcto para
 // una estructura genérica; las seis que no lo eran ya traen el campo.
-const servicioHref: Record<string, string> = {
-  tuberias: '/servicios/tuberias-forzadas',
-  compuertas: '/servicios/compuertas',
-  electromecanicos: '/servicios/otros-montajes',
-  limpiarrejas: '/servicios/limpiarrejas',
-  estructuras: '/servicios/otros-montajes',
-};
+// P2-34: la tabla vive en src/data/servicio-proyectos.ts, que usa también la
+// página del servicio para listar sus proyectos.
+const servicioHref: Record<string, string> = Object.fromEntries(
+  Object.entries(SERVICIO_DE_CATEGORIA).map(([cat, serv]) => [cat, `/servicios/${serv}`])
+);
 
 // El rótulo decía el nombre de la categoría («Estructuras y Tanques»), que no
 // es el nombre de ningún servicio: el enlace prometía una página que no existe
 // con ese título. Ahora dice el título real de la ficha a la que lleva.
 const serviciosPublicados = await getCollection('servicios');
-const servicioDestinoHref = servicio
-  ? `/servicios/${servicio}`
-  : (servicioHref[categoria] ?? '/servicios');
+const existeServicio = (href: string) =>
+  serviciosPublicados.some((s) => `/servicios/${entrySlug(s.id)}` === href);
+// P1-03 (auditoría 2026-09): si el servicio declarado ya no existe (borrado o
+// renombrado), la ficha enlazaba a un 404. Ahora cae a la categoría y, si
+// tampoco hay ficha para ella, al listado de servicios.
+const servicioDestinoHref =
+  [servicio ? `/servicios/${servicio}` : undefined, servicioHref[categoria]].find(
+    (href): href is string => !!href && existeServicio(href)
+  ) ?? '/servicios';
 const servicioDestino = serviciosPublicados.find(
   (s) => `/servicios/${entrySlug(s.id)}` === servicioDestinoHref
 );
@@ -463,11 +469,25 @@ const jsonLd = {
                  plus 1-2 empty bordered boxes in production. Now a slot with
                  no image and no CMS editing renders nothing at all. */}
               {[1, 2, 3].map((n) => {
-                const img = gallery?.images[n - 1];
+                const img = gallery?.images.find((i) => i.campo === n);
                 if (!img && !cmsEditingEnabled) return null;
                 return (
                   <div
-                    class="aspect-video overflow-hidden rounded-none bg-background-alt border border-border"
+                    class:list={[
+                      'aspect-video overflow-hidden rounded-none bg-background-alt border border-border',
+                      // P3-13 (auditoría 2026-09): las fotos de la ficha no se
+                      // podían ampliar. Se abren en el mismo visor de /galeria.
+                      img && 'cursor-zoom-in',
+                    ]}
+                    {...(img
+                      ? {
+                          'data-visor': '',
+                          'data-item-id': `${galleryEntryId}-${n}`,
+                          role: 'button',
+                          tabindex: 0,
+                          'aria-label': `Ampliar: ${img.alt}`,
+                        }
+                      : {})}
                     {...soloEditor(!img)}
                   >
                     {img ? (
@@ -510,4 +530,5 @@ const jsonLd = {
       </div>
     </Container>
   </Section>
+  {(gallery?.images.length ?? 0) > 0 && <Lightbox slot="overlay" />}
 </PageLayout>

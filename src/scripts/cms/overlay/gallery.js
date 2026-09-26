@@ -129,15 +129,118 @@ export function resetGalleryAlbumSearch() {
   galleryAlbumSearch = '';
 }
 
-export async function loadGalleryCategories() {
+/*
+ * P2-25 (auditoría 2026-09): la API sabía reordenar fotos, álbumes y
+ * categorías, pero el panel no lo ofrecía, así que no había forma de decidir
+ * qué se ve primero en /galeria ni el orden de los filtros. Botones de subir y
+ * bajar, como en el editor de listas: funcionan igual con teclado y en móvil.
+ */
+const ORDEN = {
+  cat: {
+    lista: () => galleryCategoriesListCache,
+    clave: (x) => x.id,
+    ruta: '/api/cms/gallery/categories/reorder',
+    cuerpo: (claves) => ({ ids: claves }),
+    nombre: 'la categoría',
+  },
+  album: {
+    lista: () => galleryAlbumsListCache,
+    clave: (x) => x.slug,
+    ruta: '/api/cms/gallery/albums/reorder',
+    cuerpo: (claves) => ({ slugs: claves }),
+    nombre: 'el álbum',
+  },
+  item: {
+    lista: () => galleryItemsCache,
+    clave: (x) => x.id,
+    ruta: '/api/cms/gallery/items/reorder',
+    cuerpo: (claves) => ({ ids: claves }),
+    nombre: 'la foto',
+  },
+};
+
+function botonesDeOrden(tipo, clave, nombre, i, total) {
+  const t = ORDEN[tipo];
+  const boton = (dir, etiqueta, deshabilitado) =>
+    `<button type="button" class="icon small ghost" data-action="gallery-move" data-tipo="${tipo}" data-clave="${escapeHtml(clave)}" data-dir="${dir}" aria-label="${etiqueta} ${t.nombre}: ${escapeHtml(nombre)}" title="${etiqueta}"${deshabilitado ? ' disabled' : ''}>${icon(dir === 'up' ? 'chevronUp' : 'chevronDown')}</button>`;
+  return `${boton('up', 'Subir', i === 0)}${boton('down', 'Bajar', i === total - 1)}`;
+}
+
+function ordenDeLaFotoMarkup(itemId) {
+  const i = galleryItemsCache.findIndex((x) => x.id === itemId);
+  if (i < 0) return '';
+  const total = galleryItemsCache.length;
+  const boton = (dir, texto, deshabilitado) =>
+    `<button type="button" class="secondary small" data-action="gallery-move" data-tipo="item" data-clave="${escapeHtml(itemId)}" data-dir="${dir}"${deshabilitado ? ' disabled' : ''}>${texto}</button>`;
+  return `
+    <div class="hm-cms-field-group" data-gallery-orden>
+      <p class="hm-cms-label">Orden en la galería</p>
+      <p class="hm-cms-hint" role="status" aria-live="polite">Es la foto ${i + 1} de ${total}. Las primeras son las que se ven al entrar en /galeria.</p>
+      <div class="hm-cms-actions">
+        ${boton('first', 'Al principio', i === 0)}
+        ${boton('up', 'Antes', i === 0)}
+        ${boton('down', 'Después', i === total - 1)}
+        ${boton('last', 'Al final', i === total - 1)}
+      </div>
+    </div>`;
+}
+
+/**
+ * Mueve un elemento y guarda el orden completo: `reorder` numera las
+ * posiciones por el índice de lo que recibe, así que mandar solo dos
+ * elementos dejaría posiciones repetidas.
+ */
+export async function moverEnGaleria(boton) {
+  const { tipo, clave, dir } = boton.dataset;
+  const t = ORDEN[tipo];
+  if (!t) return;
+  if (tipo === 'item' && !galleryItemsCache.length) {
+    galleryItemsCache = (await api('/api/cms/gallery/items')).items || [];
+  }
+  const lista = [...t.lista()];
+  const i = lista.findIndex((x) => t.clave(x) === clave);
+  if (i < 0) return;
+  const destino = { up: i - 1, down: i + 1, first: 0, last: lista.length - 1 }[dir];
+  if (destino === undefined || destino < 0 || destino >= lista.length || destino === i) return;
+  const [movido] = lista.splice(i, 1);
+  lista.splice(destino, 0, movido);
+  boton.disabled = true;
+  await api(t.ruta, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(t.cuerpo(lista.map(t.clave))),
+  });
+
+  if (tipo === 'item') {
+    galleryItemsCache = lista;
+    const bloque = panelBody.querySelector('[data-gallery-orden]');
+    if (bloque) {
+      bloque.outerHTML = ordenDeLaFotoMarkup(clave);
+      const nuevo = panelBody.querySelector(
+        `[data-gallery-orden] [data-dir="${dir}"]:not([disabled])`
+      );
+      (nuevo || panelBody.querySelector('[data-gallery-orden] button:not([disabled])'))?.focus();
+    }
+    return;
+  }
+  if (tipo === 'cat') await loadGalleryCategories({ autofocus: false });
+  else await loadGalleryAlbums({ autofocus: false });
+  // El foco sigue al elemento movido, para poder pulsar varias veces seguidas.
+  const selector = `[data-action="gallery-move"][data-tipo="${tipo}"][data-clave="${CSS.escape(clave)}"]`;
+  const mismo = panelBody.querySelector(`${selector}[data-dir="${dir}"]:not([disabled])`);
+  (mismo || panelBody.querySelector(`${selector}:not([disabled])`))?.focus();
+}
+
+export async function loadGalleryCategories({ autofocus = true } = {}) {
   if (!(await ensureSession())) return;
   setPanelTitle('Galería');
-  openPanel('<p class="hm-cms-muted">Cargando categorías...</p>');
+  openPanel('<p class="hm-cms-muted">Cargando categorías...</p>', { autofocus });
   try {
     const data = await api('/api/cms/gallery/categories');
     const cats = data.items || [];
     galleryCategoriesListCache = cats;
-    openPanel(`
+    openPanel(
+      `
       <div class="hm-cms-stack">
         ${pestanasGaleria('gallery-cats')}
         <div class="hm-cms-toolbar">
@@ -151,12 +254,13 @@ export async function loadGalleryCategories() {
         <div class="hm-cms-collection-list">
           ${cats
             .map(
-              (cat) => `
+              (cat, i) => `
             <div class="hm-cms-collection-item" data-gallery-category-row data-gallery-search-text="${escapeHtml(`${cat.name} ${cat.slug}`)}" data-cat-id="${escapeHtml(cat.id)}">
               <div class="hm-cms-collection-info">
                 <span class="hm-cms-collection-title">${escapeHtml(cat.name)}</span>
               </div>
               <div class="hm-cms-collection-actions">
+                ${botonesDeOrden('cat', cat.id, cat.name, i, cats.length)}
                 <button type="button" class="secondary small" data-action="gallery-edit-cat" data-cat-id="${escapeHtml(cat.id)}">${icon('pencil')}Editar</button>
                 <button type="button" class="icon ghost destructive" data-action="gallery-delete-cat" data-cat-id="${escapeHtml(cat.id)}" data-cat-name="${escapeHtml(cat.name)}" aria-label="Eliminar categoría: ${escapeHtml(cat.name)}" title="Eliminar categoría: ${escapeHtml(cat.name)}">${icon('trash')}</button>
               </div>
@@ -167,7 +271,9 @@ export async function loadGalleryCategories() {
         </div>
         <p class="hm-cms-empty" data-gallery-category-empty hidden></p>
       </div>
-    `);
+    `,
+      { autofocus }
+    );
     filterGalleryCategories(galleryCategorySearch);
   } catch (error) {
     openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
@@ -196,7 +302,7 @@ export async function showGalleryCategoryForm(catId = null) {
       <details class="hm-cms-advanced">
         <summary>Opciones avanzadas</summary>
         <label>Identificador en la dirección
-          <input name="slug" value="${escapeHtml(cat.slug)}" pattern="[a-z0-9-]+" placeholder="Se genera a partir del nombre" />
+          <input name="slug" value="${escapeHtml(cat.slug)}" pattern="[a-z0-9\\-]+" placeholder="Se genera a partir del nombre" />
         </label>
         <p class="hm-cms-hint">Se usa en la dirección de los filtros. Solo minúsculas, números y guiones.</p>
       </details>
@@ -224,15 +330,16 @@ export async function showGalleryCategoryForm(catId = null) {
   }
 }
 
-export async function loadGalleryAlbums() {
+export async function loadGalleryAlbums({ autofocus = true } = {}) {
   if (!(await ensureSession())) return;
   setPanelTitle('Galería');
-  openPanel('<p class="hm-cms-muted">Cargando álbumes...</p>');
+  openPanel('<p class="hm-cms-muted">Cargando álbumes...</p>', { autofocus });
   try {
     const data = await api('/api/cms/gallery/albums');
     const albums = data.items || [];
     galleryAlbumsListCache = albums;
-    openPanel(`
+    openPanel(
+      `
       <div class="hm-cms-stack">
         ${pestanasGaleria('gallery-albums')}
         <p class="hm-cms-hint">Un álbum agrupa las fotos de una obra; su nombre es el que ve el visitante. Las fotos se asignan desde «Gestionar imágenes».</p>
@@ -247,13 +354,14 @@ export async function loadGalleryAlbums() {
         <div class="hm-cms-collection-list">
           ${albums
             .map(
-              (album) => `
+              (album, i) => `
             <div class="hm-cms-collection-item" data-gallery-album-row data-gallery-search-text="${escapeHtml(`${album.name} ${album.slug}`)}" data-album-slug="${escapeHtml(album.slug)}">
               <div class="hm-cms-collection-info">
                 <span class="hm-cms-collection-title">${escapeHtml(album.name)}</span>
                 <span class="hm-cms-collection-meta">${album.itemCount} ${album.itemCount === 1 ? 'foto' : 'fotos'}</span>
               </div>
               <div class="hm-cms-collection-actions">
+                ${botonesDeOrden('album', album.slug, album.name, i, albums.length)}
                 <button type="button" class="secondary small" data-action="gallery-edit-album" data-album-slug="${escapeHtml(album.slug)}">${icon('pencil')}Editar</button>
                 <button type="button" class="icon ghost destructive" data-action="gallery-delete-album" data-album-slug="${escapeHtml(album.slug)}" data-album-name="${escapeHtml(album.name)}" aria-label="Eliminar álbum: ${escapeHtml(album.name)}" title="Eliminar álbum: ${escapeHtml(album.name)}">${icon('trash')}</button>
               </div>
@@ -264,7 +372,9 @@ export async function loadGalleryAlbums() {
         </div>
         <p class="hm-cms-empty" data-gallery-album-empty hidden></p>
       </div>
-    `);
+    `,
+      { autofocus }
+    );
     filterGalleryAlbums(galleryAlbumSearch);
   } catch (error) {
     openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
@@ -293,7 +403,7 @@ export async function showGalleryAlbumForm(albumSlug = null) {
       <details class="hm-cms-advanced" ${albumSlug ? '' : 'open'}>
         <summary>Enlace con el proyecto</summary>
         <label>Identificador del proyecto
-          <input name="slug" value="${escapeHtml(album.slug)}" pattern="[a-z0-9-]+" placeholder="Se genera a partir del nombre" ${albumSlug ? 'readonly' : ''} />
+          <input name="slug" value="${escapeHtml(album.slug)}" pattern="[a-z0-9\\-]+" placeholder="Se genera a partir del nombre" ${albumSlug ? 'readonly' : ''} />
         </label>
         <p class="hm-cms-hint">${
           albumSlug
@@ -490,6 +600,11 @@ export async function showGalleryItemForm(itemId = null) {
     ]);
     if (itemId) {
       item = await api(`/api/cms/gallery/items/${encodeURIComponent(itemId)}`);
+      // Para «Orden en la galería» hace falta la lista entera; abierta desde
+      // la página (no desde la cuadrícula) aún no está cargada.
+      if (!galleryItemsCache.some((x) => x.id === itemId)) {
+        galleryItemsCache = (await api('/api/cms/gallery/items')).items || [];
+      }
     }
   } catch {
     /* use defaults */
@@ -539,6 +654,7 @@ export async function showGalleryItemForm(itemId = null) {
         <input name="featured" type="checkbox" ${item.featured ? 'checked' : ''} />
         Destacada
       </label>
+      ${itemId ? ordenDeLaFotoMarkup(itemId) : ''}
       ${
         itemId
           ? `<div class="hm-cms-edit-actions-danger">

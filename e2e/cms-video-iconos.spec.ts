@@ -61,7 +61,10 @@ test.describe('Video de cabecera', () => {
     await abrirConEditor(page, '/servicios/limpiarrejas');
 
     const video = page.locator('video[data-cms-type="video"]');
-    await expect(video).toHaveAttribute('src', '/videos/limpiarrejas-hero.mp4');
+    // P2-35: el archivo del CMS va en `data-src`; se reproduce la variante que
+    // corresponda al ancho.
+    await expect(video).toHaveAttribute('data-src', '/videos/limpiarrejas-hero.mp4');
+    await expect(video).toHaveAttribute('src', /\/videos\/limpiarrejas-hero(-\d+)?\.mp4$/);
     await video.click();
 
     const panel = page.locator('.hm-cms-panel.open');

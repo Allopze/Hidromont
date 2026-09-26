@@ -71,8 +71,16 @@ export const config = {
     // Only enable if a trusted reverse proxy sits in front of this server and
     // sets X-Forwarded-For itself; otherwise any client can forge that header
     // to bypass the rate limit or pollute the audit log with a fake IP.
-    trustProxy: process.env.CMS_TRUST_PROXY === '1',
+    //
+    // P3-01 (auditoría 2026-09): `true` confiaba en toda la cadena de
+    // X-Forwarded-For. Solo se confía en el proxy local (Caddy, en el mismo
+    // VPS); si alguna vez se pusiera otro delante que añada al encabezado en
+    // vez de sustituirlo, un XFF falso seguiría sin poder cambiar la IP.
+    trustProxy: process.env.CMS_TRUST_PROXY === '1' ? ['127.0.0.1', '::1'] : false,
     sessionDays: intFromEnv('CMS_SESSION_DAYS', 7),
+    // P3-01: una sesión que no se usa en este tiempo caduca aunque no hayan
+    // pasado los días de arriba. 24 h: el día siguiente se vuelve a entrar.
+    sessionIdleHours: intFromEnv('CMS_SESSION_IDLE_HOURS', 24),
     uploadMaxBytes: intFromEnv('CMS_UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
     // Los videos no se recomprimen: el tope es más alto que el de las fotos, y
     // Caddy tiene que aceptarlo también (request_body del editor).
@@ -89,12 +97,20 @@ export const config = {
       ? path.resolve(rootDir, process.env.CMS_UPLOAD_DIR)
       : path.join(rootDir, 'uploads', 'cms'),
     publicUploadBase: '/uploads/cms',
-    publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build',
+    // P2-05 (auditoría 2026-09): `npm run build` deja que Astro vacíe dist/
+    // antes de generar; un fallo a mitad dejaba el sitio sin páginas. El
+    // valor por defecto es el build atómico.
+    publishCheckCommand: process.env.CMS_PUBLISH_CHECK_COMMAND ?? 'npm run build:log',
     // A-6: 120 s bastaban para `astro check`, pero no para un `npm run build`
     // completo con procesado de imágenes, que es lo que hace falta para que
     // publicar actualice de verdad el sitio servido. Configurable porque el
     // tiempo depende de la máquina: en hosting compartido es bastante mayor.
     publishTimeoutMs: intFromEnv('CMS_PUBLISH_TIMEOUT_MS', 600_000),
+    // P3-04: se leía suelta en exportService. Es un getter porque las pruebas y
+    // quien lo necesite a mano la fijan en el momento, no al arrancar.
+    get allowGalleryShrink(): boolean {
+      return process.env.CMS_ALLOW_GALLERY_SHRINK === '1';
+    },
   },
   admin: {
     email: process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local',

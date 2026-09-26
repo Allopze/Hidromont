@@ -192,6 +192,8 @@ export const FIELD_LABELS: Record<string, string> = {
   subject: 'Asunto del correo que se envía',
   fromName: 'Remitente del correo que se envía',
   submitLabel: 'Texto del botón de envío',
+  mobileMenuOpenLabel:
+    'Nombre del botón que abre el menú en el móvil (lo leen los lectores de pantalla)',
 
   // ── Galería ──
   showFilters: 'Mostrar los filtros (true o false)',
@@ -248,6 +250,17 @@ const FAMILIAS: Record<string, string> = {
 };
 
 /** camelCase o kebab-case → «Frase legible». */
+/** Los campos del formulario de contacto, por su nombre en pantalla. */
+const CAMPOS_DEL_FORMULARIO: Record<string, string> = {
+  name: 'Nombre',
+  company: 'Empresa',
+  email: 'Correo',
+  phone: 'Teléfono',
+  service: 'Servicio',
+  message: 'Mensaje',
+  submit: 'Enviar',
+};
+
 function humanizar(key: string): string {
   const conEspacios = key
     .replace(/[-_.]+/g, ' ')
@@ -297,18 +310,31 @@ export function fieldLabel(key: string): string {
     key
   );
   if (formulario) {
-    const campo = humanizar(formulario[1]).toLowerCase();
+    // P2-22 (auditoría 2026-09): salían «Rótulo del campo company» o «Error si
+    // generic es demasiado corto», con la clave en inglés a la vista.
+    const campo = CAMPOS_DEL_FORMULARIO[formulario[1]];
+    const nombre = campo ? `«${campo}»` : humanizar(formulario[1]).toLowerCase();
+    if (formulario[1] === 'generic') {
+      switch (formulario[2]) {
+        case 'RequiredError':
+          return 'Error si un campo obligatorio está vacío';
+        case 'InvalidError':
+          return 'Error si un campo no es válido';
+        case 'TooShortError':
+          return 'Error si un campo es demasiado corto';
+      }
+    }
     switch (formulario[2]) {
       case 'Label':
-        return `Rótulo del campo ${campo}`;
+        return `Nombre del campo ${nombre}`;
       case 'Placeholder':
-        return `Texto de ejemplo del campo ${campo}`;
+        return `Texto de ejemplo del campo ${nombre}`;
       case 'RequiredError':
-        return `Error si ${campo} está vacío`;
+        return `Error si ${nombre} está vacío`;
       case 'InvalidError':
-        return `Error si ${campo} no es válido`;
+        return `Error si ${nombre} no es válido`;
       default:
-        return `Error si ${campo} es demasiado corto`;
+        return `Error si ${nombre} es demasiado corto`;
     }
   }
 

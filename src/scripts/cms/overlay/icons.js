@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Íconos del panel, como SVG en línea.
  *

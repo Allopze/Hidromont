@@ -255,9 +255,18 @@ const a11y = {
       height?: number;
     }
 
+    /*
+     * Lo que abre el visor: las tarjetas del muro de /galeria y, en las fichas
+     * de servicio y proyecto (P3-13), las fotos de su galería. Estas llevan
+     * `data-visor` y no `.gallery-card`, porque con el editor abierto una
+     * `.gallery-card` abre la ficha de la galería, no el editor de la foto.
+     */
+    const TARJETA = '.gallery-card, [data-visor]';
+
     let images: LightboxImage[] = [];
     let currentIndex = 0;
     let previousFocus: HTMLElement | null = null;
+    let previousFocusId: string | null = null;
 
     // ── GAL-16: estado del visor en la URL ──
     //
@@ -275,16 +284,37 @@ const a11y = {
     /** Evita que popstate, al deshacer nuestra propia entrada, reabra el visor. */
     let suppressUrlSync = false;
 
+    /*
+     * P2-33 (auditoría 2026-09): la foto va en la URL por su id, no por su
+     * posición. `?foto=30` dependía del filtro activo y de cuántas tarjetas
+     * hubiera pintadas, así que abría otra foto. Los enlaces viejos, con un
+     * número, se siguen entendiendo como posición.
+     */
+    function fotoParaUrl(): string {
+      return images[currentIndex]?.id || String(currentIndex + 1);
+    }
+
+    function indiceDeFoto(valor: string | null): number {
+      if (!valor) return -1;
+      const porId = images.findIndex((i) => i.id === valor);
+      if (porId !== -1) return porId;
+      if (/^\d+$/.test(valor)) {
+        const n = Number.parseInt(valor, 10) - 1;
+        return n >= 0 && n < images.length ? n : -1;
+      }
+      return -1;
+    }
+
     function syncUrl() {
       if (suppressUrlSync || !ownsHistoryEntry) return;
       const url = new URL(location.href);
-      url.searchParams.set('foto', String(currentIndex + 1));
+      url.searchParams.set('foto', fotoParaUrl());
       history.replaceState(history.state, '', url);
     }
 
     function pushOpenState() {
       const url = new URL(location.href);
-      url.searchParams.set('foto', String(currentIndex + 1));
+      url.searchParams.set('foto', fotoParaUrl());
       history.pushState({ lightbox: true }, '', url);
       ownsHistoryEntry = true;
     }
@@ -320,9 +350,12 @@ const a11y = {
     // rendered in PageLayout's "overlay" slot) — never an ancestor of the modal
     // itself, or the modal would disable its own buttons.
     function getInertTargets(): HTMLElement[] {
+      // P3-10: también el pie; con el visor abierto, sus enlaces seguían
+      // alcanzables y un lector de pantalla los leía detrás del diálogo.
       const targets = [
         document.querySelector('header'),
         document.querySelector('main') || document.getElementById('page-content'),
+        document.querySelector('footer'),
       ];
       return targets.filter((el): el is HTMLElement => el !== null);
     }
@@ -384,7 +417,7 @@ const a11y = {
         }
       }
 
-      const cards = document.querySelectorAll('.gallery-card');
+      const cards = document.querySelectorAll(TARJETA);
       return Array.from(cards).map((card) => {
         const el = card as HTMLElement;
         const imgEl = el.querySelector('img') as HTMLImageElement;
@@ -439,8 +472,14 @@ const a11y = {
       // Load new image
       const tempImg = new Image();
       tempImg.onload = () => {
-        img.src = data.src;
+        // Si mientras cargaba se pasó a otra foto, esta llega tarde: pintarla
+        // dejaba el contador en «30 / 173» con la imagen de la 1 (P2-33), o
+        // una foto anterior al avanzar deprisa con las flechas.
+        if (currentIndex !== index) return;
+        img.sizes = SIZES_VISOR;
         if (data.srcset) img.srcset = data.srcset;
+        else img.removeAttribute('srcset');
+        img.src = data.src;
         img.alt = data.alt;
         img.width = data.width;
         img.height = data.height;
@@ -455,22 +494,36 @@ const a11y = {
         });
       };
       tempImg.onerror = () => {
+        if (currentIndex !== index) return;
         skeleton.style.display = 'none';
         img.style.opacity = '1';
         if (!prefersReducedMotion) img.style.transform = 'scale(1)';
       };
-      tempImg.src = data.src;
+      prepararCarga(tempImg, data);
 
       // Preload neighbors
       preloadNeighbor(index - 1);
       preloadNeighbor(index + 1);
     }
 
+    /*
+     * P2-37 (auditoría 2026-09): la precarga pedía un candidato del srcset y
+     * el <img> visible otro (en móvil, 1024w precargada y 1600w mostrada): cada
+     * foto se bajaba dos veces y «siguiente» tardaba 2 s. Las tres —la visible,
+     * la que se carga y las vecinas— usan el mismo `sizes` y `srcset`, así que
+     * el navegador elige el mismo archivo y lo sirve de su caché.
+     */
+    const SIZES_VISOR = '(min-width: 768px) 90vw, 100vw';
+
+    function prepararCarga(imagen: HTMLImageElement, data: LightboxImage) {
+      imagen.sizes = SIZES_VISOR;
+      if (data.srcset) imagen.srcset = data.srcset;
+      imagen.src = data.src;
+    }
+
     function preloadNeighbor(index: number) {
       if (index < 0 || index >= images.length) return;
-      const neighbor = new Image();
-      neighbor.src = images[index].src;
-      if (images[index].srcset) neighbor.srcset = images[index].srcset;
+      prepararCarga(new Image(), images[index]);
     }
 
     function open(cardElement: HTMLElement) {
@@ -492,8 +545,13 @@ const a11y = {
       // flight if the user reopens quickly; cancel it so it can't fire late.
       cancelPendingClose();
 
-      // Save focus to restore on close
-      previousFocus = document.activeElement as HTMLElement;
+      // Save focus to restore on close. P1-12 (auditoría 2026-09): se guardaba
+      // `document.activeElement`, que en Safari es `body` tras un clic (no
+      // enfoca botones al pulsarlos), y que deja de existir si la galería
+      // repinta el muro con el visor abierto. Se recuerda la foto que lo abrió
+      // y al cerrar se busca por su id.
+      previousFocus = cardElement;
+      previousFocusId = cardElement.dataset.itemId ?? null;
 
       setBackgroundInert(true);
 
@@ -506,8 +564,14 @@ const a11y = {
       pushOpenState();
       showImage(currentIndex);
 
-      // Move focus into dialog
-      requestAnimationFrame(() => closeBtn.focus());
+      // Move focus into dialog — solo si sigue abierto: cerrarlo antes del
+      // siguiente fotograma (Escape inmediato) dejaba el foco en el botón de
+      // un visor ya oculto, es decir, en <body>.
+      requestAnimationFrame(() => {
+        if (!lightbox!.classList.contains('hidden') && lightbox!.style.opacity !== '0') {
+          closeBtn.focus();
+        }
+      });
     }
 
     /**
@@ -522,10 +586,18 @@ const a11y = {
       // JS-2 fix: the interactive cleanup happens synchronously and
       // unconditionally — it must never depend on a transitionend firing.
       setBackgroundInert(false);
-      if (previousFocus) {
-        previousFocus.focus();
-        previousFocus = null;
+      const vuelta =
+        (previousFocusId &&
+          document.querySelector<HTMLElement>(
+            `:is(${TARJETA})[data-item-id="${CSS.escape(previousFocusId)}"]`
+          )) ||
+        (previousFocus?.isConnected ? previousFocus : null);
+      if (vuelta) {
+        vuelta.focus({ preventScroll: true });
+        vuelta.scrollIntoView({ block: 'nearest' });
       }
+      previousFocus = null;
+      previousFocusId = null;
 
       if (fromHistory) ownsHistoryEntry = false;
       else clearUrlState();
@@ -562,12 +634,29 @@ const a11y = {
     }
 
     // ── Event delegation: click on gallery cards ──
+    // Con el editor montado (deja `data-cms-listo` en el body), pulsar una foto
+    // editable abre su editor, no el visor. En el build público no hay marcas
+    // `data-cms-entry`, así que ahí esto nunca se cumple.
+    const esEditable = (el: Element) =>
+      document.body.hasAttribute('data-cms-listo') && Boolean(el.closest('[data-cms-entry]'));
+
     document.addEventListener('click', (e) => {
-      const card = (e.target as HTMLElement)?.closest?.('.gallery-card') as HTMLElement;
-      if (card) {
+      const card = (e.target as HTMLElement)?.closest?.(TARJETA) as HTMLElement;
+      if (card && !esEditable(e.target as Element)) {
         e.preventDefault();
         open(card);
       }
+    });
+
+    // P3-13: en las fichas la tarjeta es un `div role="button"` (envuelve la
+    // foto editable): Intro y Espacio la abren como a un botón.
+    document.addEventListener('keydown', (e) => {
+      const card = (e.target as HTMLElement)?.closest?.(
+        '[data-visor][role="button"]'
+      ) as HTMLElement;
+      if (!card || e.target !== card || (e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault();
+      open(card);
     });
 
     // ── Lightbox button handlers ──
@@ -599,37 +688,47 @@ const a11y = {
       } else if (!isOpen && wantsOpen) {
         openFromUrl(params);
       } else if (isOpen && wantsOpen) {
-        const index = Number.parseInt(params.get('foto') ?? '1', 10) - 1;
-        if (Number.isFinite(index) && index >= 0 && index < images.length) showImage(index);
+        const index = indiceDeFoto(params.get('foto'));
+        if (index !== -1) showImage(index);
       }
     });
 
     function openFromUrl(params: URLSearchParams): boolean {
-      const foto = Number.parseInt(params.get('foto') ?? '', 10);
-      if (!Number.isFinite(foto) || foto < 1) return false;
-
-      const first = document.querySelector('.gallery-card') as HTMLElement | null;
-      if (!first) return false;
-      open(first);
-
-      const index = foto - 1;
-      if (index < images.length) showImage(index);
+      images = collectImages();
+      const valor = params.get('foto');
+      const index = indiceDeFoto(valor);
+      if (index === -1) return false;
+      const id = images[index].id;
+      const tarjeta =
+        (id &&
+          document.querySelector<HTMLElement>(
+            `:is(${TARJETA})[data-item-id="${CSS.escape(id)}"]`
+          )) ||
+        document.querySelector<HTMLElement>(TARJETA);
+      if (!tarjeta) return false;
+      open(tarjeta);
+      showImage(index);
       return true;
     }
 
-    // Apertura directa desde una URL compartida. Reemplaza la entrada que
-    // open() empuja, para que Atrás lleve a la página anterior y no a la
-    // misma URL con el visor cerrado.
+    // Apertura directa desde una URL compartida. En /galeria los datos de
+    // todas las fotos llegan después de este script (la página rellena
+    // `#lightbox-data` y avisa con `gallery:ready`): abrir antes veía solo las
+    // 24 primeras tarjetas y abría otra foto. Si la foto no existe, no se
+    // toca la URL.
     const initialParams = new URLSearchParams(location.search);
     if (initialParams.has('foto')) {
-      requestAnimationFrame(() => {
-        const opened = openFromUrl(initialParams);
-        if (!opened) {
-          const url = new URL(location.href);
-          url.searchParams.delete('foto');
-          history.replaceState(null, '', url);
-        }
-      });
+      const datos = document.getElementById('lightbox-data');
+      const vacio = !datos?.textContent || datos.textContent.trim() === '[]';
+      const esperar =
+        Boolean(document.getElementById('photo-wall')) && vacio && !datos?.dataset.listo;
+      if (esperar) {
+        document.addEventListener('gallery:ready', () => openFromUrl(initialParams), {
+          once: true,
+        });
+      } else {
+        requestAnimationFrame(() => openFromUrl(initialParams));
+      }
     }
 
     // ── Keyboard ──

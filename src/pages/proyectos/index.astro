@@ -252,6 +252,7 @@ const filterItems = [
 
   <script>
     import { nextBatchSize, paginateMatches } from '../../utils/progressiveList';
+    import { coincide, normalizarBusqueda } from '../../utils/busqueda';
 
     // UIUX-13 fix: real client-side filtering for the category pills — see
     // ProjectFilters.astro for the markup/a11y side of this change.
@@ -281,21 +282,33 @@ const filterItems = [
       let searchQuery = '';
       let visibleLimit = PAGE_SIZE;
 
-      const normalize = (value: string) =>
-        value
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase();
+      // P2-30: la misma normalización que el índice (ProjectTable.astro).
+      const normalize = normalizarBusqueda;
+
+      /*
+       * P2-30: la búsqueda y el filtro viven en la dirección (`?q=`, `?cat=`),
+       * así que se pueden enlazar —las fichas de servicio lo hacen— y volver
+       * con «Atrás» deja la lista como estaba. Antes el campo conservaba el
+       * texto pero la lista volvía a «Todos».
+       */
+      function guardarEnLaDireccion(): void {
+        const url = new URL(window.location.href);
+        const q = search?.value.trim() ?? '';
+        if (q) url.searchParams.set('q', q);
+        else url.searchParams.delete('q');
+        if (activeFilter !== 'todos') url.searchParams.set('cat', activeFilter);
+        else url.searchParams.delete('cat');
+        history.replaceState(history.state, '', url);
+      }
 
       function updateProjects(): void {
         const result = paginateMatches(
           desktopItems,
           (item) => {
             const category = item.dataset.projectCategory || '';
-            const text = normalize(item.dataset.projectSearch || '');
+            const text = item.dataset.projectSearch || '';
             return (
-              (activeFilter === 'todos' || category === activeFilter) &&
-              (!searchQuery || text.includes(searchQuery))
+              (activeFilter === 'todos' || category === activeFilter) && coincide(text, searchQuery)
             );
           },
           visibleLimit
@@ -329,7 +342,9 @@ const filterItems = [
             loadMoreWrap?.dataset.mostrando || 'Mostrando {visibles} de {total} proyectos.'
           )
             .replace('{visibles}', String(result.visible.length))
-            .replace('{total}', String(result.total));
+            .replace('{total}', String(result.total))
+            // P3-10: «Mostrando 1 de 1 proyectos.»
+            .replace(/\bproyectos\b(?=\.?$)/, result.total === 1 ? 'proyecto' : 'proyectos');
         }
       }
 
@@ -349,6 +364,7 @@ const filterItems = [
         });
 
         updateProjects();
+        guardarEnLaDireccion();
       }
 
       btnArray.forEach((btn) => {
@@ -380,6 +396,7 @@ const filterItems = [
         searchQuery = normalize(search.value.trim());
         visibleLimit = PAGE_SIZE;
         updateProjects();
+        guardarEnLaDireccion();
       });
 
       resetFilters?.addEventListener('click', () => {
@@ -390,11 +407,41 @@ const filterItems = [
       });
 
       loadMore?.addEventListener('click', () => {
+        // P2-31 (auditoría 2026-09): con el último lote el botón se oculta y el
+        // foco caía a `body`. Se lleva a la primera fila recién mostrada, que
+        // es además por donde sigue leyendo quien usa teclado.
+        const antes = new Set(
+          allRenderedItems.filter((item) => !item.hidden).map((item) => item.dataset.projectKey)
+        );
         visibleLimit += PAGE_SIZE;
         updateProjects();
+        const nueva = allRenderedItems.find(
+          (item) =>
+            !item.hidden && !antes.has(item.dataset.projectKey) && item.offsetParent !== null
+        );
+        const destino = nueva?.querySelector<HTMLElement>('a[href]') ?? nueva;
+        if (destino) {
+          if (destino === nueva && !nueva.hasAttribute('tabindex')) nueva.tabIndex = -1;
+          destino.focus();
+        }
       });
 
-      updateProjects();
+      /** Estado inicial: la dirección manda; si no trae nada, lo que el navegador restauró. */
+      function restaurarEstado(): void {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('q');
+        if (search && q !== null) search.value = q;
+        searchQuery = normalize(search?.value.trim() ?? '');
+        const cat = params.get('cat');
+        const existe = btnArray.some((b) => b.getAttribute('data-filter') === cat);
+        activateFilter(cat && existe ? cat : activeFilter);
+      }
+
+      restaurarEstado();
+      // Volver con «Atrás» desde una ficha puede sacar la página de la caché.
+      window.addEventListener('pageshow', (e) => {
+        if (e.persisted) restaurarEstado();
+      });
     })();
   </script>
 

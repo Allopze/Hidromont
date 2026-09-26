@@ -21,7 +21,7 @@ import { entornoDePublicacion } from './entorno';
 import { icon } from './icons';
 import { setGlobalState } from './shell';
 import { duracion, haceCuanto, reloj } from './tiempo';
-import { refrescarPendientes } from './pendientes';
+import { limpiarMarcasSinPublicar, refrescarPendientes } from './pendientes';
 
 /**
  * A-7/A-9: lo que el export dejó fuera y lo que volvió al texto por
@@ -32,7 +32,12 @@ import { refrescarPendientes } from './pendientes';
 export function exportNoticeMarkup(exported) {
   const omitidas = exported?.skipped || [];
   const revertidas = exported?.revertedToFallback || [];
-  if (!omitidas.length && !revertidas.length) return '';
+  // P1-05 (auditoría 2026-09): imágenes o videos que la página pide y no
+  // existen. Antes se publicaban rotos sin que nadie se enterara.
+  const faltantes = exported?.missingFiles || [];
+  // P3-08: fotos de la galería cuya imagen se borró.
+  const sinImagen = Number(exported?.galeriaSinImagen) || 0;
+  if (!omitidas.length && !revertidas.length && !faltantes.length && !sinImagen) return '';
 
   const lista = (titulo, filas) =>
     filas.length
@@ -59,6 +64,15 @@ export function exportNoticeMarkup(exported) {
         'En borrador: el sitio muestra el texto por defecto del código',
         revertidas.map((e) => `<li>${escapeHtml(e.title)}</li>`)
       )}
+      ${lista(
+        'Fotos o videos que ya no existen (se verán rotos: elige otros):',
+        faltantes.map((f) => `<li>${escapeHtml(f)}</li>`)
+      )}
+      ${
+        sinImagen
+          ? `<p><strong>${sinImagen === 1 ? '1 foto de la galería se quedó' : `${sinImagen} fotos de la galería se quedaron`} sin imagen y no sale${sinImagen === 1 ? '' : 'n'} en el sitio.</strong> Búscala${sinImagen === 1 ? '' : 's'} en «Galería» para ponerle${sinImagen === 1 ? '' : 's'} otra imagen o quitarla${sinImagen === 1 ? '' : 's'}.</p>`
+          : ''
+      }
       </div>
     </div>
   `;
@@ -139,6 +153,10 @@ export async function abrirPublicacion() {
 }
 
 let publicando = false;
+/** ¿Hay una publicación en marcha? La barra no abre otras vistas mientras. */
+export function estaPublicando() {
+  return publicando;
+}
 
 function resultadoCorrecto(result, conOmisiones, tardo) {
   const entorno = publishEnvironment();
@@ -225,9 +243,11 @@ export async function publicar() {
   const tardo = duracion(Date.now() - inicio);
   const job = result?.job;
   const bien = !error && job?.status === 'succeeded';
+  if (bien) limpiarMarcasSinPublicar();
   const conOmisiones =
     (result?.exported?.skipped || []).length > 0 ||
-    (result?.exported?.revertedToFallback || []).length > 0;
+    (result?.exported?.revertedToFallback || []).length > 0 ||
+    (result?.exported?.missingFiles || []).length > 0;
 
   setPanelTitle(bien ? 'Publicación terminada' : 'No se pudo publicar');
   openPanel(`
@@ -241,6 +261,7 @@ export async function publicar() {
                 <h3>No se pudo publicar</h3>
                 <p>El sitio sigue mostrando la versión anterior y no se perdió nada de lo guardado. Puedes intentarlo otra vez; si vuelve a fallar, avisa a quien administra el CMS.</p>
                 ${error ? `<p class="hm-cms-hint">${escapeHtml(error.message)}</p>` : ''}
+                ${error?.job ? `<p class="hm-cms-muted">Identificador para soporte: <code>${escapeHtml(error.job)}</code></p>` : ''}
               </div>
             </div>`
       }

@@ -29,17 +29,27 @@ async function anchoElegido(page: import('@playwright/test').Page, selector: str
 }
 
 test.describe('imágenes del CMS', () => {
-  test('los logos de cliente piden el candidato pequeño, no el de 1.600 px', async ({ page }) => {
+  test('los logos de cliente no se sirven a 3.840 px', async ({ page }) => {
+    // P2-38: los PNG de origen llegaban a 3.840 px para pintarse a 119. Se
+    // redujeron (≤ 640 px, salvo alguno ya ligero de 800); con eso varios pesan
+    // menos que cualquier derivado y se sirven tal cual. Los que conservan
+    // derivados eligen el candidato pequeño gracias a `sizes`.
     await page.goto('/clientes');
-    const logo = 'img[srcset*="/gallery/derived/"]';
-    await expect(page.locator(logo).first()).toBeVisible();
-
-    const elegido = await anchoElegido(page, logo);
-    expect(elegido.srcset).toContain('/gallery/derived/');
-    // Medido: la caja son 119 px. Sin `sizes` el navegador asumiría el ancho de
-    // la ventana y se llevaría el candidato más grande.
-    expect(elegido.sizes).toBe('119px');
-    expect(elegido.ancho).toBe(640);
+    const logos = page.locator('.clientes-grid img');
+    await expect(logos.first()).toBeVisible();
+    const anchos = await logos.evaluateAll((imgs) =>
+      imgs.map((i) => ({
+        svg: /\.svg($|\?)/i.test((i as HTMLImageElement).currentSrc),
+        natural: (i as HTMLImageElement).naturalWidth,
+        sizes: i.getAttribute('sizes'),
+        srcset: i.getAttribute('srcset'),
+      }))
+    );
+    // Los SVG son vectoriales: su ancho «natural» no dice nada del peso.
+    for (const a of anchos.filter((x) => !x.svg)) {
+      expect(a.natural).toBeLessThanOrEqual(1024);
+      if (a.srcset) expect(a.sizes).toBe('119px');
+    }
   });
 
   test('las fotos de la galería de proyecto se adaptan a su columna', async ({ page }) => {

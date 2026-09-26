@@ -70,7 +70,13 @@ export const mobileMenuStyles = `
   .hm-cms-mobile-sheet {
     display: none;
   }
-  @media (max-width: 640px) {
+  /*
+   * P1-08 (auditoría 2026-09): la barra completa mide unos 1.070 px y el menú
+   * solo sustituía a la barra hasta 640 px, así que en una tablet (768, 800,
+   * 1024) «Publicar cambios» y «Más» quedaban fuera de la pantalla, sin forma
+   * de llegar a ellos. El menú compacto sirve igual con ratón.
+   */
+  @media (max-width: 1100px) {
     .hm-cms-bar {
       display: none;
     }
@@ -196,7 +202,8 @@ export function mountMobileMenu(): void {
   launcher.type = 'button';
   launcher.className = 'hm-cms-mobile-launcher';
   launcher.textContent = 'Editar sitio';
-  launcher.setAttribute('aria-label', 'Abrir menú para editar el sitio');
+  // P3-11: el nombre accesible empieza por lo que se ve (WCAG 2.5.3).
+  launcher.setAttribute('aria-label', 'Editar sitio: abrir el menú');
   launcher.setAttribute('aria-expanded', 'false');
   launcher.setAttribute('aria-controls', 'hm-cms-mobile-sheet');
   launcher.setAttribute('data-auth', '');

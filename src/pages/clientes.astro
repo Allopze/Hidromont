@@ -20,12 +20,10 @@ const clientesEntry = await getEntry('clientes', 'clientes');
 const LOGO_SIZES = '119px';
 // La lista sale del CMS (se edita en el recuadro de abajo, solo visible en el
 // editor); clientes.json queda de respaldo.
-const enOrdenDelCms = listaDeClientes(clientesEntry?.data?.items ?? []);
-const lista = [...enOrdenDelCms];
+// P2-11 (auditoría 2026-09): se pinta en el orden de la lista del CMS. Antes
+// se reordenaba alfabéticamente y el orden que fijaba quien edita no servía.
+const lista = listaDeClientes(clientesEntry?.data?.items ?? []);
 const cmsEditingEnabled = import.meta.env.DEV || import.meta.env.PUBLIC_ENABLE_CMS === '1';
-
-// Sort alphabetically by name for a neutral and orderly presentation
-lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
 
 // Unique logos for the hero marquee
 const heroLogos = [
@@ -125,7 +123,7 @@ for (const c of lista) {
               el logo de un cliente nuevo se añade pulsando su nombre arriba.
             </p>
             <EditableText as="ul" entry="clientes.lista" field="nombres" type="list">
-              {enOrdenDelCms.map((c) => (
+              {lista.map((c) => (
                 <li>{c.nombre}</li>
               ))}
             </EditableText>

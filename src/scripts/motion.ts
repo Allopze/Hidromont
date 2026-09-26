@@ -150,6 +150,7 @@ function initCounters(): void {
       const suffix = el.dataset.suffix ?? '';
       el.textContent = `${formatCount(el, target)}${suffix}`;
       el.style.visibility = 'visible';
+      el.dataset.contado = '1';
     });
     return;
   }
@@ -179,6 +180,8 @@ function initCounters(): void {
           const current = Math.round(progress * target);
           el.textContent = `${formatCount(el, current)}${suffix}`;
           if (elapsed < duration) requestAnimationFrame(tick);
+          // Marca de fin: las pruebas esperan a esto en vez de a un tiempo fijo.
+          else el.dataset.contado = '1';
         }
 
         requestAnimationFrame(tick);

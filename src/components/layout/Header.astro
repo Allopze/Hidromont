@@ -83,6 +83,7 @@ function isCurrent(href: string) {
               alt={cmsLogoAlt}
               width={1181}
               height={708}
+              widths={[140, 280, 400]}
               sizes={LOGO_SIZES}
               class={[
                 'h-16 md:h-20 w-auto object-contain transition-[filter] duration-[240ms] ease-standard',
@@ -231,7 +232,18 @@ function isCurrent(href: string) {
   </div>
 
   <!-- Mobile menu (siempre fondo blanco cuando se abre) -->
-  <div id="mobile-menu" class="lg:hidden hidden border-t border-border bg-white">
+  <!--
+    P1-10 (auditoría 2026-09): el panel no tenía scroll propio y el de la página
+    está bloqueado mientras está abierto, así que en horizontal o con
+    «Servicios» desplegado «Clientes», «Contacto» y el CTA quedaban fuera de la
+    pantalla sin forma de llegar a ellos. Se limita a lo que queda de pantalla
+    (lo ajusta el script al abrir; el valor de aquí es el respaldo sin JS).
+  -->
+  <div
+    id="mobile-menu"
+    class="lg:hidden hidden border-t border-border bg-white overflow-y-auto overscroll-contain"
+    style="max-height: calc(100dvh - 5rem);"
+  >
     <nav aria-label="Navegación móvil" class="px-4 py-4 space-y-1">
       {
         navItems.map((item) =>
@@ -350,8 +362,9 @@ function isCurrent(href: string) {
 <script>
   /* ── Desktop dropdown disclosure (UIUX-4) ────────────────────
      `.dropdown-toggle-btn` is separate from the navigation link. Pointer
-     entry, keyboard focus, click, and Escape all update `.is-open` through
-     this script, keeping the visible panel and aria-expanded in sync. */
+     entry, click (or Enter/Space on the chevron), and Escape update
+     `.is-open` through this script, keeping the visible panel and
+     aria-expanded in sync. */
   document.querySelectorAll<HTMLButtonElement>('[data-dropdown-toggle]').forEach((toggleBtn) => {
     const group = toggleBtn.closest<HTMLElement>('[data-dropdown-group]');
     const panel = group?.querySelector<HTMLElement>('.dropdown-panel');
@@ -378,9 +391,12 @@ function isCurrent(href: string) {
       if (!focusInside && !clickPinnedOpen) setOpen(false);
     });
 
+    // P2-29 (auditoría 2026-09): el foco ya no abre el panel. Al tabular,
+    // «Servicios» lo abría y saltárselo costaba diez pulsaciones (Shift+Tab lo
+    // volvía a abrir). Con teclado se abre con Intro o Espacio en el chevron;
+    // el ratón lo sigue abriendo al pasar por encima.
     group.addEventListener('focusin', () => {
       focusInside = true;
-      if (!escapeDismissed) setOpen(true);
     });
 
     toggleBtn.addEventListener('click', () => {
@@ -402,21 +418,26 @@ function isCurrent(href: string) {
       setOpen(opening);
     });
 
-    group.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Escape en `document`, no en el grupo: en Safari, pulsar el chevron deja
+    // el foco en `body` y el Escape del grupo no llegaba a oírse.
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && panel!.classList.contains('is-open')) {
         clickPinnedOpen = false;
         escapeDismissed = true;
         setOpen(false);
-        toggleBtn.focus();
+        if (group.contains(document.activeElement)) toggleBtn.focus();
       }
     });
 
     group.addEventListener('focusout', (e: FocusEvent) => {
       const next = e.relatedTarget as HTMLElement | null;
-      if (!next || !group.contains(next)) {
+      // `null` también es pulsar fuera o que Safari deje el foco en `body`;
+      // de eso se ocupa el clic en `document`. Aquí solo interesa tabular fuera.
+      if (next && !group.contains(next)) {
         focusInside = false;
         escapeDismissed = false;
-        if (!pointerInside && !clickPinnedOpen) setOpen(false);
+        clickPinnedOpen = false;
+        if (!pointerInside) setOpen(false);
       }
     });
 
@@ -450,6 +471,7 @@ function isCurrent(href: string) {
     document.body.classList.toggle('overflow-hidden', opening);
 
     if (opening) {
+      ajustarAlturaDelMenu();
       const firstLink = menu?.querySelector<HTMLElement>('a, summary, button');
       firstLink?.focus();
     } else {
@@ -457,12 +479,37 @@ function isCurrent(href: string) {
     }
   }
 
+  // El panel ocupa lo que queda de pantalla bajo la cabecera y se desplaza
+  // por dentro (P1-10). Se recalcula al girar el teléfono o cambiar el tamaño.
+  function ajustarAlturaDelMenu(): void {
+    if (!menu || menu.classList.contains('hidden')) return;
+    const arriba = menu.getBoundingClientRect().top;
+    menu.style.maxHeight = `${Math.max(160, window.innerHeight - arriba)}px`;
+  }
+  window.addEventListener('resize', ajustarAlturaDelMenu);
+
   toggle?.addEventListener('click', () => {
     setMobileMenuOpen(!!menu?.classList.contains('hidden'));
   });
 
-  menu?.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape') setMobileMenuOpen(false);
+  // P2-29: Escape cierra el menú aunque el foco haya salido del panel, y al
+  // pasar a escritorio (girar la tablet) se cierra y devuelve el scroll: antes
+  // la página quedaba congelada con `overflow-hidden` hasta recargar.
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
+      setMobileMenuOpen(false);
+    }
+  });
+  const escritorio = window.matchMedia('(min-width: 1024px)');
+  escritorio.addEventListener('change', (e) => {
+    if (e.matches && menu && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+      toggle?.setAttribute('aria-expanded', 'false');
+      toggle?.setAttribute('aria-label', 'Abrir menú de navegación');
+      iconMenu?.classList.remove('hidden');
+      iconClose?.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
   });
 
   /* ── Overlay scroll behaviour (home only) ────────────────── */

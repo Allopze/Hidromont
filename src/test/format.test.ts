@@ -35,3 +35,23 @@ describe('formatDiameters', () => {
     expect(formatDiameters('sin diametros')).toBe('sin diametros');
   });
 });
+
+describe('P3-09: notación de DN y Ø en el cuerpo en Markdown', () => {
+  it('se aplica a los textos y respeta el código', async () => {
+    const { default: rehypeDiametros } = await import('../utils/rehypeDiametros.mjs');
+    const arbol = {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'p',
+          children: [{ type: 'text', value: 'válvulas DN 2700 y Ø1600' }],
+        },
+        { type: 'element', tagName: 'code', children: [{ type: 'text', value: 'DN 2700' }] },
+      ],
+    };
+    rehypeDiametros()(arbol);
+    expect(arbol.children[0].children[0].value).toBe('válvulas DN 2.700 y Ø 1.600');
+    expect(arbol.children[1].children[0].value).toBe('DN 2700');
+  });
+});

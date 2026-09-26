@@ -1,7 +1,7 @@
 # Despliegue en VPS (Ubuntu + Caddy)
 
 Guía operativa para poner el sitio y el CMS en un VPS propio. Sustituye a
-[DESPLIEGUE-CPANEL.md](DESPLIEGUE-CPANEL.md): sin Passenger, sin FTP y sin el
+[DESPLIEGUE-CPANEL.md](historico/DESPLIEGUE-CPANEL.md): sin Passenger, sin FTP y sin el
 límite de tiempo del panel que hacía fallar el `npm install` y el «Publicar».
 
 **Arquitectura resultante**
@@ -154,6 +154,13 @@ también `-d` para cambiar el directorio remoto, que por defecto es
 `/srv/hidromont`. La primera vez, cuando el servicio aún no existe, el script
 avisa y sigue: es lo esperado.
 
+**Después de la primera vez, piénsalo dos veces.** El script sustituye la base
+del servidor, que es donde el cliente edita. Si el servidor ya tiene una base,
+muestra la fecha de la última edición de cada lado, avisa si la del servidor es
+más nueva y pide escribir `SOBRESCRIBIR`; antes de subir nada guarda la base
+remota en `cms/data/backups/antes-de-sync-<fecha>-*` del servidor. `--forzar`
+salta solo la confirmación.
+
 El script hace la copia con `npm run cms:backup` en vez de un `rsync` directo
 del `.sqlite`: la base va en modo WAL y copiar solo ese archivo deja fuera las
 últimas escrituras.
@@ -291,6 +298,27 @@ si el despliegue sale mal, `git log` del servidor dice exactamente qué hay.
 | `npm run deploy -- -d /otra/ruta`     | otro directorio (por defecto `/srv/hidromont`)       |
 | `npm run deploy -- --ligero`          | compila sin `astro check`, el paso más caro (907 MB) |
 
+**Dos perfiles del sitio.** Con `PUBLIC_ENABLE_CMS=1` en el `.env`,
+`npm run build:log` (el que usan «Publicar» y `npm run deploy`) compila dos
+veces: `dist/` sin nada del editor, que sirve `hidromontchile.cl`, y
+`dist-editor/` con el editor, que sirve `editor.hidromontchile.cl`. En el
+dominio público la API del CMS responde 404; en `editor.*` y en local
+(`127.0.0.1`) sigue disponible. Si `dist-editor/` no existe, todos los dominios
+sirven `dist/` como antes.
+
+**Quién manda sobre el contenido.** En el servidor, la fuente de verdad del
+contenido es la base SQLite que edita el cliente desde el panel. «Publicar»
+escribe su proyección en archivos que git también versiona
+(`src/data/cms-content.json`, `src/data/gallery.json`, `src/content/**`,
+`public/gallery/derived/`). `npm run deploy` ya no se bloquea por eso: guarda
+esos archivos en `cms/data/backups/export-antes-de-deploy-<fecha>.tar.gz`, los
+descarta antes del `git pull` y, tras instalar, los **regenera desde la base**
+con `npm run cms:export` antes de compilar. Consecuencia: un cambio de texto
+hecho a mano en esos archivos y commiteado **no llega a producción** (el
+despliegue avisa si los commits los tocan). Los cambios de contenido entran por
+el panel; las claves nuevas de la semilla (`cms/content/defaultContent.ts`) se
+siembran solas al arrancar.
+
 **No toca la base del CMS ni `uploads/cms`.** Esos datos viven en el servidor y
 los edita el operador desde el panel; pisarlos desde tu máquina borraría su
 trabajo. Para subirlos en la otra dirección está `scripts/sync-datos-vps.sh`.
@@ -309,7 +337,9 @@ antes de generar, así que un build que muera a mitad deja el sitio sin páginas
 Si prefieres hacerlo a mano, el equivalente es:
 
 ```bash
-cd /srv/hidromont && git pull && npm ci && npm run build:log
+cd /srv/hidromont
+git checkout -- src/data/cms-content.json src/data/gallery.json src/content public/gallery/derived
+git pull && npm ci && npm run cms:export && npm run build:log
 systemctl restart hidromont
 ```
 

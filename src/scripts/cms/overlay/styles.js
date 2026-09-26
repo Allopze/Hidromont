@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Parte de la interfaz del CMS. Antes esto era `src/scripts/cms-overlay.js`:
  * 3.500 líneas en un solo archivo, inyectadas como string por `set:html`.
@@ -140,8 +141,15 @@ export const overlayStyles = `
   @media (pointer: coarse) {
     :root {
       --hm-cms-control: 44px;
-      --hm-cms-control-sm: 40px;
+      /* P3-11: los botones de mover y quitar de las listas, 44 px al tacto. */
+      --hm-cms-control-sm: 44px;
     }
+  }
+  /* P3-11: con el editor abierto la franja de logos se detiene, para poder
+     pulsar el logo que se quiere cambiar. */
+  .logo-marquee-track,
+  .logo-marquee-track--rev {
+    animation-play-state: paused !important;
   }
 
   /* ─── Zonas editables de la página ─────────────────────────────────────── */
@@ -623,6 +631,17 @@ export const overlayStyles = `
   }
   .hm-cms-panel.is-wide {
     width: min(680px, 100vw);
+  }
+  /* P2-21: con el panel abierto en escritorio, la página y la barra le ceden su ancho. */
+  html.hm-cms-con-panel body {
+    margin-right: var(--hm-cms-reserva);
+  }
+  html.hm-cms-con-panel header[data-overlay] {
+    right: var(--hm-cms-reserva);
+  }
+  html.hm-cms-con-panel .hm-cms-bar {
+    max-width: calc(100vw - var(--hm-cms-reserva) - 32px);
+    flex-wrap: wrap;
   }
   .hm-cms-panel:focus {
     outline: none;
@@ -1562,6 +1581,23 @@ export const overlayStyles = `
   .hm-cms-rt-preview a { color: var(--hm-cms-primary); }
   .hm-cms-rt-preview :first-child { margin-top: 0; }
   .hm-cms-rt-preview :last-child { margin-bottom: 0; }
+  /* P2-23: el editor visual reutiliza el aspecto de la vista previa. */
+  .hm-cms-rt-visual {
+    min-height: 260px;
+    max-height: 520px;
+    outline: none;
+    cursor: text;
+  }
+  .hm-cms-rt:focus-within .hm-cms-rt-visual:focus {
+    box-shadow: inset 0 0 0 2px var(--hm-cms-primary);
+  }
+  .hm-cms-rt-enlace {
+    display: grid;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--hm-cms-line-softer);
+    background: var(--hm-cms-alt);
+  }
   .hm-cms-rt-help {
     padding: 6px 12px 8px;
     border-top: 1px solid var(--hm-cms-line-softer);
@@ -1936,6 +1972,109 @@ export const overlayStyles = `
   @keyframes hm-cms-shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+  }
+
+  /* ─── Registro de actividad: lo técnico, plegado (P2-22) ───────────── */
+  .hm-cms-tecnico summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--hm-cms-muted-soft);
+  }
+
+  /* ─── Valor de cada versión (P2-26) ─────────────────────────────────── */
+  .hm-cms-revision-value {
+    display: block;
+    margin-top: 4px;
+    color: var(--hm-cms-ink);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  .hm-cms-revision-thumb {
+    display: block;
+    margin-top: 6px;
+    width: 96px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  /* ─── Archivo que no vale (P2-19) ───────────────────────────────────── */
+  .hm-cms-drop.has-error .hm-cms-drop-file {
+    color: var(--hm-cms-error);
+  }
+
+  /* ─── Guardado sin publicar (P2-17) ─────────────────────────────────── */
+  .hm-cms-sin-publicar {
+    outline: 2px dashed var(--hm-cms-warn-ink);
+    outline-offset: 2px;
+  }
+
+  /* ─── Entrar sin sesión (P2-18) ─────────────────────────────────────── */
+  .hm-cms-entrar {
+    pointer-events: auto;
+    position: fixed;
+    z-index: 25;
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    min-height: 48px;
+    padding: 0 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: var(--hm-cms-dark);
+    color: #fff;
+    font: 600 14px/1 var(--hm-cms-font);
+    box-shadow: var(--hm-cms-shadow-lg);
+    cursor: pointer;
+  }
+  .hm-cms-entrar[hidden] {
+    display: none;
+  }
+  /* En escritorio va dentro de la barra; el flotante es para tablet y móvil. */
+  @media (min-width: 1101px) {
+    .hm-cms-entrar {
+      display: none;
+    }
+  }
+
+  /* ─── Ir a otra página (P1-07) ──────────────────────────────────────── */
+  .hm-cms-page-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .hm-cms-page-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--hm-cms-line-softer);
+    border-radius: var(--hm-cms-radius);
+    color: var(--hm-cms-ink);
+    text-decoration: none;
+    font: 600 14px/1.3 var(--hm-cms-font);
+  }
+  .hm-cms-page-link:hover,
+  .hm-cms-page-link:focus-visible {
+    border-color: var(--hm-cms-accent);
+  }
+  .hm-cms-page-link[aria-current='page'] {
+    background: var(--hm-cms-line-softer);
+  }
+  .hm-cms-page-link .hm-cms-muted {
+    font-weight: 400;
+    font-size: 12.5px;
+  }
+  .hm-cms-go-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 10px;
+    text-decoration: none;
+    color: inherit;
   }
 
   /* ─── Pantallas pequeñas y táctiles ─────────────────────────────────── */

@@ -5,3 +5,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* P3-10 (auditoría 2026-09): el gris de los textos de ejemplo que pone el
+   preflight de Tailwind (#9CA3AF) daba 2,54:1 sobre blanco. Va después de
+   `@tailwind base` para ganarle con el mismo selector. */
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
+  }
+}

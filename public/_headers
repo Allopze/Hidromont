@@ -31,7 +31,7 @@
   # invalida 'unsafe-inline' para toda la directiva). Pendiente: mover el bootstrap del
   # overlay a un <script src="..."> externo (permitido por 'self' sin hash) en vez de
   # inline, o generar su hash dinamicamente en build.
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-2Y3P/uZp/0mZ43cyAmBTs8z/m0b+O254N8mf8gEO0Mc=' 'sha256-sa2BD07tH4oO53uT1B5vNSLM2+gcrREM4WTXttKp6oU='; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://formsubmit.co https://api.web3forms.com; form-action 'self' https://formsubmit.co https://api.web3forms.com; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-2Y3P/uZp/0mZ43cyAmBTs8z/m0b+O254N8mf8gEO0Mc=' 'sha256-sa2BD07tH4oO53uT1B5vNSLM2+gcrREM4WTXttKp6oU='; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://formsubmit.co; form-action 'self' https://formsubmit.co; upgrade-insecure-requests
 
 /*.html
   Cache-Control: public, max-age=600, must-revalidate

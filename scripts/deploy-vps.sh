@@ -133,12 +133,28 @@ en_servidor 'git rev-parse --is-inside-work-tree >/dev/null' || {
   exit 1
 }
 
-SUCIO_REMOTO="$(en_servidor 'git status --porcelain --untracked-files=no' || true)"
+# P1-01 (auditoría 2026-09): «Publicar» en el panel escribe en archivos que
+# git también versiona (la proyección del contenido). En el servidor manda la
+# base SQLite, así que esos cambios no son «cambios sin commitear» sino la copia
+# viva del contenido: se respaldan, se descartan antes del pull y se vuelven a
+# generar desde la base después. Solo lo que quede FUERA de estas rutas bloquea
+# el despliegue.
+RUTAS_EXPORT=(src/data/cms-content.json src/data/gallery.json src/content public/gallery/derived)
+EXCLUIR_EXPORT=""
+# Comillas dobles: en_servidor() envuelve el comando entre comillas simples.
+for r in "${RUTAS_EXPORT[@]}"; do EXCLUIR_EXPORT+=" \":(exclude)$r\""; done
+
+SUCIO_REMOTO="$(en_servidor "git status --porcelain --untracked-files=no -- . $EXCLUIR_EXPORT" || true)"
 if [[ -n "$SUCIO_REMOTO" ]]; then
-  rojo 'El servidor tiene cambios locales sin commitear; git pull los pisaría.'
+  rojo 'El servidor tiene cambios locales sin commitear fuera del contenido del CMS; git pull los pisaría.'
   echo "$SUCIO_REMOTO" >&2
   rojo "Revísalos a mano por SSH antes de volver a desplegar."
   exit 1
+fi
+
+EXPORT_SUCIO="$(en_servidor "git status --porcelain --untracked-files=no -- ${RUTAS_EXPORT[*]}" || true)"
+if [[ -n "$EXPORT_SUCIO" ]]; then
+  verde "  el contenido publicado desde el panel difiere de git ($(wc -l <<<"$EXPORT_SUCIO" | tr -d ' ') archivo(s)): se respalda y se regenera desde la base"
 fi
 
 ANTES="$(en_servidor 'git rev-parse --short HEAD')"
@@ -166,12 +182,36 @@ REINICIOS_ANTES="$("${SSH[@]}" "$DESTINO" "systemctl show hidromont -p NRestarts
 # ── Despliegue ───────────────────────────────────────────────────────────────
 
 paso "Trayendo el código"
+en_servidor "git fetch --quiet origin"
+# Cambios de contenido que llegan por git: en el servidor los sustituirá lo que
+# diga la base. Se avisa para que nadie crea que un arreglo de texto hecho en
+# el JSON o en un .md ya está publicado (debe entrar por el CMS o por la semilla).
+CONTENIDO_ENTRANTE="$(en_servidor "git diff --name-only HEAD @{upstream} -- ${RUTAS_EXPORT[*]}" || true)"
+if [[ -n "$CONTENIDO_ENTRANTE" ]]; then
+  printf '\033[33m  aviso: estos commits cambian archivos de contenido; en el servidor manda la base\033[0m\n'
+  printf '\033[33m         y se sobrescribirán al regenerar. Claves NUEVAS sí se siembran al arrancar.\033[0m\n'
+  sed 's/^/           /' <<<"$CONTENIDO_ENTRANTE"
+fi
+if [[ -n "$EXPORT_SUCIO" ]]; then
+  SELLO="$(date +%Y-%m-%dT%H-%M-%S)"
+  en_servidor "mkdir -p cms/data/backups && git diff --name-only -- ${RUTAS_EXPORT[*]} | tar -czf cms/data/backups/export-antes-de-deploy-$SELLO.tar.gz -T - && git checkout -- ${RUTAS_EXPORT[*]}"
+  verde "  respaldo: cms/data/backups/export-antes-de-deploy-$SELLO.tar.gz"
+fi
 en_servidor "git pull --ff-only"
 
 paso "Instalando dependencias"
 # `npm ci` instala también las devDependencies: Astro vive ahí y sin ellas ni
 # este build ni el botón «Exportar y validar» del panel pueden compilar.
 en_servidor "npm ci"
+
+paso "Regenerando el contenido desde la base"
+# La base del servidor es la fuente de verdad: lo que el pull haya traído en
+# los archivos de contenido se sustituye por lo publicado desde el panel.
+en_servidor "npm run --silent cms:export" || {
+  rojo "No se pudo regenerar el contenido desde la base; no se compila nada."
+  rojo "El sitio sigue sirviendo el build anterior. Revisa el mensaje de arriba."
+  exit 1
+}
 
 paso "Compilando"
 # `build:log` y no `build:servidor`: compila en `dist.nuevo` y solo sustituye

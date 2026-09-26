@@ -93,7 +93,7 @@ export async function createTestApp(): Promise<TestApp> {
 
   const contentService = new ContentService(contentRepository, rootDir);
   const exportService = new ExportService(contentRepository, rootDir);
-  const mediaService = new MediaService(mediaRepository);
+  const mediaService = new MediaService(mediaRepository, contentRepository);
   const publishService = new PublishService(exportService, publishJobRepository);
 
   const galleryRepository = new GalleryRepository(db);

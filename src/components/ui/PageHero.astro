@@ -1,4 +1,6 @@
 ---
+import fs from 'node:fs';
+import path from 'node:path';
 import Container from './Container.astro';
 import EditableImage from '../cms/EditableImage.astro';
 import EditableText from '../cms/EditableText.astro';
@@ -50,6 +52,7 @@ const {
 
 const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg:py-24';
 import { getCmsImageObjectPosition, getCmsText, getCmsValue } from '../../data/cms';
+import { soloEditor } from '../../utils/soloEditor';
 
 // El video de la cabecera sale del CMS (campo `video` de la ficha de imagen),
 // con su encuadre; vacío, se ve la foto. `videoSrc` queda como respaldo del
@@ -58,6 +61,17 @@ const admiteVideo =
   Boolean(cmsImageEntry) && getCmsValue(cmsImageEntry!, 'video', undefined) !== undefined;
 const videoCms = admiteVideo ? getCmsText(cmsImageEntry!, 'video', '') : '';
 const videoFinal = videoCms || videoSrc;
+// P2-35 (auditoría 2026-09): el video de 1080p (8 MB) se bajaba entero en
+// móvil y también con «reducir movimiento». Si junto al archivo hay variantes
+// `-480.mp4` y `-720.mp4` en public/, el script elige la del ancho que se
+// pinta; y la fuente no va en el HTML, así que sin movimiento no se descarga.
+const varianteDeVideo = (alto: number) => {
+  if (!videoFinal || !videoFinal.startsWith('/') || !videoFinal.endsWith('.mp4')) return undefined;
+  const ruta = videoFinal.replace(/\.mp4$/, `-${alto}.mp4`);
+  return fs.existsSync(path.join(process.cwd(), 'public', ruta)) ? ruta : undefined;
+};
+const video480 = varianteDeVideo(480);
+const video720 = varianteDeVideo(720);
 const videoDescripcion =
   (admiteVideo && getCmsText(cmsImageEntry!, 'videoAlt', '')) || videoAlt || imageAlt;
 const videoPosicion = admiteVideo ? getCmsImageObjectPosition(cmsImageEntry, 'video') : undefined;
@@ -84,6 +98,13 @@ const marcasRespaldo =
     : {};
 // Botón del video (Textos del sitio → Textos para lectores de pantalla).
 const videoPausar = getCmsText('site.accesibilidad', 'videoPausar', 'Pausar video');
+// P1-02 (auditoría 2026-09): una ficha sin foto de cabecera no ofrecía nada que
+// pulsar para ponerla (la foto solo se pinta si existe). Si su ficha de imagen
+// existe en el CMS, quien edita ve un hueco para añadirla.
+const huecoDeFoto =
+  cmsEditingEnabled &&
+  Boolean(cmsImageEntry) &&
+  getCmsValue(cmsImageEntry!, 'image', undefined) !== undefined;
 const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Reproducir video');
 ---
 
@@ -110,7 +131,7 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
           {breadcrumbs && breadcrumbs.length > 0 && (
             <nav
               class="flex items-center gap-1.5 mb-4 text-xs text-white/60 font-body relative"
-              aria-label="Breadcrumb"
+              aria-label="Ruta de navegación"
             >
               {breadcrumbs.map((crumb, i) => (
                 <>
@@ -122,7 +143,7 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
                   {crumb.href ? (
                     <a
                       href={crumb.href}
-                      class="hover:text-white/80 transition-colors duration-fast no-underline"
+                      class="inline-flex items-center min-h-[44px] -my-[14px] hover:text-white/80 transition-colors duration-fast no-underline"
                     >
                       {crumb.label}
                     </a>
@@ -148,7 +169,7 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
             entry={cmsTitleField ? cmsEntry : undefined}
             field={cmsTitleField || 'title'}
             class="font-heading font-bold text-white leading-tight mb-5 relative"
-            style="font-size: var(--font-size-display); letter-spacing: -0.02em; text-wrap: balance;"
+            style="font-size: var(--font-size-display); letter-spacing: -0.02em; text-wrap: balance; overflow-wrap: anywhere; hyphens: auto;"
             reveal
           >
             {title}
@@ -191,13 +212,14 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
             {videoFinal ? (
               <>
                 <video
-                  src={videoFinal}
+                  data-src={videoFinal}
+                  data-src-480={video480}
+                  data-src-720={video720}
                   poster={imageSrc}
-                  autoplay
                   muted
                   loop
                   playsinline
-                  preload="metadata"
+                  preload="none"
                   aria-label={videoDescripcion}
                   style={videoPosicion ? `object-position:${videoPosicion}` : undefined}
                   data-hero-video
@@ -233,6 +255,7 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
                 alt={imageAlt}
                 width={imageWidth}
                 height={imageHeight}
+                sizes="(min-width: 1024px) 55vw, 100vw"
                 loading="eager"
                 fetchpriority="high"
                 decoding="async"
@@ -366,6 +389,20 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
           )}
 
           <slot />
+
+          {huecoDeFoto && (
+            <div class="relative mt-8 max-w-md" {...soloEditor(true)}>
+              <div
+                class="aspect-video border border-dashed border-white/40 flex items-center justify-center text-sm text-white/70 cursor-crosshair"
+                data-cms-entry={cmsImageEntry}
+                data-cms-field="image"
+                data-cms-alt-field="imageAlt"
+                data-cms-type="image"
+              >
+                + Agregar foto de cabecera
+              </div>
+            </div>
+          )}
         </div>
       </Container>
     )
@@ -401,6 +438,37 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
 </style>
 
 <script>
+  /*
+   * P2-35: la fuente del video se pone aquí y no en el HTML. Solo si la
+   * persona no pidió reducir el movimiento, y la variante más ligera que
+   * cubra el ancho que se pinta (por la densidad de la pantalla).
+   */
+  const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)');
+  document.querySelectorAll<HTMLVideoElement>('video[data-hero-video]').forEach((video) => {
+    const arrancar = () => {
+      if (sinMovimiento.matches || video.getAttribute('src')) return;
+      const pixeles = (video.clientWidth || window.innerWidth) * (window.devicePixelRatio || 1);
+      // `getAttribute` y no `dataset`: `data-src-480` no pasa a `src480`
+      // (un guion seguido de un dígito no se convierte).
+      const src = video.getAttribute('data-src') ?? undefined;
+      const src480 = video.getAttribute('data-src-480') ?? undefined;
+      const src720 = video.getAttribute('data-src-720') ?? undefined;
+      const fuente =
+        (pixeles <= 900 && src480) || (pixeles <= 1400 && src720) || src || src720 || src480;
+      if (!fuente) return;
+      video.src = fuente;
+      video.autoplay = true;
+      void video.play().catch(() => {
+        /* el navegador puede negarse a reproducir; queda el póster */
+      });
+    };
+    arrancar();
+    sinMovimiento.addEventListener('change', () => {
+      if (sinMovimiento.matches) video.pause();
+      else arrancar();
+    });
+  });
+
   document.querySelectorAll<HTMLButtonElement>('[data-hero-video-control]').forEach((button) => {
     const video = button
       .closest('div[data-reveal-cinematic]')

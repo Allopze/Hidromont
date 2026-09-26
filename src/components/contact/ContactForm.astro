@@ -1,7 +1,8 @@
 ---
 import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
-import { getCmsText, getCmsValue } from '../../data/cms';
+import { getCollection } from 'astro:content';
+import { getCmsText } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
 
 // A2-005 / A-12: fallback al buzón corporativo, nunca a una cuenta personal.
@@ -27,15 +28,15 @@ const ccEmails = [
   .filter(Boolean)
   .join(',');
 
-const servicios = getCmsValue<string[]>('contact.form', 'services', [
-  'Tuberías Forzadas y Blindajes',
-  'Compuertas',
-  'Válvulas Hidráulicas',
-  'Turbinas Hidráulicas',
-  'Limpiarrejas',
-  'Montajes y Fabricaciones Especiales',
+// P2-12 (auditoría 2026-09): las opciones eran una lista aparte en el CMS y
+// faltaban Infraestructuras y Tanques Especiales. Salen de las fichas de
+// servicio, con su nombre y en su orden, y «Otro» al final.
+const servicios = [
+  ...(await getCollection('servicios'))
+    .sort((a, b) => a.data.orden - b.data.orden)
+    .map((s) => s.data.titulo),
   'Otro',
-]);
+];
 
 const validationMessages = {
   nombre: {
@@ -173,6 +174,9 @@ const validationMessages = {
         id="telefono"
         name="telefono"
         type="tel"
+        inputmode="tel"
+        pattern="[0-9+()\-.\s]{6,20}"
+        title="Solo números, espacios y + ( ) - ."
         autocomplete="tel"
         placeholder={getCmsText('contact.form', 'phonePlaceholder', '+56 9 1234 5678')}
         class="form-input rounded-none"
@@ -223,17 +227,21 @@ const validationMessages = {
         'messagePlaceholder',
         'Describa su proyecto o consulta técnica.'
       )}
-      aria-describedby="mensaje-error"
+      aria-describedby="mensaje-error mensaje-contador"
       class="w-full border border-border rounded-none px-3.5 py-3 text-text bg-white text-base md:text-sm leading-relaxed resize-y transition-[border-color,outline] duration-fast focus:border-primary focus:outline focus:outline-[3px] focus:outline-primary/20"
     ></textarea>
     <p id="mensaje-error" class="mt-1.5 text-xs text-error hidden" aria-live="polite"></p>
+    {/* P3-13: el mensaje se cortaba en silencio a 2.000 caracteres. */}
+    <p id="mensaje-contador" class="mt-1 text-xs text-text-muted text-right" aria-live="polite">
+      <span data-contador>0</span> / 2000
+    </p>
   </div>
 
   <div class="flex flex-col sm:flex-row sm:items-center gap-4">
     <button
       type="submit"
       id="contacto-submit"
-      class="inline-flex items-center justify-center bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-none border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary/30 disabled:opacity-60 disabled:cursor-wait whitespace-nowrap"
+      class="inline-flex items-center justify-center bg-primary text-white font-semibold font-body text-base px-6 py-3 min-h-[44px] rounded-none border border-primary hover:bg-primary-dark hover:border-primary-dark transition-[background-color,border-color,opacity] duration-base ease-standard focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-primary-dark focus-visible:shadow-[0_0_0_2px_#fff] disabled:opacity-60 disabled:cursor-wait aria-disabled:opacity-60 aria-disabled:cursor-wait whitespace-nowrap"
     >
       <span class="grid">
         <span id="contacto-submit-text" class="col-start-1 row-start-1 flex items-center gap-2">
@@ -297,7 +305,8 @@ const validationMessages = {
 
 <div
   id="contacto-error"
-  class="hidden py-4 px-4 border border-error text-error text-sm"
+  class="hidden mt-4 py-4 px-4 border border-error text-error text-sm focus:outline-none"
+  tabindex="-1"
   role="alert"
   aria-live="assertive"
 >
@@ -351,8 +360,12 @@ const validationMessages = {
     const errorEl = document.getElementById(`${field.id}-error`);
     if (!errorEl) return field.validity.valid;
 
+    // P3-13: tres espacios pasaban como nombre (o mensaje) válido.
+    const soloEspacios = field.required && field.value.length > 0 && field.value.trim() === '';
+
     let msg = '';
-    if (field.validity.valueMissing) msg = MENSAJES[field.id]?.valueMissing ?? GENERIC.valueMissing;
+    if (field.validity.valueMissing || soloEspacios)
+      msg = MENSAJES[field.id]?.valueMissing ?? GENERIC.valueMissing;
     else if (field.validity.typeMismatch)
       msg = MENSAJES[field.id]?.typeMismatch ?? GENERIC.typeMismatch ?? GENERIC.valueMissing;
     else if (field.validity.tooShort)
@@ -377,6 +390,15 @@ const validationMessages = {
       form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[required]')
     );
     let isSubmitting = false;
+
+    // P3-13: contador visible del mensaje, que se corta a 2.000 caracteres.
+    const mensaje = document.getElementById('mensaje') as HTMLTextAreaElement | null;
+    const contador = document.querySelector<HTMLElement>('#mensaje-contador [data-contador]');
+    const contar = () => {
+      if (mensaje && contador) contador.textContent = String(mensaje.value.length);
+    };
+    mensaje?.addEventListener('input', contar);
+    contar();
 
     requiredFields.forEach((field) => {
       field.addEventListener('blur', () => validateField(field));
@@ -445,7 +467,10 @@ const validationMessages = {
       const submitBtn = document.getElementById('contacto-submit') as HTMLButtonElement | null;
       const submitText = document.getElementById('contacto-submit-text');
       const submitLoading = document.getElementById('contacto-submit-loading');
-      if (submitBtn) submitBtn.disabled = true;
+      // P2-31 (auditoría 2026-09): `disabled` sobre el botón que tiene el foco
+      // lo mandaba a `body`, y ahí se quedaba tras un error. `aria-disabled`
+      // lo conserva; el doble envío ya lo impide `isSubmitting`.
+      submitBtn?.setAttribute('aria-disabled', 'true');
       isSubmitting = true;
       if (submitText) submitText.classList.add('invisible');
       if (submitLoading) submitLoading.classList.remove('invisible');
@@ -461,11 +486,22 @@ const validationMessages = {
       try {
         const ajaxAction =
           (form as HTMLFormElement).dataset.ajaxAction ?? (form as HTMLFormElement).action;
-        const res = await fetch(ajaxAction, {
-          method: 'POST',
-          body: new FormData(form as HTMLFormElement),
-          headers: { Accept: 'application/json' },
-        });
+        // P2-32: sin límite, una respuesta que no llegaba dejaba «Enviando…»
+        // para siempre. A los 20 s se corta y se ofrece el correo directo,
+        // con lo escrito intacto.
+        const corte = new AbortController();
+        const temporizador = window.setTimeout(() => corte.abort(), 20_000);
+        let res: Response;
+        try {
+          res = await fetch(ajaxAction, {
+            method: 'POST',
+            body: new FormData(form as HTMLFormElement),
+            headers: { Accept: 'application/json' },
+            signal: corte.signal,
+          });
+        } finally {
+          window.clearTimeout(temporizador);
+        }
         if (!res.ok) throw new Error('provider-error');
         const json = (await res.json()) as { success: string | boolean };
         if (json.success === 'true' || json.success === true) {
@@ -491,8 +527,11 @@ const validationMessages = {
         if (errorBanner && errorMessage) {
           errorMessage.textContent = defaultErrorText;
           errorBanner.classList.remove('hidden');
+          // El foco va al aviso: si no, quien usa teclado o lector de pantalla
+          // se queda en `body` sin saber qué pasó.
+          errorBanner.focus();
         }
-        if (submitBtn) submitBtn.disabled = false;
+        submitBtn?.removeAttribute('aria-disabled');
         if (submitText) submitText.classList.remove('invisible');
         if (submitLoading) submitLoading.classList.add('invisible');
       } finally {

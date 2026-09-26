@@ -36,6 +36,7 @@ async function crearCategoria(page: Page, csrf: string, nombre: string) {
 
 async function abrirCategorias(page: Page) {
   await page.goto('/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
   await page.locator('.hm-cms-bar [data-action="gallery"]').click();
   await page.locator('.hm-cms-tab[data-action="gallery-cats"]').click();
   await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
@@ -112,6 +113,8 @@ test.describe('Deshacer', () => {
     await crearCategoria(page, csrf, nombre);
 
     await page.goto('/?cms=1');
+
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const aviso = page.locator('[data-undo-host]');
     // Existe desde el montaje, vacío: una región viva insertada y rellenada en
     // el mismo fotograma no se anuncia de forma fiable.

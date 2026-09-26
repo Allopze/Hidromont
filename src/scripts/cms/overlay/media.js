@@ -15,6 +15,7 @@ import { api } from './api';
 import { icon } from './icons';
 import { previsualizarEnfoque, previsualizarImagen, previsualizarVideo } from './edicion';
 import { posicionCss } from './encuadre';
+import { pareceNombreDeArchivo } from './alt';
 
 /**
  * A-2 — Un solo selector de medios, paginado y con búsqueda en el servidor.
@@ -202,7 +203,15 @@ export function applyMediaSelection(asset) {
   form.elements.value.value = asset.path;
   form.elements.mediaId.value = asset.id;
   form.dataset.medioNuevo = '1';
-  if (form.elements.alt && asset.alt) form.elements.alt.value = asset.alt;
+  // P2-13 (auditoría 2026-09): la descripción de la biblioteca solo se usa si
+  // es una descripción de verdad. Si es el nombre del archivo, o no hay, el
+  // campo queda vacío y se pide una: antes se pegaba «DSCF2109» sobre una
+  // descripción buena, o se quedaba la de la foto anterior.
+  if (form.elements.alt) {
+    const util = asset.alt && !pareceNombreDeArchivo(asset.alt, asset.name || asset.path);
+    form.elements.alt.value = util ? asset.alt : '';
+    if (!util) pedirDescripcion(form);
+  }
   // La foto (o el video) elegida se ve ya en la página, con su propio
   // encuadre; si no se guarda, vuelve la anterior.
   const esVideo = String(asset.mime || '').startsWith('video/');
@@ -228,4 +237,13 @@ export function applyMediaSelection(asset) {
     label.textContent = `${asset.name}${asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ''}`;
 
   renderMediaPicker();
+}
+
+/** Resalta el campo de descripción para que la persona escriba una. */
+export function pedirDescripcion(form) {
+  const alt = form?.elements?.alt;
+  if (!alt) return;
+  alt.setAttribute('aria-invalid', 'true');
+  alt.placeholder = 'Describe lo que se ve en la foto';
+  alt.addEventListener('input', () => alt.removeAttribute('aria-invalid'), { once: true });
 }

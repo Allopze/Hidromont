@@ -1,29 +1,30 @@
 :root {
   /* Colors — Primary */
-  --color-primary: #0065A9;
-  --color-primary-dark: #004B7D;
-  --color-primary-light: #E6F2FA;
-  --color-accent: #00A6D6;
+  --color-primary: #0065a9;
+  --color-primary-dark: #004b7d;
+  --color-primary-light: #e6f2fa;
+  --color-accent: #00a6d6;
+  --color-accent-light: #b3e6f6;
 
   /* Colors — Neutrals */
-  --color-text: #1F2933;
-  --color-text-muted: #5B6770;
-  --color-border: #D9E2EC;
-  --color-surface: #FFFFFF;
-  --color-background: #FFFFFF;
-  --color-background-alt: #F5F8FA;
-  --color-background-strong: #0F2433;
+  --color-text: #1f2933;
+  --color-text-muted: #5b6770;
+  --color-border: #d9e2ec;
+  --color-surface: #ffffff;
+  --color-background: #ffffff;
+  --color-background-alt: #f5f8fa;
+  --color-background-strong: #0f2433;
 
   /* Colors — Semantic */
-  --color-success: #2E7D32;
-  --color-warning: #B7791F;
-  --color-error: #C62828;
-  --color-info: #0065A9;
+  --color-success: #2e7d32;
+  --color-warning: #b7791f;
+  --color-error: #c62828;
+  --color-info: #0065a9;
 
   /* Fonts */
-  --font-heading: "Roboto Condensed", Arial, sans-serif;
-  --font-body: "Inter", Arial, sans-serif;
-  --font-mono: "Roboto Mono", monospace;
+  --font-heading: 'Roboto Condensed', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
 
   /* Font sizes (clamp para fluid typography) */
   --font-size-display: clamp(2.625rem, 5vw, 4rem);
@@ -69,17 +70,17 @@
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(15, 36, 51, 0.08);
-  --shadow-md: 0 8px 24px rgba(15, 36, 51, 0.10);
+  --shadow-md: 0 8px 24px rgba(15, 36, 51, 0.1);
   --shadow-lg: 0 16px 40px rgba(15, 36, 51, 0.14);
 
   /* B1-003: z-index scale. Contrato de stacking documentado para evitar colisiones
      ad-hoc. Valores separados por orden de magnitud para dejar hueco a casos intermedios. */
   --z-base: 0;
-  --z-raised: 10;       /* elementos que sobresalen ligeramente (badges, dots) */
-  --z-dropdown: 20;     /* menus desplegables, dropdowns */
-  --z-sticky: 50;       /* header sticky/fijo */
-  --z-overlay: 100;     /* skip-link, lightbox, overlays modales */
-  --z-toast: 1000;      /* notificaciones efímeras (reservado) */
+  --z-raised: 10; /* elementos que sobresalen ligeramente (badges, dots) */
+  --z-dropdown: 20; /* menus desplegables, dropdowns */
+  --z-sticky: 50; /* header sticky/fijo */
+  --z-overlay: 100; /* skip-link, lightbox, overlays modales */
+  --z-toast: 1000; /* notificaciones efímeras (reservado) */
 
   /* Layout containers */
   --container-sm: 640px;

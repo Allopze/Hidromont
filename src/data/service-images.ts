@@ -1,4 +1,4 @@
-import { getCmsImage, type CmsImageData } from './cms';
+import { cmsEntrySlugs, getCmsImage, getCmsImageOptional, type CmsImageData } from './cms';
 
 const serviceImageFallbacks: Record<string, CmsImageData> = {
   'tuberias-forzadas': {
@@ -51,9 +51,18 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
   },
 };
 
+/** Igual que en project-images.ts: los sembrados y cualquier ficha del CMS (P1-02). */
+const slugs = new Set([...Object.keys(serviceImageFallbacks), ...cmsEntrySlugs('service-image')]);
 export const serviceImages: Record<string, CmsImageData> = Object.fromEntries(
-  Object.entries(serviceImageFallbacks).map(([slug, fallback]) => [
-    slug,
-    getCmsImage(`service-image.${slug}`, fallback),
-  ])
+  [...slugs]
+    .map((slug) => {
+      const fallback = serviceImageFallbacks[slug];
+      return [
+        slug,
+        fallback
+          ? getCmsImage(`service-image.${slug}`, fallback)
+          : getCmsImageOptional(`service-image.${slug}`),
+      ];
+    })
+    .filter((par): par is [string, CmsImageData] => par[1] !== undefined)
 );

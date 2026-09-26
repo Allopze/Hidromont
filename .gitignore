@@ -1,5 +1,9 @@
 # Build output
 dist/
+dist-editor/
+dist.nuevo/
+dist-editor.nuevo/
+.build.lock
 .astro/
 .capture/
 
@@ -75,3 +79,6 @@ _wasm.log
 scripts/.probar-wasm-hijo.mjs
 _cron.log
 _deps.log
+
+# Informes de cobertura de Vitest (P3-05)
+coverage/

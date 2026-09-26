@@ -64,25 +64,16 @@ jobs:
   e2e-full:
     name: E2E (Astro + CMS servers)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
-      # E2E full requiere el overlay activo para probar el flujo del editor.
+      # E2E full requiere el overlay activo para probar el flujo del editor y
+      # que el dist/ que sirve el CMS del sandbox sea el perfil de producción.
       PUBLIC_ENABLE_CMS: '1'
-      CMS_HOST: '127.0.0.1'
-      CMS_PORT: '8787'
-      # CmsOverlay.astro inlina esta variable en tiempo de build. Sin ella, en
-      # un sitio construido (isDev=false) el overlay cae en `location.origin` y
-      # le pide el login al servidor de preview en vez de al CMS: todas sus
-      # llamadas mueren en un 404 y el CMS no ve una sola petición del
-      # navegador. En local no se notaba porque .env sí la define.
-      PUBLIC_CMS_API_BASE: 'http://127.0.0.1:8787'
-      # Las tres piezas por la misma dirección, para que el navegador, el
-      # preview y el CMS no queden repartidos entre localhost y 127.0.0.1.
-      E2E_BASE_URL: 'http://127.0.0.1:4321'
-      CMS_URL: 'http://127.0.0.1:8787'
+      # Credenciales solo del sandbox: el CMS de pruebas corre en localhost con
+      # NODE_ENV=test y una base nueva sembrada al arrancar (cms/data/ no está
+      # en git; ver scripts/e2e-cms-sandbox.mjs).
       CMS_ADMIN_EMAIL: admin@hidromont.local
       CMS_ADMIN_PASSWORD: Hidromont-Admin-ChangeMe
-      CMS_DATABASE_PATH: ':memory:'
     steps:
       - uses: actions/checkout@v4
 
@@ -98,52 +89,21 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Build (with overlay, for preview)
+      - name: Build (with overlay)
         run: npm run build
 
-      # Arranque y espera van en un solo paso: el runner mata el grupo de
-      # procesos al terminar cada `run:`, así que los servidores lanzados con
-      # `&` en un paso propio morían antes de que el siguiente los consultara.
-      # El CMS no alcanzaba a imprimir ni una línea.
-      - name: Start servers and wait
-        run: |
-          npm run cms > cms.log 2>&1 &
-          npm run preview -- --host 127.0.0.1 > preview.log 2>&1 &
-          for i in $(seq 1 60); do
-            if curl -sf http://127.0.0.1:4321/ >/dev/null 2>&1 && curl -sf http://127.0.0.1:8787/api/cms/health >/dev/null 2>&1; then
-              echo "Both servers up"; exit 0
-            fi
-            sleep 2
-          done
-          echo "Servers did not come up in time"
-          echo "--- cms.log ---";     cat cms.log     || true
-          echo "--- preview.log ---"; cat preview.log || true
-          exit 1
-
-      # Todos los archivos e2e, no solo uno. `accessibility.spec.ts` y
-      # `public-responsive.spec.ts` existían desde hacía tiempo y no se
-      # ejecutaban nunca, así que no protegían de nada: el desborde a 320 px
-      # y las regresiones de accesibilidad pasaban el gate sin que nadie
-      # mirara. `csp.spec.ts` necesita el servidor Node sirviendo dist/, que
-      # este job ya levanta, porque el dev server no aplica cabeceras.
-      - name: Run E2E tests
+      # P1-09 (auditoría 2026-09): antes este job arrancaba el CMS y el preview
+      # a mano en 127.0.0.1 mientras playwright.config.ts levantaba los suyos
+      # con reuseExistingServer:false: chocaban por los puertos y la config
+      # rechazaba 127.0.0.1. Ahora Playwright levanta el dev server y el CMS del
+      # sandbox (que sirve este dist/ para csp.spec y build-gate).
+      - name: Run E2E tests (incluye el build gate del perfil con CMS)
         run: npx playwright test --project=chromium
 
-      # Verifica el gate también en el perfil con overlay, que es el que se
-      # desplegará en el servidor: aquí el build SÍ lleva el CMS y lo que se
-      # comprueba es que siga inerte y no arrastre credenciales.
-      - name: Build gate — perfil con CMS
-        run: npx playwright test --project=chromium e2e/build-gate.spec.ts
-
-      # Sin esto, un e2e rojo solo deja el assert: no se ve qué respondió el CMS
-      # ni qué había en pantalla, y el fallo se vuelve irreproducible en local.
       - name: Upload e2e diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-diagnostics
-          path: |
-            cms.log
-            preview.log
-            test-results/
+          path: test-results/
           retention-days: 7

@@ -47,6 +47,7 @@ test.describe('CMS Media & Uploads', () => {
   test('subida real de archivo de imagen sintética y creación de ítem', async ({ page }) => {
     csrfToken = await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // 1. Abrir galería -> Gestión de imágenes
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
@@ -109,6 +110,7 @@ test.describe('CMS Media & Uploads', () => {
   test('selector de medios en edición de campo visual de imagen', async ({ page }) => {
     csrfToken = await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // Buscar cualquier elemento editable de tipo imagen en la página actual
     const editableImage = page.locator('[data-cms-entry][data-cms-type="image"]').first();
@@ -142,5 +144,80 @@ test.describe('CMS Media & Uploads', () => {
     // Cerrar panel descartando cambios
     await panel.locator('[data-action="close"]').click();
     await expect(page.locator('.hm-cms-panel.open')).toHaveCount(0);
+  });
+});
+
+test.describe('P2-13: descripción de las fotos', () => {
+  test('una foto nueva no hereda la descripción anterior y no se guarda sin describirla', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+
+    await page
+      .locator('[data-cms-entry][data-cms-type="image"][data-cms-alt-field]')
+      .first()
+      .click();
+    const form = page.locator('.hm-cms-panel.open form[data-edit]');
+    await expect(form).toBeVisible();
+    const alt = form.locator('input[name="alt"]');
+    await expect(alt).not.toHaveValue('');
+
+    await form.locator('input[type="file"]').setInputFiles({
+      name: 'e2e-sin-descripcion.png',
+      mimeType: 'image/png',
+      buffer: SYNTHETIC_PNG_BUFFER,
+    });
+    await expect(alt).toHaveValue('');
+    await expect(alt).toHaveAttribute('aria-invalid', 'true');
+
+    let subio = false;
+    page.on('request', (r) => {
+      if (new URL(r.url()).pathname === '/api/cms/media' && r.method() === 'POST') subio = true;
+    });
+    await form.locator('button[type="submit"]').click();
+    await expect(form).toContainText('Describe la foto antes de guardar');
+    expect(subio).toBe(false);
+  });
+});
+
+test.describe('P2-19: archivo que no vale', () => {
+  test('un texto con nombre de foto se rechaza al elegirlo, antes de subir nada', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.setItem('hidromont:cms', '1'));
+    await apiLogin(page);
+    await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+
+    await page.locator('[data-cms-entry][data-cms-type="image"]').first().click();
+    const form = page.locator('.hm-cms-panel.open form[data-edit]');
+    await expect(form).toBeVisible();
+
+    let subio = false;
+    page.on('request', (r) => {
+      if (new URL(r.url()).pathname === '/api/cms/media' && r.method() === 'POST') subio = true;
+    });
+    const input = form.locator('input[type="file"]');
+    await input.setInputFiles({
+      name: 'no-es-foto.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('esto es texto, no una foto'),
+    });
+    await expect(form.locator('[data-dropzone]')).toHaveClass(/has-error/);
+    await expect(form).toContainText('no es una foto que se pueda abrir');
+    expect(await input.evaluate((el: HTMLInputElement) => el.files?.length ?? 0)).toBe(0);
+
+    await input.setInputFiles({
+      name: 'enorme.png',
+      mimeType: 'image/png',
+      buffer: Buffer.alloc(9 * 1024 * 1024),
+    });
+    await expect(form).toContainText('el máximo es 8 MB');
+    expect(subio).toBe(false);
   });
 });

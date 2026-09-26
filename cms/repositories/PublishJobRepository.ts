@@ -30,18 +30,35 @@ export class PublishJobRepository {
     };
 
     this.db
-      .prepare('INSERT INTO publish_jobs (id, status, action, logs, created_at, updated_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
-      .run(job.id, job.status, job.action, this.serializeLogs(job.logs), job.createdAt, job.createdAt, null);
+      .prepare(
+        'INSERT INTO publish_jobs (id, status, action, logs, created_at, updated_at, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      )
+      .run(
+        job.id,
+        job.status,
+        job.action,
+        this.serializeLogs(job.logs),
+        job.createdAt,
+        job.createdAt,
+        null
+      );
 
     return job;
   }
 
-  finish(input: { id: string; status: Exclude<PublishJobStatus, 'running'>; logs: string[]; now: string }): PublishJob {
+  finish(input: {
+    id: string;
+    status: Exclude<PublishJobStatus, 'running'>;
+    logs: string[];
+    now: string;
+  }): PublishJob {
     const existing = this.find(input.id);
     if (!existing) throw new Error(`Publish job ${input.id} not found`);
 
     this.db
-      .prepare('UPDATE publish_jobs SET status = ?, logs = ?, updated_at = ?, completed_at = ? WHERE id = ?')
+      .prepare(
+        'UPDATE publish_jobs SET status = ?, logs = ?, updated_at = ?, completed_at = ? WHERE id = ?'
+      )
       .run(input.status, this.serializeLogs(input.logs), input.now, input.now, input.id);
 
     const updated = this.find(input.id);
@@ -69,7 +86,16 @@ export class PublishJobRepository {
     const txn = this.db.transaction((rows: typeof stale) => {
       for (const row of rows) {
         const lines = this.parseLogs(row.logs);
-        update.run('failed', now, now, this.serializeLogs([...lines, `${now} crashed: job reaped at startup (stale > ${Math.round(staleMs / 1000)}s)`]), row.id);
+        update.run(
+          'failed',
+          now,
+          now,
+          this.serializeLogs([
+            ...lines,
+            `${now} crashed: job reaped at startup (stale > ${Math.round(staleMs / 1000)}s)`,
+          ]),
+          row.id
+        );
       }
     });
     txn(stale);
@@ -77,14 +103,20 @@ export class PublishJobRepository {
   }
 
   list(limit = 30): PublishJob[] {
-    return (this.db
-      .prepare('SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs ORDER BY created_at DESC LIMIT ?')
-      .all(limit) as PublishJobRow[]).map((row) => this.fromRow(row));
+    return (
+      this.db
+        .prepare(
+          'SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs ORDER BY created_at DESC LIMIT ?'
+        )
+        .all(limit) as PublishJobRow[]
+    ).map((row) => this.fromRow(row));
   }
 
   find(id: string): PublishJob | undefined {
     const row = this.db
-      .prepare('SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs WHERE id = ?')
+      .prepare(
+        'SELECT id, status, action, logs, created_at, updated_at, completed_at FROM publish_jobs WHERE id = ?'
+      )
       .get(id) as PublishJobRow | undefined;
     return row ? this.fromRow(row) : undefined;
   }

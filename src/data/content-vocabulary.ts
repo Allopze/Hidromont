@@ -193,9 +193,10 @@ export const DRAFT_EFFECT = {
       'Poner esta entrada en Borrador no oculta nada: la página vuelve a mostrar el texto escrito en el código, y eso afecta a TODOS los campos de la entrada, no solo al que editaste. Para borrar un texto de verdad, vacía ese campo y deja la entrada en Publicado.',
   },
   collection: {
-    label: 'Borrador — la página deja de existir (su URL dará 404)',
+    // P2-22: sin «URL» ni «404»; lo que pasa, dicho como lo vería el visitante.
+    label: 'Oculto — su página deja de verse en el sitio',
     warning:
-      'Poner esta entrada en Borrador borra su archivo de contenido en la próxima exportación: su página y su URL dejarán de existir en el sitio.',
+      'Al publicar, esta ficha dejará de aparecer en el sitio: su página, su tarjeta en los listados y los enlaces que lleven a ella. Podrás volver a mostrarla eligiendo «Publicado».',
   },
 } as const;
 

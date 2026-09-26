@@ -14,10 +14,9 @@ async function iniciarSesion(page: import('@playwright/test').Page) {
   });
   expect(response.ok()).toBeTruthy();
   await page.goto('/?cms=1');
-  if ((page.viewportSize()?.width ?? 1280) <= 640) {
-    await expect(
-      page.getByRole('button', { name: 'Abrir menú para editar el sitio' })
-    ).toBeVisible();
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+  if ((page.viewportSize()?.width ?? 1280) <= 1100) {
+    await expect(page.getByRole('button', { name: 'Editar sitio: abrir el menú' })).toBeVisible();
   } else {
     await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
   }
@@ -132,13 +131,14 @@ test.describe('CMS móvil táctil UI/UX', () => {
       'none'
     );
 
-    await page.getByRole('button', { name: 'Abrir menú para editar el sitio' }).click();
+    await page.getByRole('button', { name: 'Editar sitio: abrir el menú' }).click();
     const menu = page.locator('#hm-cms-mobile-sheet');
     await expect(menu).toHaveAttribute('aria-hidden', 'false');
     const toggle = menu.getByRole('button', { name: 'Guías editables' });
     await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    // Cinco: en la portada la hoja lleva además «Datos para buscadores».
-    for (let tab = 0; tab < 5; tab++) await page.keyboard.press('Tab');
+    // Seis: en la portada la hoja lleva además «Datos para buscadores», y
+    // P1-07 añadió «Ir a otra página».
+    for (let tab = 0; tab < 6; tab++) await page.keyboard.press('Tab');
     await expect(toggle).toBeFocused();
 
     const axe = await new AxeBuilder({ page }).include('.hm-cms-shell').analyze();
@@ -158,7 +158,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
       'dashed'
     );
 
-    await page.getByRole('button', { name: 'Abrir menú para editar el sitio' }).click();
+    await page.getByRole('button', { name: 'Editar sitio: abrir el menú' }).click();
     await menu.getByRole('button', { name: 'Guías editables' }).click();
     await expect(page.locator('body')).not.toHaveClass(/hm-cms-guides-visible/);
   });
@@ -167,16 +167,29 @@ test.describe('CMS móvil táctil UI/UX', () => {
     page,
   }) => {
     await iniciarSesion(page);
-    const categoriesResponse = await page.request.get(`${CMS_URL}/api/cms/gallery/categories`);
-    expect(categoriesResponse.ok()).toBeTruthy();
-    const categories = (await categoriesResponse.json()).items as Array<{
-      name: string;
-      slug: string;
-    }>;
-    expect(categories.length).toBeGreaterThan(0);
+    const listar = async () => {
+      const res = await page.request.get(`${CMS_URL}/api/cms/gallery/categories`);
+      expect(res.ok()).toBeTruthy();
+      return (await res.json()).items as Array<{ id: string; name: string; slug: string }>;
+    };
+    let categories = await listar();
+    // Con la base nueva que usa la CI (sin cms/data/) no hay categorías: la
+    // prueba crea la suya en vez de depender de los datos del desarrollador.
+    let creada: string | null = null;
+    if (categories.length === 0) {
+      const sesion = await page.request.get(`${CMS_URL}/api/cms/session`);
+      const csrf = (await sesion.json()).csrfToken as string;
+      const res = await page.request.post(`${CMS_URL}/api/cms/gallery/categories`, {
+        headers: { 'x-csrf-token': csrf },
+        data: { name: 'Prueba búsqueda UX', slug: 'prueba-busqueda-ux' },
+      });
+      expect(res.status(), await res.text()).toBe(201);
+      creada = (await res.json()).id;
+      categories = await listar();
+    }
     const category = categories[0];
 
-    await page.getByRole('button', { name: 'Abrir menú para editar el sitio' }).click();
+    await page.getByRole('button', { name: 'Editar sitio: abrir el menú' }).click();
     const menu = page.locator('#hm-cms-mobile-sheet');
     await expect(menu).toHaveAttribute('aria-hidden', 'false');
     await menu.getByRole('button', { name: 'Galería' }).click();
@@ -197,7 +210,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
       panel.locator('[data-gallery-category-row]', { hasText: category.name })
     ).toBeVisible();
     await expect(search).toBeFocused();
-    await expect(count).toHaveText(/\d+ de \d+ categorías/);
+    await expect(count).toHaveText(/\d+ de \d+ categorías?/);
 
     await search.press(SELECT_ALL);
     await page.keyboard.type(category.slug);
@@ -209,16 +222,35 @@ test.describe('CMS móvil táctil UI/UX', () => {
 
     await search.press(SELECT_ALL);
     await page.keyboard.type('sin-coincidencias-xyz');
-    await expect(count).toHaveText(`0 de ${categories.length} categorías`);
+    await expect(count).toHaveText(
+      `0 de ${categories.length} ${categories.length === 1 ? 'categoría' : 'categorías'}`
+    );
     await expect(panel.locator('[data-gallery-category-empty]')).toContainText(
       'Ninguna categoría coincide'
     );
 
     await panel.locator('.hm-cms-tab[data-action="gallery-albums"]').click();
-    const albumsResponse = await page.request.get(`${CMS_URL}/api/cms/gallery/albums`);
-    expect(albumsResponse.ok()).toBeTruthy();
-    const albums = (await albumsResponse.json()).items as Array<{ name: string; slug: string }>;
-    expect(albums.length).toBeGreaterThan(0);
+    const listarAlbumes = async () => {
+      const res = await page.request.get(`${CMS_URL}/api/cms/gallery/albums`);
+      expect(res.ok()).toBeTruthy();
+      return (await res.json()).items as Array<{ name: string; slug: string }>;
+    };
+    let albums = await listarAlbumes();
+    let albumCreado: string | null = null;
+    if (albums.length === 0) {
+      const sesion = await page.request.get(`${CMS_URL}/api/cms/session`);
+      const csrf = (await sesion.json()).csrfToken as string;
+      const res = await page.request.post(`${CMS_URL}/api/cms/gallery/albums`, {
+        headers: { 'x-csrf-token': csrf },
+        data: { name: 'Álbum prueba búsqueda UX', slug: 'album-prueba-busqueda-ux' },
+      });
+      expect(res.status(), await res.text()).toBe(201);
+      albumCreado = 'album-prueba-busqueda-ux';
+      // La pestaña ya estaba pintada: se vuelve a abrir para que liste el nuevo.
+      await panel.locator('.hm-cms-tab[data-action="gallery-cats"]').click();
+      await panel.locator('.hm-cms-tab[data-action="gallery-albums"]').click();
+      albums = await listarAlbumes();
+    }
     const album = albums[0];
     const albumSearch = panel.getByRole('searchbox', { name: 'Buscar álbum' });
     const albumCount = panel.locator('[data-gallery-album-count]');
@@ -230,7 +262,7 @@ test.describe('CMS móvil táctil UI/UX', () => {
     await page.keyboard.type(album.name);
     await expect(panel.locator('[data-gallery-album-row]', { hasText: album.name })).toBeVisible();
     await expect(albumSearch).toBeFocused();
-    await expect(albumCount).toHaveText(/\d+ de \d+ álbumes/);
+    await expect(albumCount).toHaveText(/\d+ de \d+ (álbum|álbumes)/);
 
     await albumSearch.press(SELECT_ALL);
     await page.keyboard.type(album.slug);
@@ -241,9 +273,27 @@ test.describe('CMS móvil táctil UI/UX', () => {
 
     await albumSearch.press(SELECT_ALL);
     await page.keyboard.type('sin-coincidencias-xyz');
-    await expect(albumCount).toHaveText(`0 de ${albums.length} álbumes`);
+    await expect(albumCount).toHaveText(
+      `0 de ${albums.length} ${albums.length === 1 ? 'álbum' : 'álbumes'}`
+    );
     await expect(panel.locator('[data-gallery-album-empty]')).toContainText(
       'Ningún álbum coincide'
     );
+
+    // Limpieza de lo que la prueba haya creado.
+    if (creada || albumCreado) {
+      const sesion = await page.request.get(`${CMS_URL}/api/cms/session`);
+      const csrf = (await sesion.json()).csrfToken as string;
+      if (creada) {
+        await page.request.delete(`${CMS_URL}/api/cms/gallery/categories/${creada}`, {
+          headers: { 'x-csrf-token': csrf },
+        });
+      }
+      if (albumCreado) {
+        await page.request.delete(`${CMS_URL}/api/cms/gallery/albums/${albumCreado}`, {
+          headers: { 'x-csrf-token': csrf },
+        });
+      }
+    }
   });
 });

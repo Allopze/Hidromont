@@ -45,6 +45,24 @@ import { fileURLToPath } from 'node:url';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const destino = path.join(raiz, '_build.log');
+// El .env decide el perfil (PUBLIC_ENABLE_CMS). Astro lo lee por su cuenta,
+// pero este script también necesita saberlo para compilar el perfil del
+// editor aparte. `loadEnvFile` no pisa variables ya definidas: si lo lanza el
+// CMS, manda lo que el proceso ya cargó.
+const envFile = path.join(raiz, '.env');
+if (fs.existsSync(envFile) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envFile);
+}
+/**
+ * P2-01 (auditoría 2026-09): el sitio público y el editor salían del mismo
+ * build con PUBLIC_ENABLE_CMS=1, así que el HTML público llevaba la interfaz
+ * del editor oculta con `hidden` (43 nodos «+ Agregar imagen», «solo la ve
+ * quien edita…»), 8.463 atributos `data-cms-*` y el arranque del overlay.
+ * Cuando el despliegue lleva editor se compilan dos perfiles: `dist/` limpio
+ * para hidromontchile.cl y `dist-editor/` para editor.*; `cms/staticSite.ts`
+ * elige por dominio.
+ */
+const DOS_PERFILES = process.env.PUBLIC_ENABLE_CMS === '1';
 // El campo «Run JS script» de cPanel no pasa argumentos extra: el intento de
 // `build:log -- ligero` acabó ejecutando `build` a secas. Por eso la variante
 // también se puede pedir por variable de entorno, que es lo que usa el script
@@ -118,9 +136,17 @@ const inicio = Date.now();
  * mismo camino que usaría un `import`, viva donde viva.
  */
 const requerir = createRequire(path.join(raiz, 'package.json'));
+/**
+ * El ejecutable se lee del campo `bin` del propio paquete: Astro 7 lo movió de
+ * `astro.js` a `bin/astro.mjs`, y con la ruta escrita aquí el build fallaba en
+ * 0 s sin tocar nada. `relativo` queda como respaldo.
+ */
 function binarioDe(paquete, relativo) {
   try {
-    return path.join(path.dirname(requerir.resolve(`${paquete}/package.json`)), relativo);
+    const manifiesto = requerir.resolve(`${paquete}/package.json`);
+    const { bin } = JSON.parse(fs.readFileSync(manifiesto, 'utf8'));
+    const declarado = typeof bin === 'string' ? bin : bin?.[paquete];
+    return path.join(path.dirname(manifiesto), declarado || relativo);
   } catch {
     return null;
   }
@@ -151,19 +177,85 @@ if (!ASTRO || !TSX) {
 
 escribir(`# astro: ${ASTRO}\n# tsx:   ${TSX}\n`);
 
+/**
+ * P2-05 (auditoría 2026-09): dos builds a la vez (un «Publicar» y un
+ * `npm run deploy`, o dos publicaciones) compartían `dist.nuevo` y fallaban
+ * sin motivo aparente (3 de 5 ensayos). El cerrojo del CMS solo ve su propio
+ * proceso; este archivo lo comparten todos. Un cerrojo cuyo proceso ya no
+ * existe (un build matado) se considera abandonado y se retoma.
+ */
+const CERROJO = path.join(raiz, '.build.lock');
+function tomarCerrojo() {
+  for (let intento = 0; intento < 2; intento += 1) {
+    try {
+      const fd = fs.openSync(CERROJO, 'wx');
+      fs.writeSync(fd, String(process.pid));
+      fs.closeSync(fd);
+      process.on('exit', () => {
+        try {
+          if (fs.readFileSync(CERROJO, 'utf8') === String(process.pid)) fs.unlinkSync(CERROJO);
+        } catch {
+          // Ya no está: nada que soltar.
+        }
+      });
+      return true;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      const pid = Number(fs.readFileSync(CERROJO, 'utf8'));
+      let vivo = false;
+      try {
+        process.kill(pid, 0);
+        vivo = Number.isInteger(pid) && pid > 0;
+      } catch {
+        vivo = false;
+      }
+      if (vivo) return false;
+      fs.rmSync(CERROJO, { force: true });
+    }
+  }
+  return false;
+}
+if (!tomarCerrojo()) {
+  escribir('\n# Ya hay otro build en curso (ver .build.lock): este no se ejecuta.\n');
+  escribir('# Espera a que termine y vuelve a intentarlo.\n');
+  process.exit(1);
+}
+
 // Se compila aquí y solo al final se pone en su sitio.
 const DIST = path.join(raiz, 'dist');
 const NUEVO = path.join(raiz, 'dist.nuevo');
 const VIEJO = path.join(raiz, 'dist.anterior');
+const DIST_EDITOR = path.join(raiz, 'dist-editor');
+const NUEVO_EDITOR = path.join(raiz, 'dist-editor.nuevo');
+const VIEJO_EDITOR = path.join(raiz, 'dist-editor.anterior');
 fs.rmSync(NUEVO, { recursive: true, force: true });
+fs.rmSync(NUEVO_EDITOR, { recursive: true, force: true });
 
+const perfil = (valor) => ({ PUBLIC_ENABLE_CMS: valor });
 const pasos = [
   ...(LIGERO ? [] : [{ nombre: 'astro check', args: [ASTRO, 'check'] }]),
-  { nombre: 'astro build', args: [ASTRO, 'build', '--outDir', NUEVO] },
+  {
+    nombre: DOS_PERFILES ? 'astro build (sitio público)' : 'astro build',
+    args: [ASTRO, 'build', '--outDir', NUEVO],
+    env: DOS_PERFILES ? perfil('0') : {},
+  },
   {
     nombre: 'sync-csp-headers',
     args: [TSX, path.join('scripts', 'sync-csp-headers.ts'), NUEVO],
   },
+  ...(DOS_PERFILES
+    ? [
+        {
+          nombre: 'astro build (editor)',
+          args: [ASTRO, 'build', '--outDir', NUEVO_EDITOR],
+          env: perfil('1'),
+        },
+        {
+          nombre: 'sync-csp-headers (editor)',
+          args: [TSX, path.join('scripts', 'sync-csp-headers.ts'), NUEVO_EDITOR],
+        },
+      ]
+    : []),
 ];
 
 /**
@@ -186,6 +278,8 @@ function ejecutar(paso) {
         // de libuv reduce cuántos pide sharp al procesar imágenes.
         UV_THREADPOOL_SIZE: process.env.UV_THREADPOOL_SIZE ?? '2',
         ...(opciones ? { NODE_OPTIONS: opciones } : {}),
+        // Vite da prioridad a las variables ya presentes sobre el .env.
+        ...(paso.env ?? {}),
       },
     });
     hijo.stdout.on('data', (b) => escribir(b.toString()));
@@ -220,21 +314,38 @@ for (const paso of pasos) {
 
 // ── Sustitución, solo si todo fue bien ────────────────────────────────
 if (codigoFinal === 0) {
-  if (!fs.existsSync(path.join(NUEVO, 'index.html'))) {
+  const faltaIndex =
+    !fs.existsSync(path.join(NUEVO, 'index.html')) ||
+    (DOS_PERFILES && !fs.existsSync(path.join(NUEVO_EDITOR, 'index.html')));
+  if (faltaIndex) {
     escribir('\n# El build dijo que sí pero no hay index.html: no se sustituye nada.\n');
     codigoFinal = 1;
+    fs.rmSync(NUEVO, { recursive: true, force: true });
+    fs.rmSync(NUEVO_EDITOR, { recursive: true, force: true });
   } else {
     // Dos renombrados dentro del mismo sistema de archivos: instantáneos. El
     // sitio no llega a quedarse sin páginas.
-    fs.rmSync(VIEJO, { recursive: true, force: true });
-    if (fs.existsSync(DIST)) fs.renameSync(DIST, VIEJO);
-    fs.renameSync(NUEVO, DIST);
-    fs.rmSync(VIEJO, { recursive: true, force: true });
-    escribir('\n# dist sustituido.\n');
+    const sustituir = (actual, nuevo, viejo) => {
+      fs.rmSync(viejo, { recursive: true, force: true });
+      if (fs.existsSync(actual)) fs.renameSync(actual, viejo);
+      fs.renameSync(nuevo, actual);
+      fs.rmSync(viejo, { recursive: true, force: true });
+    };
+    sustituir(DIST, NUEVO, VIEJO);
+    if (DOS_PERFILES) {
+      sustituir(DIST_EDITOR, NUEVO_EDITOR, VIEJO_EDITOR);
+      escribir('\n# dist (sitio público) y dist-editor sustituidos.\n');
+    } else {
+      // Sin editor en este despliegue: un dist-editor viejo serviría una
+      // versión desfasada en editor.*.
+      fs.rmSync(DIST_EDITOR, { recursive: true, force: true });
+      escribir('\n# dist sustituido.\n');
+    }
   }
 } else {
   escribir('\n# El build falló: dist NO se ha tocado, el sitio sigue como estaba.\n');
   fs.rmSync(NUEVO, { recursive: true, force: true });
+  fs.rmSync(NUEVO_EDITOR, { recursive: true, force: true });
 }
 
 const seg = ((Date.now() - inicio) / 1000).toFixed(1);

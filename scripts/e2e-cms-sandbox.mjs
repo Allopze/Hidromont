@@ -21,9 +21,14 @@ const sourceUploads = config.cms.uploadDir;
 if (!Number.isInteger(e2ePort) || e2ePort < 1024 || e2ePort > 65535) {
   throw new Error(`E2E_CMS_PORT no es un puerto válido: ${process.env.E2E_CMS_PORT}`);
 }
-if (!fs.existsSync(sourceDatabase)) {
-  throw new Error(
-    `No existe la base CMS de origen (${sourceDatabase}). Inicializa el CMS antes de ejecutar Playwright.`
+// P1-09 (auditoría 2026-09): sin base de origen —en CI o en un clon limpio,
+// porque cms/data/ no está en git— el sandbox ya no aborta: arranca con una
+// base vacía y el propio CMS la migra y la siembra desde src/content y la
+// semilla, igual que en un primer arranque. Antes la CI moría aquí.
+const baseDeOrigen = fs.existsSync(sourceDatabase);
+if (!baseDeOrigen) {
+  process.stdout.write(
+    `[E2E] Sin base CMS de origen (${sourceDatabase}): se usa una base nueva sembrada al arrancar.\n`
   );
 }
 
@@ -72,14 +77,26 @@ function linkExistingUploads() {
 }
 
 async function prepareSandbox() {
-  const source = new Database(sourceDatabase, { readonly: true, fileMustExist: true });
-  try {
-    await source.backup(databasePath);
-  } finally {
-    source.close();
+  if (baseDeOrigen) {
+    const source = new Database(sourceDatabase, { readonly: true, fileMustExist: true });
+    try {
+      await source.backup(databasePath);
+    } finally {
+      source.close();
+    }
   }
 
   for (const relativePath of ['src/content', 'src/data']) copySourceDirectory(relativePath);
+  if (!baseDeOrigen) {
+    // Una base nueva no conoce las fotos del gallery.json versionado y la
+    // guarda del export se negaría a publicar. La copia del sandbox arranca
+    // con la galería vacía; el sitio (astro dev) sigue leyendo la del repo.
+    const galeria = path.join(contentRootDir, 'src', 'data', 'gallery.json');
+    if (fs.existsSync(galeria)) {
+      const datos = JSON.parse(fs.readFileSync(galeria, 'utf8'));
+      fs.writeFileSync(galeria, JSON.stringify({ ...datos, items: [] }, null, 2) + '\n');
+    }
+  }
   fs.mkdirSync(backupDir, { recursive: true });
   linkExistingUploads();
 }

@@ -18,7 +18,14 @@ export interface ImageDerivatives {
   lqip: string;
 }
 
-const WIDTHS = [640, 1024, 1600];
+// P2-36 (auditoría 2026-09): sin escalones pequeños, las miniaturas de la
+// galería (182 px en móvil) se servían en 640w y las cabeceras de ficha en
+// 1024w. 360w y 768w cubren esos casos; van con algo menos de calidad, que a
+// ese tamaño no se nota. Los ya generados no cambian: el archivo se nombra por
+// hash y ancho, y solo se crea si falta.
+const WIDTHS = [360, 640, 768, 1024, 1600];
+const CALIDAD: Record<number, number> = { 360: 72, 768: 74 };
+const CALIDAD_POR_DEFECTO = 82;
 const LQIP_WIDTH = 32;
 const LQIP_QUALITY = 40;
 // CMS-L8: see mediaService.ts — explicit bound, defense-in-depth against
@@ -81,7 +88,7 @@ export class ImageService {
       if (!fs.existsSync(outPath)) {
         await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS })
           .resize(w, undefined, { withoutEnlargement: true })
-          .webp({ quality: 82 })
+          .webp({ quality: CALIDAD[w] ?? CALIDAD_POR_DEFECTO })
           .toFile(outPath);
       }
 

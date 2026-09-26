@@ -222,6 +222,8 @@ test.describe('Rótulos de plantilla, 404 y menú', () => {
     }
 
     await page.goto('/pagina-que-no-existe?cms=1');
+
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await expect(
       page.locator('[data-cms-entry="page.404"][data-cms-field="titulo"]')
     ).toBeVisible();

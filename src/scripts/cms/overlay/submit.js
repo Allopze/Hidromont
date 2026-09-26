@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Estado de los controles de escritura del panel: el spinner del botón y la
  * guarda contra el doble envío.
@@ -10,6 +11,11 @@
 
 import { escapeHtml } from './html';
 
+/**
+ * @param {any} button
+ * @param {boolean} isLoading
+ * @param {string} [loadingText]
+ */
 export function setButtonLoading(button, isLoading, loadingText = '') {
   // Se comprueba la capacidad, no `instanceof Element`: así el módulo se puede
   // cargar y probar en Node, donde `Element` no existe. El efecto en el

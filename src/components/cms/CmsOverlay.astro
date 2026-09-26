@@ -19,11 +19,15 @@
  *    dentro del HTML para no usarlo nunca. Ahora vive en su propio archivo y
  *    solo se pide en `editor.*` en producción (`?cms=1` queda para desarrollo).
  *
- * El `<script>` de abajo va en el nivel superior de la plantilla a propósito:
+ * La etiqueta script de abajo va en el nivel superior de la plantilla a propósito:
  * Astro solo eleva y empaqueta los scripts que están ahí. Dentro de un
  * `{condición && ...}` el compilador lo descarta en silencio —el build salía
  * sin editor y sin ningún aviso— así que quien decide si este componente
  * existe es `BaseLayout`, no una condición aquí dentro.
+ *
+ * (Sin escribir la etiqueta literal en este comentario: el escáner de
+ * dependencias de Vite la toma por un script real y falla —P3-05—, lo que
+ * provocaba una recarga a mitad de las pruebas e2e.)
  *
  * La CSP no necesita cambios: `script-src 'self'` ya cubre los archivos que
  * emite Astro. El único script inline que queda es el de configuración, que

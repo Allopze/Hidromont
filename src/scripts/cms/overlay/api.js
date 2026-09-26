@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Parte de la interfaz del CMS. Antes esto era `src/scripts/cms-overlay.js`:
  * 3.500 líneas en un solo archivo, inyectadas como string por `set:html`.
@@ -13,16 +14,29 @@ import { apiBase, state } from './context';
 // que no depende de `window` y por eso sí se puede probar en Node.
 export { ejecutarUnaVez, estaOcupado, setButtonLoading } from './submit';
 
+/**
+ * @param {string} path
+ * @param {RequestInit & { headers?: Record<string, string> }} [options]
+ */
 export async function api(path, options = {}) {
-  const headers = options.headers || {};
+  const headers = /** @type {Record<string, string>} */ (options.headers || {});
   if (state.csrfToken && options.method && options.method !== 'GET') {
     headers['X-CSRF-Token'] = state.csrfToken;
   }
-  const response = await fetch(`${apiBase}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers,
-  });
+  let response;
+  try {
+    response = await fetch(`${apiBase}${path}`, {
+      credentials: 'include',
+      ...options,
+      headers,
+    });
+  } catch {
+    // P2-04: el navegador dice «Failed to fetch», en inglés y sin pista.
+    throw Object.assign(
+      new Error('No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo.'),
+      { status: 0 }
+    );
+  }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     // P0-D: el status y el detalle estructurado se pierden si solo se
@@ -31,6 +45,8 @@ export async function api(path, options = {}) {
     throw Object.assign(new Error(data.error || 'Error CMS'), {
       status: response.status,
       details: data.details,
+      // P2-24: identificador del job de publicación, para contarlo a soporte.
+      job: data.job,
       // M-2: el servidor manda Retry-After en el 429 del rate-limit y
       // nadie lo leía, así que el aviso decía «espere» sin decir cuánto.
       retryAfter: Number(response.headers.get('Retry-After')) || undefined,

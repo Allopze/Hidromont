@@ -1,4 +1,4 @@
-import { getCmsImage } from './cms';
+import { cmsEntrySlugs, getCmsImage, getCmsImageOptional } from './cms';
 
 export interface ProjectImageData {
   src: string;
@@ -70,9 +70,22 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
   },
 };
 
+/**
+ * Foto de cabecera de cada proyecto: las de los 10 destacados sembrados (con su
+ * respaldo en el código) y las de cualquier ficha que tenga `project-image.<slug>`
+ * en el CMS, como las creadas o renombradas desde el panel (P1-02).
+ */
+const slugs = new Set([...Object.keys(projectImageFallbacks), ...cmsEntrySlugs('project-image')]);
 export const projectImages: Record<string, ProjectImageData> = Object.fromEntries(
-  Object.entries(projectImageFallbacks).map(([slug, fallback]) => [
-    slug,
-    getCmsImage(`project-image.${slug}`, fallback),
-  ])
+  [...slugs]
+    .map((slug) => {
+      const fallback = projectImageFallbacks[slug];
+      return [
+        slug,
+        fallback
+          ? getCmsImage(`project-image.${slug}`, fallback)
+          : getCmsImageOptional(`project-image.${slug}`),
+      ];
+    })
+    .filter((par): par is [string, ProjectImageData] => par[1] !== undefined)
 );

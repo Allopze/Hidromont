@@ -1,6 +1,11 @@
+import fs from 'node:fs';
+import { BaseController } from '../controllers/BaseController';
+import { SlugRepository } from '../repositories/SlugRepository';
+import type { CmsEntry } from '../types/cms';
+import { setCmsRedirectProvider } from '../staticSite';
 import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 import { config } from '../config/unifiedConfig';
 import {
   DRAFT_EFFECT,
@@ -37,8 +42,32 @@ import { PublishService } from '../services/publishService';
 import { ErrorDeshacer, UndoService } from '../services/undoService';
 import { captureException } from '../utils/errorTracking';
 
+/** P2-04: el mismo criterio de errores para las rutas que no los capturan. */
+class ManejadorDeErrores extends BaseController {
+  manejar(error: unknown, reply: FastifyReply, accion: string): void {
+    this.handleError(error, reply, accion);
+  }
+}
+
 export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   migrate();
+
+  // P2-04 (auditoría 2026-09): una ruta sin try/catch (p. ej. restaurar una
+  // revisión inexistente) respondía el 500 crudo de Fastify con el mensaje
+  // interno. Los errores de la propia petición (JSON mal formado, cuerpo
+  // demasiado grande) conservan su estado 4xx.
+  const manejador = new ManejadorDeErrores();
+  app.setErrorHandler((error, request, reply) => {
+    const estado = (error as { statusCode?: number }).statusCode;
+    if (estado && estado >= 400 && estado < 500) {
+      return reply.status(estado).send({ error: (error as Error).message });
+    }
+    manejador.manejar(
+      error,
+      reply,
+      `${request.method} ${request.routeOptions?.url ?? request.url}`
+    );
+  });
 
   await app.register(cookie);
   await app.register(multipart, {
@@ -77,10 +106,12 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   cleanupTimer.unref();
   userRepository.deleteExpiredSessions(new Date().toISOString());
 
-  // A1-009: reap jobs de publicacion trabados en 'running' por un crash previo del
-  // proceso. Umbral de 10 min: un publish/build sano tarda <120s, asi que cualquier
-  // job 'running' mas viejo que eso es seguro que esta huérfano.
-  const reaped = publishJobRepository.reapStaleJobs(new Date().toISOString(), 10 * 60 * 1000);
+  // A1-009: jobs de publicación que quedaron en 'running' por un fallo del
+  // proceso. P2-05 (auditoría 2026-09): el cerrojo de publicación vive en este
+  // proceso, así que al arrancar ningún job puede seguir en marcha y se
+  // descartan todos (umbral 0). Con el umbral anterior de 10 min, un reinicio
+  // a mitad de un build dejaba una publicación «en curso» para siempre.
+  const reaped = publishJobRepository.reapStaleJobs(new Date().toISOString(), 0);
   if (reaped > 0) {
     auditRepository.log({ action: 'publish.jobs_reaped', data: { count: reaped } });
   }
@@ -88,8 +119,14 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   const authService = new AuthService(userRepository);
   await authService.ensureAdminUser();
 
-  const contentService = new ContentService(contentRepository, config.cms.contentRootDir);
-  const mediaService = new MediaService(mediaRepository);
+  const slugRepository = new SlugRepository(db);
+  setCmsRedirectProvider(() => slugRepository.listRedirects());
+  const contentService = new ContentService(
+    contentRepository,
+    config.cms.contentRootDir,
+    slugRepository
+  );
+  const mediaService = new MediaService(mediaRepository, contentRepository);
   // A1-012: syncPublicMedia importa media nuevo y reporta huérfanos (archivos
   // borrados de disco fuera del CMS). La advertencia se emite dentro del servicio.
   const mediaSync = await mediaService.syncPublicMedia();
@@ -107,7 +144,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     config.cms.contentRootDir,
     galleryRepository,
     imageService,
-    mediaRepository
+    mediaRepository,
+    slugRepository
   );
   const publishService = new PublishService(exportService, publishJobRepository);
   const backupService = new BackupService(db, config.cms.backupDir);
@@ -166,6 +204,24 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     }
   );
   app.get('/api/cms/session', (request, reply) => authController.session(request, reply));
+  // P3-01 (auditoría 2026-09): cerrar la sesión abierta en otro equipo (un
+  // portátil olvidado, un móvil perdido) sin tener que cambiar la contraseña.
+  app.post(
+    '/api/cms/sessions/cerrar-otras',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    async (request, reply) => {
+      const userId = request.cmsSession!.user.id;
+      const actual = request.cookies[config.cms.cookieName] ?? '';
+      const cerradas = authService.closeOtherSessions(userId, actual);
+      auditRepository.log({
+        action: 'session.revoke_others',
+        userId,
+        data: { cerradas },
+        ip: request.ip,
+      });
+      return reply.send({ ok: true, cerradas });
+    }
+  );
   app.post(
     '/api/cms/password',
     { preHandler: [requireAuth(authService), requireCsrf()] },
@@ -390,7 +446,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService)] },
     async (request, reply) => {
       const { entryId } = request.params as { entryId: string };
-      const revisions = contentService.listRevisions(entryId);
+      const { field } = request.query as { field?: string };
+      const revisions = contentService.listRevisionsDetailed(entryId, field || undefined);
       return reply.send({ revisions });
     }
   );
@@ -400,13 +457,16 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       const { entryId, revisionId } = request.params as { entryId: string; revisionId: string };
-      const entry = contentService.restoreRevision(entryId, revisionId);
+      const { field } = request.query as { field?: string };
+      const entry = field
+        ? contentService.restoreRevisionField(entryId, revisionId, field)
+        : contentService.restoreRevision(entryId, revisionId);
       auditRepository.log({
         action: 'revision.restore',
         userId: request.cmsSession?.user.id,
         entityType: 'entry',
         entityId: entryId,
-        data: { revisionId },
+        data: field ? { revisionId, field } : { revisionId },
         ip: request.ip,
       });
       return reply.send({ ok: true, entry });
@@ -430,6 +490,21 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/api/cms/backup/list', { preHandler: [requireAuth(authService)] }, (request, reply) =>
     publishController.listBackups(request, reply)
+  );
+  // P3-08: el panel decía «descárgala» sin botón para hacerlo.
+  app.get(
+    '/api/cms/backup/descargar/:archivo',
+    { preHandler: [requireAuth(authService)] },
+    async (request, reply) => {
+      const { archivo } = request.params as { archivo: string };
+      const ruta = backupService.rutaDeRespaldo(archivo);
+      if (!ruta) return reply.status(404).send({ error: 'Ese respaldo no existe.' });
+      return reply
+        .type('application/vnd.sqlite3')
+        .header('Content-Disposition', `attachment; filename="${archivo}"`)
+        .header('Cache-Control', 'no-store')
+        .send(fs.createReadStream(ruta));
+    }
   );
 
   app.get(
@@ -458,7 +533,19 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       } catch {
         // Sin la ficha, el vocabulario del código.
       }
+      // P1-02: el desplegable de «Servicio» de un proyecto lista los servicios
+      // que existen, con su título, y la opción de no enlazar ninguno.
+      const servicioOpciones = [
+        { value: '', label: 'Ninguno (enlaza por la categoría)' },
+        ...contentService.serviceOptions(),
+      ];
       return reply.send({
+        // P3-04: los topes de subida, para que el panel diga y compruebe los
+        // mismos que el servidor en vez de llevar «8 MB» escrito a mano.
+        limites: {
+          fotoBytes: config.cms.uploadMaxBytes,
+          videoBytes: config.cms.videoMaxBytes,
+        },
         fieldTypes: FIELD_TYPES,
         entryKinds: ENTRY_KINDS,
         entryStatuses: ENTRY_STATUSES,
@@ -468,15 +555,17 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
             Object.fromEntries(
               Object.entries(fields).map(([key, values]) => [
                 key,
-                values.map((value) => ({
-                  value,
-                  label:
-                    (kind === 'proyecto' && key === 'categoria'
-                      ? nombresDeCategoria[value]
-                      : undefined) ??
-                    ENUM_FIELD_LABELS[kind]?.[key]?.[value] ??
-                    value,
-                })),
+                kind === 'proyecto' && key === 'servicio'
+                  ? servicioOpciones
+                  : values.map((value) => ({
+                      value,
+                      label:
+                        (kind === 'proyecto' && key === 'categoria'
+                          ? nombresDeCategoria[value]
+                          : undefined) ??
+                        ENUM_FIELD_LABELS[kind]?.[key]?.[value] ??
+                        value,
+                    })),
               ])
             ),
           ])
@@ -538,6 +627,15 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.reorderAlbums(request, reply);
+      if (reply.statusCode === 200) {
+        // P2-24: cuenta como cambio pendiente de publicar.
+        auditRepository.log({
+          action: 'gallery.album.reorder',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_album',
+          ip: request.ip,
+        });
+      }
     }
   );
 
@@ -591,6 +689,15 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.reorderCategories(request, reply);
+      if (reply.statusCode === 200) {
+        // P2-24: cuenta como cambio pendiente de publicar.
+        auditRepository.log({
+          action: 'gallery.category.reorder',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_category',
+          ip: request.ip,
+        });
+      }
     }
   );
 
@@ -647,13 +754,39 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: [requireAuth(authService), requireCsrf()] },
     async (request, reply) => {
       galleryController.reorderItems(request, reply);
+      if (reply.statusCode === 200) {
+        // P2-24: cuenta como cambio pendiente de publicar.
+        auditRepository.log({
+          action: 'gallery.item.reorder',
+          userId: request.cmsSession?.user.id,
+          entityType: 'gallery_item',
+          ip: request.ip,
+        });
+      }
     }
   );
 
   // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
   const estabaVacia =
     (db.prepare('SELECT COUNT(*) n FROM content_entries').get() as { n: number }).n === 0;
+  // P1-03: las fichas borradas antes de existir el historial de slugs quedan
+  // en la auditoría (su snapshot de deshacer): se anotan para que su .md, si
+  // reaparece, no se reimporte como ficha nueva ni siga publicado.
+  for (const evento of auditRepository.listByAction('entry.delete')) {
+    const borrada = (evento.data as { undo?: { snapshot?: { entry?: CmsEntry } } } | undefined)
+      ?.undo?.snapshot?.entry;
+    if (!borrada || (borrada.kind !== 'servicio' && borrada.kind !== 'proyecto')) continue;
+    if (contentRepository.findCollectionEntryBySlug(borrada.kind, borrada.slug, borrada.locale))
+      continue;
+    slugRepository.record(borrada.kind, borrada.slug, borrada.id);
+  }
   const { inserted, fieldsInserted } = contentService.importMissingEntries();
+  // P1-02: toda ficha de colección tiene su foto de cabecera y su galería
+  // editables, también las creadas antes de este cambio.
+  const companeras = contentService.ensureCompanions();
+  if (companeras > 0) {
+    app.log.info(`[CMS] ${companeras} ficha(s) de imagen o galería creada(s) para fichas nuevas.`);
+  }
   // La semilla solo añade; las fichas que ninguna página lee se retiran aquí.
   // El snapshot queda en la auditoría por si hubiera que rehacer alguna.
   const retiradas = contentService.retireObsoleteEntries();
@@ -683,6 +816,14 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
   }
   if (camposRetirados.length > 0) {
     app.log.info(`[CMS] retirados ${camposRetirados.length} campo(s) sin uso en el sitio.`);
+  }
+  // P1-06: toda entrada debe tener una revisión con su estado actual, para que
+  // «Revisiones» nunca restaure un estado de meses atrás.
+  const conRevisionNueva = contentRepository.ensureCurrentRevisions();
+  if (conRevisionNueva.length > 0) {
+    app.log.info(
+      `[CMS] ${conRevisionNueva.length} ficha(s) sin revisión de su estado actual: creada.`
+    );
   }
   if (inserted > 0 || fieldsInserted > 0 || retiradas.length > 0 || camposRetirados.length > 0) {
     app.log.info(

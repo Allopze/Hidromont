@@ -9,6 +9,7 @@
  *   de verdad exportaría y compilaría el sitio entero.
  * - Galería abre directamente en Imágenes, con pestañas.
  */
+import { nombreDeFicha } from '../src/data/entry-names';
 import { test, expect, type Page } from '@playwright/test';
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
@@ -38,7 +39,8 @@ async function guardarUnCambio(page: Page, csrf: string) {
   await page.locator('form[data-edit] button[type="submit"]').click();
   await expect(page.locator('form[data-edit] [data-edit-status]')).toContainText('Guardado.');
   return {
-    titulo: entrada.title as string,
+    // P2-22: el resumen nombra la ficha como el panel, no por su título interno.
+    titulo: nombreDeFicha(entryId, entrada.title as string),
     deshacer: () =>
       page.request.patch(`${CMS_URL}/api/cms/entries/${entryId}/fields/${campo}`, {
         headers: { 'x-csrf-token': csrf, 'content-type': 'application/json' },
@@ -51,6 +53,7 @@ test.describe('Barra', () => {
   test('Historial, Administrar y Salir van en el menú «Más»', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const barra = page.locator('.hm-cms-bar');
     await expect(barra.locator('[data-action="publish"]')).toBeVisible();
     await expect(barra.locator('[data-action="collections"]')).toBeVisible();
@@ -59,11 +62,12 @@ test.describe('Barra', () => {
     const mas = barra.locator('[data-action="bar-menu"]');
     await mas.click();
     await expect(mas).toHaveAttribute('aria-expanded', 'true');
-    for (const accion of ['jobs', 'admin', 'logout']) {
+    for (const accion of ['pages', 'jobs', 'admin', 'logout']) {
       await expect(barra.locator(`[data-action="${accion}"]`)).toBeVisible();
     }
-    // El foco entra en el menú y Escape lo cierra devolviéndolo al botón.
-    await expect(barra.locator('[data-action="jobs"]')).toBeFocused();
+    // El foco entra en el menú (su primera acción, «Ir a otra página», P1-07)
+    // y Escape lo cierra devolviéndolo al botón.
+    await expect(barra.locator('[data-action="pages"]')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(barra.locator('[data-action="logout"]')).toBeHidden();
     await expect(mas).toBeFocused();
@@ -80,6 +84,7 @@ test.describe('Barra', () => {
   test('cuenta los cambios sin publicar, también después de recargar', async ({ page }) => {
     const csrf = await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const cambio = await guardarUnCambio(page, csrf);
     try {
       const distintivo = page.locator('.hm-cms-bar [data-state-badge]');
@@ -96,6 +101,7 @@ test.describe('Publicar', () => {
   test('enseña qué va a salir antes de publicar, y se puede cancelar', async ({ page }) => {
     const csrf = await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const cambio = await guardarUnCambio(page, csrf);
     try {
       await page.locator('.hm-cms-panel [data-action="close"]').click();
@@ -126,6 +132,7 @@ test.describe('Publicar', () => {
         : route.continue()
     );
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="publish"]').click();
     await page.locator('[data-action="confirm-publish"]').click();
 
@@ -149,6 +156,7 @@ test.describe('Publicar', () => {
         : route.continue()
     );
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="publish"]').click();
     await page.locator('[data-action="confirm-publish"]').click();
 
@@ -164,6 +172,7 @@ test.describe('Galería y herramientas', () => {
   test('Galería abre en Imágenes, con pestañas para Álbumes y Categorías', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="gallery"]').click();
 
     const panel = page.locator('.hm-cms-panel.open');
@@ -180,6 +189,7 @@ test.describe('Galería y herramientas', () => {
   test('«Exportar» vive en Administración, no en el editor de un campo', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('[data-cms-entry][data-cms-type="text"]:visible').first().click();
     await expect(page.locator('form[data-edit]')).toBeVisible();
     await expect(page.locator('form[data-edit] [data-action="export"]')).toHaveCount(0);

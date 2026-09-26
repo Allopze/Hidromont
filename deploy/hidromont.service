@@ -38,7 +38,7 @@ WorkingDirectory=/srv/hidromont
 # no arranca el servicio sin explicar por qué.
 Environment=NODE_ENV=production
 Environment=HOME=/srv/hidromont
-# «Publicar» en el CMS lanza `npm run build:servidor` como proceso hijo: sin
+# «Publicar» en el CMS lanza `npm run build:log` como proceso hijo: sin
 # npm en el PATH, el botón falla con ENOENT y el panel solo muestra un error
 # genérico.
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

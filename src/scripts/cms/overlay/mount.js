@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Arranque del overlay del CMS.
  *
@@ -20,5 +21,10 @@ export function mount() {
   // E-2: limpieza de las copias caducadas, una vez por carga. Va antes de
   // ensureSession() para que nunca se ofrezca una copia de hace un mes.
   pruneDrafts();
-  ensureSession();
+  // Marca de «editor listo» (eventos registrados). Antes de esto, pulsar un
+  // texto que está dentro de un enlace navega en vez de abrir el editor; las
+  // pruebas e2e la esperan para no depender de la velocidad de carga.
+  ensureSession().finally(() => {
+    document.body.dataset.cmsListo = '1';
+  });
 }

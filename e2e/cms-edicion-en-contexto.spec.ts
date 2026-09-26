@@ -47,6 +47,7 @@ test.describe('Edición de un campo en la página', () => {
   }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     const elemento = page.locator('[data-cms-entry][data-cms-type="text"]:visible').first();
     const original = (await elemento.textContent())?.trim() ?? '';
@@ -72,6 +73,7 @@ test.describe('Edición de un campo en la página', () => {
   test('pasar a otro elemento con cambios sin guardar pide confirmación', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     const textos = page.locator('[data-cms-entry][data-cms-type="text"]:visible');
     const primero = textos.nth(0);
@@ -96,6 +98,7 @@ test.describe('Edición de un campo en la página', () => {
   test('Cmd/Ctrl+S guarda, y lo guardado se queda en la página', async ({ page }) => {
     const csrf = await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     const elemento = page.locator('[data-cms-entry][data-cms-type="text"]:visible').first();
     const entryId = (await elemento.getAttribute('data-cms-entry'))!;
@@ -122,6 +125,7 @@ test.describe('Edición de un campo en la página', () => {
   test('al pasar el puntero, una etiqueta dice qué se puede hacer', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
 
     await page.locator('[data-cms-entry][data-cms-type="text"]:visible').first().hover();
@@ -138,11 +142,13 @@ test.describe('La ficha de un servicio', () => {
     await iniciarSesion(page);
     // Una página sin ficha propia ni datos para buscadores: nada que ofrecer.
     await page.goto('/contacto/gracias/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
     await expect(page.locator('.hm-cms-bar [data-action="edit-page-entry"]')).toBeHidden();
 
     // En la portada, la ficha que guarda su título y descripción en Google.
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const portada = page.locator('.hm-cms-bar [data-action="edit-page-entry"]');
     await expect(portada).toHaveText('Datos para buscadores');
     await portada.click();
@@ -152,6 +158,8 @@ test.describe('La ficha de un servicio', () => {
     );
 
     await page.goto('/servicios/compuertas/?cms=1');
+
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     const boton = page.locator('.hm-cms-bar [data-action="edit-page-entry"]');
     await expect(boton).toBeVisible();
     await expect(boton).toHaveText('Editar este servicio');
@@ -173,6 +181,8 @@ test.describe('La ficha de un servicio', () => {
     expect(normas.length).toBeGreaterThan(1);
 
     await page.goto('/servicios/compuertas/?cms=1');
+
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="edit-page-entry"]').click();
     const form = page.locator('.hm-cms-panel.open form[data-entry-form]');
 

@@ -3,7 +3,7 @@ import fastify from 'fastify';
 import { config } from './config/unifiedConfig';
 import { registerCmsRoutes } from './routes/cmsRoutes';
 import { publicContentSecurityPolicy } from './security/headers';
-import { registerStaticSite } from './staticSite';
+import { apiFueraDeEsteHost, distParaHost, registerStaticSite } from './staticSite';
 import { captureException, initErrorTracking } from './utils/errorTracking';
 
 initErrorTracking();
@@ -131,6 +131,14 @@ const app = fastify({
   trustProxy: config.cms.trustProxy,
 });
 
+// P2-01 (auditoría 2026-09): con los dos perfiles desplegados, la API del CMS
+// solo responde en editor.* (y en local): el dominio público no la necesita.
+app.addHook('onRequest', async (request, reply) => {
+  if (request.url.startsWith('/api/') && apiFueraDeEsteHost(request.hostname)) {
+    return reply.status(404).send({ error: 'Not found' });
+  }
+});
+
 // Cabeceras de seguridad.
 //
 // Fase 4 (cPanel): `public/_headers` es una convención exclusiva de Cloudflare
@@ -166,7 +174,10 @@ app.addHook('onSend', async (request, reply) => {
   // política no aporta nada sobre ellos.
   const tipo = reply.getHeader('content-type');
   if (typeof tipo === 'string' && tipo.startsWith('text/html')) {
-    reply.header('Content-Security-Policy', publicContentSecurityPolicy(config.cms.staticDir));
+    reply.header(
+      'Content-Security-Policy',
+      publicContentSecurityPolicy(distParaHost(request.hostname))
+    );
   }
 });
 

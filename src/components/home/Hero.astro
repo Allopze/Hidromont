@@ -96,9 +96,23 @@ const marcasFoto = cmsEditingEnabled
        full height, independent of where the vertically-centered text block
        actually lands. */
   }
+  {
+    /* P2-28 (auditoría 2026-09): en móvil el texto ocupa todo el ancho y el
+       degradado lateral se desvanecía justo encima de la fachada blanca: el
+       antetítulo y el subtítulo bajaban de 4,5:1. En móvil, velo uniforme; en
+       escritorio, el degradado lateral algo más denso en su tramo medio, que
+       es donde cae el subtítulo. Vale para cualquier foto que se ponga desde
+       el CMS. */
+  }
   <div
-    class="absolute inset-y-0 left-0 w-full lg:w-3/5 pointer-events-none"
-    style="background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.35) 55%, transparent 100%);"
+    class="absolute inset-0 pointer-events-none lg:hidden"
+    style="background: linear-gradient(180deg, rgba(15,36,51,0.6) 0%, rgba(15,36,51,0.75) 25%, rgba(15,36,51,0.75) 85%, rgba(15,36,51,0.6) 100%);"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    class="absolute inset-y-0 left-0 w-3/5 pointer-events-none hidden lg:block"
+    style="background: linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.58) 55%, transparent 100%);"
     aria-hidden="true"
   >
   </div>
@@ -113,7 +127,7 @@ const marcasFoto = cmsEditingEnabled
   <!-- Contenido: alineado a la izquierda -->
   <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28" data-cms-sobre-fondo>
     <div class="max-w-2xl">
-      <Eyebrow light class="text-on-photo">
+      <Eyebrow light class="text-on-photo !text-accent-light">
         <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>
       </Eyebrow>
 
@@ -133,7 +147,7 @@ const marcasFoto = cmsEditingEnabled
         as="p"
         entry={cmsEntry}
         field="subtitle"
-        class="text-white/90 mb-10 max-w-xl text-on-photo"
+        class="text-white mb-10 max-w-xl text-on-photo"
         style="font-size: var(--font-size-lead); line-height: 1.65; --reveal-delay: 0.1s;"
         type="textarea"
         reveal

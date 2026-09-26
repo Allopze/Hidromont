@@ -11,7 +11,7 @@ El sitio web está diseñado con un registro visual industrial y de alta precisi
 El proyecto está dividido en dos partes integradas pero desacopladas para mantener el sitio público extremadamente rápido y estático:
 
 1. **Sitio Web (Frontend)**:
-   - **Astro 5**: Generador de sitios estáticos (`output: 'static'`). Las
+   - **Astro 7**: Generador de sitios estáticos (`output: 'static'`). Las
      colecciones usan el Content Layer (`src/content.config.ts`), así que el
      frontmatter de proyectos y servicios se valida contra Zod al compilar.
    - **Tailwind CSS 3**: Framework de utilidades CSS integrado con variables y tokens de diseño.
@@ -19,7 +19,7 @@ El proyecto está dividido en dos partes integradas pero desacopladas para mante
 2. **CMS (Backend + Edición Visual)**:
    - **Fastify 5**: API Server en Node.js que corre en el puerto `8787` (por defecto).
    - **Better-SQLite3**: Persistencia local ultrarrápida mediante base de datos SQLite.
-   - **CMS Overlay**: Interfaz visual incluida con `PUBLIC_ENABLE_CMS=1` (o en `import.meta.env.DEV`). En producción se activa solo desde `editor.*`; `?cms=1` se admite únicamente en desarrollo. El build público de Cloudflare usa `PUBLIC_ENABLE_CMS=0`; la instalación integrada de Node en cPanel usa `1` para incluir la interfaz.
+   - **CMS Overlay**: Interfaz visual incluida con `PUBLIC_ENABLE_CMS=1` (o en `import.meta.env.DEV`). En producción se activa solo desde `editor.*`; `?cms=1` se admite únicamente en desarrollo. Con `PUBLIC_ENABLE_CMS=1`, `npm run build:log` compila dos perfiles: `dist/` sin editor para `hidromontchile.cl` y `dist-editor/` con editor para `editor.*` (ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)).
 
 ---
 
@@ -117,7 +117,7 @@ Y configura las variables necesarias:
 | `npm run dev`        | Inicia **únicamente** el servidor de desarrollo de Astro en `http://localhost:4321`.           |
 | `npm run cms`        | Inicia **únicamente** el servidor Fastify del CMS en `http://localhost:8787`.                  |
 | `npm run dev:cms`    | **Recomendado para editar:** Inicia Astro y el CMS juntos concurrentemente.                    |
-| `npm run cms:import` | Importa el contenido estático actual de los archivos a la base de datos SQLite.                |
+| `npm run cms:import` | Añade a la base las entradas y campos de la semilla que falten. Nunca modifica lo ya editado.  |
 | `npm run cms:export` | Exporta la base de datos SQLite a archivos JSON (`cms-content.json`) y colecciones Markdown.   |
 | `npm run cms:backup` | Genera una copia de seguridad fechada de la base de datos SQLite en `cms/data/backups/`.       |
 | `npm run build`      | Valida el código (`astro check`) y compila el sitio estático optimizado en la carpeta `/dist`. |
@@ -175,15 +175,15 @@ Utiliza el usuario y la contraseña entregados por la persona que administra el 
 ## 🌍 Publicación en Producción
 
 El sitio se compila estático y se sirve, junto con la API del CMS, desde un
-único proceso Node (`npm start` → `server.mjs` → `cms/server.ts`) en un cPanel
-con Node.js habilitado.
+único proceso Node (`npm start` → `server.mjs` → `cms/server.ts`) en un VPS,
+detrás de Caddy.
 
 Con esa topología el ciclo de publicación cierra solo: **«Publicar» exporta el
-contenido, ejecuta `npm run build` y el `dist/` regenerado es el mismo que el
-proceso sirve**, así que el cambio queda en línea al terminar. No hay paso
+contenido, ejecuta `npm run build:log` y los `dist/` y `dist-editor/`
+regenerados son los que el proceso sirve**, así que el cambio queda en línea al terminar. No hay paso
 manual de subida.
 
-**Guía paso a paso: [docs/DESPLIEGUE-CPANEL.md](docs/DESPLIEGUE-CPANEL.md)** — qué preguntar al proveedor, cómo migrar los 2,2 GB de imágenes, qué directorios deben sobrevivir a un redespliegue y qué hacer cuando algo falla.
+**Guía paso a paso: [docs/DESPLIEGUE-VPS.md](docs/DESPLIEGUE-VPS.md)** — preparar el servidor, desplegar con `npm run deploy`, qué directorios deben sobrevivir a un redespliegue y qué hacer cuando algo falla. (El despliegue antiguo en cPanel queda en [docs/historico/](docs/historico/DESPLIEGUE-CPANEL.md).)
 
 ### Antes del primer despliegue
 
@@ -202,9 +202,8 @@ originales de las imágenes, ~2 GB).
 
 ### Cabeceras y redirecciones
 
-`public/_headers` y `public/_redirects` son convenciones **exclusivas de
-Cloudflare Pages**. Al servir desde Node no hacen nada por sí solas, así que
-el propio servidor aplica el equivalente:
+`public/_headers` y `public/_redirects` son convenciones de Cloudflare Pages
+que Node no aplica por sí solo, así que el propio servidor hace el equivalente:
 
 - Las cabeceras de seguridad (CSP, `Permissions-Policy`, `X-Frame-Options`,
   HSTS) las pone `cms/security/headers.ts`.
@@ -265,4 +264,4 @@ El CMS cuenta con características de seguridad robustas para evitar problemas d
 - **Validación de archivos subidos**: Restringe la subida únicamente a formatos seguros (`.jpg`, `.jpeg`, `.png`, `.webp`) y verifica la correspondencia entre la extensión y el tipo MIME real del archivo para prevenir ataques de inyección de código.
 - **Límite de intentos de acceso**: Bloqueo temporal persistente de IP después de 10 intentos fallidos de inicio de sesión.
 - **Copias de seguridad**: Realiza copias de seguridad de la base de datos con regularidad ejecutando `npm run cms:backup`.
-- **Cabeceras del sitio público**: `public/_headers` define `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` y una CSP estricta para Cloudflare Pages. La CSP incluye el hash SHA-256 del script estático `.js classList` (M5); `'unsafe-inline'` se mantiene porque Astro genera JSON-LD que varía por página.
+- **Cabeceras del sitio público**: las pone `cms/security/headers.ts` (CSP con los hashes de los scripts inline del build servido, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` y HSTS). Detalle en [docs/SECURITY.md](docs/SECURITY.md).
