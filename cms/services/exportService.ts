@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
-import prettier from 'prettier';
-import { config } from '../config/unifiedConfig';
+import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import type { GalleryRepository } from '../repositories/GalleryRepository';
 import type { MediaRepository } from '../repositories/MediaRepository';
+import type { SlugRepository } from '../repositories/SlugRepository';
 import type { ImageService } from './imageService';
 import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import type { CmsEntry } from '../types/cms';
@@ -60,43 +60,59 @@ function writeFileSyncAtomic(target: string, data: string): boolean {
   return true;
 }
 
+/** Campos que el schema de Astro exige: se escriben aunque estén vacíos. */
+const CAMPOS_OBLIGATORIOS: Record<string, readonly string[]> = {
+  proyecto: ['nombre', 'alcance', 'categoria'],
+  servicio: ['titulo', 'resumen', 'icono'],
+};
+
 /**
  * GAL-1: guarda contra el borrado silencioso de la galería.
  *
  * `exportGallery()` regenera src/data/gallery.json **completo** desde SQLite.
- * Si la DB tiene menos items publicados que el JSON ya existente en disco, eso
- * casi siempre significa que el JSON se pobló por fuera del CMS (un script que
- * escribió el archivo directo) y que exportar destruiría contenido que la DB
- * nunca tuvo. Es exactamente lo que pasó al importar los álbumes de proyecto:
- * 168 fotos en el JSON contra 23 en la DB, y un solo clic en "Exportar" las
- * habría borrado sin un error ni una confirmación.
+ * Si el JSON ya existente en disco tiene fotos que la base nunca tuvo, eso
+ * significa que se pobló por fuera del CMS (un script que escribió el archivo
+ * directo) y exportar destruiría contenido que la base desconoce. Es lo que
+ * pasó al importar los álbumes de proyecto: 168 fotos en el JSON contra 23 en
+ * la base, y un clic en "Exportar" las habría borrado sin aviso.
  *
- * Un borrado genuino (el admin borra fotos de verdad en el CMS) también reduce
- * la cuenta, así que la guarda es saltable — pero de forma explícita y dejando
- * rastro, en vez de ser el comportamiento por defecto.
+ * P0-01 (auditoría 2026-09): la guarda comparaba solo el NÚMERO de fotos, así
+ * que borrar u ocultar una foto desde el propio panel también la disparaba, y
+ * a partir de ahí ninguna publicación salía. Ahora compara por id: solo aborta
+ * si falta alguna foto que el CMS no conoce (`knownIds`: las que existen en la
+ * base en cualquier estado y las borradas desde el panel). Una foto quitada,
+ * ocultada o sin imagen desde el CMS sale del sitio sin bloquear nada.
  */
-function assertNoSilentGalleryShrink(target: string, nextCount: number): void {
-  if (process.env.CMS_ALLOW_GALLERY_SHRINK === '1') return;
+export function assertNoSilentGalleryShrink(
+  target: string,
+  nextIds: string[],
+  knownIds: Set<string>
+): void {
+  if (config.cms.allowGalleryShrink) return;
   if (!fs.existsSync(target)) return;
 
-  let previousCount: number;
+  let previousIds: unknown[];
   try {
     const parsed = JSON.parse(fs.readFileSync(target, 'utf8')) as { items?: unknown[] };
     if (!Array.isArray(parsed.items)) return; // formato inesperado — no bloqueamos
-    previousCount = parsed.items.length;
+    previousIds = parsed.items.map((item) =>
+      item && typeof item === 'object' ? (item as { id?: unknown }).id : undefined
+    );
   } catch {
     return; // JSON ilegible: no hay nada que proteger
   }
 
-  if (nextCount >= previousCount) return;
+  const siguen = new Set(nextIds);
+  const desconocidas = previousIds.filter(
+    (id) => typeof id !== 'string' || (!siguen.has(id) && !knownIds.has(id))
+  );
+  if (desconocidas.length === 0) return;
 
   throw new Error(
-    `Export de galería abortado: la base de datos tiene ${nextCount} foto(s) publicada(s) ` +
-      `pero ${path.basename(target)} ya contiene ${previousCount}. Exportar borraría ` +
-      `${previousCount - nextCount} foto(s) que el CMS no conoce.\n` +
+    `No se publicó la galería: ${path.basename(target)} tiene ${desconocidas.length} foto(s) ` +
+      `que el CMS no conoce y que se perderían. Avisa a quien administra el sitio.\n` +
       `  • Si faltan fotos en el CMS, impórtalas antes: npx tsx cms/scripts/import-gallery-json.ts\n` +
-      `  • Si la reducción es intencional (borraste fotos a propósito), repite con ` +
-      `CMS_ALLOW_GALLERY_SHRINK=1.`
+      `  • Si la reducción es intencional, repite con CMS_ALLOW_GALLERY_SHRINK=1.`
   );
 }
 
@@ -154,6 +170,10 @@ export async function canonicalMarkdown(
 ): Promise<string> {
   const raw = matter.stringify(body.trim() + '\n', orderFrontmatterKeys(frontmatter));
   try {
+    // P3-04 (auditoría 2026-09): prettier es una dependencia de desarrollo e
+    // importarlo al cargar el módulo impedía arrancar el CMS con
+    // `npm ci --omit=dev`. Se carga aquí; sin él, se escribe sin formatear.
+    const prettier = (await import('prettier')).default;
     const options = await prettier.resolveConfig(target);
     return await prettier.format(raw, { ...options, filepath: target });
   } catch (error) {
@@ -177,7 +197,8 @@ export class ExportService {
     private readonly rootDir: string = config.rootDir,
     private readonly galleryRepository?: GalleryRepository,
     private readonly imageService?: ImageService,
-    private readonly mediaRepository?: MediaRepository
+    private readonly mediaRepository?: MediaRepository,
+    private readonly slugRepository?: SlugRepository
   ) {}
 
   /**
@@ -204,8 +225,10 @@ export class ExportService {
     removed: string[];
     skipped: SkippedEntry[];
     revertedToFallback: RevertedEntry[];
+    missingFiles: string[];
   }> {
     const skipped: SkippedEntry[] = [];
+    this.faltantes = [];
     // Solo se exporta contenido publicado: un borrador (status 'draft') nunca
     // Carga todas las entradas. Para cada una, exporta su archivo .md con sus
     // valores por defecto (page content) o conserva el .md previo (colecciones).
@@ -251,7 +274,13 @@ export class ExportService {
       )
       .map((entry) => ({ id: entry.id, kind: entry.kind, title: entry.title }));
 
-    return { files: written, removed, skipped, revertedToFallback };
+    return {
+      files: written,
+      removed,
+      skipped,
+      revertedToFallback,
+      missingFiles: [...this.faltantes],
+    };
   }
 
   /**
@@ -260,6 +289,24 @@ export class ExportService {
    * redimensionar.
    */
   private static readonly LOCAL_ASSET = /^\/(?:fotos|logos-clientes|gallery|og|assets|uploads)\//;
+
+  /**
+   * P1-05 (auditoría 2026-09): campos publicados que apuntan a un archivo que
+   * no existe. Antes solo se avisaba por stderr y la publicación salía «bien»
+   * con la imagen rota; ahora se devuelve para que el panel lo diga.
+   */
+  private faltantes: string[] = [];
+
+  private anotarSiFalta(entryId: string, key: string, value: unknown): void {
+    if (typeof value !== 'string' || !ExportService.LOCAL_ASSET.test(value)) return;
+    try {
+      if (!fs.existsSync(resolvePublicAssetPath(value))) {
+        this.faltantes.push(`${entryId}.${key} → ${value}`);
+      }
+    } catch {
+      // Ruta que no se puede resolver: no es un archivo local que comprobar.
+    }
+  }
 
   /**
    * Derivados responsivos de un campo de imagen del contenido.
@@ -345,6 +392,9 @@ export class ExportService {
                   Object.entries(entry.fields).map(async ([key, field]) => {
                     // Un video no tiene derivados (se sirve tal cual), pero sí
                     // encuadre: se recorta igual que una foto en la cabecera.
+                    if (field.type === 'video' || field.type === 'image') {
+                      this.anotarSiFalta(entry.id, key, field.value);
+                    }
                     if (field.type === 'video') {
                       const focal = this.enfoqueDe(field.value);
                       return [
@@ -397,6 +447,27 @@ export class ExportService {
   private pruneStaleCollectionFiles(entries: CmsEntry[]): string[] {
     const removed: string[] = [];
 
+    // P1-03 (auditoría 2026-09): con el historial de slugs se poda TODO slug
+    // que alguna ficha tuvo y que hoy no es el vigente de una ficha publicada:
+    // direcciones intermedias, fichas borradas y despublicadas. Un .md que el
+    // CMS nunca conoció (añadido a mano en git) sigue sin tocarse.
+    if (this.slugRepository) {
+      for (const kind of ['servicio', 'proyecto'] as const) {
+        const collection = kind === 'servicio' ? 'servicios' : 'proyectos';
+        const vigentes = new Set(
+          entries.filter((e) => e.kind === kind && e.status === 'published').map((e) => e.slug)
+        );
+        for (const slug of this.slugRepository.allSlugs(kind)) {
+          if (vigentes.has(slug)) continue;
+          const target = path.join(this.rootDir, 'src', 'content', collection, `${slug}.md`);
+          if (fs.existsSync(target)) {
+            fs.unlinkSync(target);
+            removed.push(path.relative(this.rootDir, target));
+          }
+        }
+      }
+    }
+
     for (const entry of entries) {
       const collection = entry.kind === 'servicio' ? 'servicios' : 'proyectos';
       const idPrefix = `${collection}.`;
@@ -440,8 +511,12 @@ export class ExportService {
     if (!enums) return null;
 
     for (const [key, allowed] of Object.entries(enums)) {
+      // El servicio de un proyecto se valida contra los servicios que existen
+      // (ver exportCollection), no contra una lista fija: un servicio creado
+      // desde el panel debe poder asignarse.
+      if (entry.kind === 'proyecto' && key === 'servicio') continue;
       const value = entry.fields[key]?.value;
-      if (value === undefined) continue;
+      if (value === undefined || value === null || value === '') continue;
       if (!allowed.includes(String(value))) {
         return `${key} "${value}" inválido (valores permitidos: ${allowed.join(', ')})`;
       }
@@ -452,6 +527,9 @@ export class ExportService {
   private async exportCollection(entries: CmsEntry[], skipped: SkippedEntry[]): Promise<string[]> {
     const written: string[] = [];
     const writtenTargets = new Set<string>();
+    const serviciosPublicados = new Set(
+      entries.filter((e) => e.kind === 'servicio').map((e) => e.slug)
+    );
 
     for (const entry of entries) {
       const validationError = this.validateCollectionEntry(entry);
@@ -480,9 +558,33 @@ export class ExportService {
       for (const [key, field] of Object.entries(entry.fields)) {
         if (key === 'body') {
           body = String(field.value ?? '');
-        } else {
-          frontmatter[key] = field.value;
+          continue;
         }
+        // P1-02/P1-04 (auditoría 2026-09): una ficha nueva nace con sus campos
+        // opcionales vacíos, y vaciar «Orden» en el formulario manda `null`.
+        // El schema del sitio rechaza `null` y un enum vacío, así que un valor
+        // vacío en un campo que no es obligatorio no se escribe: Astro aplica
+        // su valor por defecto (orden 100) o lo trata como ausente.
+        const vacio =
+          field.value === null ||
+          field.value === undefined ||
+          (typeof field.value === 'string' && field.value.trim() === '') ||
+          (Array.isArray(field.value) && field.value.length === 0);
+        if (vacio && !CAMPOS_OBLIGATORIOS[entry.kind]?.includes(key)) continue;
+        // El servicio de un proyecto debe existir y estar publicado: si no, el
+        // enlace «Ver servicio relacionado» llevaría a un 404. Se omite y la
+        // ficha enlaza por su categoría.
+        if (
+          entry.kind === 'proyecto' &&
+          key === 'servicio' &&
+          !serviciosPublicados.has(String(field.value))
+        ) {
+          process.stderr.write(
+            `  ⚠ ${entry.id}: el servicio "${field.value}" no existe o no está publicado; se omite el enlace.\n`
+          );
+          continue;
+        }
+        frontmatter[key] = field.value;
       }
 
       // C-1: en bases anteriores al índice único dos entradas publicadas
@@ -509,7 +611,7 @@ export class ExportService {
     return written;
   }
 
-  async exportGallery(): Promise<{ file: string; count: number }> {
+  async exportGallery(): Promise<{ file: string; count: number; sinImagen?: number }> {
     if (!this.galleryRepository || !this.imageService) {
       throw new Error('GalleryRepository e ImageService requeridos para exportGallery');
     }
@@ -578,12 +680,58 @@ export class ExportService {
       items: processedItems,
     };
 
-    assertNoSilentGalleryShrink(target, processedItems.length);
+    const knownIds =
+      typeof this.galleryRepository.knownItemIds === 'function'
+        ? this.galleryRepository.knownItemIds()
+        : new Set(items.map((item) => item.id));
+    assertNoSilentGalleryShrink(
+      target,
+      processedItems.map((item) => item.id),
+      knownIds
+    );
 
     writeFileSyncAtomic(target, JSON.stringify(payload, null, 2) + '\n');
     if (skippedOrphan > 0) {
       process.stderr.write(`  ⚠ ${skippedOrphan} gallery item(s) saltado(s) por media huerfano.\n`);
     }
-    return { file: path.relative(this.rootDir, target), count: processedItems.length };
+    return {
+      file: path.relative(this.rootDir, target),
+      count: processedItems.length,
+      // P3-08: fotos de la galería cuya imagen se borró. No salen en el sitio,
+      // y la publicación lo dice en vez de terminar «bien» sin mencionarlo.
+      sinImagen: skippedOrphan,
+    };
+  }
+
+  /**
+   * P3-08 (auditoría 2026-09): nadie borraba los derivados de fotos
+   * reemplazadas o quitadas: 48 sin referencia (4,7 MB) seguían versionados,
+   * desplegados y accesibles. Tras exportar la galería y el contenido, se
+   * borra de `public/gallery/derived/` todo derivado que no citen ni
+   * `gallery.json` ni `cms-content.json`. Solo toca archivos con el nombre que
+   * genera `ImageService` (`<hash>-<ancho>.webp`).
+   */
+  pruneOrphanDerivatives(): { removed: string[] } {
+    const dir = path.join(this.rootDir, 'public', 'gallery', 'derived');
+    if (!fs.existsSync(dir)) return { removed: [] };
+    const citados = new Set<string>();
+    for (const rel of ['src/data/gallery.json', 'src/data/cms-content.json']) {
+      const archivo = path.join(this.rootDir, rel);
+      if (!fs.existsSync(archivo)) continue;
+      for (const m of fs
+        .readFileSync(archivo, 'utf8')
+        .matchAll(/\/gallery\/derived\/([^\s",]+)/g)) {
+        citados.add(m[1]);
+      }
+    }
+    // Sin nada citado, algo salió mal al exportar: mejor no borrar.
+    if (citados.size === 0) return { removed: [] };
+    const removed: string[] = [];
+    for (const nombre of fs.readdirSync(dir)) {
+      if (!/^[0-9a-f]{8}-\d+\.webp$/.test(nombre) || citados.has(nombre)) continue;
+      fs.rmSync(path.join(dir, nombre), { force: true });
+      removed.push(nombre);
+    }
+    return { removed };
   }
 }

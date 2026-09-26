@@ -84,6 +84,7 @@ for (const path of [
 test('axe CMS login scene', async ({ page, context }) => {
   await context.clearCookies();
   await page.goto('/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
   await expect(page.locator('form[data-login]')).toBeVisible();
   await expectNoSeriousViolations(page, 'CMS login', '.hm-cms-shell');
 });
@@ -94,6 +95,7 @@ test('axe CMS collections, gallery and history scenes', async ({ page }) => {
   });
   expect(login.ok()).toBeTruthy();
   await page.goto('/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
   for (const [action, label] of [
     ['collections', 'CMS collections'],
@@ -147,7 +149,8 @@ for (const width of [375, 1440]) {
           d.open = true;
         })
       );
-      await page.waitForTimeout(150);
+      // Un fotograma para que el pie abierto se maquete antes de medir.
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
 
       const encontrados = await page.evaluate(() => {
         const out: string[] = [];

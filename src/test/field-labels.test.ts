@@ -40,11 +40,15 @@ describe('fieldLabel', () => {
   });
 
   it('resuelve los sufijos del formulario', () => {
-    expect(fieldLabel('nameLabel')).toBe('Rótulo del campo name');
-    expect(fieldLabel('emailPlaceholder')).toBe('Texto de ejemplo del campo email');
-    expect(fieldLabel('messageRequiredError')).toBe('Error si message está vacío');
-    expect(fieldLabel('emailInvalidError')).toBe('Error si email no es válido');
-    expect(fieldLabel('nameTooShortError')).toBe('Error si name es demasiado corto');
+    // P2-22: con el nombre que ve el visitante, no la clave en inglés.
+    expect(fieldLabel('nameLabel')).toBe('Nombre del campo «Nombre»');
+    expect(fieldLabel('companyLabel')).toBe('Nombre del campo «Empresa»');
+    expect(fieldLabel('emailPlaceholder')).toBe('Texto de ejemplo del campo «Correo»');
+    expect(fieldLabel('phonePlaceholder')).toBe('Texto de ejemplo del campo «Teléfono»');
+    expect(fieldLabel('messageRequiredError')).toBe('Error si «Mensaje» está vacío');
+    expect(fieldLabel('emailInvalidError')).toBe('Error si «Correo» no es válido');
+    expect(fieldLabel('nameTooShortError')).toBe('Error si «Nombre» es demasiado corto');
+    expect(fieldLabel('genericTooShortError')).toBe('Error si un campo es demasiado corto');
   });
 
   it('humaniza cualquier clave desconocida en vez de devolverla cruda', () => {
@@ -83,5 +87,25 @@ describe('fieldLabel', () => {
       return soloCapitalizada && !FIELD_LABELS[key];
     });
     expect(sinRotulo).toEqual([]);
+  });
+
+  /**
+   * P2-22 (auditoría 2026-09): «Rótulo del campo company», «Error si generic
+   * es demasiado corto». Ningún rótulo de una clave sembrada puede llevar una
+   * palabra en inglés de las que forman las claves.
+   */
+  it('ningún rótulo sembrado deja a la vista una clave en inglés', () => {
+    const seed = readFileSync('cms/content/defaultContent.ts', 'utf8');
+    const claves = [
+      ...new Set(
+        [...seed.matchAll(/^\s{4,}'?([A-Za-z][A-Za-z0-9_-]*)'?:\s*\{\s*type:/gm)].map((m) => m[1])
+      ),
+    ];
+    const INGLES =
+      /\b(name|company|email|phone|message|generic|label|placeholder|title|subtitle|value|desc|href|alt|image|button|link|required|invalid|body|text)\b/i;
+    const conIngles = claves
+      .map((key) => [key, fieldLabel(key)] as const)
+      .filter(([, label]) => INGLES.test(label));
+    expect(conIngles).toEqual([]);
   });
 });

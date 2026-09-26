@@ -68,6 +68,24 @@ test.describe('Build gate — cualquier perfil', () => {
     expect(htmlFiles().length, 'se esperaba al menos una página en dist/').toBeGreaterThan(0);
   });
 
+  test('dist/ no es más viejo que el código que dice validar', () => {
+    // P1-09 (auditoría 2026-09): la suite pasaba contra un dist/ de cuatro
+    // commits atrás y daba verdes falsos. Si algún archivo de src/ es más nuevo
+    // que el build, este gate no está mirando lo que se va a desplegar.
+    const built = statSync(join(DIST_DIR, 'index.html')).mtimeMs;
+    const masNuevos: string[] = [];
+    const recorrer = (dir: string) => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry);
+        const st = statSync(full);
+        if (st.isDirectory()) recorrer(full);
+        else if (st.mtimeMs > built + 1000) masNuevos.push(full);
+      }
+    };
+    recorrer(join(process.cwd(), 'src'));
+    expect(masNuevos, 'dist/ está desactualizado: ejecuta el build antes del gate').toEqual([]);
+  });
+
   test('no hay credenciales ni rutas del servidor en el HTML', () => {
     // Vale para los dos perfiles: `define:vars` inyecta valores del entorno en
     // un script inline, así que una variable mal nombrada podría acabar aquí.
@@ -98,6 +116,33 @@ test.describe('Build gate — cualquier perfil', () => {
 
     const index = readFileSync(join(DIST_DIR, 'index.html'), 'utf8');
     expect(index).toContain(String(titulo));
+  });
+});
+
+test.describe('Build gate — SEO (P3-06, P3-07)', () => {
+  test('el sitemap no lista páginas que no se indexan', () => {
+    const sitemap = readFileSync(join(DIST_DIR, 'sitemap-0.xml'), 'utf8');
+    expect(sitemap).not.toContain('/contacto/gracias');
+    expect(sitemap).not.toContain('/404');
+  });
+
+  test('la 404 no declara canonical', () => {
+    expect(readFileSync(join(DIST_DIR, '404.html'), 'utf8')).not.toContain('rel="canonical"');
+  });
+
+  test('cada página lleva una imagen para redes de 1200×630 y una description corta', () => {
+    for (const { file, content } of readAll()) {
+      if (/404\.html$/.test(file)) continue;
+      expect(content, file).toContain('<meta property="og:image:width" content="1200"');
+      expect(content, file).toContain('<meta property="og:image:height" content="630"');
+      const description = /<meta name="description" content="([^"]*)"/.exec(content)?.[1] ?? '';
+      expect(description.length, file).toBeLessThanOrEqual(160);
+    }
+  });
+
+  test('hay favicon cuadrado', () => {
+    expect(existsSync(join(DIST_DIR, 'favicon.ico'))).toBe(true);
+    expect(existsSync(join(DIST_DIR, 'favicon-32.png'))).toBe(true);
   });
 });
 
@@ -142,17 +187,19 @@ test.describe('Build gate — perfil con CMS (sitio y editor en el mismo proceso
 
   test('el overlay sigue detrás de su interruptor', () => {
     // El overlay no debe activarse por el mero hecho de estar presente: en
-    // producción exige el host `editor.*`; `?cms=1` solo vale en desarrollo.
-    // Sin sesión, el host editor solo muestra el login.
-    //
-    // La comprobación cambia de sitio, no de intención: el interruptor ya no
-    // está en el HTML —donde iba cuando el editor se incrustaba entero en cada
-    // página— sino en el módulo que Astro empaqueta.
+    // producción la única condición es el host `editor.*`. `?cms=1` solo vale
+    // en desarrollo, y desde a954dda Vite elimina esa rama del build: si
+    // reaparece, cualquiera podría activar el editor en el dominio público.
     const js = readAllJs().map(({ content }) => content);
-    const conInterruptor = js.filter(
-      (c) => c.includes('hidromont:cms') && c.includes('get("cms")')
-    );
-    expect(conInterruptor.length, 'ningún módulo comprueba ?cms=1').toBeGreaterThan(0);
+    // Con o sin comillas invertidas: el minificador de Astro 7 las usa.
+    const conHost = js.filter((c) => /startsWith\([`"']editor\.[`"']\)/.test(c));
+    expect(conHost.length, 'ningún módulo comprueba el host editor.*').toBeGreaterThan(0);
+    // La función pura `shouldActivateOverlay` conserva la rama de `?cms=1`,
+    // pero en producción se llama con `allowQueryActivation = false` y Vite
+    // elimina la persistencia en localStorage: si reaparece, la marca de
+    // desarrollo volvería a activar el editor en el dominio público.
+    const conPersistencia = js.filter((c) => /setItem\([`"']hidromont:cms[`"']/.test(c));
+    expect(conPersistencia, '?cms=1 no debe activar el editor en producción').toEqual([]);
   });
 
   test('el editor no se incrusta en el HTML de cada página', () => {

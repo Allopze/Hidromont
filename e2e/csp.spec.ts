@@ -40,7 +40,9 @@ test.describe('CSP del sitio servido por Node', () => {
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain('connect-src');
 
-    await page.waitForTimeout(1000);
+    // Las violaciones llegan como eventos durante la carga: se espera a que
+    // termine la red, no un tiempo fijo.
+    await page.waitForLoadState('networkidle');
     expect(violations).toEqual([]);
 
     // El detector de JS es un script inline: si la CSP no lo cubre, se

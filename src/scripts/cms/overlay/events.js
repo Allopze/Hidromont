@@ -24,7 +24,7 @@ import { applyDraft, clearDraft, scheduleDraftSave } from './drafts';
 import { api, ejecutarUnaVez, setButtonLoading } from './api';
 import { deshacer, ofrecerDeshacer } from './undo';
 import { closePanel, openPanel } from './panel';
-import { ensureSession, loginView } from './auth';
+import { ensureSession, errorAlAbrir, loginView } from './auth';
 import {
   applyMediaSelection,
   loadMediaPicker,
@@ -32,6 +32,7 @@ import {
   renderMediaPicker,
   schedulePreviewUpdate,
   searchMediaPicker,
+  pedirDescripcion,
 } from './media';
 import {
   alternarPrevisualizacion,
@@ -40,6 +41,12 @@ import {
   navegarBarra,
   refrescarPrevisualizacion,
 } from './richtext';
+import {
+  cerrarDialogoEnlace,
+  pegarComoTexto,
+  repintarVisual,
+  volcarVisual,
+} from './richtext-visual';
 import { ESTADOS_DE_CAMPO, saveEdit, selectElement, setEditStatus, syncLinkValue } from './fields';
 import {
   agregarElemento,
@@ -49,9 +56,23 @@ import {
   syncListValue,
 } from './list-editor';
 import { confirmar, hayConfirmacionAbierta } from './confirm';
-import { mostrarArchivoElegido, registrarArrastre } from './dropzone';
-import { abrirPublicacion, exportNoticeMarkup, loadPublishJobs, publicar } from './publish';
-import { ADMIN_AUDIT_PAGE, adminState, loadAdmin, loadRevisions, renderAdmin } from './admin';
+import { mostrarPaginas } from './paginas';
+import { mostrarArchivoElegido, registrarArrastre, validarArchivo } from './dropzone';
+import {
+  abrirPublicacion,
+  estaPublicando,
+  exportNoticeMarkup,
+  loadPublishJobs,
+  publicar,
+} from './publish';
+import {
+  ADMIN_AUDIT_PAGE,
+  adminState,
+  loadAdmin,
+  loadRevisions,
+  renderAdmin,
+  revisionesAbiertas,
+} from './admin';
 import {
   GALLERY_PAGE_SIZE,
   galleryFilter,
@@ -61,6 +82,7 @@ import {
   loadGalleryAlbums,
   loadGalleryCategories,
   loadGalleryItemsList,
+  moverEnGaleria,
   resetGalleryAlbumSearch,
   resetGalleryCategorySearch,
   scheduleGalleryFilter,
@@ -117,6 +139,22 @@ function markDirty(form) {
  *
  * Se llama una sola vez, desde `mount()`.
  */
+/** Acciones que sustituyen lo que muestra el panel (P2-20). */
+const CAMBIAN_DE_VISTA = new Set([
+  'back-to-collections',
+  'gallery-items',
+  'gallery-albums',
+  'gallery-cats',
+  'tab-kind',
+  'collections',
+  'gallery',
+  'jobs',
+  'admin',
+  'pages',
+  'publish',
+  'edit-page-entry',
+]);
+
 export function registerEvents() {
   document.addEventListener(
     'click',
@@ -148,6 +186,48 @@ export function registerEvents() {
       const action =
         target instanceof Element ? target.closest('[data-action]')?.dataset.action : null;
 
+      // P2-24 (auditoría 2026-09): durante una publicación se podía abrir
+      // Colecciones u otra vista desde la barra; el resultado de la
+      // publicación la reemplazaba después, con lo que se estuviera
+      // escribiendo. Mientras publica, la barra y el menú compacto esperan.
+      if (
+        action &&
+        estaPublicando() &&
+        target instanceof Element &&
+        target.closest('.hm-cms-bar, .hm-cms-mobile-sheet')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      // P2-20 (auditoría 2026-09): la X preguntaba antes de descartar lo
+      // escrito, pero «Volver», «Cancelar», las pestañas y las vistas de la
+      // barra lo descartaban sin avisar. Ahora todas preguntan lo mismo.
+      if (
+        action &&
+        CAMBIAN_DE_VISTA.has(action) &&
+        isFormDirty &&
+        panel.classList.contains('open') &&
+        target instanceof Element &&
+        !target.closest('[data-cms-dialog]')
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        const salir = await confirmar({
+          titulo: 'Tienes cambios sin guardar',
+          mensaje:
+            'Si sales ahora, lo escrito se queda como borrador en este equipo y podrás recuperarlo al volver a abrirlo.',
+          aceptar: 'Salir sin guardar',
+          cancelar: 'Seguir editando',
+          peligro: true,
+        });
+        if (!salir) return;
+        setFormDirty(false);
+        target.closest('[data-action]')?.click();
+        return;
+      }
+
       // Menú «Más» de la barra: se abre con su botón y se cierra al elegir
       // una opción o al pulsar en cualquier otro sitio.
       if (action === 'bar-menu') {
@@ -165,6 +245,15 @@ export function registerEvents() {
         event.preventDefault();
         const boton = target.closest('[data-action="rt-format"]');
         if (boton) aplicarFormato(boton);
+        return;
+      }
+      if (
+        (action === 'rt-enlace-poner' || action === 'rt-enlace-cancelar') &&
+        target instanceof Element
+      ) {
+        event.preventDefault();
+        const boton = target.closest('[data-action]');
+        if (boton) cerrarDialogoEnlace(boton, action === 'rt-enlace-poner');
         return;
       }
       if (action === 'rt-preview' && target instanceof Element) {
@@ -227,6 +316,12 @@ export function registerEvents() {
       if (action === 'jobs') {
         loadPublishJobs();
       }
+      if (action === 'pages') {
+        mostrarPaginas();
+      }
+      if (action === 'abrir-acceso') {
+        loginView();
+      }
       if (action === 'admin') {
         loadAdmin();
       }
@@ -243,6 +338,27 @@ export function registerEvents() {
           clearDraft(form);
           form.querySelector('[data-draft-notice]')?.remove();
         }
+      }
+      if (action === 'cerrar-otras-sesiones' && target instanceof Element) {
+        event.preventDefault();
+        const boton = target.closest('button');
+        const estado = boton
+          ?.closest('.hm-cms-admin-section')
+          ?.querySelector('[data-sesiones-estado]');
+        if (!boton || !estado) return;
+        setButtonLoading(boton, true, 'Cerrando…');
+        try {
+          const r = await api('/api/cms/sessions/cerrar-otras', { method: 'POST' });
+          estado.textContent =
+            r.cerradas > 0
+              ? `Listo: ${r.cerradas === 1 ? 'se cerró 1 sesión' : `se cerraron ${r.cerradas} sesiones`}.`
+              : 'No había otras sesiones abiertas.';
+        } catch (error) {
+          estado.textContent = error.message;
+        } finally {
+          setButtonLoading(boton, false);
+        }
+        return;
       }
       if (action === 'admin-more-audit') {
         adminState.auditShown += ADMIN_AUDIT_PAGE;
@@ -455,10 +571,31 @@ export function registerEvents() {
           peligro: true,
         });
         if (!confirmed) return;
-        try {
-          const r = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
+        const borrar = (confirmado) =>
+          api(`/api/cms/entries/${encodeURIComponent(entryId)}${confirmado ? '?confirm=1' : ''}`, {
             method: 'DELETE',
           });
+        try {
+          let r;
+          try {
+            r = await borrar(false);
+          } catch (error) {
+            // P1-03: un servicio que citan proyectos pide una segunda
+            // confirmación con la lista, como las categorías con fotos.
+            if (
+              error.status !== 409 ||
+              !(await confirmar({
+                titulo: `¿Eliminar «${title}» de todos modos?`,
+                mensaje: error.message,
+                aceptar: 'Eliminar igualmente',
+                peligro: true,
+              }))
+            ) {
+              if (error.status === 409) return;
+              throw error;
+            }
+            r = await borrar(true);
+          }
           setGlobalState('unsaved');
           await loadCollections(activeCollectionKind);
           ofrecerDeshacer(r.undo, () => loadCollections(activeCollectionKind));
@@ -493,14 +630,41 @@ export function registerEvents() {
         markDirty(form);
         return;
       }
+      if (action === 'gallery-move' && target instanceof Element) {
+        event.preventDefault();
+        const boton = target.closest('[data-action="gallery-move"]');
+        if (boton instanceof HTMLButtonElement && !boton.disabled) {
+          moverEnGaleria(boton)
+            .then(() => setGlobalState('unsaved'))
+            .catch((error) => {
+              boton.disabled = false;
+              boton
+                .closest('.hm-cms-stack, form')
+                ?.insertAdjacentHTML(
+                  'afterbegin',
+                  `<p class="hm-cms-error" role="alert">No se pudo cambiar el orden: ${escapeHtml(error.message)}</p>`
+                );
+            });
+        }
+        return;
+      }
       if (action === 'revisions' && target instanceof Element) {
         const origen = target.closest('[data-entry-id]');
         const entryId = origen?.dataset.entryId;
-        if (entryId) loadRevisions(entryId, origen.dataset.entryTitle || '');
+        if (entryId)
+          loadRevisions(entryId, origen.dataset.entryTitle || '', {
+            field: origen.dataset.field || '',
+            fieldName: origen.dataset.fieldName || '',
+            origen: origen.dataset.origen || '',
+          });
       }
       if (action === 'back-to-editor') {
-        if (state.selected && state.entry) {
-          selectElement(state.selected).catch((error) => loginView(error.message));
+        const boton = target instanceof Element ? target.closest('[data-action]') : null;
+        // P2-26: desde una ficha de Colecciones, «Volver» cerraba el panel entero.
+        if (boton?.dataset.origen === 'ficha' && boton.dataset.entryId) {
+          showEntryForm(boton.dataset.entryId).catch(errorAlAbrir);
+        } else if (state.selected && state.entry) {
+          selectElement(state.selected).catch(errorAlAbrir);
         } else {
           closePanel();
         }
@@ -512,28 +676,32 @@ export function registerEvents() {
         if (!btn) return;
         const entryId = btn.dataset.entryId;
         const revisionId = btn.dataset.revisionId;
-        const version = btn.dataset.revisionVersion;
+        const fecha = btn.dataset.revisionDate || '';
+        const campo = btn.dataset.field || '';
         if (!entryId || !revisionId) return;
 
         const confirmed = await confirmar({
-          titulo: `¿Volver a la versión ${version}?`,
-          mensaje:
-            'Los textos actuales se reemplazarán por los de esa versión. La versión actual queda en el historial por si quieres recuperarla.',
+          titulo: campo ? '¿Volver a este valor?' : `¿Volver a la versión del ${fecha}?`,
+          mensaje: campo
+            ? 'Solo cambia este campo; el resto queda como está. El valor actual queda en el historial por si quieres recuperarlo.'
+            : 'Todos los campos de esta ficha volverán a como estaban en esa versión. La versión actual queda en el historial por si quieres recuperarla.',
           aceptar: 'Restaurar',
         });
         if (!confirmed) return;
 
         setButtonLoading(btn, true, 'Restaurando...');
         try {
+          const query = campo ? `?field=${encodeURIComponent(campo)}` : '';
           await api(
-            `/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}`,
+            `/api/cms/revisions/${encodeURIComponent(entryId)}/restore/${encodeURIComponent(revisionId)}${query}`,
             {
               method: 'POST',
             }
           );
           setGlobalState('unsaved');
-          // Reload revisions view to reflect the new current version
-          await loadRevisions(entryId);
+          // Se repinta la misma vista (campo u origen incluidos) con la nueva versión actual.
+          const abiertas = revisionesAbiertas;
+          await loadRevisions(entryId, abiertas?.titulo || '', abiertas?.opciones || {});
         } catch (error) {
           openPanel(`<p class="hm-cms-error">${escapeHtml(error.message)}</p>`);
         } finally {
@@ -562,7 +730,7 @@ export function registerEvents() {
           altField: 'videoAlt',
           posterField: foto.dataset.cmsField,
         });
-        selectElement(video).catch((error) => loginView(error.message));
+        selectElement(video).catch(errorAlAbrir);
         return;
       }
       // La foto de respaldo del video: está en la página, oculta tras él.
@@ -576,7 +744,7 @@ export function registerEvents() {
           (video.previousElementSibling instanceof HTMLImageElement
             ? video.previousElementSibling
             : null);
-        if (respaldo) selectElement(respaldo).catch((error) => loginView(error.message));
+        if (respaldo) selectElement(respaldo).catch(errorAlAbrir);
         return;
       }
       if (action === 'quitar-video') {
@@ -608,6 +776,7 @@ export function registerEvents() {
         if (form.elements.file) form.elements.file.value = '';
         form.querySelectorAll('[data-action="elegir-icono"]').forEach((b) => {
           b.setAttribute('aria-checked', String(b === boton));
+          b.setAttribute('tabindex', b === boton ? '0' : '-1');
         });
         const propio = form.querySelector('[data-icono-propio]');
         if (propio) propio.hidden = true;
@@ -716,6 +885,16 @@ export function registerEvents() {
         return;
       }
 
+      // P1-07: Ctrl/Cmd/Mayús+clic sobre un enlace navega como siempre (abre
+      // otra pestaña o ventana) en vez de abrir el editor.
+      if (
+        editable &&
+        (event.metaKey || event.ctrlKey || event.shiftKey) &&
+        target instanceof Element &&
+        target.closest('a[href]')
+      ) {
+        return;
+      }
       if (editable && !panel.contains(editable)) {
         event.preventDefault();
         event.stopPropagation();
@@ -739,7 +918,7 @@ export function registerEvents() {
         ) {
           return;
         }
-        selectElement(editable).catch((error) => loginView(error.message));
+        selectElement(editable).catch(errorAlAbrir);
       }
     },
     true
@@ -766,6 +945,11 @@ export function registerEvents() {
           }),
         });
         state.csrfToken = result.csrfToken;
+        // P2-18: el botón se quedaba en «Entrando…» y el formulario, con la
+        // contraseña escrita, seguía en el DOM: si la sesión caducaba, volvía
+        // a aparecer relleno y bloqueado.
+        setButtonLoading(botonEntrar, false);
+        form.reset();
         // C-3: sin esto la barra se queda sin botones tras entrar. El estado
         // autenticado solo lo fijaba ensureSession(), que corre al cargar la
         // página y en cada acción — pero las acciones son justo los botones
@@ -774,7 +958,10 @@ export function registerEvents() {
         // Se reusa ensureSession() en vez de llamar a setAuthenticatedUI(true)
         // a secas para confirmar que la cookie vuelve de verdad: el modo de
         // fallo clásico aquí es emitirla para 127.0.0.1 y pedirla a localhost.
-        if (await ensureSession()) closePanel();
+        if (await ensureSession()) {
+          await closePanel(true);
+          form.remove();
+        }
       } catch (error) {
         setButtonLoading(botonEntrar, false);
         const espera = error.retryAfter
@@ -793,7 +980,9 @@ export function registerEvents() {
             setEditStatus(
               form,
               'error',
-              `<span class="hm-cms-error" role="alert">No se pudo guardar: ${escapeHtml(error.message)}</span>`,
+              error.status === 401
+                ? '<span class="hm-cms-error" role="alert">Tu sesión terminó y no se guardó. Lo escrito se queda como borrador en este equipo: <button type="button" class="secondary small" data-action="abrir-acceso">Entrar de nuevo</button> y vuelve a guardar.</span>'
+                : `<span class="hm-cms-error" role="alert">No se pudo guardar: ${escapeHtml(error.message)}</span>`,
               { html: true }
             );
           }),
@@ -1020,6 +1209,10 @@ export function registerEvents() {
     if (warning) warning.hidden = target.value !== 'draft';
   });
 
+  document.addEventListener('paste', (event) => {
+    pegarComoTexto(event);
+  });
+
   document.addEventListener('input', (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
@@ -1059,14 +1252,21 @@ export function registerEvents() {
 
   // Elegir un archivo en el editor de un campo de imagen: se muestra qué foto
   // quedó elegida y se ve en la vista previa antes de guardar.
-  document.addEventListener('change', (event) => {
+  document.addEventListener('change', async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement) || target.type !== 'file') return;
+    // P2-19: primero se comprueba; un archivo que no vale no llega a la vista previa.
+    if (!(await validarArchivo(target))) return;
     mostrarArchivoElegido(target);
     const form = target.form;
     const file = target.files?.[0];
     if (!file || !form?.matches('[data-edit]')) return;
     markDirty(form);
+    // P2-13: una foto nueva no hereda la descripción de la anterior.
+    if (form.elements.alt && form.elements.alt.value === form.elements.alt.dataset.inicial) {
+      form.elements.alt.value = '';
+      pedirDescripcion(form);
+    }
     const local = URL.createObjectURL(file);
     // Un icono propio: se ve ya en la tarjeta, y deja de estar elegido el de
     // la lista.
@@ -1098,10 +1298,11 @@ export function registerEvents() {
   });
 
   // Handle file upload preview in gallery item form
-  document.addEventListener('change', (event) => {
+  document.addEventListener('change', async (event) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement)) return;
     if (!target.matches('[data-gallery-upload]')) return;
+    if (!(await validarArchivo(target))) return;
     const file = target.files?.[0];
     if (!file) return;
     const form = target.closest('[data-gallery-item-form]');
@@ -1123,6 +1324,12 @@ export function registerEvents() {
 
   document.addEventListener('input', (event) => {
     const target = event.target;
+    // P2-23: lo que se escribe en el editor visual pasa a su textarea, que
+    // emite su propio `input` y sigue el camino de siempre.
+    if (target instanceof HTMLElement && target.matches('[data-richtext-visual]')) {
+      volcarVisual(target);
+      return;
+    }
     if (!(target instanceof HTMLInputElement) && !(target instanceof HTMLTextAreaElement)) return;
 
     if (
@@ -1134,6 +1341,7 @@ export function registerEvents() {
       markDirty(target.form);
       if (target.matches('[data-richtext-input]')) {
         refrescarPrevisualizacion(target.closest('[data-richtext]'));
+        repintarVisual(target);
       }
     }
 
@@ -1147,7 +1355,7 @@ export function registerEvents() {
     // Título de la ficha: el nombre en la lista sigue al campo que usa el sitio.
     if (target.matches('[data-sync-title]') && target.form?.elements.title) {
       const titulo = target.form.elements.title;
-      titulo.value = target.value.trim() || titulo.dataset.anterior || '';
+      titulo.value = (target.value.trim() || titulo.dataset.anterior || '').slice(0, 240);
     }
     if (target.name === 'alt' && target.form?.matches('[data-edit]')) {
       const preview = panelBody.querySelector('[data-image-preview]');
@@ -1189,13 +1397,44 @@ export function registerEvents() {
   });
 
   document.addEventListener('keydown', (event) => {
+    // En el diálogo de enlace, Intro pone el enlace y Escape lo cierra; si no,
+    // Intro enviaría el formulario de la ficha y Escape cerraría el panel.
+    const enDialogoEnlace =
+      event.target instanceof HTMLInputElement && event.target.closest('[data-rt-enlace]');
+    if (enDialogoEnlace && (event.key === 'Enter' || event.key === 'Escape')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      cerrarDialogoEnlace(event.target, event.key === 'Enter');
+      return;
+    }
     if (manejarAtajo(event)) {
       event.preventDefault();
       return;
     }
     // Flechas dentro de la barra de formato: mueven el foco entre botones en
     // vez de recorrerlos con el tabulador, que es lo que `role="toolbar"` promete.
-    if (navegarBarra(event)) event.preventDefault();
+    if (navegarBarra(event)) {
+      event.preventDefault();
+      return;
+    }
+    // P3-11: el selector de iconos es un grupo de radios; las flechas mueven
+    // la selección y el foco, y el tabulador entra y sale en una sola parada.
+    const icono =
+      event.target instanceof Element ? event.target.closest('[data-action="elegir-icono"]') : null;
+    const flechas = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+    if (icono && event.key in flechas) {
+      const todos = [
+        ...(icono.closest('[data-iconos]')?.querySelectorAll('[data-action="elegir-icono"]') ?? []),
+      ];
+      const siguiente =
+        todos[(todos.indexOf(icono) + flechas[event.key] + todos.length) % todos.length];
+      if (siguiente instanceof HTMLElement) {
+        event.preventDefault();
+        todos.forEach((b) => b.setAttribute('tabindex', b === siguiente ? '0' : '-1'));
+        siguiente.focus();
+        siguiente.click();
+      }
+    }
   });
 
   document.addEventListener('keydown', (event) => {

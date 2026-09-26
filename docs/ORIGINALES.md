@@ -19,8 +19,8 @@ entorno local, pero no viaja al repositorio ni a los paquetes de despliegue.
 
 ## Scripts que usan estos insumos
 
-- `scripts/curate-images-smart.mjs`
-- `scripts/curate-and-optimize-images.mjs`
+- `scripts/historico/curate-images-smart.mjs`
+- `scripts/historico/curate-and-optimize-images.mjs`
 - `scripts/process-top-photos.mjs`
 
 Los resultados destinados al sitio sí deben terminar en `public/`. El material

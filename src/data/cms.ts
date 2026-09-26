@@ -139,6 +139,36 @@ export function objectPositionDeEnfoque(focal: unknown): string | undefined {
   return `${pct(x)} ${pct(y)}`;
 }
 
+/**
+ * Slugs de las fichas del CMS cuyo id empieza por `prefijo.`, p. ej.
+ * `cmsEntrySlugs('project-image')` → `['ch-besaya', …]`. P1-02 (auditoría
+ * 2026-09): las fotos y galerías de las fichas se construían sobre listas de
+ * slugs escritas a mano, y una ficha nueva quedaba sin foto ni galería.
+ */
+export function cmsEntrySlugs(prefijo: string): string[] {
+  const inicio = `${prefijo}.`;
+  return Object.keys(content.entries)
+    .filter((id) => id.startsWith(inicio))
+    .map((id) => id.slice(inicio.length));
+}
+
+/**
+ * La imagen de una ficha sin respaldo en el código (fichas creadas desde el
+ * panel): undefined si no tiene foto. Las medidas salen del derivado que
+ * calcula el export o, si no hay, de los campos de medida.
+ */
+export function getCmsImageOptional(entryId: string): CmsImageData | undefined {
+  const src = getCmsText(entryId, 'image', '');
+  if (!src) return undefined;
+  const derivado = getCmsImageDerived(entryId, 'image');
+  return {
+    src,
+    alt: getCmsText(entryId, 'imageAlt', ''),
+    width: getCmsNumber(entryId, 'imageWidth', derivado?.width ?? 1600),
+    height: getCmsNumber(entryId, 'imageHeight', derivado?.height ?? 900),
+  };
+}
+
 export function getCmsImage(entryId: string, fallback: CmsImageData): CmsImageData {
   return {
     src: getCmsText(entryId, 'image', fallback.src),

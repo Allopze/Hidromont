@@ -63,14 +63,16 @@ export function buildContentSecurityPolicy(hashes: string[]): string {
     // envío del formulario de contacto queda bloqueado: el visitante rellena,
     // pulsa enviar y recibe «Ocurrió un error». Reproducido en auditoría.
     // `form-action` no cubre esto: gobierna el submit nativo, no el fetch.
-    "connect-src 'self' https://formsubmit.co https://api.web3forms.com",
+    "connect-src 'self' https://formsubmit.co",
     'frame-src https://maps.google.com https://www.google.com',
-    "form-action 'self' https://formsubmit.co https://api.web3forms.com",
+    "form-action 'self' https://formsubmit.co",
     'upgrade-insecure-requests',
   ].join('; ');
 }
 
-let cached: { distDir: string; stamp: number; csp: string } | undefined;
+// Una entrada por directorio: con los dos perfiles (P2-01) se alternan `dist`
+// y `dist-editor`, y una sola entrada se recalcularía en cada petición.
+const cached = new Map<string, { stamp: number; csp: string }>();
 
 /**
  * Marca del build actual. Un solo `stat` por petición, no el recorrido entero.
@@ -101,16 +103,13 @@ function buildStamp(distDir: string): number {
  */
 export function publicContentSecurityPolicy(distDir: string): string {
   const stamp = buildStamp(distDir);
-  if (cached?.distDir !== distDir || cached.stamp !== stamp) {
-    cached = {
-      distDir,
-      stamp,
-      csp: buildContentSecurityPolicy(collectInlineScriptHashes(distDir)),
-    };
-  }
-  return cached.csp;
+  const entrada = cached.get(distDir);
+  if (entrada?.stamp === stamp) return entrada.csp;
+  const csp = buildContentSecurityPolicy(collectInlineScriptHashes(distDir));
+  cached.set(distDir, { stamp, csp });
+  return csp;
 }
 
 export function refreshPublicSecurityHeaders(): void {
-  cached = undefined;
+  cached.clear();
 }

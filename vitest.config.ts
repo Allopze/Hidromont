@@ -7,6 +7,10 @@ export default defineConfig({
     include: ['cms/test/**/*.test.ts', 'src/test/**/*.test.ts'],
     environment: 'node',
     globals: false,
+    // Las pruebas que publican de verdad (export con derivados de imagen) tardan
+    // unos 5 s; con toda la batería en paralelo superaban el límite de 5 s por
+    // defecto y fallaban sin que nada estuviera roto.
+    testTimeout: 20_000,
 
     // Los tests de uploads escriben a config.cms.uploadDir. Apuntarlo a un
     // directorio temporal evita que ensucien public/uploads/cms con artefactos

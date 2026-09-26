@@ -34,6 +34,7 @@ import {
 import { ICONO_SERVICIO, ICONO_SERVICIO_LABEL } from '../../../data/content-vocabulary';
 import { ICONOS_SERVICIO_SVG } from '../../../data/iconos-servicio';
 import { fieldLabel } from '../../../data/field-labels';
+import { nombreDeFicha } from '../../../data/entry-names';
 import { sePuedeVaciar } from './secciones';
 import { prepararEncuadre } from './encuadre-ui';
 
@@ -102,7 +103,7 @@ function fieldEditor(element, entry, field) {
     // la foto se ve entera, como un logo, es una vista previa normal.
     return `
       <div class="hm-cms-image-preview">
-        <div class="hm-cms-encuadre-marco" data-encuadre-marco aria-label="Encuadre de la foto" aria-describedby="hm-cms-encuadre-ayuda">
+        <div class="hm-cms-encuadre-marco" data-encuadre-marco role="group" aria-label="Encuadre de la foto" aria-describedby="hm-cms-encuadre-ayuda">
           <img src="${escapeHtml(String(vistaPrevia))}" alt="${escapeHtml(String(altValue))}" data-image-preview draggable="false" />
         </div>
         <p class="hm-cms-hint" data-selected-media-label>${imagenPredeterminada ? 'Imagen predeterminada del sitio' : 'Imagen actual'}</p>
@@ -158,7 +159,7 @@ function fieldEditor(element, entry, field) {
     // página y arrastrarlo para encuadrarlo, cambiarlo, describirlo.
     return `
       <div class="hm-cms-image-preview">
-        <div class="hm-cms-encuadre-marco" data-encuadre-marco aria-label="Encuadre del video" aria-describedby="hm-cms-encuadre-ayuda">
+        <div class="hm-cms-encuadre-marco" data-encuadre-marco role="group" aria-label="Encuadre del video" aria-describedby="hm-cms-encuadre-ayuda">
           <video${src} data-video-preview muted loop autoplay playsinline draggable="false"></video>
         </div>
         <p class="hm-cms-hint" data-selected-media-label>${hayVideo ? 'Video actual' : 'Todavía no hay video: súbelo o elígelo de la biblioteca.'}</p>
@@ -215,15 +216,22 @@ function fieldEditor(element, entry, field) {
   if (cmsType === 'icono') {
     const propio = String(current || '');
     const deLaLista = String(entry.fields.icono?.value || element.dataset.cmsIcono || 'pipe');
+    const indiceEnfocable = Math.max(
+      0,
+      ICONO_SERVICIO.findIndex((c) => !propio && c === deLaLista)
+    );
     // Primero los de la lista, que son los que casan con el resto del sitio;
     // después, subir uno propio.
     return `
       <p class="hm-cms-label" id="hm-cms-iconos-titulo">Iconos del sitio</p>
-      <div class="hm-cms-iconos" role="radiogroup" aria-labelledby="hm-cms-iconos-titulo">
-        ${ICONO_SERVICIO.map((codigo) => {
+      <div class="hm-cms-iconos" role="radiogroup" aria-labelledby="hm-cms-iconos-titulo" data-iconos>
+        ${ICONO_SERVICIO.map((codigo, i) => {
           const elegido = !propio && codigo === deLaLista;
           const rotulo = ICONO_SERVICIO_LABEL[codigo] || codigo;
-          return `<button type="button" role="radio" aria-checked="${elegido}" class="hm-cms-icono" data-action="elegir-icono" data-icono="${escapeHtml(codigo)}" title="${escapeHtml(rotulo)}">
+          // P3-11: un solo punto de tabulación (el elegido, o el primero); las
+          // flechas se mueven entre iconos.
+          const enfocable = i === indiceEnfocable;
+          return `<button type="button" role="radio" aria-checked="${elegido}" tabindex="${enfocable ? '0' : '-1'}" class="hm-cms-icono" data-action="elegir-icono" data-icono="${escapeHtml(codigo)}" title="${escapeHtml(rotulo)}">
             <span class="hm-cms-icono-dibujo" aria-hidden="true">${ICONOS_SERVICIO_SVG[codigo]}</span>
             <span class="hm-cms-sr">${escapeHtml(rotulo)}</span>
           </button>`;
@@ -297,7 +305,31 @@ export function syncLinkValue(form) {
   if (hidden) hidden.value = JSON.stringify({ label, href });
 }
 
+/**
+ * P1-07 (auditoría 2026-09): el texto de un enlace (menú, botón, tarjeta) se
+ * edita al pulsarlo, así que no había forma de seguir el enlace. El editor
+ * ofrece ir a su destino cuando es una página interna distinta de esta.
+ */
+function irALaPagina(element) {
+  const enlace = element.closest('a[href]');
+  const href = enlace?.getAttribute('href') || '';
+  if (!href.startsWith('/') || href.startsWith('//')) return '';
+  const destino = href.split('#')[0].replace(/\/+$/, '') || '/';
+  const aqui = window.location.pathname.replace(/\/+$/, '') || '/';
+  if (destino === aqui) return '';
+  return `<a class="ghost small hm-cms-go-link" href="${escapeHtml(href)}">Ir a esta página →</a>`;
+}
+
+/**
+ * P2-07 (auditoría 2026-09): `selectElement` pintaba tras un `await` sin
+ * mirar si seguía siendo la última selección. Pulsar dos elementos seguidos
+ * con la red lenta podía acabar mostrando el editor del primero con el
+ * segundo resaltado. Cada llamada toma un turno y solo pinta la última.
+ */
+let turnoDeSeleccion = 0;
+
 export async function selectElement(element) {
+  const turno = ++turnoDeSeleccion;
   if (!(await ensureSession())) return;
 
   const entryId = element.dataset.cmsEntry;
@@ -305,6 +337,7 @@ export async function selectElement(element) {
   if (!entryId || !field) return;
 
   const entry = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
+  if (turno !== turnoDeSeleccion) return;
   state.selected = element;
   state.entry = entry;
   // El icono son dos campos (el de la lista y el propio): se nombra el conjunto.
@@ -324,14 +357,15 @@ export async function selectElement(element) {
     `
     <form class="hm-cms-edit-form" data-edit data-entry-id="${escapeHtml(entryId)}" data-field="${escapeHtml(field)}" data-tipo-medio="${tipo === 'video' ? 'video' : 'imagen'}">
       <p class="hm-cms-context">
-        <span>${escapeHtml(entry.title || entryId)}</span>
+        <span>${escapeHtml(nombreDeFicha(entryId, entry.title))}</span>
         <span class="hm-cms-context-sep" aria-hidden="true">›</span>
         <strong>${escapeHtml(nombre)}</strong>
       </p>
       ${fieldEditor(element, entry, field)}
       <div class="hm-cms-edit-tools">
         <div class="hm-cms-edit-actions-secondary">
-          <button type="button" class="ghost small" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(entry.title || '')}">${icon('history')}Revisiones</button>
+          <button type="button" class="ghost small" data-action="revisions" data-entry-id="${escapeHtml(entryId)}" data-entry-title="${escapeHtml(nombreDeFicha(entryId, entry.title))}" data-field="${escapeHtml(field)}" data-field-name="${escapeHtml(nombre)}">${icon('history')}Revisiones</button>
+          ${irALaPagina(element)}
         </div>
         ${
           !sePuedeVaciar(entry.kind, field, element.dataset.cmsType || 'text')
@@ -423,19 +457,49 @@ function renderConflict(form, entryId, field, message) {
 }
 
 /** Sube un archivo a la biblioteca y devuelve el asset. */
-async function subirArchivo(file, alt = '') {
+/**
+ * Sube un archivo a la biblioteca. P2-19 (auditoría 2026-09): con `fetch` no
+ * hay progreso de subida y un video de 60 MB dejaba «Guardando…» minutos sin
+ * ninguna señal; con XHR se informa el porcentaje.
+ */
+function subirArchivo(file, alt = '', alProgresar) {
   const payload = new FormData();
   payload.append('file', file);
   payload.append('alt', alt);
-  const response = await fetch(`${apiBase}/api/cms/media`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'X-CSRF-Token': state.csrfToken },
-    body: payload,
+  return new Promise((resolver, rechazar) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${apiBase}/api/cms/media`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader('X-CSRF-Token', state.csrfToken);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && alProgresar) alProgresar(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      let data = {};
+      try {
+        data = JSON.parse(xhr.responseText || '{}');
+      } catch {
+        data = {};
+      }
+      if (xhr.status >= 200 && xhr.status < 300) resolver(data);
+      else
+        rechazar(
+          Object.assign(new Error(data.error || 'No se pudo subir el archivo.'), {
+            status: xhr.status,
+          })
+        );
+    };
+    xhr.onerror = () =>
+      rechazar(
+        Object.assign(
+          new Error(
+            'No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo.'
+          ),
+          { status: 0 }
+        )
+      );
+    xhr.send(payload);
   });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'No se pudo subir el archivo.');
-  return data;
 }
 
 async function patchCampo(entryId, key, body) {
@@ -537,13 +601,29 @@ export async function saveEdit(form) {
   // y se describen igual.
   const esImagen = element.dataset.cmsType === 'image' || esVideo;
   const valorOriginal = state.entry.fields[field]?.value ?? '';
+  // P2-13: una foto se describe. La descripción la leen los lectores de
+  // pantalla y los buscadores; sin ella se guardaba vacía sin ningún aviso.
+  if (
+    element.dataset.cmsType === 'image' &&
+    element.dataset.cmsAltField &&
+    form.elements.alt &&
+    (file || String(value || '').trim()) &&
+    !form.elements.alt.value.trim()
+  ) {
+    form.elements.alt.focus();
+    throw new Error(
+      'Describe la foto antes de guardar: la leen quienes no pueden verla y los buscadores.'
+    );
+  }
   // El encuadre elegido antes de subir una foto nueva: la subida la registra
   // con el centro y hay que devolverle el que la persona dejó.
   const encuadreElegido = state.encuadre?.actual();
   let guardoAlgo = false;
 
   if (file) {
-    const uploaded = await subirArchivo(file, form.elements.alt?.value || '');
+    const uploaded = await subirArchivo(file, form.elements.alt?.value || '', (pct) =>
+      setEditStatus(form, 'saving', `Subiendo el archivo… ${pct} %`)
+    );
     value = uploaded.path;
     form.elements.value.value = value;
     form.elements.mediaId.value = uploaded.id;

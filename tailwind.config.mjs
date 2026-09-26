@@ -11,7 +11,11 @@ export default {
           dark: '#004B7D',
           light: '#E6F2FA',
         },
-        accent: '#00A6D6',
+        accent: {
+          DEFAULT: '#00A6D6',
+          // P2-28: sobre foto, el cian de marca no llega a 4,5:1 con texto pequeño (este da 5,2:1 con el velo del hero sobre blanco).
+          light: '#B3E6F6',
+        },
         text: {
           DEFAULT: '#1F2933',
           muted: '#5B6770',

@@ -4,12 +4,14 @@ Documentación técnica del proyecto **Hidromont Chile — Sitio web + CMS**.
 
 ## Guías
 
-| Documento                                | Descripción                                                                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md)   | Arquitectura del proyecto: dominios (sitio/CMS), capas, base de datos, flujo de datos, decisiones de diseño.         |
-| [`CMS-GUIDE.md`](./CMS-GUIDE.md)         | Cómo editar contenido con el CMS visual: arranque, overlay, publicación, medios, galería, backup.                    |
-| [`DESIGN-SYSTEM.md`](./DESIGN-SYSTEM.md) | Sistema de diseño: tokens (colores, tipografía, spacing, radius, motion, z-index), componentes, l10n, accesibilidad. |
-| [`SECURITY.md`](./SECURITY.md)           | Modelo de amenazas, mitigaciones, CSP, endurecimiento en LAN, auditoría.                                             |
+| Documento                                                            | Descripción                                                                                                          |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md)                               | Arquitectura real: VPS, dos perfiles de build, sitio, editor, API, publicación y pruebas.                            |
+| [`CMS-GUIDE.md`](./CMS-GUIDE.md)                                     | Cómo editar contenido con el CMS visual: arranque, overlay, publicación, medios, galería, backup.                    |
+| [`DESIGN-SYSTEM.md`](./DESIGN-SYSTEM.md)                             | Sistema de diseño: tokens (colores, tipografía, spacing, radius, motion, z-index), componentes, l10n, accesibilidad. |
+| [`SECURITY.md`](./SECURITY.md)                                       | Modelo de amenazas, medidas, cabeceras, formulario, auditoría y credenciales.                                        |
+| [`DESPLIEGUE-VPS.md`](./DESPLIEGUE-VPS.md)                           | Despliegue en el VPS (Caddy + systemd), sincronización de datos y recuperación.                                      |
+| [`historico/DESPLIEGUE-CPANEL.md`](./historico/DESPLIEGUE-CPANEL.md) | Histórico: el despliegue antiguo en cPanel.                                                                          |
 
 ## Auditorías y registros
 

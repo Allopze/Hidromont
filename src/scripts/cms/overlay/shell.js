@@ -21,8 +21,16 @@ export const shell = document.createElement('div');
 shell.className = 'hm-cms-shell';
 
 shell.innerHTML = `
+  <!--
+    P2-18 (auditoría 2026-09): sin sesión, cerrar la pantalla de acceso dejaba
+    una barra vacía («Hidromont CMS» y nada más) sin forma de volver a entrar
+    salvo recargar. Este botón está siempre a la vista mientras no hay sesión,
+    también en tablet y móvil, donde la barra no se muestra.
+  -->
+  <button type="button" class="hm-cms-entrar" data-sin-sesion data-action="abrir-acceso" hidden>Entrar para editar</button>
   <div class="hm-cms-bar">
     <strong class="hm-cms-brand">Hidromont CMS</strong>
+    <button type="button" class="primary" data-sin-sesion data-action="abrir-acceso" hidden>Entrar</button>
     <span class="hm-cms-badge" data-state-badge role="status" aria-live="polite" aria-atomic="true" hidden></span>
     <span class="hm-cms-autosave-indicator" data-dirty-indicator title="Hay cambios sin guardar" aria-hidden="true"></span>
     ${botonesDeBarra({ filtro: FUERA_DEL_MENU })}
@@ -98,6 +106,9 @@ document.querySelectorAll('[data-cms-solo-editor]').forEach((el) => {
 export function setAuthenticatedUI(isAuthenticated) {
   // Lo que solo se puede tocar con sesión (las fotos de /galeria) lo mira aquí.
   document.body.classList.toggle('hm-cms-sesion', Boolean(isAuthenticated));
+  shell.querySelectorAll('[data-sin-sesion]').forEach((el) => {
+    el.hidden = Boolean(isAuthenticated);
+  });
   shell.querySelectorAll('[data-auth]').forEach((el) => {
     // «Editar esta ficha» necesita además saber qué entrada es la página.
     const faltaFicha = el.hasAttribute('data-page-entry') && !el.dataset.entryId;
@@ -105,9 +116,11 @@ export function setAuthenticatedUI(isAuthenticated) {
   });
 }
 
-export const panel = shell.querySelector('.hm-cms-panel');
+/** @type {HTMLElement} */
+export const panel = /** @type {HTMLElement} */ (shell.querySelector('.hm-cms-panel'));
 
-export const panelBody = shell.querySelector('[data-panel-body]');
+/** @type {HTMLElement} */
+export const panelBody = /** @type {HTMLElement} */ (shell.querySelector('[data-panel-body]'));
 
 const stateBadge = shell.querySelector('[data-state-badge]');
 

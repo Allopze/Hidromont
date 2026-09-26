@@ -187,3 +187,14 @@ describe('renderizarPrevisualizacion', () => {
     expect(renderizarPrevisualizacion(cuerpo)).toContain('<h2>Alcance</h2>');
   });
 });
+
+describe('P2-23: caracteres escapados por el editor visual', () => {
+  it('muestra el carácter sin la barra y sin darle formato', () => {
+    const html = renderizarPrevisualizacion('Precio \\*sin IVA\\* y a\\_b \\[nota\\]');
+    expect(html).toBe('<p>Precio *sin IVA* y a_b [nota]</p>');
+  });
+
+  it('un marcador de bloque escapado queda como texto', () => {
+    expect(renderizarPrevisualizacion('\\## no es título')).toBe('<p>## no es título</p>');
+  });
+});

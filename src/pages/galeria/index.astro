@@ -139,7 +139,7 @@ const filters = [
                 id="gallery-search"
                 placeholder={getCmsText('page.galeria', 'searchPlaceholder', 'Buscar proyecto...')}
                 aria-label="Buscar proyecto en galería"
-                class="min-h-[44px] w-full bg-transparent text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 pr-12 focus:outline-none focus:bg-background transition-colors font-mono"
+                class="min-h-[44px] w-full bg-transparent text-text text-xs md:text-sm px-3.5 py-2.5 pl-9 pr-12 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary focus:bg-background transition-colors font-mono"
               />
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -213,6 +213,7 @@ const filters = [
                     type="button"
                     role="option"
                     aria-selected={filter.slug === 'all' ? 'true' : 'false'}
+                    tabindex={filter.slug === 'all' ? '0' : '-1'}
                     data-filter={filter.slug}
                     class={`gallery-filter-option min-h-[44px] w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-xs md:text-sm font-mono font-semibold uppercase tracking-wider text-left cursor-pointer border-b border-border last:border-b-0 transition-colors ${
                       filter.slug === 'all'
@@ -234,7 +235,7 @@ const filters = [
                data-item-id, navegando el conjunto que esté filtrado en cada
                momento (ver #lightbox-data en el script de abajo). ── */}
           <div id="photo-wall" class="columns-2 md:columns-3 lg:columns-4 gap-3 md:gap-4">
-            {mixedItems.slice(0, 24).map((item) => (
+            {mixedItems.slice(0, 24).map((item, i) => (
               <button
                 type="button"
                 class="gallery-card group relative block min-h-[44px] w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
@@ -245,11 +246,12 @@ const filters = [
                 <img
                   src={item.src}
                   srcset={item.srcset}
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 767px) calc((100vw - 48px) / 2), (max-width: 1023px) calc((100vw - 80px) / 3), min(calc((100vw - 96px) / 4), 290px)"
                   alt=""
                   width={item.width}
                   height={item.height}
-                  loading="lazy"
+                  loading={i < 4 ? 'eager' : 'lazy'}
+                  fetchpriority={i < 4 ? 'high' : undefined}
                   decoding="async"
                   class="w-full h-auto block transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                 />
@@ -301,7 +303,12 @@ const filters = [
             type="application/json"
             is:inline
             set:html={safeJsonForScript(
-              mixedItems.map((item) => ({ ...item, searchText: gallerySearchText(item) }))
+              // P3-14 (auditoría 2026-09): el LQIP en base64 viajaba en cada
+              // foto (61 KB del HTML) y el muro no lo usa.
+              mixedItems.map((item) => {
+                const { lqip: _lqip, ...resto } = item;
+                return { ...resto, searchText: gallerySearchText(item) };
+              })
             )}
           />
           {/* M-9: este bloque nace vacío a propósito. El script de abajo lo
@@ -387,31 +394,45 @@ const filters = [
 
     function renderWall(items: WallItem[]) {
       if (!photoWall) return;
-      photoWall.replaceChildren(
-        ...items.map((item) => {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className =
-            'gallery-card group relative block min-h-[44px] w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
-          button.dataset.itemId = item.id;
-          button.dataset.search = item.searchText;
-          button.setAttribute('aria-label', item.alt);
+      // P1-12 (auditoría 2026-09): cada lote del scroll infinito repintaba el
+      // muro entero, y el foco de quien tabulaba por las fotos saltaba a
+      // <body>. Si las fotos pintadas son el principio de la lista nueva (un
+      // lote más), solo se añaden las que faltan; un cambio de filtro o de
+      // búsqueda sí rehace el muro.
+      const pintadas = Array.from(photoWall.children) as HTMLElement[];
+      const esContinuacion =
+        pintadas.length > 0 &&
+        pintadas.length <= items.length &&
+        pintadas.every((nodo, i) => nodo.dataset.itemId === items[i].id);
+      const pendientes = esContinuacion ? items.slice(pintadas.length) : items;
+      const nodos = pendientes.map((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className =
+          'gallery-card group relative block min-h-[44px] w-full mb-3 md:mb-4 break-inside-avoid overflow-hidden border border-border/20 bg-background-alt cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
+        button.dataset.itemId = item.id;
+        button.dataset.search = item.searchText;
+        button.setAttribute('aria-label', item.alt);
 
-          const image = document.createElement('img');
-          image.src = item.src;
-          if (item.srcset) image.srcset = item.srcset;
-          image.sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw';
-          image.alt = '';
-          image.width = item.width;
-          image.height = item.height;
-          image.loading = 'lazy';
-          image.decoding = 'async';
-          image.className =
-            'w-full h-auto block transition-transform duration-300 ease-out group-hover:scale-[1.03]';
-          button.appendChild(image);
-          return button;
-        })
-      );
+        const image = document.createElement('img');
+        image.src = item.src;
+        if (item.srcset) image.srcset = item.srcset;
+        // P2-36: el ancho real de cada columna (medido: 171 px a 390, 290 px en
+        // escritorio), no una fracción de la ventana.
+        image.sizes =
+          '(max-width: 767px) calc((100vw - 48px) / 2), (max-width: 1023px) calc((100vw - 80px) / 3), min(calc((100vw - 96px) / 4), 290px)';
+        image.alt = '';
+        image.width = item.width;
+        image.height = item.height;
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.className =
+          'w-full h-auto block transition-transform duration-300 ease-out group-hover:scale-[1.03]';
+        button.appendChild(image);
+        return button;
+      });
+      if (esContinuacion) photoWall.append(...nodos);
+      else photoWall.replaceChildren(...nodos);
     }
 
     // El Lightbox lee `#lightbox-data` de cero cada vez que abre una foto
@@ -432,6 +453,9 @@ const filters = [
           height,
         }))
       );
+      // P2-33: el visor espera a esto para abrir una foto enlazada (?foto=).
+      lightboxData.dataset.listo = '1';
+      document.dispatchEvent(new CustomEvent('gallery:ready'));
     }
 
     function updateFilter() {
@@ -497,14 +521,29 @@ const filters = [
     }
 
     // ── Custom dropdown open/close ──
+    // P3-10 (auditoría 2026-09): las opciones eran nueve paradas de Tab y el
+    // menú seguía abierto al salir tabulando. Una sola parada (la activa, que
+    // se mueve con las flechas) y se cierra al perder el foco.
+    function enfocarOpcion(opcion: HTMLElement | undefined) {
+      if (!opcion) return;
+      btnArray.forEach((b) => (b.tabIndex = b === opcion ? 0 : -1));
+      opcion.focus();
+    }
+
     function openMenu() {
       if (!menu || !trigger) return;
       menu.classList.remove('hidden');
       trigger.setAttribute('aria-expanded', 'true');
       trigger.classList.add('filter-trigger-open');
       const current = menu.querySelector(`[data-filter="${activeCategory}"]`) as HTMLElement | null;
-      (current || btnArray[0])?.focus();
+      enfocarOpcion(current || btnArray[0]);
     }
+
+    menu?.addEventListener('focusout', (e: FocusEvent) => {
+      const destino = e.relatedTarget as Node | null;
+      if (destino && (menu.contains(destino) || destino === trigger)) return;
+      if (isMenuOpen()) closeMenu(false);
+    });
 
     function closeMenu(refocusTrigger: boolean) {
       if (!menu || !trigger) return;
@@ -604,7 +643,7 @@ const filters = [
 
       if (next !== -1) {
         e.preventDefault();
-        btnArray[next].focus();
+        enfocarOpcion(btnArray[next]);
       }
     });
 

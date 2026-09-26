@@ -61,18 +61,18 @@ const serviceImageSeeds: Array<{
   {
     slug: 'otros-montajes',
     title: 'Montajes especiales',
-    src: '/fotos/curadas/otros-montajes.jpg',
-    alt: 'Montaje de gran componente hidromecánico',
-    width: 471,
-    height: 629,
+    src: '/fotos/curadas/cuerpo-vapor-taller.webp',
+    alt: 'Cuerpo de vapor de gran diámetro fabricado por Hidromont sobre cama baja en el taller',
+    width: 1600,
+    height: 1200,
   },
   {
     slug: 'infraestructuras',
     title: 'Infraestructura',
-    src: '/fotos/curadas/otros-montajes.jpg',
-    alt: 'Estructuras metálicas y obras civiles de infraestructura',
-    width: 471,
-    height: 629,
+    src: '/fotos/curadas/pasarela-ruta-nahuelbuta.webp',
+    alt: 'Cúpula y estructura metálica para pasarela superior peatonal en Ruta Nahuelbuta',
+    width: 1600,
+    height: 720,
   },
   {
     slug: 'tanques-especiales',
@@ -103,34 +103,34 @@ const projectImageSeeds: Array<{
   {
     slug: 'embalse-chironta',
     title: 'Embalse Chironta',
-    src: '/fotos/curadas/proyecto-valvula-tunel.jpg',
+    src: '/fotos/curadas/valvula-tunel-chironta.webp',
     alt: 'Válvula instalada en túnel de central',
-    width: 1024,
-    height: 768,
+    width: 1600,
+    height: 740,
   },
   {
     slug: 'ch-besaya',
     title: 'C.H. Besaya',
-    src: '/fotos/curadas/proyecto-montaje-tuberia.jpg',
+    src: '/fotos/curadas/proyecto-montaje-tuberia.webp',
     alt: 'Montaje de tubería forzada de gran diámetro',
-    width: 481,
-    height: 640,
+    width: 429,
+    height: 491,
   },
   {
     slug: 'ch-doiras',
     title: 'C.H. Dorias',
-    src: '/fotos/curadas/proyecto-bifurcacion-obra.jpg',
+    src: '/fotos/curadas/proyecto-bifurcacion-obra.webp',
     alt: 'Bifurcación instalada en obra',
-    width: 473,
-    height: 354,
+    width: 441,
+    height: 259,
   },
   {
     slug: 'ch-queltehues',
     title: 'C.H. Queltehues',
-    src: '/fotos/curadas/proyecto-tuberia-terreno.jpg',
+    src: '/fotos/curadas/tuberia-terreno-queltehues.webp',
     alt: 'Instalación de tubería en terreno',
-    width: 639,
-    height: 480,
+    width: 605,
+    height: 310,
   },
   {
     slug: 'ch-rio-frio',
@@ -420,7 +420,7 @@ const imageEntries: EntrySeed[] = [
   }),
 ];
 
-export const defaultContentEntries: EntrySeed[] = [
+const semilla: EntrySeed[] = [
   {
     id: 'site.company',
     kind: 'settings',
@@ -702,7 +702,7 @@ export const defaultContentEntries: EntrySeed[] = [
         value:
           'Ocho líneas de trabajo: tuberías forzadas y blindajes, compuertas, válvulas, turbinas, limpiarrejas, tanques especiales, infraestructuras y fabricaciones especiales.',
       },
-      image: { type: 'image', value: '/fotos/curadas/otros-montajes.jpg' },
+      image: { type: 'image', value: '/fotos/curadas/otros-montajes.webp' },
       imageAlt: { type: 'text', value: 'Fabricación de grandes equipos hidromecánicos en taller' },
       ...videoDeCabecera(),
     },
@@ -849,18 +849,6 @@ export const defaultContentEntries: EntrySeed[] = [
       phonePlaceholder: { type: 'text', value: '+56 9 1234 5678' },
       serviceLabel: { type: 'text', value: 'Servicio requerido' },
       servicePlaceholder: { type: 'text', value: 'Seleccione un servicio (opcional)' },
-      services: {
-        type: 'list',
-        value: [
-          'Tuberías Forzadas y Blindajes',
-          'Compuertas',
-          'Válvulas Hidráulicas',
-          'Turbinas Hidráulicas',
-          'Limpiarrejas',
-          'Montajes y Fabricaciones Especiales',
-          'Otro',
-        ],
-      },
       messageLabel: { type: 'text', value: 'Mensaje' },
       messagePlaceholder: { type: 'text', value: 'Describa su proyecto o consulta técnica.' },
       submitLabel: { type: 'text', value: 'Enviar consulta' },
@@ -1497,3 +1485,41 @@ export const defaultContentEntries: EntrySeed[] = [
     ),
   },
 ];
+
+/**
+ * P2-06 (auditoría 2026-09): la semilla difería de lo publicado en 73
+ * valores, así que una base nueva —o una entrada que faltara y se volviera a
+ * sembrar— arrancaba con textos antiguos. Lo publicado (`cms-content.json`,
+ * versionado con el sitio) manda sobre lo escrito aquí: esta lista queda como
+ * el molde de qué fichas y campos existen, con su tipo, y sus valores solo se
+ * usan si el export no trae la ficha o el campo.
+ */
+function conLoPublicado(entradas: EntrySeed[]): EntrySeed[] {
+  let publicado: Record<
+    string,
+    { title?: string; fields?: Record<string, { type?: string; value?: unknown }> }
+  >;
+  try {
+    publicado = JSON.parse(
+      fs.readFileSync(path.join(rootDirForSeed, 'src/data/cms-content.json'), 'utf8')
+    ).entries;
+  } catch {
+    return entradas;
+  }
+  return entradas.map((entrada) => {
+    const p = publicado?.[entrada.id];
+    if (!p?.fields) return entrada;
+    const fields = { ...entrada.fields };
+    // Solo las claves que declara la semilla: un campo retirado
+    // (`CAMPOS_RETIRADOS`) que siguiera en el export no debe volver a sembrarse
+    // en cada arranque para retirarse otra vez.
+    for (const key of Object.keys(fields)) {
+      const valor = p.fields[key]?.value;
+      if (valor === undefined || valor === null) continue;
+      fields[key] = { type: fields[key].type, value: valor };
+    }
+    return { ...entrada, title: p.title ?? entrada.title, fields };
+  });
+}
+
+export const defaultContentEntries: EntrySeed[] = conLoPublicado(semilla);

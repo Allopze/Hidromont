@@ -25,11 +25,17 @@ async function main() {
       new MediaRepository(db)
     );
 
+    // P0-01: la galería primero, como al publicar: su guarda es lo único que
+    // puede abortar, y hacerlo después dejaría el contenido escrito a medias.
+    const galleryResult = await exportService.exportGallery();
+    process.stdout.write(`Gallery export: ${galleryResult.count} items → ${galleryResult.file}\n`);
+
     const contentResult = await exportService.exportContent();
     process.stdout.write(`Content export: ${JSON.stringify(contentResult)}\n`);
 
-    const galleryResult = await exportService.exportGallery();
-    process.stdout.write(`Gallery export: ${galleryResult.count} items → ${galleryResult.file}\n`);
+    // P3-08: derivados que ya no cita ningún export.
+    const { removed } = exportService.pruneOrphanDerivatives();
+    if (removed.length) process.stdout.write(`Derivados sin uso borrados: ${removed.length}\n`);
   } catch (error) {
     captureException(error, { action: 'cmsExport' });
     process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n`);

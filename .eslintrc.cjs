@@ -49,6 +49,15 @@ module.exports = {
       },
     },
     {
+      // P3-05 (auditoría 2026-09): los scripts de línea de órdenes y el
+      // arranque del servidor no pasaban por el lint. Escriben por consola a
+      // propósito: es su salida.
+      files: ['scripts/**/*.mjs', 'server.mjs'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
       files: ['**/*.test.ts', '**/test/**/*.ts', 'e2e/**/*.ts'],
       env: { node: true },
       rules: {
@@ -64,6 +73,10 @@ module.exports = {
     'playwright-report/',
     'public/',
     'cms/data/',
+    // P3-02: herramientas archivadas, no se mantienen.
+    'scripts/historico/',
+    'cms/scripts/historico/',
+    'coverage/',
     '*.cjs',
     'src/env.d.ts',
   ],

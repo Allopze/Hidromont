@@ -10,10 +10,18 @@ if (fs.existsSync(envFile) && typeof process.loadEnvFile === 'function') {
 
 const CMS_URL = 'http://localhost:8787';
 const PAGE_URL = 'http://localhost:4321';
-if (process.env.CMS_URL && new URL(process.env.CMS_URL).origin !== CMS_URL) {
+// La guarda existe para que la suite nunca apunte a un CMS que no sea el
+// sandbox local. `127.0.0.1` es la misma máquina: rechazarlo tumbaba la CI
+// (P1-09, auditoría 2026-09) sin proteger de nada.
+const esLocal = (valor: string, esperado: string) => {
+  const url = new URL(valor);
+  const ref = new URL(esperado);
+  return ['localhost', '127.0.0.1'].includes(url.hostname) && url.port === ref.port;
+};
+if (process.env.CMS_URL && !esLocal(process.env.CMS_URL, CMS_URL)) {
   throw new Error('Playwright CMS_URL debe apuntar al CMS local aislado (http://localhost:8787).');
 }
-if (process.env.E2E_BASE_URL && new URL(process.env.E2E_BASE_URL).origin !== PAGE_URL) {
+if (process.env.E2E_BASE_URL && !esLocal(process.env.E2E_BASE_URL, PAGE_URL)) {
   throw new Error('Playwright E2E_BASE_URL debe apuntar al sitio local (http://localhost:4321).');
 }
 process.env.CMS_URL = CMS_URL;
@@ -30,7 +38,10 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 4321',
-      env: { ASTRO_DEV_TOOLBAR: '0' },
+      // Astro 7 pasa `astro dev` a segundo plano si detecta que lo ejecuta un
+      // agente; con esta variable se queda en primer plano, que es lo que
+      // Playwright necesita para saber si el servidor sigue vivo.
+      env: { ASTRO_DEV_TOOLBAR: '0', ASTRO_DEV_BACKGROUND: '0' },
       url: PAGE_URL,
       reuseExistingServer: false,
       timeout: 120_000,

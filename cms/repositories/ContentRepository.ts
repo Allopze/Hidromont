@@ -69,7 +69,19 @@ export class ContentRepository {
         this.upsertField(input.id, field, input.now, false);
       }
 
-      if (!existing) this.createRevision(input.id, 1, input.now);
+      if (!existing) {
+        this.createRevision(input.id, 1, input.now);
+      } else {
+        // P1-06 (auditoría 2026-09): actualizar sin revisión dejaba la última
+        // revisión con un estado de meses atrás, y «Restaurar la anterior»
+        // revertía en silencio todo lo cambiado por la importación. Toda
+        // escritura sobre una entrada existente sube versión y deja revisión.
+        const version = existing.version + 1;
+        this.db
+          .prepare('UPDATE content_entries SET version = ? WHERE id = ?')
+          .run(version, input.id);
+        this.createRevision(input.id, version, input.now);
+      }
     });
 
     transaction();
@@ -424,6 +436,95 @@ export class ContentRepository {
     return rows.map((r) => ({ id: r.id, version: r.version, createdAt: r.created_at }));
   }
 
+  /**
+   * P1-06 (auditoría 2026-09): deja una revisión con el estado ACTUAL en toda
+   * entrada cuya última revisión no coincide con lo que hay (o que no tiene
+   * ninguna). En la base local 87 de 127 entradas tenían la última revisión
+   * de junio porque la importación cambiaba campos sin revisión: restaurar
+   * «la anterior» devolvía meses atrás. Idempotente: en el segundo arranque
+   * todas coinciden y no se escribe nada.
+   */
+  ensureCurrentRevisions(now = new Date().toISOString()): string[] {
+    const normalizar = (entry: Pick<CmsEntry, 'title' | 'slug' | 'status' | 'fields'>) =>
+      JSON.stringify({
+        title: entry.title,
+        slug: entry.slug,
+        status: entry.status,
+        fields: Object.fromEntries(
+          Object.keys(entry.fields ?? {})
+            .sort()
+            .map((key) => [key, entry.fields[key]?.value ?? null])
+        ),
+      });
+    const ids = (this.db.prepare('SELECT id FROM content_entries').all() as { id: string }[]).map(
+      (row) => row.id
+    );
+    const corregidas: string[] = [];
+    const transaction = this.db.transaction(() => {
+      for (const id of ids) {
+        const actual = this.findEntry(id);
+        if (!actual) continue;
+        const ultima = this.db
+          .prepare(
+            'SELECT snapshot_json FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT 1'
+          )
+          .get(id) as { snapshot_json: string } | undefined;
+        if (ultima && normalizar(JSON.parse(ultima.snapshot_json)) === normalizar(actual)) continue;
+        const version = actual.version + 1;
+        this.db.prepare('UPDATE content_entries SET version = ? WHERE id = ?').run(version, id);
+        this.createRevision(id, version, now);
+        corregidas.push(id);
+      }
+    });
+    transaction();
+    return corregidas;
+  }
+
+  /**
+   * P2-26 (auditoría 2026-09): la lista de revisiones solo daba número y
+   * fecha. Con `field`, cada versión trae el valor de ese campo; siempre trae
+   * qué campos cambiaron respecto de la versión anterior, para ver qué se
+   * recupera antes de pulsar «Restaurar».
+   */
+  listRevisionsDetailed(
+    entryId: string,
+    field?: string
+  ): Array<{ id: string; version: number; createdAt: string; changed: string[]; value?: unknown }> {
+    const rows = this.db
+      .prepare(
+        'SELECT id, version, created_at, snapshot_json FROM revisions WHERE entry_id = ? ORDER BY version DESC LIMIT ?'
+      )
+      .all(entryId, MAX_REVISIONS_PER_ENTRY) as Array<{
+      id: string;
+      version: number;
+      created_at: string;
+      snapshot_json: string;
+    }>;
+    const snapshots = rows.map((r) => JSON.parse(r.snapshot_json) as CmsEntry);
+    const valorDe = (snap: CmsEntry | undefined, key: string) =>
+      JSON.stringify(snap?.fields?.[key]?.value ?? null);
+    return rows.map((r, i) => {
+      const snap = snapshots[i];
+      const anterior = snapshots[i + 1];
+      const claves = new Set([
+        ...Object.keys(snap.fields ?? {}),
+        ...Object.keys(anterior?.fields ?? {}),
+      ]);
+      const changed = anterior
+        ? [...claves].filter((key) => valorDe(snap, key) !== valorDe(anterior, key))
+        : [];
+      if (anterior && snap.title !== anterior.title) changed.unshift('title');
+      if (anterior && snap.status !== anterior.status) changed.push('status');
+      return {
+        id: r.id,
+        version: r.version,
+        createdAt: r.created_at,
+        changed,
+        ...(field ? { value: snap.fields?.[field]?.value ?? null } : {}),
+      };
+    });
+  }
+
   getRevision(revisionId: string): CmsEntry | undefined {
     const row = this.db
       .prepare('SELECT snapshot_json FROM revisions WHERE id = ?')
@@ -494,6 +595,92 @@ export class ContentRepository {
    * a propósito (34 entradas sobre 9 slugs) porque no se materializan en un
    * archivo propio.
    */
+  /**
+   * Cambia el id (y opcionalmente el slug) de una entrada llevándose sus
+   * campos, revisiones y usos de medios. P1-02/P1-03 (auditoría 2026-09): las
+   * fichas compañeras (`project-image.<slug>`…) cuelgan del slug, y al cambiar
+   * la dirección de un proyecto se quedaban con el viejo y la foto desaparecía.
+   *
+   * Se inserta primero la fila nueva con un slug provisional (el índice único
+   * de colecciones impediría dos filas con el mismo slug), se mueven los hijos
+   * y se borra la vieja: las FK se cumplen en cada paso.
+   */
+  renameEntry(oldId: string, newId: string, newSlug?: string): void {
+    if (oldId === newId) {
+      if (newSlug !== undefined) {
+        this.db.prepare('UPDATE content_entries SET slug = ? WHERE id = ?').run(newSlug, oldId);
+      }
+      return;
+    }
+    const tx = this.db.transaction(() => {
+      const row = this.findEntryRow(oldId);
+      if (!row) throw new Error(`Entrada ${oldId} no encontrada`);
+      if (this.findEntryRow(newId)) throw new Error(`Ya existe una entrada con id "${newId}"`);
+      this.db
+        .prepare(
+          `INSERT INTO content_entries (id, kind, slug, locale, title, status, version, created_at, updated_at)
+           SELECT ?, kind, ?, locale, title, status, version, created_at, updated_at
+             FROM content_entries WHERE id = ?`
+        )
+        .run(newId, `__renombrando__/${newId}`, oldId);
+      for (const tabla of ['content_fields', 'revisions', 'media_usages']) {
+        this.db.prepare(`UPDATE ${tabla} SET entry_id = ? WHERE entry_id = ?`).run(newId, oldId);
+      }
+      this.db.prepare('DELETE FROM content_entries WHERE id = ?').run(oldId);
+      this.db
+        .prepare('UPDATE content_entries SET slug = ? WHERE id = ?')
+        .run(newSlug ?? row.slug, newId);
+    });
+    tx();
+  }
+
+  /** Campos (de cualquier ficha) cuyo valor es exactamente `value`, p. ej. la ruta de una foto. */
+  findFieldsWithValue(value: string): Array<{ entryId: string; key: string }> {
+    return (
+      this.db
+        .prepare('SELECT entry_id, key FROM content_fields WHERE value_json = ?')
+        .all(JSON.stringify(value)) as Array<{ entry_id: string; key: string }>
+    ).map((r) => ({ entryId: r.entry_id, key: r.key }));
+  }
+
+  /** Proyectos cuyo campo `servicio` apunta a `slug`. */
+  projectsReferencingService(slug: string): Array<{ id: string; title: string }> {
+    return this.db
+      .prepare(
+        `SELECT e.id, e.title FROM content_entries e
+           JOIN content_fields f ON f.entry_id = e.id AND f.key = 'servicio'
+          WHERE e.kind = 'proyecto' AND f.value_json = ?`
+      )
+      .all(JSON.stringify(slug)) as Array<{ id: string; title: string }>;
+  }
+
+  /** Reapunta el campo `servicio` de los proyectos al renombrar un servicio. */
+  retargetServiceReferences(oldSlug: string, newSlug: string, now: string): number {
+    return this.db
+      .prepare(
+        `UPDATE content_fields SET value_json = ?, updated_at = ?
+          WHERE key = 'servicio' AND value_json = ?
+            AND entry_id IN (SELECT id FROM content_entries WHERE kind = 'proyecto')`
+      )
+      .run(JSON.stringify(newSlug), now, JSON.stringify(oldSlug)).changes;
+  }
+
+  /** Las fotos de /galeria que enlazan a un proyecto siguen a su nuevo slug. */
+  retargetGalleryProjectSlug(oldSlug: string, newSlug: string, now: string): number {
+    return this.db
+      .prepare('UPDATE gallery_items SET project_slug = ?, updated_at = ? WHERE project_slug = ?')
+      .run(newSlug, now, oldSlug).changes;
+  }
+
+  /** Slugs de servicio existentes con su título, para desplegables y validación. */
+  listServiceSlugs(): Array<{ slug: string; title: string; status: string }> {
+    return this.db
+      .prepare(
+        `SELECT slug, title, status FROM content_entries WHERE kind = 'servicio' ORDER BY title`
+      )
+      .all() as Array<{ slug: string; title: string; status: string }>;
+  }
+
   findCollectionEntryBySlug(
     kind: string,
     slug: string,

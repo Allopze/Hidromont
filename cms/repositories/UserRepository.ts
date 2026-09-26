@@ -11,6 +11,8 @@ interface SessionRow {
   user_id: string;
   csrf_token: string;
   expires_at: string;
+  created_at: string;
+  last_seen_at: string | null;
 }
 
 export class UserRepository {
@@ -44,15 +46,27 @@ export class UserRepository {
   }): void {
     this.db
       .prepare(
-        'INSERT INTO sessions (id, user_id, csrf_token, expires_at, created_at) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO sessions (id, user_id, csrf_token, expires_at, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?)'
       )
-      .run(input.id, input.userId, input.csrfToken, input.expiresAt, input.now);
+      .run(input.id, input.userId, input.csrfToken, input.expiresAt, input.now, input.now);
   }
 
   findSession(id: string): SessionRow | undefined {
     return this.db
-      .prepare('SELECT id, user_id, csrf_token, expires_at FROM sessions WHERE id = ?')
+      .prepare(
+        'SELECT id, user_id, csrf_token, expires_at, created_at, last_seen_at FROM sessions WHERE id = ?'
+      )
       .get(id) as SessionRow | undefined;
+  }
+
+  touchSession(id: string, now: string): void {
+    this.db.prepare('UPDATE sessions SET last_seen_at = ? WHERE id = ?').run(now, id);
+  }
+
+  /** P3-01: cierra las sesiones del usuario salvo la que hace la petición. */
+  deleteOtherSessions(userId: string, keepId: string): number {
+    return this.db.prepare('DELETE FROM sessions WHERE user_id = ? AND id != ?').run(userId, keepId)
+      .changes;
   }
 
   deleteSession(id: string): void {

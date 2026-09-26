@@ -6,7 +6,7 @@ CMS local/LAN para edición visual del sitio estático Astro.
 
 - `npm run cms`: inicia la API CMS en `http://localhost:8787`.
 - `npm run dev:cms`: inicia Astro y el CMS juntos.
-- `npm run cms:import`: importa páginas, servicios y proyectos actuales a SQLite.
+- `npm run cms:import`: añade a SQLite las entradas y campos que falten (no pisa lo editado).
 - `npm run cms:export`: exporta SQLite hacia `src/data/cms-content.json` y colecciones Markdown.
 
 ## Acceso inicial

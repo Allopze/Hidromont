@@ -6,7 +6,12 @@ import EditableText from '../cms/EditableText.astro';
 import ArrowIcon from '../ui/ArrowIcon.astro';
 import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 import { getCmsText } from '../../data/cms';
-import { getClienteLogoByNombre, listaDeClientes, logoKeyFor } from '../../data/cliente-logos';
+import {
+  getClienteLogoByNombre,
+  listaDeClientes,
+  logoKeyFor,
+  srcsetDeLogo,
+} from '../../data/cliente-logos';
 
 interface ClienteItem {
   nombre: string;
@@ -83,6 +88,8 @@ const row2 = conLogo.slice(mid);
                 <div class="clients-marquee-item" title={c.nombre}>
                   <img
                     src={c.logo}
+                    srcset={srcsetDeLogo(c.nombre)}
+                    sizes="160px"
                     alt=""
                     width="160"
                     height="48"
@@ -107,6 +114,8 @@ const row2 = conLogo.slice(mid);
                 <div class="clients-marquee-item" title={c.nombre}>
                   <img
                     src={c.logo}
+                    srcset={srcsetDeLogo(c.nombre)}
+                    sizes="160px"
                     alt=""
                     width="160"
                     height="48"

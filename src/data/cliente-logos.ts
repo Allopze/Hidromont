@@ -1,4 +1,4 @@
-import { getCmsText, getCmsValue } from './cms';
+import { getCmsImageDerived, getCmsText, getCmsValue } from './cms';
 
 /**
  * A3-003: fuente única de verdad para los logos de clientes.
@@ -36,6 +36,16 @@ export function getClienteLogoByNombre(nombre: string, fallback = ''): string {
   return getCmsText('clientes.logos', `logo-${logoKeyFor(nombre)}`, fallback);
 }
 
+/**
+ * P2-38 (auditoría 2026-09): la franja del inicio y el carrusel de /clientes
+ * cargaban los PNG originales (hasta 3.840 px y 470 KB para pintar 150×48):
+ * 1,3 MB en la portada. El export ya calcula derivados de cada logo; esto los
+ * devuelve para ponerlos en `srcset`, con `sizes` al ancho pintado.
+ */
+export function srcsetDeLogo(nombre: string): string | undefined {
+  return getCmsImageDerived('clientes.logos', `logo-${logoKeyFor(nombre)}`)?.srcset || undefined;
+}
+
 export interface ClienteItem {
   nombre: string;
   sector?: string;
@@ -55,7 +65,15 @@ export function listaDeClientes(coleccion: ClienteItem[]): ClienteItem[] {
   const nombres = getCmsValue<unknown>('clientes.lista', 'nombres', undefined);
   if (!Array.isArray(nombres)) return coleccion;
   const porNombre = new Map(coleccion.map((c) => [c.nombre, c]));
+  // P2-11: «Acciona» dos veces en la lista se pintaba dos veces.
+  const vistos = new Set<string>();
   return nombres
     .filter((n): n is string => typeof n === 'string' && n.trim() !== '')
+    .filter((n) => {
+      const clave = logoKeyFor(n);
+      if (vistos.has(clave)) return false;
+      vistos.add(clave);
+      return true;
+    })
     .map((n) => porNombre.get(n.trim()) ?? { nombre: n.trim() });
 }

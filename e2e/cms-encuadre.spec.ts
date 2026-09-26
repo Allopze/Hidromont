@@ -24,6 +24,7 @@ async function abrirFoto(page: Page) {
   expect(res.ok()).toBeTruthy();
   csrf = (await res.json()).csrfToken;
   await page.goto('/servicios/valvulas/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
   const foto = page.locator(FOTO);
   await foto.scrollIntoViewIfNeeded();
   await foto.click();
@@ -115,6 +116,10 @@ test.describe('Punto de enfoque', () => {
       data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
     });
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+    // Esperar a que el editor esté montado: si se pulsa antes, el logo es un
+    // enlace y el navegador lo sigue (carrera que se veía sin caché de Vite).
+    await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
     await page.locator('[data-cms-entry="layout.header"][data-cms-type="image"]').first().click();
     await expect(page.locator('form[data-edit]')).toBeVisible();
     await expect(page.locator('[data-encuadre-marco]')).not.toHaveClass(/is-movible/);

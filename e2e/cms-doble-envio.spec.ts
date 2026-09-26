@@ -59,6 +59,7 @@ async function tocarDosCampos(page: Page, panel: import('@playwright/test').Loca
 
 async function abrirPrimerServicio(page: Page) {
   await page.goto('/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
   await page.locator('.hm-cms-bar [data-action="collections"]').click();
   const panel = page.locator('.hm-cms-panel.open');
   await expect(panel).toBeVisible();

@@ -1,5 +1,5 @@
 ---
-import { logoKeyFor } from '../../data/cliente-logos';
+import { logoKeyFor, srcsetDeLogo } from '../../data/cliente-logos';
 import EditableText from '../cms/EditableText.astro';
 import MarqueePauseToggle from '../ui/MarqueePauseToggle.astro';
 
@@ -149,6 +149,8 @@ const marcaDeLogo = (src: string) =>
                 <div class="shrink-0 h-16 w-44 px-4 bg-white rounded-none flex items-center justify-center shadow-sm">
                   <img
                     src={src}
+                    srcset={logoAlts[src] ? srcsetDeLogo(logoAlts[src]) : undefined}
+                    sizes="144px"
                     alt={logoAlts[src] ?? ''}
                     {...marcaDeLogo(src)}
                     height={40}
@@ -172,6 +174,8 @@ const marcaDeLogo = (src: string) =>
                 <div class="shrink-0 h-16 w-44 px-4 bg-white rounded-none flex items-center justify-center shadow-sm">
                   <img
                     src={src}
+                    srcset={logoAlts[src] ? srcsetDeLogo(logoAlts[src]) : undefined}
+                    sizes="144px"
                     alt={logoAlts[src] ?? ''}
                     {...marcaDeLogo(src)}
                     height={40}

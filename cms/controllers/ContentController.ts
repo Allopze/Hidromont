@@ -1,4 +1,6 @@
+import fs from 'node:fs';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { resolvePublicAssetPath } from '../config/unifiedConfig';
 import type { ContentService } from '../services/contentService';
 import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import {
@@ -14,6 +16,20 @@ import { problemaDeForma } from '../validators/fieldShape';
 import { BaseController } from './BaseController';
 import type { AuditRepository } from '../repositories/AuditRepository';
 import { UndoService } from '../services/undoService';
+
+/**
+ * Campos que el sitio no puede publicar vacíos (P1-04/P2-15, auditoría
+ * 2026-09). Vaciarlos publicaba un H1 vacío, `<title>` genérico, una
+ * description en blanco, JSON-LD con `"name":""` o un enlace de menú sin texto.
+ */
+export function esCampoObligatorio(kind: string, entryId: string, key: string): boolean {
+  if (kind === 'proyecto') return ['nombre', 'alcance', 'categoria', 'orden'].includes(key);
+  if (kind === 'servicio') return ['titulo', 'resumen', 'icono', 'orden'].includes(key);
+  if (key === 'seoTitle' || key === 'seoDescription') return true;
+  if (entryId.endsWith('.hero') && key === 'title') return true;
+  if (entryId === 'layout.header' && /^nav[A-Z]/.test(key)) return true;
+  return false;
+}
 
 export class ContentController extends BaseController {
   /** Ver GalleryController: el evento se escribe antes de responder. */
@@ -64,6 +80,48 @@ export class ContentController extends BaseController {
       // Obtenemos la entrada para conocer el tipo actual antes de persistir.
       const entry = this.contentService.getEntry(params.id);
       const fieldMeta = entry.fields[params.key];
+      // P2-15 (auditoría 2026-09): los textos de una línea se guardaban con los
+      // espacios pegados («  xIngeniería…», o solo espacios, que publicaban una
+      // description en blanco). Se recortan al guardar.
+      if (
+        typeof body.value === 'string' &&
+        (fieldMeta?.type === 'text' || fieldMeta?.type === 'textarea')
+      ) {
+        body.value = body.value.trim();
+      }
+      // P3-12 (auditoría 2026-09): en una lista, un elemento de solo espacios
+      // pintaba una insignia vacía en la ficha.
+      if (fieldMeta?.type === 'list' && Array.isArray(body.value)) {
+        body.value = body.value
+          .map((v) => (typeof v === 'string' ? v.trim() : v))
+          .filter((v) => v !== '');
+      }
+      // P3-12: «Ruta del archivo» aceptaba rutas que no existen: se guardaba y,
+      // al publicar, la cabecera salía vacía.
+      if (
+        (fieldMeta?.type === 'image' || fieldMeta?.type === 'video') &&
+        typeof body.value === 'string' &&
+        body.value.startsWith('/') &&
+        !fs.existsSync(resolvePublicAssetPath(body.value))
+      ) {
+        reply.status(400).send({
+          error: `No hay ningún archivo en «${body.value}». Elige uno de la biblioteca o súbelo.`,
+        });
+        return;
+      }
+      // P2-15: los campos que el sitio no puede mostrar vacíos —el título de
+      // cada ficha, su descripción, los títulos y textos para buscadores, los
+      // rótulos del menú— no se guardan vacíos.
+      if (
+        fieldMeta &&
+        (body.value === '' || body.value === null) &&
+        esCampoObligatorio(entry.kind, entry.id, params.key)
+      ) {
+        reply.status(400).send({
+          error: `«${fieldMeta.label || params.key}» es obligatorio: el sitio no puede mostrarlo vacío.`,
+        });
+        return;
+      }
       if (fieldMeta) {
         const { type } = fieldMeta;
         const val = body.value;
@@ -101,8 +159,15 @@ export class ContentController extends BaseController {
       // editor puede corregirlo con contexto. El gate del export sigue
       // existiendo como red de seguridad para todo lo que no pasa por la API
       // (seed, scripts, restauración de revisiones, edición directa de SQLite).
-      const allowed = ENUM_FIELDS[entry.kind]?.[params.key];
-      if (allowed && body.value !== null && body.value !== undefined) {
+      // P1-02: el servicio de un proyecto se elige entre los servicios que
+      // existen, no entre una lista fija: uno creado desde el panel también.
+      // Vacío está permitido (el proyecto enlaza por su categoría).
+      const allowed =
+        entry.kind === 'proyecto' && params.key === 'servicio'
+          ? this.contentService.serviceOptions().map((o) => o.value)
+          : ENUM_FIELDS[entry.kind]?.[params.key];
+      const vacio = body.value === null || body.value === undefined || body.value === '';
+      if (allowed && !vacio) {
         if (!allowed.includes(String(body.value))) {
           reply.status(400).send({
             error: `El campo "${params.key}" debe ser uno de: ${allowed.join(', ')}`,
@@ -174,6 +239,24 @@ export class ContentController extends BaseController {
   async deleteEntry(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const params = entryParamsSchema.parse(request.params);
+      // P1-03 (auditoría 2026-09): borrar un servicio que citan proyectos no
+      // avisaba y dejaba sus fichas enlazando a un 404. Ahora se pide
+      // confirmación con la lista; al confirmar, esos proyectos pasan a
+      // enlazar por su categoría (el export omite un servicio que no existe).
+      const confirmado = (request.query as { confirm?: string } | undefined)?.confirm === '1';
+      const aBorrar = this.contentService.getEntryIfExists(params.id);
+      if (aBorrar?.kind === 'servicio' && !confirmado) {
+        const citan = this.contentService.projectsReferencingService(aBorrar.slug);
+        if (citan.length > 0) {
+          reply.status(409).send({
+            error:
+              `El servicio «${aBorrar.title}» está en uso por ${citan.length} proyecto(s): ` +
+              `${citan.map((p) => p.title).join(', ')}. Si lo eliminas, esos proyectos ` +
+              'dejarán de enlazar a este servicio.',
+          });
+          return;
+        }
+      }
       const snapshot = this.contentService.deleteEntry(params.id);
       const token = snapshot.entry
         ? this.auditRepository.log({

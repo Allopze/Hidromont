@@ -105,6 +105,14 @@ export class AuditRepository {
     return rows.map(toListedEvent);
   }
 
+  /** Todos los eventos de una acción, con su `data` completo (arranque). */
+  listByAction(action: string): AuditEvent[] {
+    const rows = this.db
+      .prepare('SELECT * FROM audit_events WHERE action = ? ORDER BY created_at ASC')
+      .all(action) as AuditRow[];
+    return rows.map(toEvent);
+  }
+
   listByEntity(entityId: string, limit = 50): AuditEvent[] {
     const rows = this.db
       .prepare('SELECT * FROM audit_events WHERE entity_id = ? ORDER BY created_at DESC LIMIT ?')

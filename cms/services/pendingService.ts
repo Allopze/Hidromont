@@ -9,6 +9,8 @@
  * entiende quien edita: qué ficha o página, y qué partes.
  */
 import type Database from 'better-sqlite3';
+import { nombreDeFicha } from '../../src/data/entry-names';
+import { fieldLabel } from '../../src/data/field-labels';
 import type { ContentService } from './contentService';
 
 /** Las acciones que cambian lo que el sitio mostrará al publicar. */
@@ -29,6 +31,13 @@ export const ACCIONES_QUE_PUBLICAN = [
   'gallery.category.delete',
   'undo.restore',
   'media.update',
+  // P2-24 (auditoría 2026-09): reordenar la galería y borrar una foto de la
+  // biblioteca cambian el sitio en la siguiente publicación, pero el contador
+  // decía «No hay cambios nuevos».
+  'media.delete',
+  'gallery.item.reorder',
+  'gallery.album.reorder',
+  'gallery.category.reorder',
 ] as const;
 
 export interface EventoDeCambio {
@@ -91,8 +100,23 @@ export function resumirCambios(eventos: EventoDeCambio[], nombres: Nombres): Cam
   const encuadres = new Set<string>();
   let ultimoEncuadre = '';
 
+  const reordenados = new Set<string>();
+  let ultimoOrden = '';
+  let borradasDeBiblioteca = 0;
+  let ultimoBorrado = '';
+
   for (const e of eventos) {
     const tipo = e.entityType ?? '';
+    if (e.action.endsWith('.reorder')) {
+      reordenados.add(tipo);
+      if (e.createdAt > ultimoOrden) ultimoOrden = e.createdAt;
+      continue;
+    }
+    if (e.action === 'media.delete') {
+      borradasDeBiblioteca += 1;
+      if (e.createdAt > ultimoBorrado) ultimoBorrado = e.createdAt;
+      continue;
+    }
     if (e.action === 'media.update') {
       // Cambiar solo la descripción de la foto no se ve en el sitio.
       if (e.data?.enfoque === true && e.entityId) {
@@ -177,6 +201,31 @@ export function resumirCambios(eventos: EventoDeCambio[], nombres: Nombres): Cam
       ultimo: ultimoGaleria,
     });
   }
+  if (reordenados.size) {
+    const ORDEN: Record<string, string> = {
+      gallery_item: 'orden de las fotos',
+      gallery_album: 'orden de los álbumes',
+      gallery_category: 'orden de las categorías',
+    };
+    cambios.push({
+      clave: 'galeria-orden',
+      titulo: 'Galería',
+      detalle: Object.keys(ORDEN)
+        .filter((t) => reordenados.has(t))
+        .map((t) => ORDEN[t]),
+      ultimo: ultimoOrden,
+    });
+  }
+  if (borradasDeBiblioteca) {
+    cambios.push({
+      clave: 'biblioteca',
+      titulo: 'Biblioteca de fotos',
+      detalle: [
+        `${borradasDeBiblioteca} ${borradasDeBiblioteca === 1 ? 'foto borrada' : 'fotos borradas'}`,
+      ],
+      ultimo: ultimoBorrado,
+    });
+  }
   return cambios.sort((a, b) => (a.ultimo < b.ultimo ? 1 : -1));
 }
 
@@ -229,9 +278,11 @@ export class PendingService {
         if (!cache.has(id)) {
           try {
             const entry = this.contentService.getEntry(id);
+            // P2-22: el mismo nombre que en el panel («Portada — cabecera»,
+            // no «Hero home»), y el campo con su rótulo, no su clave.
             cache.set(id, {
-              titulo: entry.title,
-              campo: (key) => entry.fields[key]?.label || key,
+              titulo: nombreDeFicha(id, entry.title),
+              campo: (key) => entry.fields[key]?.label || fieldLabel(key),
             });
           } catch {
             cache.set(id, null);

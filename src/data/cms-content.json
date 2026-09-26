@@ -86,13 +86,7 @@
         },
         "logo-aes-andes": {
           "type": "image",
-          "value": "/logos-clientes/aes-andes.png",
-          "derived": {
-            "src": "/gallery/derived/1d8fe237-640.webp",
-            "srcset": "/gallery/derived/1d8fe237-640.webp 640w",
-            "width": 640,
-            "height": 262
-          }
+          "value": "/logos-clientes/aes-andes.png"
         },
         "logo-alstom": {
           "type": "image",
@@ -132,43 +126,19 @@
         },
         "logo-electrica-puntilla": {
           "type": "image",
-          "value": "/logos-clientes/electrica-puntilla.png",
-          "derived": {
-            "src": "/gallery/derived/4eb05d08-1024.webp",
-            "srcset": "/gallery/derived/4eb05d08-640.webp 640w, /gallery/derived/4eb05d08-1024.webp 1024w",
-            "width": 1024,
-            "height": 550
-          }
+          "value": "/logos-clientes/electrica-puntilla.png"
         },
         "logo-endesa": {
           "type": "image",
-          "value": "/logos-clientes/endesa.png",
-          "derived": {
-            "src": "/gallery/derived/b9271470-1600.webp",
-            "srcset": "/gallery/derived/b9271470-640.webp 640w, /gallery/derived/b9271470-1024.webp 1024w, /gallery/derived/b9271470-1600.webp 1600w",
-            "width": 1600,
-            "height": 335
-          }
+          "value": "/logos-clientes/endesa.png"
         },
         "logo-ferrovial": {
           "type": "image",
-          "value": "/logos-clientes/ferrovial.png",
-          "derived": {
-            "src": "/gallery/derived/34a886ab-1600.webp",
-            "srcset": "/gallery/derived/34a886ab-640.webp 640w, /gallery/derived/34a886ab-1024.webp 1024w, /gallery/derived/34a886ab-1600.webp 1600w",
-            "width": 1600,
-            "height": 350
-          }
+          "value": "/logos-clientes/ferrovial.png"
         },
         "logo-gasco": {
           "type": "image",
-          "value": "/logos-clientes/gasco.png",
-          "derived": {
-            "src": "/gallery/derived/ae09fd48-1024.webp",
-            "srcset": "/gallery/derived/ae09fd48-640.webp 640w, /gallery/derived/ae09fd48-1024.webp 1024w",
-            "width": 1024,
-            "height": 260
-          }
+          "value": "/logos-clientes/gasco.png"
         },
         "logo-gpe": {
           "type": "image",
@@ -176,13 +146,7 @@
         },
         "logo-iberdrola": {
           "type": "image",
-          "value": "/logos-clientes/iberdrola.png",
-          "derived": {
-            "src": "/gallery/derived/414b9702-1600.webp",
-            "srcset": "/gallery/derived/414b9702-640.webp 640w, /gallery/derived/414b9702-1024.webp 1024w, /gallery/derived/414b9702-1600.webp 1600w",
-            "width": 1600,
-            "height": 395
-          }
+          "value": "/logos-clientes/iberdrola.png"
         },
         "logo-innergex": {
           "type": "image",

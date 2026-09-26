@@ -5,15 +5,50 @@ import type { PublishJobRepository } from '../repositories/PublishJobRepository'
 import type { PublishJob } from '../types/cms';
 import { refreshPublicSecurityHeaders } from '../security/headers';
 import type { ExportService, RevertedEntry, SkippedEntry } from './exportService';
+import { ErrorDeUsuario } from '../utils/errorDeUsuario';
 
 type Exported = {
   files: string[];
   removed: string[];
   skipped: SkippedEntry[];
   revertedToFallback: RevertedEntry[];
+  missingFiles?: string[];
+  /** P3-08: fotos de la galería sin imagen, que no salen en el sitio. */
+  galeriaSinImagen?: number;
 };
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * P3-04 (auditoría 2026-09): el comando de publicación se partía con
+ * `split(' ')`, así que un argumento entrecomillado (una ruta con espacios)
+ * llegaba roto. Se parte como lo haría una shell sencilla: espacios fuera de
+ * comillas, comillas simples o dobles para agrupar. Sin shell de por medio.
+ */
+export function argumentosDeComando(comando: string): string[] {
+  const salida: string[] = [];
+  let actual = '';
+  let comilla: '"' | "'" | null = null;
+  let hay = false;
+  for (const c of comando.trim()) {
+    if (comilla) {
+      if (c === comilla) comilla = null;
+      else actual += c;
+    } else if (c === '"' || c === "'") {
+      comilla = c;
+      hay = true;
+    } else if (/\s/.test(c)) {
+      if (hay || actual) salida.push(actual);
+      actual = '';
+      hay = false;
+    } else {
+      actual += c;
+    }
+  }
+  if (comilla) throw new Error(`Comando de publicación con comillas sin cerrar: ${comando}`);
+  if (hay || actual) salida.push(actual);
+  return salida;
+}
 
 /**
  * A-7/A-9: las omisiones y las reversiones al texto por defecto entran en el
@@ -26,12 +61,71 @@ function noticeLines(exported: Exported): string[] {
     ...exported.revertedToFallback.map(
       (e) => `⚠ vuelve al texto por defecto: ${e.id} («${e.title}»)`
     ),
+    ...(exported.missingFiles ?? []).map((f) => `⚠ imagen o video que no existe: ${f}`),
+    ...(exported.galeriaSinImagen
+      ? [`⚠ ${exported.galeriaSinImagen} foto(s) de la galería sin imagen: no salen en el sitio`]
+      : []),
   ];
 }
 
 interface ExecFailure extends Error {
   stdout?: string;
   stderr?: string;
+}
+
+/**
+ * P2-04 / P2-24 (auditoría 2026-09): ante un fallo, el panel decía «Error al
+ * procesar la solicitud» y el historial solo «Falló». Aquí se traduce la causa
+ * a algo que la persona editora pueda entender o contar a soporte, y siempre
+ * viaja el identificador del job.
+ */
+export function explicarFalloDePublicacion(error: unknown, jobId: string): ErrorDeUsuario {
+  const mensaje = error instanceof Error ? error.message : String(error);
+  const salida = [
+    (error as ExecFailure)?.stdout ?? '',
+    (error as ExecFailure)?.stderr ?? '',
+    mensaje,
+  ].join('\n');
+  const extra = { job: jobId };
+  if (/tiene \d+ foto\(s\) que el CMS no conoce/.test(mensaje)) {
+    return new ErrorDeUsuario(409, mensaje.split('\n')[0], extra, mensaje);
+  }
+  if (/otro build en curso/i.test(salida)) {
+    return new ErrorDeUsuario(
+      409,
+      'Ya se está compilando el sitio (otra publicación o una actualización). Espera un minuto y vuelve a publicar.',
+      extra,
+      mensaje
+    );
+  }
+  const datoInvalido =
+    /InvalidContentEntryDataError[^\n]*|data does not match collection schema[^\n]*/.exec(salida);
+  if (datoInvalido) {
+    const detalle = salida
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => /\*\*[a-z]+\*\*|Expected|Required/i.test(l));
+    return new ErrorDeUsuario(
+      422,
+      `Una ficha tiene un dato que el sitio no acepta${detalle ? ` (${detalle.replace(/\*\*/g, '')})` : ''}. Corrígelo y vuelve a publicar.`,
+      extra,
+      mensaje
+    );
+  }
+  if ((error as { killed?: boolean })?.killed || /ETIMEDOUT|timed out/i.test(mensaje)) {
+    return new ErrorDeUsuario(
+      504,
+      'La compilación del sitio tardó demasiado y se canceló. El sitio sigue como estaba; vuelve a intentarlo en unos minutos.',
+      extra,
+      mensaje
+    );
+  }
+  return new ErrorDeUsuario(
+    500,
+    'No se pudo compilar el sitio. El sitio sigue mostrando la versión anterior y lo guardado no se perdió.',
+    extra,
+    mensaje
+  );
 }
 
 export class PublishService {
@@ -48,8 +142,9 @@ export class PublishService {
 
   private acquireLock(): void {
     if (this.busy) {
-      throw new Error(
-        'Ya hay una exportación o publicación en curso. Intente de nuevo en unos segundos.'
+      throw new ErrorDeUsuario(
+        409,
+        'Ya hay una publicación en curso. Espera a que termine y vuelve a intentarlo.'
       );
     }
     this.busy = true;
@@ -63,7 +158,7 @@ export class PublishService {
   async exportContent(): Promise<{
     job: PublishJob;
     exported: Exported;
-    galleryExported?: { file: string; count: number };
+    galleryExported?: { file: string; count: number; sinImagen?: number };
   }> {
     this.acquireLock();
     try {
@@ -76,6 +171,7 @@ export class PublishService {
 
       try {
         const exported = await this.exportService.exportContent();
+        this.exportService.pruneOrphanDerivatives();
         const completedAt = new Date().toISOString();
         const completed = this.publishJobRepository.finish({
           id: job.id,
@@ -102,7 +198,7 @@ export class PublishService {
   async exportContentWithGallery(): Promise<{
     job: PublishJob;
     exported: Exported;
-    galleryExported: { file: string; count: number };
+    galleryExported: { file: string; count: number; sinImagen?: number };
   }> {
     this.acquireLock();
     try {
@@ -114,8 +210,13 @@ export class PublishService {
       });
 
       try {
-        const exported = await this.exportService.exportContent();
+        // P0-01: galería primero (ver publishContent).
         const galleryExported = await this.exportService.exportGallery();
+        const exported = await this.exportService.exportContent();
+        this.exportService.pruneOrphanDerivatives();
+        if (galleryExported.sinImagen) {
+          (exported as { galeriaSinImagen?: number }).galeriaSinImagen = galleryExported.sinImagen;
+        }
         const completedAt = new Date().toISOString();
         const completed = this.publishJobRepository.finish({
           id: job.id,
@@ -143,7 +244,7 @@ export class PublishService {
   async publishContent(): Promise<{
     job: PublishJob;
     exported: Exported;
-    galleryExported: { file: string; count: number };
+    galleryExported: { file: string; count: number; sinImagen?: number };
     publish: { stdout: string; stderr: string };
   }> {
     this.acquireLock();
@@ -156,14 +257,19 @@ export class PublishService {
       });
 
       try {
-        const exported = await this.exportService.exportContent();
         // CMS-1 fix: publish previously only re-exported page/collection content
         // and never regenerated src/data/gallery.json, so publishing after
         // editing/reordering gallery items shipped the *previous* gallery.
-        // Mirrors exportContentWithGallery(); any failure here fails the whole
-        // publish job below rather than being silently skipped.
+        // P0-01: la galería va PRIMERO. Su guarda es lo único del export que
+        // puede abortar; si lo hace después del contenido, deja los .md y el
+        // JSON escritos sin compilar.
         const galleryExported = await this.exportService.exportGallery();
-        const [command, ...args] = config.cms.publishCheckCommand.split(' ');
+        const exported = await this.exportService.exportContent();
+        this.exportService.pruneOrphanDerivatives();
+        if (galleryExported.sinImagen) {
+          (exported as { galeriaSinImagen?: number }).galeriaSinImagen = galleryExported.sinImagen;
+        }
+        const [command, ...args] = argumentosDeComando(config.cms.publishCheckCommand);
         const result = await execFileAsync(command, args, {
           cwd: config.rootDir,
           timeout: config.cms.publishTimeoutMs,
@@ -202,8 +308,7 @@ export class PublishService {
         };
       } catch (error) {
         const completed = this.failJob(job, error);
-        const message = error instanceof Error ? error.message : 'Publish failed';
-        throw new Error(`Publish job ${completed.id} failed: ${message}`);
+        throw explicarFalloDePublicacion(error, completed.id);
       }
     } finally {
       this.busy = false;

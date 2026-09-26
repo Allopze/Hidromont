@@ -195,7 +195,11 @@ describe('Content API', () => {
           })
         );
 
-      expect((await crear('test.obra-a')).statusCode).toBe(201);
+      const primera = await crear('test.obra-a');
+      expect(primera.statusCode).toBe(201);
+      // P1-02: el id de una ficha de colección lo decide el servidor, con la
+      // forma que usan las plantillas del sitio (`proyectos.<slug>`).
+      expect(primera.json<{ id: string }>().id).toBe('proyectos.obra-compartida');
 
       const choque = await crear('test.obra-b');
       expect(choque.statusCode).toBe(400);
@@ -203,7 +207,7 @@ describe('Content API', () => {
       // El mensaje debe llegar íntegro: nombra la entrada en conflicto para que
       // el editor sepa cuál es. BaseController lo sustituía por un genérico.
       expect(error).toMatch(/obra-compartida/);
-      expect(error).toMatch(/test\.obra-a/);
+      expect(error).toMatch(/proyectos\.obra-compartida/);
     });
 
     it('permite que dos páginas compartan slug (C-1, no-regresión)', async () => {
@@ -239,7 +243,7 @@ describe('Content API', () => {
       const res = await ctx.app.inject(
         authedMut({
           method: 'PATCH',
-          url: '/api/cms/entries/test.obra-c',
+          url: '/api/cms/entries/proyectos.obra-propia',
           body: JSON.stringify({ slug: 'obra-compartida' }),
         })
       );
@@ -297,9 +301,14 @@ describe('Content API', () => {
       const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
       // El schema Zod de servicios exige titulo, resumen, icono y orden.
       expect(entry.fields.titulo.value).toBe('Servicio de prueba');
-      expect(entry.fields.resumen.value).toBeTruthy();
+      // P1-02: sin textos de relleno que acabarían publicados, y con todos los
+      // campos editables del tipo, para que el formulario los ofrezca.
+      expect(entry.fields.resumen.value).toBe('');
       expect(entry.fields.icono.value).toBe('pipe');
       expect(entry.fields.orden.value).toBe(100);
+      for (const key of ['tipos', 'aplicaciones', 'normas', 'body']) {
+        expect(entry.fields[key], key).toBeDefined();
+      }
     });
 
     it('inyecta campos requeridos del schema al crear un proyecto (CMS-003)', async () => {
@@ -318,7 +327,18 @@ describe('Content API', () => {
       expect(res.statusCode).toBe(201);
       const entry = res.json<{ fields: Record<string, { value: unknown }> }>();
       expect(entry.fields.nombre.value).toBe('Proyecto de prueba');
-      expect(entry.fields.alcance.value).toBeTruthy();
+      expect(entry.fields.alcance.value).toBe('');
+      for (const key of [
+        'cliente',
+        'servicio',
+        'diametro',
+        'longitud',
+        'peso',
+        'acero',
+        'normas',
+      ]) {
+        expect(entry.fields[key], key).toBeDefined();
+      }
       expect(entry.fields.categoria.value).toBe('tuberias');
       expect(entry.fields.tipo.value).toBe('banco');
     });

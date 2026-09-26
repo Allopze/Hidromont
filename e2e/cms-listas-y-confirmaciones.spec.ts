@@ -39,6 +39,7 @@ async function procesosGuardados(page: Page): Promise<unknown[]> {
 
 async function abrirFicha(page: Page) {
   await page.goto('/?cms=1');
+  await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
   await page.locator('.hm-cms-bar [data-action="collections"]').click();
   const panel = page.locator('.hm-cms-panel.open');
   await panel.locator(`[data-action="edit-entry"][data-entry-id="${ENTRADA}"]`).click();
@@ -98,6 +99,9 @@ test.describe('Confirmaciones del panel', () => {
   test('son diálogos accesibles: foco dentro y Escape cancela', async ({ page }) => {
     await iniciarSesion(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+    // Con el editor ya montado: el primer texto es un enlace del menú.
+    await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
 
     const editable = page.locator('[data-cms-entry][data-cms-type="text"]:visible').first();
     await editable.click();

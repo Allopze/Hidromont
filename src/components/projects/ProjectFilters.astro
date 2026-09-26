@@ -19,12 +19,9 @@ const { items, active = 'todos' } = Astro.props;
      client-side filtering (script in proyectos/index.astro), matching the
      radiogroup pattern already used by the gallery filters. */
 }
-<nav
-  aria-label="Filtrar proyectos por categoría"
-  class="flex flex-wrap gap-2 mb-10"
-  id="project-filter-container"
->
-  <div class="flex flex-wrap gap-2" role="radiogroup">
+{/* P3-10: un grupo de radios con nombre, no una región de navegación. */}
+<div class="flex flex-wrap gap-2 mb-10" id="project-filter-container">
+  <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrar proyectos por categoría">
     {
       items.map((item) => (
         <button
@@ -44,4 +41,4 @@ const { items, active = 'todos' } = Astro.props;
       ))
     }
   </div>
-</nav>
+</div>

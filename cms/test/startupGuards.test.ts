@@ -67,7 +67,10 @@ afterEach(() => {
  * vivo pasado el plazo ya los superó: medido, el servidor imprime su primer
  * «listening» a los 458 ms, de modo que 2,5 s son de sobra.
  */
-function arrancar(entorno: Record<string, string>, plazoMs = 2_500) {
+// Con toda la batería en paralelo, arrancar tsx puede pasar de 2,5 s y el caso
+// que espera `exit(1)` veía un proceso «vivo». Esperar más no cuesta nada a
+// esos casos: el proceso sale en cuanto el guarda lo rechaza.
+function arrancar(entorno: Record<string, string>, plazoMs = 12_000) {
   const res = spawnSync(process.execPath, ['server.mjs'], {
     cwd: RAIZ,
     encoding: 'utf8',
@@ -105,7 +108,7 @@ describe('guardas de arranque del servidor', () => {
     });
     expect(r.code).toBe(1);
     expect(r.salida).toMatch(/NODE_ENV=production con la contraseña de administrador por defecto/);
-  });
+  }, 15_000);
 
   it('bajo Passenger no se cree local, aunque CMS_HOST sea 127.0.0.1', () => {
     const r = arrancar({
@@ -117,7 +120,7 @@ describe('guardas de arranque del servidor', () => {
     expect(r.code).toBe(1);
     expect(r.salida).toMatch(/Detectado Passenger/);
     expect(r.salida).toMatch(/expuesto a la red con la contraseña por defecto/);
-  });
+  }, 15_000);
 
   it('bajo Passenger exige cookie segura, que en loopback se toleraba', () => {
     const r = arrancar({
@@ -128,7 +131,7 @@ describe('guardas de arranque del servidor', () => {
     });
     expect(r.code).toBe(1);
     expect(r.salida).toMatch(/CMS_COOKIE_SECURE=0/);
-  });
+  }, 15_000);
 
   it('se niega a arrancar si una cuenta de la base tiene la contraseña por defecto', () => {
     // El guarda de más arriba mira el .env, y eso dejaba fuera el caso que de
@@ -144,7 +147,7 @@ describe('guardas de arranque del servidor', () => {
     expect(r.code).toBe(1);
     expect(r.salida).toMatch(/cuenta\(s\) con la contraseña por defecto en la base/);
     expect(r.salida).toMatch(/admin@hidromont\.local/);
-  });
+  }, 15_000);
 
   it('Passenger puede cargarlo con require(): sin await de nivel superior', () => {
     // Passenger arranca la aplicación haciendo `require()` del archivo de
@@ -156,7 +159,7 @@ describe('guardas de arranque del servidor', () => {
     const res = spawnSync(process.execPath, ['-e', "require('./server.mjs')"], {
       cwd: RAIZ,
       encoding: 'utf8',
-      timeout: 2_500,
+      timeout: 6_000,
       env: {
         ...process.env,
         CMS_PORT: '8918',
@@ -171,11 +174,14 @@ describe('guardas de arranque del servidor', () => {
   }, 15_000);
 
   it('arranca en producción con contraseña propia y cookie segura', () => {
-    const r = arrancar({
-      NODE_ENV: 'production',
-      CMS_ADMIN_PASSWORD: 'una-contrasena-larga-y-propia',
-      CMS_COOKIE_SECURE: '1',
-    });
+    const r = arrancar(
+      {
+        NODE_ENV: 'production',
+        CMS_ADMIN_PASSWORD: 'una-contrasena-larga-y-propia',
+        CMS_COOKIE_SECURE: '1',
+      },
+      6_000
+    );
     // Sigue vivo hasta que lo corta el timeout: ningún guarda lo rechazó.
     expect(r.siguioVivo).toBe(true);
     expect(r.salida).not.toMatch(/\[CMS\] ERROR/);
@@ -184,7 +190,7 @@ describe('guardas de arranque del servidor', () => {
   it('sigue arrancando en local con la contraseña por defecto, pero avisando', () => {
     // Un clon nuevo tiene que poder hacer `npm run cms` antes de correr
     // cms:reset-password, así que aquí el aviso no puede convertirse en error.
-    const r = arrancar({ CMS_ADMIN_PASSWORD: CONTRASENA_POR_DEFECTO });
+    const r = arrancar({ CMS_ADMIN_PASSWORD: CONTRASENA_POR_DEFECTO }, 6_000);
     expect(r.siguioVivo).toBe(true);
     expect(r.salida).toMatch(/ADVERTENCIA: el CMS arrancó con la contraseña de administrador/);
   }, 15_000);

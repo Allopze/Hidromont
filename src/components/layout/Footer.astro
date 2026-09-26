@@ -214,7 +214,7 @@ const enlacesEmpresa = [
             </EditableText>
             <a
               href={`mailto:${company.email}`}
-              class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast break-all"
+              class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast [overflow-wrap:anywhere]"
             >
               <EditableText entry="site.company" field="email">
                 {company.email.split('@')[0]}@<wbr />{company.email.split('@')[1]}
@@ -279,11 +279,23 @@ const enlacesEmpresa = [
   const footerSections = document.querySelectorAll<HTMLDetailsElement>('.footer-section');
   const desktopFooter = window.matchMedia('(min-width: 768px)');
 
+  // P3-10 (auditoría 2026-09): en escritorio las columnas van siempre abiertas,
+  // pero su título seguía siendo tabulable e Intro plegaba la columna hasta
+  // recargar. Ahí el título deja de ser un control.
   function syncFooterSections(event: MediaQueryList | MediaQueryListEvent) {
     footerSections.forEach((section) => {
       section.open = event.matches;
+      const titulo = section.querySelector('summary');
+      if (event.matches) titulo?.setAttribute('tabindex', '-1');
+      else titulo?.removeAttribute('tabindex');
     });
   }
+
+  footerSections.forEach((section) => {
+    section.querySelector('summary')?.addEventListener('click', (e) => {
+      if (desktopFooter.matches) e.preventDefault();
+    });
+  });
 
   syncFooterSections(desktopFooter);
   desktopFooter.addEventListener('change', syncFooterSections);

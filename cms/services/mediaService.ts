@@ -4,6 +4,7 @@ import path from 'node:path';
 import { nanoid } from 'nanoid';
 import sharp from 'sharp';
 import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
+import type { ContentRepository } from '../repositories/ContentRepository';
 import type { MediaRepository } from '../repositories/MediaRepository';
 
 const allowedMime = new Set([
@@ -111,7 +112,10 @@ function safeFilename(name: string): string {
 }
 
 export class MediaService {
-  constructor(private readonly mediaRepository: MediaRepository) {}
+  constructor(
+    private readonly mediaRepository: MediaRepository,
+    private readonly contentRepository?: ContentRepository
+  ) {}
 
   /**
    * C-2: cada item lleva `missing` para que la cuadrícula pueda distinguir
@@ -220,6 +224,11 @@ export class MediaService {
   }
 
   async createMedia(input: { filename: string; mime: string; buffer: Buffer; alt?: string }) {
+    const FORMATO_DE_MIME: Record<string, string> = {
+      'image/jpeg': 'jpeg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
     if (!allowedUploadMime.has(input.mime))
       throw new Error(
         'Tipo de archivo no permitido. Se aceptan fotos JPEG, PNG, WebP o SVG y videos MP4 o WebM.'
@@ -267,6 +276,39 @@ export class MediaService {
       // anything to disk. Previously this wrote the file first and validated
       // after, leaving an orphaned file (no DB row, never cleaned up) on every
       // upload of undecodable bytes with a spoofed-but-matching MIME/extension.
+      //
+      // P2-03/P2-19 (auditoría 2026-09): el tipo se decidía por la extensión y
+      // el MIME declarado, así que un AVIF, un TIFF o un SVG renombrados a .jpg
+      // o .png se aceptaban (sharp los decodifica igual) y llegaban a
+      // libheif/librsvg sin pasar por el saneado. Ahora el contenido real debe
+      // ser del formato que dice la extensión. Y un archivo que no es una foto
+      // devolvía «Error al procesar la solicitud»: ahora lo dice en palabras.
+      let meta: Awaited<ReturnType<ReturnType<typeof sharp>['metadata']>>;
+      try {
+        meta = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
+      } catch {
+        throw new Error(
+          'Este tipo de archivo no es una foto que se pueda usar. Sube una foto JPEG, PNG o WebP.'
+        );
+      }
+      const esperado = FORMATO_DE_MIME[mime];
+      if (esperado && meta.format !== esperado) {
+        throw new Error(
+          `El tipo de archivo no coincide con su contenido: dice ser ${esperado.toUpperCase()} pero es ${String(meta.format ?? 'otro formato').toUpperCase()}. Sube una foto JPEG, PNG o WebP.`
+        );
+      }
+      // P3-01 (auditoría 2026-09): se guardaban los bytes tal como llegaban,
+      // con su EXIF (GPS incluido, si lo trae el móvil) y con lo que se hubiera
+      // añadido detrás de la imagen. Se reescribe con sharp: aplica la
+      // orientación de la cámara, y sharp no copia metadatos si no se le pide.
+      const lienzo = sharp(buffer, {
+        limitInputPixels: MAX_INPUT_PIXELS,
+        animated: meta.format === 'webp',
+      }).rotate();
+      if (meta.format === 'jpeg')
+        buffer = await lienzo.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+      else if (meta.format === 'png') buffer = await lienzo.png({ compressionLevel: 9 }).toBuffer();
+      else if (meta.format === 'webp') buffer = await lienzo.webp({ quality: 90 }).toBuffer();
       metadata = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
     }
 
@@ -323,12 +365,28 @@ export class MediaService {
    * era de un solo paso y el recuento de items huérfanos se informaba
    * DESPUÉS de borrar, cuando ya no servía para decidir.
    */
-  deleteMedia(id: string, confirm = false): { orphanedGalleryItems: number } {
+  deleteMedia(
+    id: string,
+    confirm = false
+  ): { orphanedGalleryItems: number; clearedFields: string[] } {
     const asset = this.mediaRepository.find(id);
     if (!asset) throw new Error(`Media asset ${id} no encontrado`);
 
+    // P1-05 (auditoría 2026-09): `media_usages` no registra todos los usos
+    // (faltaban 28 de 70 en la base local), así que el aviso decía «sin uso» y,
+    // al confirmar, los campos seguían apuntando al archivo borrado: la página
+    // se publicaba con la imagen rota. Se buscan también por ruta.
+    const referencias = this.contentRepository?.findFieldsWithValue(asset.path) ?? [];
+
     if (!confirm) {
-      const usages = this.mediaRepository.getUsages(id);
+      const registrados = this.mediaRepository.getUsages(id);
+      const vistos = new Set(registrados.map((u) => `${u.entryId}.${u.fieldKey}`));
+      const usages = [
+        ...registrados,
+        ...referencias
+          .filter((r) => !vistos.has(`${r.entryId}.${r.key}`))
+          .map((r) => ({ entryId: r.entryId, fieldKey: r.key })),
+      ];
       const galleryItems = this.mediaRepository.countGalleryItemsByMedia(id);
       if (usages.length > 0 || galleryItems > 0) {
         const partes = [];
@@ -363,7 +421,21 @@ export class MediaService {
     }
 
     this.mediaRepository.delete(id);
-    return { orphanedGalleryItems };
+
+    // Los campos que la usaban quedan vacíos (con su revisión, para poder
+    // deshacerlo desde «Revisiones»): el sitio muestra la foto por defecto o
+    // nada, nunca una imagen rota.
+    const now = new Date().toISOString();
+    const clearedFields: string[] = [];
+    for (const ref of referencias) {
+      try {
+        this.contentRepository?.updateField(ref.entryId, ref.key, '', now);
+        clearedFields.push(`${ref.entryId}.${ref.key}`);
+      } catch {
+        // Una ficha que desapareció entre medias: nada que vaciar.
+      }
+    }
+    return { orphanedGalleryItems, clearedFields };
   }
 
   findMedia(id: string) {

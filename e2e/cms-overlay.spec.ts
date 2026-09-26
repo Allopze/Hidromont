@@ -153,25 +153,34 @@ test.describe('CMS overlay flow', () => {
 
   test('overlay bar appears with ?cms=1', async ({ page }) => {
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await expect(page.locator('.hm-cms-bar')).toBeVisible();
   });
 
   test('overlay shows login form when not authenticated', async ({ page }) => {
     await page.goto('/?cms=1');
-    // Click on any editable element to trigger login
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+    // Sin sesión el acceso se abre al montar; si no, al pulsar un editable.
     const editable = page.locator('[data-cms-entry]').first();
     if ((await editable.count()) > 0) {
-      await editable.click({ force: true });
+      if (!(await page.locator('.hm-cms-panel.open form[data-login]').count())) {
+        await editable.click({ force: true });
+      }
       await expect(page.locator('form[data-login]')).toBeVisible();
     }
   });
 
   test('overlay login succeeds and closes panel', async ({ page }) => {
     await page.goto('/?cms=1');
-    // Open panel with any editable element
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
+    // Sin sesión, el acceso se abre solo al montar el editor. Solo si no está
+    // a la vista se abre pulsando un elemento editable (un clic forzado con
+    // el panel ya abierto cae en su fondo y lo cierra).
     const editable = page.locator('[data-cms-entry]').first();
     if ((await editable.count()) === 0) return;
-    await editable.click({ force: true });
+    if (!(await page.locator('.hm-cms-panel.open form[data-login]').count())) {
+      await editable.click({ force: true });
+    }
 
     // Fill login form
     const loginForm = page.locator('form[data-login]');
@@ -189,7 +198,12 @@ test.describe('CMS overlay flow', () => {
     // vacía, y la única salida era recargar o clicar un elemento editable.
     // Se enumeran en vez de contarlos: toHaveCount pasa igual
     // aunque estén ocultos, porque `hidden` no afecta al conteo del locator.
-    for (const action of ['collections', 'gallery', 'jobs', 'admin', 'publish', 'logout']) {
+    for (const action of ['collections', 'gallery', 'publish']) {
+      await expect(page.locator(`.hm-cms-bar [data-action="${action}"]`)).toBeVisible();
+    }
+    // Las de uso ocasional van en «Más».
+    await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
+    for (const action of ['pages', 'jobs', 'admin', 'logout']) {
       await expect(page.locator(`.hm-cms-bar [data-action="${action}"]`)).toBeVisible();
     }
   });
@@ -201,6 +215,7 @@ test.describe('CMS overlay flow', () => {
   test('administración muestra registro, respaldos y cambio de contraseña', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     await page.locator('.hm-cms-bar [data-action="bar-menu"]').click();
     await page.locator('.hm-cms-bar [data-action="admin"]').click();
@@ -238,6 +253,7 @@ test.describe('CMS overlay flow', () => {
   test('el formulario de entrada rotula los campos en español', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     await page.locator('.hm-cms-bar [data-action="collections"]').click();
     const panel = page.locator('.hm-cms-panel.open');
@@ -275,6 +291,7 @@ test.describe('CMS overlay flow', () => {
   test('lo escrito sin guardar se puede recuperar al reabrir el formulario', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // El aviso de salir con cambios (beforeunload) sigue siendo nativo.
     page.on('dialog', (d) => d.accept());
@@ -343,6 +360,8 @@ test.describe('CMS overlay flow', () => {
     expect(res.ok()).toBeTruthy();
 
     await page.goto('/?cms=1');
+
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="collections"]').click();
     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
   });
@@ -359,6 +378,7 @@ test.describe('CMS acceso por teclado', () => {
   test('la primera tabulación de la página cae dentro del overlay', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await expect(page.locator('.hm-cms-bar [data-action="collections"]')).toBeVisible();
 
     await page.evaluate(() => document.body.focus());
@@ -372,6 +392,7 @@ test.describe('CMS acceso por teclado', () => {
     // La trampa de foco ya existía; mover el shell no debe haberla alterado.
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
     await page.locator('.hm-cms-bar [data-action="collections"]').click();
     await expect(page.locator('.hm-cms-panel.open')).toBeVisible();
 
@@ -390,8 +411,9 @@ test.describe('CMS mobile navigation', () => {
   test('launcher opens the action sheet and Escape returns focus', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
-    const launcher = page.getByRole('button', { name: 'Abrir menú para editar el sitio' });
+    const launcher = page.getByRole('button', { name: 'Editar sitio: abrir el menú' });
     const menu = page.getByRole('dialog', { name: 'Acciones del CMS' });
 
     await expect(launcher).toBeVisible();
@@ -401,9 +423,9 @@ test.describe('CMS mobile navigation', () => {
     await launcher.click();
     await expect(menu).toBeVisible();
     await expect(launcher).toHaveAttribute('aria-expanded', 'true');
-    // 8 acciones (en la portada, con «Datos para buscadores») más el botón de
-    // cerrar el panel.
-    await expect(menu.getByRole('button')).toHaveCount(9);
+    // 9 acciones (en la portada, con «Datos para buscadores»; P1-07 añadió
+    // «Ir a otra página») más el botón de cerrar el panel.
+    await expect(menu.getByRole('button')).toHaveCount(10);
 
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();

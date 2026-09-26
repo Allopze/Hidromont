@@ -1,4 +1,5 @@
 ---
+import { normalizarBusqueda } from '../../utils/busqueda';
 import type { CollectionEntry } from 'astro:content';
 import { formatDiameters } from '../../utils/format';
 import { entrySlug } from '../../utils/contentId';
@@ -39,8 +40,8 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
   ]
     .filter(Boolean)
     .map((field) => formatDiameters(String(field)))
-    .join(' ')
-    .toLowerCase();
+    .map((field) => normalizarBusqueda(field))
+    .join(' ');
 ---
 
 {
@@ -85,7 +86,7 @@ const searchText = (project: CollectionEntry<'proyectos'>) =>
           <tbody>
             {proyectos.map((p, i) => (
               <tr
-                class="bg-white hover:bg-primary-light transition-colors duration-fast"
+                class="bg-white"
                 data-project-item
                 data-project-key={p.id}
                 data-project-category={p.data.categoria}

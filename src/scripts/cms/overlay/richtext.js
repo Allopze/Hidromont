@@ -21,6 +21,12 @@ import {
   insertarEnlace,
   renderizarPrevisualizacion,
 } from './markdown';
+import {
+  abrirDialogoEnlace,
+  formatoVisual,
+  markdownAHtmlEditable,
+  sePuedeEditarVisualmente,
+} from './richtext-visual';
 
 /**
  * Los botones de la barra.
@@ -32,13 +38,14 @@ const BOTONES = [
   { accion: 'bold', etiqueta: 'B', titulo: 'Negrita (Ctrl+B)', clase: 'hm-cms-rt-bold' },
   { accion: 'italic', etiqueta: 'I', titulo: 'Cursiva (Ctrl+I)', clase: 'hm-cms-rt-italic' },
   { separador: true },
-  { accion: 'h2', etiqueta: 'H2', titulo: 'Título de sección' },
-  { accion: 'h3', etiqueta: 'H3', titulo: 'Subtítulo' },
+  // P2-23: «H2»/«H3» y «Código» eran jerga; los títulos se rotulan con
+  // palabras y el código, que no se usa en ninguna ficha, sale de la barra.
+  { accion: 'h2', etiqueta: 'Título', titulo: 'Título de sección' },
+  { accion: 'h3', etiqueta: 'Subtítulo', titulo: 'Subtítulo' },
   { separador: true },
   { accion: 'ul', icono: 'list', titulo: 'Lista con viñetas' },
   { accion: 'ol', icono: 'listOrdered', titulo: 'Lista numerada' },
   { accion: 'quote', icono: 'quote', titulo: 'Cita' },
-  { accion: 'code', icono: 'code', titulo: 'Código' },
   { accion: 'link', icono: 'link', titulo: 'Enlace (Ctrl+K)' },
 ];
 
@@ -83,9 +90,31 @@ export function richtextMarkup(valor, name = 'value', etiqueta = 'Contenido') {
            aria-label="${escapeHtml(b.titulo)}">${b.icono ? icon(b.icono) : escapeHtml(b.etiqueta)}</button>`
   ).join('');
 
+  const texto = String(valor ?? '');
+  if (sePuedeEditarVisualmente(texto)) {
+    // Editor visual: el textarea sigue siendo lo que se envía, oculto.
+    return `
+    <p class="hm-cms-label" id="${escapeHtml(id)}-rotulo">${etiqueta}</p>
+    <div class="hm-cms-rt" data-richtext data-richtext-modo="visual">
+      <div class="hm-cms-rt-bar" role="toolbar" aria-label="Formato del texto">
+        ${barra}
+      </div>
+      <div class="hm-cms-rt-preview hm-cms-rt-visual" data-richtext-visual contenteditable="true"
+        role="textbox" aria-multiline="true" aria-labelledby="${escapeHtml(id)}-rotulo"
+        spellcheck="true">${markdownAHtmlEditable(texto)}</div>
+      <textarea id="${escapeHtml(id)}" name="${escapeHtml(name)}" data-field-type="richtext"
+        data-richtext-input hidden tabindex="-1" aria-hidden="true">${escapeHtml(texto)}</textarea>
+      <p class="hm-cms-rt-help">
+        Escribe como en un documento. Selecciona texto y usa los botones para darle formato;
+        el aspecto final lo da el sitio.
+      </p>
+    </div>
+  `;
+  }
+
   return `
     <label for="${escapeHtml(id)}">${etiqueta}</label>
-    <div class="hm-cms-rt" data-richtext>
+    <div class="hm-cms-rt" data-richtext data-richtext-modo="texto">
       <div class="hm-cms-rt-bar" role="toolbar" aria-label="Formato del texto">
         ${barra}
         <span class="hm-cms-rt-spacer"></span>
@@ -113,6 +142,12 @@ export function richtextMarkup(valor, name = 'value', etiqueta = 'Contenido') {
  */
 export function aplicarFormato(boton) {
   const editor = boton.closest('[data-richtext]');
+  const visual = editor?.querySelector('[data-richtext-visual]');
+  if (visual) {
+    if (boton.dataset.format === 'link') abrirDialogoEnlace(visual);
+    else formatoVisual(visual, boton.dataset.format);
+    return;
+  }
   const area = editor?.querySelector('[data-richtext-input]');
   if (!area) return;
 
@@ -147,7 +182,11 @@ export function manejarAtajo(event) {
   if (!accion) return false;
 
   const area = event.target;
-  if (!(area instanceof HTMLTextAreaElement) || !area.matches('[data-richtext-input]')) {
+  const esVisual = area instanceof HTMLElement && area.matches('[data-richtext-visual]');
+  if (
+    !esVisual &&
+    (!(area instanceof HTMLTextAreaElement) || !area.matches('[data-richtext-input]'))
+  ) {
     return false;
   }
   const editor = area.closest('[data-richtext]');

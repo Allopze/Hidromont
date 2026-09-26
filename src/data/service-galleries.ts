@@ -1,8 +1,15 @@
-import { getCmsText } from './cms';
+import { cmsEntrySlugs, getCmsText } from './cms';
 
 export interface GalleryImage {
   src: string;
   alt: string;
+  /**
+   * El hueco del CMS al que pertenece (1, 2 o 3). P2-10 (auditoría 2026-09):
+   * se renumeraba por posición tras quitar los vacíos, así que con los huecos
+   * 1 y 3 la foto del 3 se pintaba como `gallery2` y «+ Agregar imagen 3»
+   * sobrescribía una foto que ya existía.
+   */
+  campo: number;
 }
 
 export interface ServiceGallery {
@@ -10,16 +17,24 @@ export interface ServiceGallery {
 }
 
 const serviceSlugs = [
-  'tuberias-forzadas', 'compuertas', 'valvulas', 'turbinas', 'limpiarrejas', 'otros-montajes', 'infraestructuras', 'tanques-especiales',
+  'tuberias-forzadas',
+  'compuertas',
+  'valvulas',
+  'turbinas',
+  'limpiarrejas',
+  'otros-montajes',
+  'infraestructuras',
+  'tanques-especiales',
 ];
 
 export const serviceGalleries: Record<string, ServiceGallery> = Object.fromEntries(
-  serviceSlugs.map((slug) => {
+  [...new Set([...serviceSlugs, ...cmsEntrySlugs('service-gallery')])].map((slug) => {
     const entryId = `service-gallery.${slug}`;
     const images: GalleryImage[] = [1, 2, 3]
       .map((n) => ({
         src: getCmsText(entryId, `gallery${n}`, ''),
         alt: getCmsText(entryId, `gallery${n}Alt`, ''),
+        campo: n,
       }))
       .filter((img) => img.src !== '');
     return [slug, { images }];

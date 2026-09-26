@@ -171,6 +171,18 @@ export class AuthService {
       return undefined;
     }
 
+    // P3-01 (auditoría 2026-09): caducidad por inactividad. La marca se
+    // actualiza como mucho cada 5 minutos, para no escribir en cada petición.
+    const visto = new Date(session.last_seen_at || session.created_at).getTime();
+    const ahora = Date.now();
+    if (ahora - visto > config.cms.sessionIdleHours * 60 * 60 * 1000) {
+      this.userRepository.deleteSession(sessionId);
+      return undefined;
+    }
+    if (ahora - visto > 5 * 60 * 1000) {
+      this.userRepository.touchSession(sessionId, new Date(ahora).toISOString());
+    }
+
     const user = this.userRepository.findById(session.user_id);
     if (!user) return undefined;
 
@@ -178,6 +190,11 @@ export class AuthService {
       user: { id: user.id, email: user.email },
       csrfToken: session.csrf_token,
     };
+  }
+
+  /** P3-01: «Cerrar las demás sesiones» desde Administración. */
+  closeOtherSessions(userId: string, currentSessionId: string): number {
+    return this.userRepository.deleteOtherSessions(userId, currentSessionId);
   }
 
   logout(sessionId: string | undefined): void {

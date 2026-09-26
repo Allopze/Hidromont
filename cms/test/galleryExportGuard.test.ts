@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import Database from 'better-sqlite3';
+import { migrate } from '../db/schema';
+import { GalleryRepository } from '../repositories/GalleryRepository';
 import { ExportService } from '../services/exportService';
 
 /**
@@ -54,7 +57,7 @@ function makeExportService(rootDir: string, publishedItems: number) {
   return new ExportService({} as never, rootDir, galleryRepository as never, imageService as never);
 }
 
-function seedGalleryJson(rootDir: string, itemCount: number) {
+function seedGalleryJson(rootDir: string, itemCount: number, prefix = 'existente') {
   const target = path.join(rootDir, 'src', 'data', 'gallery.json');
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(
@@ -62,7 +65,7 @@ function seedGalleryJson(rootDir: string, itemCount: number) {
     JSON.stringify({
       updatedAt: new Date().toISOString(),
       categories: [],
-      items: Array.from({ length: itemCount }, (_, i) => ({ id: `existente-${i}` })),
+      items: Array.from({ length: itemCount }, (_, i) => ({ id: `${prefix}-${i}` })),
     })
   );
   return target;
@@ -86,7 +89,7 @@ describe('GAL-1: guarda contra el borrado silencioso de la galería', () => {
     const target = seedGalleryJson(root, 168);
 
     await expect(makeExportService(root, 23).exportGallery()).rejects.toThrow(
-      /Exportar borraría 145 foto/
+      /tiene 168 foto\(s\) que el CMS no conoce/
     );
 
     // El archivo debe quedar intacto, no a medio escribir.
@@ -106,7 +109,8 @@ describe('GAL-1: guarda contra el borrado silencioso de la galería', () => {
 
   it('no estorba cuando la galería crece o se mantiene', async () => {
     const root = makeTempRoot();
-    const target = seedGalleryJson(root, 23);
+    // Las 23 que ya había son fotos que la base conoce (mismos ids).
+    const target = seedGalleryJson(root, 23, 'item');
 
     await makeExportService(root, 168).exportGallery();
 
@@ -169,5 +173,88 @@ describe('GAL-6: src/data/gallery.json solo lo escribe el export del CMS', () =>
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * P0-01 (auditoría 2026-09): la guarda comparaba solo el número de fotos, así
+ * que quitar u ocultar una foto desde el panel bloqueaba TODAS las
+ * publicaciones siguientes. Estas pruebas usan la base real (migrate) para que
+ * el conjunto de fotos «conocidas» salga de la tabla y de la auditoría.
+ */
+describe('P0-01: quitar u ocultar una foto desde el CMS no bloquea la publicación', () => {
+  function realSetup(total: number) {
+    const db = new Database(':memory:');
+    migrate(db);
+    const now = new Date().toISOString();
+    const repo = new GalleryRepository(db);
+    for (let i = 0; i < total; i += 1) {
+      db.prepare(
+        `INSERT INTO media_assets (id, name, path, mime, size, alt, focal_x, focal_y, checksum, created_at, updated_at)
+         VALUES (?, ?, ?, 'image/webp', 1, 'x', 0.5, 0.5, 'c', ?, ?)`
+      ).run(`m-${i}`, `f-${i}.webp`, `/fotos/f-${i}.webp`, now, now);
+      repo.createItem({
+        id: `item-${i}`,
+        mediaId: `m-${i}`,
+        title: `Foto ${i}`,
+        alt: `Foto ${i}`,
+        position: i,
+        featured: false,
+        status: 'published',
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+    const imageService = {
+      generateDerivatives: async (mediaPath: string) => ({
+        src: mediaPath,
+        width: 10,
+        height: 10,
+        srcset: `${mediaPath} 10w`,
+        lqip: '',
+      }),
+    };
+    const root = makeTempRoot();
+    const exportService = new ExportService({} as never, root, repo, imageService as never);
+    return { db, repo, exportService, root };
+  }
+
+  const itemsOnDisk = (root: string) =>
+    JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'gallery.json'), 'utf8')).items;
+
+  it('borrar una foto desde el panel (queda en la auditoría) publica n−1', async () => {
+    const { db, repo, exportService, root } = realSetup(5);
+    await exportService.exportGallery();
+    expect(itemsOnDisk(root)).toHaveLength(5);
+
+    repo.deleteItem('item-2');
+    db.prepare(
+      `INSERT INTO audit_events (id, action, entity_type, entity_id, created_at)
+       VALUES ('a1', 'gallery.item.delete', 'gallery_item', 'item-2', ?)`
+    ).run(new Date().toISOString());
+
+    await exportService.exportGallery();
+    expect(itemsOnDisk(root).map((i: { id: string }) => i.id)).not.toContain('item-2');
+    expect(itemsOnDisk(root)).toHaveLength(4);
+    // Y la siguiente publicación también sale.
+    await exportService.exportGallery();
+    expect(itemsOnDisk(root)).toHaveLength(4);
+  });
+
+  it('ocultar una foto (borrador) publica sin ella', async () => {
+    const { db, exportService, root } = realSetup(4);
+    await exportService.exportGallery();
+    db.prepare(`UPDATE gallery_items SET status = 'draft' WHERE id = 'item-0'`).run();
+
+    await exportService.exportGallery();
+    expect(itemsOnDisk(root)).toHaveLength(3);
+  });
+
+  it('sigue abortando si el JSON tiene fotos que la base nunca tuvo', async () => {
+    const { exportService, root } = realSetup(2);
+    seedGalleryJson(root, 10);
+
+    await expect(exportService.exportGallery()).rejects.toThrow(/que el CMS no conoce/);
+    expect(itemsOnDisk(root)).toHaveLength(10);
   });
 });

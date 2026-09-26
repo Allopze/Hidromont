@@ -141,3 +141,61 @@ describe('Subida de videos y SVG', () => {
     expect(imagenes.every((m) => m.mime.startsWith('image/'))).toBe(true);
   });
 });
+
+describe('P2-03: el contenido de una foto debe ser del formato que dice su extensión', () => {
+  it('rechaza un PNG, un SVG o un texto renombrados a .jpg con un mensaje claro', async () => {
+    const sharp = (await import('sharp')).default;
+    const { MediaService } = await import('../services/mediaService');
+    const servicio = new MediaService({ create: () => ({}) } as never);
+    const png = await sharp({
+      create: { width: 4, height: 4, channels: 3, background: '#fff' },
+    })
+      .png()
+      .toBuffer();
+    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>');
+    for (const [buffer, patron] of [
+      [png, /dice ser JPEG pero es PNG/],
+      [svg, /dice ser JPEG pero es SVG/],
+      [Buffer.from('esto no es una foto'), /no es una foto que se pueda usar/],
+    ] as const) {
+      await expect(
+        servicio.createMedia({ filename: 'foto.jpg', mime: 'image/jpeg', buffer })
+      ).rejects.toThrow(patron);
+    }
+  });
+});
+
+describe('P3-01: las fotos subidas se guardan sin metadatos', () => {
+  let ctx: TestApp;
+  const creados: string[] = [];
+  beforeAll(async () => {
+    ctx = await createTestApp();
+  });
+  afterAll(async () => {
+    for (const ruta of creados) fs.rmSync(resolvePublicAssetPath(ruta), { force: true });
+    await ctx.app.close();
+  });
+
+  it('un JPEG con EXIF y girado sale sin EXIF y derecho', async () => {
+    const sharp = (await import('sharp')).default;
+    const conExif = await sharp({
+      create: { width: 40, height: 20, channels: 3, background: '#336699' },
+    })
+      .jpeg()
+      .withMetadata({ orientation: 6, exif: { IFD0: { Copyright: 'dato privado' } } })
+      .toBuffer();
+    expect((await sharp(conExif).metadata()).exif).toBeDefined();
+
+    const asset = await ctx.mediaService.createMedia({
+      filename: 'con-exif.jpg',
+      mime: 'image/jpeg',
+      buffer: conExif,
+    });
+    creados.push(asset.path);
+    const guardada = await sharp(fs.readFileSync(resolvePublicAssetPath(asset.path))).metadata();
+    expect(guardada.exif).toBeUndefined();
+    expect(guardada.orientation).toBeUndefined();
+    // Orientación 6: la foto de 40×20 se ve de 20×40.
+    expect([guardada.width, guardada.height]).toEqual([20, 40]);
+  });
+});

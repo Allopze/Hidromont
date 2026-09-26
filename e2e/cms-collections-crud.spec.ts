@@ -10,7 +10,8 @@ const CMS_URL = process.env.CMS_URL ?? 'http://localhost:8787';
 const ADMIN_EMAIL = process.env.CMS_ADMIN_EMAIL ?? 'admin@hidromont.local';
 const ADMIN_PASSWORD = process.env.CMS_ADMIN_PASSWORD ?? 'Hidromont-Admin-ChangeMe';
 
-const TEST_ENTRY_ID = 'servicio.e2e-test-unitario';
+// P1-02: el servidor decide el id de una ficha de colección: `servicios.<slug>`.
+const TEST_ENTRY_ID = 'servicios.e2e-test-servicio';
 const TEST_SLUG = 'e2e-test-servicio';
 const TEST_TITLE = 'Servicio E2E Automatizado';
 
@@ -41,6 +42,7 @@ test.describe('CMS Collections CRUD', () => {
   }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     // Manejo de diálogos de confirmación (para borrado o despublicación)
     await aceptarConfirmaciones(page);
@@ -66,7 +68,8 @@ test.describe('CMS Collections CRUD', () => {
     const entryForm = panel.locator('form[data-entry-form]');
     await expect(entryForm).toBeVisible();
 
-    await entryForm.locator('input[name="id"]').fill(TEST_ENTRY_ID);
+    // P2-22: el identificador interno ya no se escribe; se deduce de la dirección.
+    await expect(entryForm.locator('input[name="id"]')).toHaveAttribute('type', 'hidden');
     await entryForm.locator('input[name="title"]').fill(TEST_TITLE);
     await entryForm.locator('input[name="slug"]').fill(TEST_SLUG);
     await entryForm.locator('select[name="status"]').selectOption('draft');
@@ -131,6 +134,7 @@ test.describe('CMS Collections CRUD', () => {
   test('búsqueda y filtrado dentro del panel de colecciones', async ({ page }) => {
     await apiLogin(page);
     await page.goto('/?cms=1');
+    await page.waitForSelector('body[data-cms-listo]', { state: 'attached' });
 
     await page.locator('.hm-cms-bar [data-action="collections"]').click();
     const panel = page.locator('.hm-cms-panel.open');

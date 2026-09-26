@@ -1,130 +1,96 @@
 # Seguridad
 
-> Modelo de amenazas, mitigaciones y hardening del proyecto Hidromont Chile.
-> Para el detalle de hallazgos y remediación, ver [`AUDITORIA_LOGICA_UIUX.md`](./AUDITORIA_LOGICA_UIUX.md).
+> Modelo de amenazas y medidas del sitio y del CMS de Hidromont Chile, tal como
+> están en el código. Arquitectura en [`ARCHITECTURE.md`](./ARCHITECTURE.md);
+> despliegue en [`DESPLIEGUE-VPS.md`](./DESPLIEGUE-VPS.md).
+>
+> Reescrito en septiembre de 2026 (auditoría, P2-08). La versión anterior
+> suponía un sitio en Cloudflare Pages y un CMS que nunca se exponía a
+> internet. Hoy el CMS se sirve en internet, en `editor.hidromontchile.cl`,
+> detrás de HTTPS y autenticación.
 
 ## Modelo de despliegue
 
-```
-┌─────────────────────────────────────────┐
-│  PRODUCCIÓN (público)                   │
-│  Cloudflare Pages sirve dist/ estático. │
-│  NO hay backend expuesto.               │
-│  CSP, HSTS, X-Frame-Options en _headers.│
-└─────────────────────────────────────────┘
+Un proceso Node (Fastify) detrás de Caddy sirve los dos dominios:
 
-┌─────────────────────────────────────────┐
-│  EDICIÓN (local/LAN, NO público)        │
-│  CMS Fastify en :8787.                  │
-│  Overlay en dev (PUBLIC_ENABLE_CMS=1).  │
-│  Auth bcrypt + CSRF + rate-limit.       │
-└─────────────────────────────────────────┘
-```
+| Host                       | Qué recibe                                             | API `/api/cms/*`                                         |
+| -------------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
+| `hidromontchile.cl`        | `dist/`, compilado con `PUBLIC_ENABLE_CMS=0`           | 404 (con los dos perfiles desplegados)                   |
+| `editor.hidromontchile.cl` | `dist-editor/`, con el editor; `X-Robots-Tag: noindex` | Sí: login, sesión y salud públicos; el resto, con sesión |
 
-**Principio:** el sitio público es 100% estático. El CMS **nunca** se expone a internet; corre solo en la máquina del operador o LAN de la oficina. El canal entre ambos es el export de archivos (JSON + .md), que el build convierte en el `dist/` que se sirve.
+Decisiones del propietario que este documento da por fijadas: no hay
+`basic_auth` ni filtro por IP delante de `/api/cms`, y el servicio corre como
+`root` (`deploy/hidromont.service`, con `ProtectSystem=full`).
 
-> **Cambio de modelo (Fase 4).** Con el despliegue integrado el CMS y el sitio corren en el mismo proceso Node y sus APIs quedan detrás de HTTPS y autenticación. La interfaz visual de producción se activa desde `editor.*`; `?cms=1` solo funciona en desarrollo. El perfil integrado requiere `PUBLIC_ENABLE_CMS=1`; el perfil público estático usa `0`. Eso obliga a HTTPS con `CMS_COOKIE_SECURE=1`, contraseña fuerte y `CMS_ALLOW_INSECURE_COOKIE` sin definir — los guards de arranque de `cms/server.ts` rechazan las combinaciones peligrosas. `e2e/build-gate.spec.ts` verifica que el build estático no arrastre credenciales ni rutas del servidor.
->
-> Las cabeceras de seguridad ya no vienen de `public/_headers` (convención exclusiva de Cloudflare Pages, inerte fuera de él) sino de `cms/security/headers.ts`, que además calcula los hashes de la CSP leyendo el build en vez de mantenerlos a mano.
+## Amenazas y medidas
 
-## Matriz de amenazas y mitigaciones
+| Vector                          | Estado                          | Medida                                                                                                                                                                                                                                |
+| ------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| XSS                             | Mitigado                        | Astro escapa lo que pinta. El cuerpo en Markdown se publica sin HTML crudo (`src/utils/rehypeSinHtml.mjs`). La vista previa del editor escapa y solo admite enlaces `http(s)`, `mailto` y rutas. Los SVG subidos se convierten a PNG. |
+| Inyección SQL                   | Mitigado                        | Sentencias preparadas en todos los repositorios.                                                                                                                                                                                      |
+| CSRF                            | Mitigado                        | Token ligado a la sesión en la cabecera `X-CSRF-Token`, comparado en tiempo constante; `requireCsrf` en todas las mutaciones.                                                                                                         |
+| Autenticación                   | Mitigado                        | bcrypt (coste 12), comparación contra un hash ficticio si el usuario no existe, sesión aleatoria y cookie `__Host-…` `Secure` `HttpOnly` `SameSite=Lax` sin `Domain`.                                                                 |
+| Fuerza bruta                    | Mitigado                        | 10 intentos por minuto y por IP, persistidos en SQLite, con `Retry-After`. `CMS_TRUST_PROXY=1` para leer la IP real detrás de Caddy.                                                                                                  |
+| Contraseña por defecto          | Mitigado                        | Las guardas de arranque (`cms/server.ts`) no dejan arrancar con la contraseña de ejemplo, ni en el `.env` ni en la base, ni con una cookie insegura en un host expuesto.                                                              |
+| Path traversal                  | Mitigado                        | `findContainedFile` resuelve la ruta y rechaza lo que salga de la raíz; los slugs siguen un patrón estricto; las subidas se contienen en `uploads/cms`.                                                                               |
+| Subidas maliciosas              | Mitigado                        | Tipo por extensión y por contenido real (firma de bytes; sharp debe poder decodificar la imagen); límite de píxeles; tamaño máximo por tipo; el SVG se valida y se rasteriza.                                                         |
+| Editor en el sitio público (H1) | Mitigado al desplegar esta rama | Dos perfiles de build: `dist/` sin editor para el host público y `dist-editor/` para `editor.*`. La API responde 404 en el host público. `e2e/build-gate.spec.ts` comprueba que `dist/` no lleve marcas del CMS.                      |
+| Secretos                        | OK                              | `.env` fuera de git; `.env.example` y `.env.production.example` con valores de ejemplo comentados.                                                                                                                                    |
+| Dependencias                    | Revisar en cada despliegue      | `npm audit`: 0 avisos (septiembre de 2026, tras pasar a Astro 7, Fastify 5.12, sharp 0.35 para todo el árbol y Vitest 5).                                                                                                             |
 
-| Vector                                 | Estado      | Mitigación                                                                                                                                                                                    |
-| -------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **XSS reflejado/almacenado**           | ✅ Mitigado | Astro auto-escapa todo contenido. `set:html` solo en SVG estático (iconos ServiceCard). SVG bloqueado en uploads de usuario (stored-XSS vía `<script>` embebido).                             |
-| **Inyección SQL**                      | ✅ Mitigado | Sentencias preparadas en todos los repositories (better-sqlite3). Sin concatenación SQL.                                                                                                      |
-| **CSRF**                               | ✅ Mitigado | Doble token: cookie de sesión + header `X-CSRF-Token`. `requireCsrf` en todas las mutaciones.                                                                                                 |
-| **Path traversal (servir)**            | ✅ Mitigado | `findContainedFile` en `staticSite.ts` resuelve paths absolutos y rechaza si no están bajo root. URL decodificada antes del check.                                                            |
-| **Path traversal (export/upload)**     | ✅ Mitigado | Regex de slug `/^[a-z0-9/._-]+$/` + `.refine` rechaza `..`. Slugs con subdirectorio crean el dir recursivamente (no fallan). Contención de ruta en upload (`fullPath.startsWith(uploadDir)`). |
-| **AuthN/AuthZ**                        | ✅ Mitigado | bcrypt cost 12. `requireAuth` en todas las rutas privadas. Sesión `nanoid(48)`, cookie `httpOnly` + `sameSite: lax` + `secure` configurable.                                                  |
-| **Brute force login**                  | ✅ Mitigado | Rate limit: 10 intentos / 60s por IP, persistido en SQLite, con `Retry-After`. Cleanup al arranque + intervalo de 5 min.                                                                      |
-| **Fuga del CMS al build público (H1)** | ✅ Mitigado | `PUBLIC_ENABLE_CMS=0` en build de producción. Test e2e `build-gate.spec.ts` verifica que `dist/` no contenga `data-cms-entry` ni `__HIDROMONT_CMS__`. CI lo ejecuta en cada PR.               |
-| **Cookie insegura en LAN (H2)**        | ✅ Mitigado | Guard de arranque bloquea `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0` salvo escape hatch explícito `CMS_ALLOW_INSECURE_COOKIE=1`.                                                              |
-| **Secretos en repo**                   | ✅ OK       | `.env` en `.gitignore`, ausente del historial. `.env.example` con placeholders.                                                                                                               |
-| **Dependencias**                       | ✅ OK       | `npm audit --omit=dev` → 0 vulnerabilidades. `js-yaml` resuelto correctamente (gray-matter usa v3 parcheada, astro top-level v4).                                                             |
+## Cabeceras
 
-## CSP (Content-Security-Policy)
+Las pone `cms/server.ts` en `onSend`. `public/_headers` es una convención de
+Cloudflare Pages que aquí no se usa.
 
-Definida en `public/_headers` para Cloudflare Pages:
+| Cabecera                    | Valor                                                                                                                                                                                                                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Content-Security-Policy`   | HTML: `default-src 'self'`, `script-src 'self'` más los hashes de cada script inline del build servido (`cms/security/headers.ts`), `connect-src` y `form-action` a FormSubmit, `frame-src` a Google Maps, `frame-ancestors 'self'`. API: `default-src 'none'; frame-ancestors 'none'`. |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` con cookie segura                                                                                                                                                                                                                                 |
+| `X-Frame-Options`           | `SAMEORIGIN` en el sitio, `DENY` en la API                                                                                                                                                                                                                                              |
+| `X-Content-Type-Options`    | `nosniff`                                                                                                                                                                                                                                                                               |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                                                                                                                                                                                                                                       |
+| `Permissions-Policy`        | cámara, micrófono, geolocalización, pago, USB y `interest-cohort` desactivados                                                                                                                                                                                                          |
+| `Cache-Control`             | HTML `no-cache`; `/_assets/` e imágenes, un año `immutable`; videos de `public/`, un día                                                                                                                                                                                                |
 
-```
-default-src 'self';
-base-uri 'self';
-object-src 'none';
-frame-ancestors 'self';
-img-src 'self' data: https:;
-font-src 'self';
-style-src 'self' 'unsafe-inline';
-script-src 'self' 'unsafe-inline'
-  'sha256-/x7W7R75k8Roq0WaVRQX9blP4OufE5xbAdzklGxsgpw='   /* .js classList */
-  'sha256-KzHXOF/rDV03VPBunw3imiCWpJVLi2nvUNu3mxXrVd8=';  /* JSON-LD Organization */
-frame-src https://maps.google.com https://www.google.com;
-form-action 'self' https://formsubmit.co https://api.web3forms.com;
-upgrade-insecure-requests;
-```
-
-- `'unsafe-inline'` en `script-src` se mantiene porque Astro genera scripts inline adicionales en páginas de detalle (ContactForm JSON, gallery) cuyos contenidos varían. Los dos hashes cubren los scripts estáticos idénticos en todas las páginas (`.js classList` + JSON-LD Organization).
-- Migrar a nonces requeriría SSR; queda como mejora futura.
-
-## Cabeceras de seguridad
-
-| Cabecera                  | Valor                                                  | Origen                              |
-| ------------------------- | ------------------------------------------------------ | ----------------------------------- |
-| `Content-Security-Policy` | ver arriba                                             | `public/_headers` (Cloudflare)      |
-| `X-Content-Type-Options`  | `nosniff`                                              | `_headers` + `cms/server.ts` onSend |
-| `X-Frame-Options`         | `SAMEORIGIN` (`_headers`) / `DENY` (server.ts)         | ambos                               |
-| `Referrer-Policy`         | `strict-origin-when-cross-origin`                      | `_headers` + server.ts              |
-| Cache-Control             | HTML 600s revalidate; assets/fonts/img 1 año immutable | `_headers`                          |
+Los hashes de la CSP se recalculan al cambiar el build (la caché se invalida
+por la fecha de `index.html` de cada perfil), así que no hay que mantenerlos a
+mano. `style-src` conserva `'unsafe-inline'` porque Astro emite estilos por
+componente.
 
 ## Formulario de contacto
 
-- POST directo a FormSubmit.co (tercero) vía fetch.
-- **Honeypot** `_honey` (campo oculto, `aria-hidden`, `tabindex=-1`).
-- **Rate-limit client-side**: 3 envíos / 5 min (sessionStorage).
-- Validación JS con mensajes centralizados en JSON embebido.
-- `PUBLIC_CONTACT_EMAIL` defaultea a `contacto@hidromont.cl` (no cuenta personal).
-
-## Endurecimiento del CMS en LAN
-
-Si el CMS se sirve en la red de la oficina:
-
-1. **Recomendado:** HTTPS + `CMS_COOKIE_SECURE=1`.
-2. **Alternativo:** `CMS_HOST=127.0.0.1` + túnel SSH (sin exponer el puerto).
-3. **LAN de confianza:** `CMS_HOST=0.0.0.0` + `CMS_COOKIE_SECURE=0` + `CMS_ALLOW_INSECURE_COOKIE=1` (el CMS emite advertencia al arrancar).
-
-El guard de arranque (`cms/server.ts`) **bloquea** la combinación host expuesto + cookie insegura sin el escape hatch.
+- `fetch` a FormSubmit.co, con un tiempo máximo de 20 s y respaldo sin
+  JavaScript (envío nativo a `/contacto/gracias`).
+- Honeypot `_honey` y límite en el navegador de 3 envíos aceptados cada 5
+  minutos. El límite real lo aplica FormSubmit.
+- El destinatario sale de `PUBLIC_CONTACT_EMAIL`, con respaldo en el buzón
+  corporativo.
 
 ## Auditoría y observabilidad
 
-- **Audit log:** `audit_events` registra login (success/failed/rate_limited), logout, CRUD de entries/media/gallery, exports, publishes, backups. Visible en `GET /api/cms/audit`.
-- **Error tracking:** Sentry opcional (`SENTRY_DSN`). `captureException` en puntos críticos.
-- **Publish jobs:** tracking con status `running`/`succeeded`/`failed`, logs detallados, crash recovery (reap de jobs stale al arranque).
+- `audit_events` registra accesos (correctos, fallidos y bloqueados), cambios
+  de contenido, medios, galería, restauraciones, exportaciones,
+  publicaciones y respaldos. Se consulta en «Administrar» → «Registro de
+  actividad», con los detalles técnicos plegados.
+- Sentry opcional (`SENTRY_DSN`), solo en el backend. Los errores que el panel
+  explica a quien edita (`ErrorDeUsuario`) no se envían.
+- Las publicaciones colgadas se descartan al arrancar.
 
-## Rotación de credenciales
-
-```bash
-# Cambiar contraseña del admin (re-hashea + invalida sesiones)
-npm run cms:reset-password
-npm run cms:reset-password -- nuevo@email.cl NuevaPassword123
-```
-
-Si se cambia `CMS_ADMIN_PASSWORD` en `.env` sin este script, el hash almacenado **no** se actualiza (el `ensureAdminUser` del arranque preserva ediciones).
-
-## Backup
+## Credenciales y respaldos
 
 ```bash
-npm run cms:backup    # copia el .sqlite a cms/data/backups/
+npm run cms:reset-password                          # interactivo
+npm run cms:reset-password -- correo@dominio Clave  # directo; invalida las sesiones
+npm run cms:backup                                  # copia la base a cms/data/backups/
 ```
 
-Restaurar: reemplazar `cms/data/hidromont-cms.sqlite` con el backup. Las migraciones al arranque son idempotentes (no dañan un backup más viejo).
+Cambiar `CMS_ADMIN_PASSWORD` en el `.env` no cambia el hash guardado: hay que
+usar el script. `scripts/sync-datos-vps.sh` respalda la base remota antes de
+sustituirla y pide confirmación si la remota es más reciente.
 
-## Reportar un problema de seguridad
+## Reportar un problema
 
-Si encuentras una vulnerabilidad, no abras un issue público. Contacta al equipo de desarrollo directamente. El modelo de amenazas asume que el CMS no está expuesto a internet; cualquier issue que requiera acceso autenticado al CMS es de severidad menor salvo que permita escalado o RCE.
-
-## Referencias
-
-- [`AUDITORIA_LOGICA_UIUX.md`](./AUDITORIA_LOGICA_UIUX.md) — auditoría técnica completa + registro de remediación.
-- [`public/_headers`](../public/_headers) — CSP y cabeceras de Cloudflare.
-- [`cms/server.ts`](../cms/server.ts) — guard de arranque (H2).
-- [`cms/middleware/security.ts`](../cms/middleware/security.ts) — requireAuth, requireCsrf, CORS.
+No abras un issue público: escribe al equipo de desarrollo. Ten en cuenta que
+el CMS es accesible desde internet en `editor.*`: un fallo que no requiera
+sesión es grave.

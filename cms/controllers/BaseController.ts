@@ -2,6 +2,7 @@ import type { FastifyReply } from 'fastify';
 import { ZodError } from 'zod';
 import { captureException } from '../utils/errorTracking';
 import { fieldErrorsFromZod, summarizeZod } from '../validators/zodError';
+import { ErrorDeUsuario } from '../utils/errorDeUsuario';
 
 // H-15: Mensajes de error amigables para el cliente. Los errores internos (SQLite,
 // filesystem, etc.) se loguean completos server-side pero se envían genéricamente
@@ -18,6 +19,10 @@ const USER_FACING_PATTERNS: { test: RegExp; status: number; message: string }[] 
   { test: /Conflicto de edición/i, status: 409, message: undefined as unknown as string },
   // A-4: borrar una imagen en uso se rechaza con el detalle de dónde se usa.
   { test: /está en uso/i, status: 409, message: undefined as unknown as string },
+  { test: /^Field .+ does not exist$/, status: 400, message: 'Ese campo no existe en esta ficha.' },
+  // P2-04: el cerrojo de publicación («Ya hay una exportación o publicación
+  // en curso») es un 409 con su texto, no un 400 genérico.
+  { test: /en curso/i, status: 409, message: undefined as unknown as string },
   // M-3: borrar una categoría o un álbum con fotos se rechaza con el recuento.
   { test: /tiene \d+ foto/i, status: 409, message: undefined as unknown as string },
   // GAL-19: borrar un álbum con fotos se rechaza con su motivo intacto — el
@@ -64,6 +69,12 @@ export class BaseController {
       return;
     }
 
+    if (error instanceof ErrorDeUsuario) {
+      if (error.statusCode >= 500) captureException(error, { action });
+      reply.status(error.statusCode).send({ error: error.mensajeUsuario, ...error.extra });
+      return;
+    }
+
     const rawMessage = error instanceof Error ? error.message : 'Error interno';
 
     // Buscar si el mensaje coincide con un patrón de error conocido y amigable.
@@ -82,7 +93,11 @@ export class BaseController {
     }
 
     // Error no reconocido: responder genéricamente. El detalle queda en logs/Sentry.
+    // P2-04: es un fallo del servidor, no un dato mal escrito: 500, no 400.
     captureException(error, { action });
-    reply.status(400).send({ error: 'Error al procesar la solicitud' });
+    reply.status(500).send({
+      error:
+        'No se pudo completar la operación. Inténtalo de nuevo; si se repite, avisa a quien administra el sitio.',
+    });
   }
 }

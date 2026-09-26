@@ -11,3 +11,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Configuración que el layout deja al editor (BaseLayout / CmsOverlay). */
+interface Window {
+  __HIDROMONT_CMS__?: { apiBase?: string; [clave: string]: unknown };
+}
