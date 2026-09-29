@@ -1,10 +1,29 @@
+/**
+ * cms:export — Regenera los archivos del sitio desde la base del CMS.
+ *
+ * Uso:
+ *   npm run cms:export                  (lo que hace deploy-vps.sh antes de compilar)
+ *   npm run cms:export -- --base-nueva  (instalación nueva: exporta aunque la base
+ *                                        estuviera vacía y se acabe de sembrar)
+ *
+ * M-04 (auditoría 2026-09-28): antes de exportar pone la base al día con el
+ * código igual que el servidor al arrancar (`reconciliarBase`). Sin esto, el
+ * build del despliegue salía de un contenido distinto del que el servidor da
+ * por bueno.
+ */
+import { config } from '../config/unifiedConfig';
 import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
+import { AuditRepository } from '../repositories/AuditRepository';
 import { ContentRepository } from '../repositories/ContentRepository';
 import { GalleryRepository } from '../repositories/GalleryRepository';
 import { MediaRepository } from '../repositories/MediaRepository';
+import { SlugRepository } from '../repositories/SlugRepository';
+import { ContentService } from '../services/contentService';
 import { ExportService } from '../services/exportService';
 import { ImageService } from '../services/imageService';
+import { MediaService } from '../services/mediaService';
+import { AVISO_BASE_VACIA, reconciliarBase } from '../services/reconciliacion';
 import { captureException, initErrorTracking } from '../utils/errorTracking';
 
 initErrorTracking();
@@ -15,14 +34,36 @@ async function main() {
     const db = getDb();
     const contentRepo = new ContentRepository(db);
     const galleryRepo = new GalleryRepository(db);
-    const imageService = new ImageService();
+    const mediaRepo = new MediaRepository(db);
+    const slugRepo = new SlugRepository(db);
+    const contentService = new ContentService(contentRepo, config.cms.contentRootDir, slugRepo);
+
+    const reconciliacion = reconciliarBase({
+      db,
+      contentService,
+      contentRepository: contentRepo,
+      slugRepository: slugRepo,
+      auditRepository: new AuditRepository(db),
+      log: (mensaje) => process.stdout.write(`${mensaje}\n`),
+    });
+    // Una base vacía recién sembrada es la semilla, no el sitio: exportarla
+    // pisaría el contenido del repositorio. Pasa si CMS_DATABASE_PATH apunta
+    // mal durante un despliegue, así que se exige decirlo a propósito.
+    if (reconciliacion.estabaVacia && !process.argv.includes('--base-nueva')) {
+      process.stderr.write(AVISO_BASE_VACIA);
+      process.exit(1);
+    }
+    // Las fotos nuevas de public/ entran en la biblioteca, como al arrancar:
+    // su encuadre se lee de ahí al exportar.
+    await new MediaService(mediaRepo, contentRepo).syncPublicMedia();
 
     const exportService = new ExportService(
       contentRepo,
-      undefined,
+      config.cms.contentRootDir,
       galleryRepo,
-      imageService,
-      new MediaRepository(db)
+      new ImageService(config.cms.contentRootDir),
+      mediaRepo,
+      slugRepo
     );
 
     // P0-01: la galería primero, como al publicar: su guarda es lo único que

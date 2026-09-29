@@ -316,8 +316,23 @@ descarta antes del `git pull` y, tras instalar, los **regenera desde la base**
 con `npm run cms:export` antes de compilar. Consecuencia: un cambio de texto
 hecho a mano en esos archivos y commiteado **no llega a producción** (el
 despliegue avisa si los commits los tocan). Los cambios de contenido entran por
-el panel; las claves nuevas de la semilla (`cms/content/defaultContent.ts`) se
-siembran solas al arrancar.
+el panel.
+
+`cms:export` pone antes la base al día con el código, igual que el servidor al
+arrancar: siembra las claves nuevas de `cms/content/defaultContent.ts`, crea las
+fichas de foto y galería que falten y retira las que ninguna página lee. Así el
+build del despliegue sale del mismo contenido que el servidor dará por bueno.
+Si la base estaba vacía, se niega a exportar: lo sembrado sería la semilla, no
+el sitio, y pisaría el contenido (pasa con un `CMS_DATABASE_PATH` mal
+apuntado). En una instalación nueva de verdad se ejecuta
+`npm run cms:export -- --base-nueva`.
+
+**No despliega con una publicación en marcha.** Antes de tocar nada,
+`scripts/publicacion-en-curso.mjs` comprueba en el servidor que no haya un
+build en curso (`.build.lock` con su proceso vivo) ni una publicación del panel
+sin terminar. Si la hay, se niega a seguir: espera a que termine y vuelve a
+lanzarlo. Si el build del despliegue falla, el script lo dice y no reinicia el
+servicio: el sitio sigue con el build y el proceso anteriores.
 
 **No toca la base del CMS ni `uploads/cms`.** Esos datos viven en el servidor y
 los edita el operador desde el panel; pisarlos desde tu máquina borraría su

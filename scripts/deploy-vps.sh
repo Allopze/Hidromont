@@ -179,6 +179,24 @@ fi
 # «active»: la única señal honesta es que este contador deje de subir.
 REINICIOS_ANTES="$("${SSH[@]}" "$DESTINO" "systemctl show hidromont -p NRestarts --value" 2>/dev/null || echo 0)"
 
+# M-04 (auditoría 2026-09-28): el despliegue descarta los archivos exportados
+# y sustituye node_modules. Si el panel está publicando en ese momento, su build
+# se rompe a mitad y el nuestro choca con su cerrojo. Se espera a que termine.
+# (En el primer despliegue con esta comprobación, el script aún no está en el
+# servidor: se salta.)
+paso "Comprobando que no haya una publicación en marcha"
+EN_MARCHA="$(en_servidor '[ -f scripts/publicacion-en-curso.mjs ] && node scripts/publicacion-en-curso.mjs || true' 2>&1 || true)"
+if [[ "$EN_MARCHA" == hay* ]]; then
+  rojo "  No se despliega: $EN_MARCHA."
+  rojo "  Espera a que termine (suele tardar unos minutos) y vuelve a lanzar npm run deploy."
+  exit 1
+elif [[ -n "$EN_MARCHA" ]]; then
+  rojo "  $EN_MARCHA"
+  rojo "  No se pudo comprobar; por seguridad no se despliega."
+  exit 1
+fi
+verde "  nada en marcha"
+
 # ── Despliegue ───────────────────────────────────────────────────────────────
 
 paso "Trayendo el código"
@@ -220,10 +238,19 @@ paso "Compilando"
 # —pasó en producción con un tope de hilos— deja el sitio sin páginas.
 if [[ -n "$LIGERO" ]]; then
   echo "    (modo ligero: sin astro check)"
-  en_servidor "BUILD_LIGERO=1 npm run build:log"
+  COMPILAR="BUILD_LIGERO=1 npm run build:log"
 else
-  en_servidor "npm run build:log"
+  COMPILAR="npm run build:log"
 fi
+en_servidor "$COMPILAR" || {
+  # M-04: sin esto, `set -e` salía aquí en silencio con el código nuevo en disco
+  # y el proceso viejo en memoria.
+  rojo "El build falló: el sitio sigue sirviendo el build anterior con el proceso anterior."
+  rojo "El código nuevo ya está en el servidor (git pull + npm ci), pero NO se ha reiniciado."
+  rojo "Revisa el error de arriba (o _build.log en el servidor) y repite npm run deploy."
+  rojo "Si fue «Ya hay otro build en curso», alguien publicó desde el panel: espera y repite."
+  exit 1
+}
 
 paso "Reiniciando el servicio"
 "${SSH[@]}" "$DESTINO" "${SUDO}systemctl restart hidromont"

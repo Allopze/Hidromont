@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import { BaseController } from '../controllers/BaseController';
 import { SlugRepository } from '../repositories/SlugRepository';
-import type { CmsEntry } from '../types/cms';
 import { setCmsRedirectProvider } from '../staticSite';
 import cookie from '@fastify/cookie';
 import multipart from '@fastify/multipart';
@@ -40,6 +39,7 @@ import { MediaService } from '../services/mediaService';
 import { PendingService } from '../services/pendingService';
 import { PublishService } from '../services/publishService';
 import { ErrorDeshacer, UndoService } from '../services/undoService';
+import { AVISO_BASE_VACIA, reconciliarBase } from '../services/reconciliacion';
 import { captureException } from '../utils/errorTracking';
 
 /** P2-04: el mismo criterio de errores para las rutas que no los capturan. */
@@ -768,70 +768,17 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     }
   );
 
-  // Siempre importa entradas faltantes al iniciar (idempotente, sin sobreescribir ediciones)
-  const estabaVacia =
-    (db.prepare('SELECT COUNT(*) n FROM content_entries').get() as { n: number }).n === 0;
-  // P1-03: las fichas borradas antes de existir el historial de slugs quedan
-  // en la auditoría (su snapshot de deshacer): se anotan para que su .md, si
-  // reaparece, no se reimporte como ficha nueva ni siga publicado.
-  for (const evento of auditRepository.listByAction('entry.delete')) {
-    const borrada = (evento.data as { undo?: { snapshot?: { entry?: CmsEntry } } } | undefined)
-      ?.undo?.snapshot?.entry;
-    if (!borrada || (borrada.kind !== 'servicio' && borrada.kind !== 'proyecto')) continue;
-    if (contentRepository.findCollectionEntryBySlug(borrada.kind, borrada.slug, borrada.locale))
-      continue;
-    slugRepository.record(borrada.kind, borrada.slug, borrada.id);
-  }
-  const { inserted, fieldsInserted } = contentService.importMissingEntries();
-  // P1-02: toda ficha de colección tiene su foto de cabecera y su galería
-  // editables, también las creadas antes de este cambio.
-  const companeras = contentService.ensureCompanions();
-  if (companeras > 0) {
-    app.log.info(`[CMS] ${companeras} ficha(s) de imagen o galería creada(s) para fichas nuevas.`);
-  }
-  // La semilla solo añade; las fichas que ninguna página lee se retiran aquí.
-  // El snapshot queda en la auditoría por si hubiera que rehacer alguna.
-  const retiradas = contentService.retireObsoleteEntries();
-  for (const snapshot of retiradas) {
-    auditRepository.log({
-      action: 'content.entry_retired',
-      entityType: 'entry',
-      entityId: snapshot.entry.id,
-      data: snapshot,
-    });
-  }
-  if (retiradas.length > 0) {
-    app.log.info(
-      `[CMS] retiradas ${retiradas.length} ficha(s) sin uso en el sitio: ${retiradas
-        .map((r) => r.entry.id)
-        .join(', ')}.`
-    );
-  }
-  const camposRetirados = contentService.retireObsoleteFields();
-  for (const campo of camposRetirados) {
-    auditRepository.log({
-      action: 'content.field_retired',
-      entityType: 'field',
-      entityId: `${campo.entryId}.${campo.key}`,
-      data: campo,
-    });
-  }
-  if (camposRetirados.length > 0) {
-    app.log.info(`[CMS] retirados ${camposRetirados.length} campo(s) sin uso en el sitio.`);
-  }
-  // P1-06: toda entrada debe tener una revisión con su estado actual, para que
-  // «Revisiones» nunca restaure un estado de meses atrás.
-  const conRevisionNueva = contentRepository.ensureCurrentRevisions();
-  if (conRevisionNueva.length > 0) {
-    app.log.info(
-      `[CMS] ${conRevisionNueva.length} ficha(s) sin revisión de su estado actual: creada.`
-    );
-  }
-  if (inserted > 0 || fieldsInserted > 0 || retiradas.length > 0 || camposRetirados.length > 0) {
-    app.log.info(
-      `[CMS] seed: ${inserted} entrada(s) y ${fieldsInserted} campo(s) nuevo(s) importado(s).`
-    );
-
+  // Siempre pone la base al día con el código (idempotente, sin sobreescribir
+  // ediciones). M-04: la misma función la usa `npm run cms:export`.
+  const reconciliacion = reconciliarBase({
+    db,
+    contentService,
+    contentRepository,
+    slugRepository,
+    auditRepository,
+    log: (mensaje) => app.log.info(mensaje),
+  });
+  if (reconciliacion.huboCambios) {
     // Exportar aquí tiene sentido cuando se han sembrado campos nuevos sobre
     // una base que ya era la fuente de verdad. No lo tiene cuando la base
     // estaba vacía: entonces lo recién sembrado es `defaultContent.ts`, y los
@@ -842,13 +789,8 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
     // base temporal vacía y dejaron `src/data/cms-content.json` con los
     // valores de la semilla. En el servidor el efecto habría sido el mismo si
     // se arrancaba antes de subir la base.
-    if (estabaVacia) {
-      process.stderr.write(
-        '[CMS] La base estaba vacía y se ha sembrado desde defaultContent.ts.\n' +
-          '[CMS] NO se exporta: los archivos del sitio son más nuevos que la semilla.\n' +
-          '[CMS] Si esta es una instalación nueva de verdad, ejecute `npm run cms:export`\n' +
-          '[CMS] a mano. Si esperaba encontrar contenido, revise CMS_DATABASE_PATH.\n'
-      );
+    if (reconciliacion.estabaVacia) {
+      process.stderr.write(AVISO_BASE_VACIA);
       return;
     }
     await exportService.exportContent();
