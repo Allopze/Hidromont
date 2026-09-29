@@ -52,7 +52,7 @@ const {
 
 const textOnlyPadding = compact ? 'py-10 md:py-12 lg:py-14' : 'py-16 md:py-20 lg:py-24';
 import { getCmsImageObjectPosition, getCmsText, getCmsValue } from '../../data/cms';
-import { soloEditor } from '../../utils/soloEditor';
+import { marcaDelEditor, soloEditor } from '../../utils/soloEditor';
 
 // El video de la cabecera sale del CMS (campo `video` de la ficha de imagen),
 // con su encuadre; vacío, se ve la foto. `videoSrc` queda como respaldo del
@@ -269,7 +269,7 @@ const videoReproducir = getCmsText('site.accesibilidad', 'videoReproducir', 'Rep
                     ? `max-width:${imageWidth}px;max-height:${imageHeight}px`
                     : undefined
                 }
-                data-cms-video-field={admiteVideo ? 'video' : undefined}
+                {...(admiteVideo ? marcaDelEditor('data-cms-video-field', 'video') : {})}
               />
             )}
           </div>

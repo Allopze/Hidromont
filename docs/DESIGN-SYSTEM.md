@@ -18,51 +18,55 @@ Fuente única de verdad, espejada en `tailwind.config.mjs`.
 ### Colores
 
 **Primarios:**
-| Token | Valor | Uso |
-|---|---|---|
-| `--color-primary` | `#0065A9` | CTAs, links, acentos principales |
-| `--color-primary-dark` | `#004B7D` | Headings, hover de primario |
-| `--color-primary-light` | `#E6F2FA` | Fondos suaves, hovers de cards |
-| `--color-accent` | `#00A6D6` | Detalles (dots, focus rings sobre oscuro) |
+
+| Token                   | Valor     | Uso                                       |
+| ----------------------- | --------- | ----------------------------------------- |
+| `--color-primary`       | `#0065A9` | CTAs, links, acentos principales          |
+| `--color-primary-dark`  | `#004B7D` | Headings, hover de primario               |
+| `--color-primary-light` | `#E6F2FA` | Fondos suaves, hovers de cards            |
+| `--color-accent`        | `#00A6D6` | Detalles (dots, focus rings sobre oscuro) |
 
 **Neutrals:**
-| Token | Valor | Uso |
-|---|---|---|
-| `--color-text` | `#1F2933` | Body text |
-| `--color-text-muted` | `#5B6770` | Texto secundario, captions |
-| `--color-border` | `#D9E2EC` | Bordes de cards, dividers |
-| `--color-surface` | `#FFFFFF` | Cards, inputs |
-| `--color-background` | `#FFFFFF` | Fondo base |
-| `--color-background-alt` | `#F5F8FA` | Secciones alternas |
+
+| Token                       | Valor     | Uso                                 |
+| --------------------------- | --------- | ----------------------------------- |
+| `--color-text`              | `#1F2933` | Body text                           |
+| `--color-text-muted`        | `#5B6770` | Texto secundario, captions          |
+| `--color-border`            | `#D9E2EC` | Bordes de cards, dividers           |
+| `--color-surface`           | `#FFFFFF` | Cards, inputs                       |
+| `--color-background`        | `#FFFFFF` | Fondo base                          |
+| `--color-background-alt`    | `#F5F8FA` | Secciones alternas                  |
 | `--color-background-strong` | `#0F2433` | Footer, hero scrims, secciones dark |
 
 **Semánticos:** success `#2E7D32`, warning `#B7791F`, error `#C62828`, info `#0065A9`.
 
 ### Tipografía
 
-| Token | Familia | Uso |
-|---|---|---|
-| `--font-heading` | `"Roboto Condensed", Arial, sans-serif` | H1-H4, eyebrows, labels mono |
-| `--font-body` | `"Inter", Arial, sans-serif` | Body text, párrafos |
-| `--font-mono` | `"Roboto Mono", monospace` | Datos técnicos, specs, métricas |
+| Token            | Familia                                 | Uso                             |
+| ---------------- | --------------------------------------- | ------------------------------- |
+| `--font-heading` | `"Roboto Condensed", Arial, sans-serif` | H1-H4, eyebrows, labels mono    |
+| `--font-body`    | `"Inter", Arial, sans-serif`            | Body text, párrafos             |
+| `--font-mono`    | `"Roboto Mono", monospace`              | Datos técnicos, specs, métricas |
 
 **Carga de fuentes:**
+
 - Roboto Condensed 700 (headings): **preloaded** en BaseLayout, `font-display: swap`.
 - Inter variable (body): **preloaded**, `font-display: optional`.
 - Roboto Mono 400/500 (mono): carga on-demand, `font-display: optional`.
 
 **Escala fluida (clamp):**
-| Token | Tamaño |
-|---|---|
-| display | `clamp(2.625rem, 5vw, 4rem)` |
-| h1 | `clamp(2.375rem, 4vw, 3.5rem)` |
-| h2 | `clamp(2rem, 3vw, 2.5rem)` |
-| h3 | `clamp(1.35rem, 2vw, 1.6rem)` |
-| h4 | `1.125rem` |
-| lead | `1.125rem` |
-| body | `1rem` |
-| small | `0.875rem` |
-| caption | `0.75rem` |
+
+| Token   | Tamaño                         |
+| ------- | ------------------------------ |
+| display | `clamp(2.625rem, 5vw, 4rem)`   |
+| h1      | `clamp(2.375rem, 4vw, 3.5rem)` |
+| h2      | `clamp(2rem, 3vw, 2.5rem)`     |
+| h3      | `clamp(1.35rem, 2vw, 1.6rem)`  |
+| h4      | `1.125rem`                     |
+| lead    | `1.125rem`                     |
+| body    | `1rem`                         |
+| small   | `0.875rem`                     |
+| caption | `0.75rem`                      |
 
 ### Espaciado (base 4px)
 
@@ -73,6 +77,7 @@ Fuente única de verdad, espejada en `tailwind.config.mjs`.
 Todos los tokens `--radius-xs/sm/md/lg/xl: 0px`. En código fuente se usa **`rounded-none`** explícitamente (no se apoya en el override de tokens) para autodocumentar.
 
 **Excepciones intencionales (`rounded-full`, documentadas en `tokens.css`):**
+
 - Dots decorativos de bullet (`w-1.5 h-1.5`) en CapabilitiesBlock, ServiceCard, servicios/[slug], empresa.
 - Spinner de carga del Lightbox (`w-8 h-8`).
 - Success-badge circular de la página gracias (`w-16 h-16`, convención UX).
@@ -81,30 +86,30 @@ Todo lo demás (cards, botones, contenedores, inputs, chips, filtros) usa `round
 
 ### Sombras
 
-| Token | Valor |
-|---|---|
-| `--shadow-sm` | `0 1px 2px rgba(15, 36, 51, 0.08)` |
-| `--shadow-md` | `0 8px 24px rgba(15, 36, 51, 0.10)` |
+| Token         | Valor                                |
+| ------------- | ------------------------------------ |
+| `--shadow-sm` | `0 1px 2px rgba(15, 36, 51, 0.08)`   |
+| `--shadow-md` | `0 8px 24px rgba(15, 36, 51, 0.10)`  |
 | `--shadow-lg` | `0 16px 40px rgba(15, 36, 51, 0.14)` |
 
 ### Z-index (contrato de stacking)
 
-| Token | Valor | Uso |
-|---|---|---|
-| `--z-base` | 0 | Default |
-| `--z-raised` | 10 | Badges, dots que sobresalen |
-| `--z-dropdown` | 20 | Menús desplegables |
-| `--z-sticky` | 50 | Header sticky/fijo |
-| `--z-overlay` | 100 | Skip-link, lightbox, overlays modales |
-| `--z-toast` | 1000 | Notificaciones (reservado) |
+| Token          | Valor | Uso                                   |
+| -------------- | ----- | ------------------------------------- |
+| `--z-base`     | 0     | Default                               |
+| `--z-raised`   | 10    | Badges, dots que sobresalen           |
+| `--z-dropdown` | 20    | Menús desplegables                    |
+| `--z-sticky`   | 50    | Header sticky/fijo                    |
+| `--z-overlay`  | 100   | Skip-link, lightbox, overlays modales |
+| `--z-toast`    | 1000  | Notificaciones (reservado)            |
 
 ### Motion
 
-| Token | Valor |
-|---|---|
-| `--motion-fast` | `120ms` |
-| `--motion-base` | `180ms` |
-| `--motion-slow` | `240ms` |
+| Token             | Valor                        |
+| ----------------- | ---------------------------- |
+| `--motion-fast`   | `120ms`                      |
+| `--motion-base`   | `180ms`                      |
+| `--motion-slow`   | `240ms`                      |
 | `--ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
 
 Stagger delays en `motion.css` (reglas nth-child para `[data-reveal-group]`).
@@ -114,12 +119,14 @@ Stagger delays en `motion.css` (reglas nth-child para `[data-reveal-group]`).
 ## Componentes UI (`src/components/ui/`)
 
 ### Button
+
 - **Variantes:** `primary` (sólido), `secondary` (outline), `secondary-light` (outline blanco sobre fotos), `link` (texto + underline).
 - **Tamaños:** `md` (min-h 44px), `lg` (min-h 52px).
 - **Estados:** hover (primary→dark), `active:scale-[0.98]`, `focus-visible:outline-3`, disabled por variante.
 - **Tag:** `<a>` si `href`, sino `<button>`.
 
 ### PageHero (cinematic)
+
 - Layout 45% texto + 55% imagen, `min-height: clamp(380px, 50vw, 580px)`.
 - Breadcrumbs, badge de categoría opcional, accent line, h1 display, subtitle.
 - Parallax suave en la imagen (`data-parallax="0.04"`).
@@ -127,15 +134,18 @@ Stagger delays en `motion.css` (reglas nth-child para `[data-reveal-group]`).
 - Modo text-only (sin imagen) para páginas como contacto.
 
 ### Section / Container
+
 - `Section`: variantes `default`/`alt`/`strong`, padding `normal`/`tight`/`hero`.
 - `Container`: tamaños sm 640 / md 768 / lg 1024 / xl 1200 / 2xl 1320.
 
 ### Eyebrow / Badge / ArrowIcon
+
 - `Eyebrow`: caption, uppercase, tracking, variante `light` para dark sections.
 - `Badge`: default/accent/muted.
 - `ArrowIcon`: 16×16 SVG, `aria-hidden`, `currentColor`.
 
 ### CTASection
+
 - Section strong, centrado, h2+subtitle CMS-bound, primary button + secondary-light opcional.
 
 ## Componentes de dominio

@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { direccionCanonica } from '../staticSite';
 import { conBarra } from '../../src/utils/enlacesConBarra.mjs';
 
@@ -72,6 +72,25 @@ describe('P3-02: configuración de otros hostings', () => {
 });
 
 describe('P3-03: caché y HEAD', () => {
+  // B-03 (auditoría 2026-09-28): servía el `dist/` real, así que en un clon sin
+  // compilar fallaba. Ahora sirve un build mínimo propio: el módulo se vuelve a
+  // cargar con CMS_STATIC_DIR apuntando a él.
+  const build = fs.mkdtempSync(path.join(os.tmpdir(), 'hm-cache-'));
+  fs.writeFileSync(path.join(build, 'index.html'), '<!doctype html><title>Inicio</title>');
+  fs.writeFileSync(path.join(build, 'robots.txt'), 'User-agent: *\nAllow: /\n');
+  fs.writeFileSync(path.join(build, 'logo.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+  const dirAnterior = process.env.CMS_STATIC_DIR;
+  beforeAll(() => {
+    process.env.CMS_STATIC_DIR = build;
+    vi.resetModules();
+  });
+  afterAll(() => {
+    if (dirAnterior === undefined) delete process.env.CMS_STATIC_DIR;
+    else process.env.CMS_STATIC_DIR = dirAnterior;
+    vi.resetModules();
+    fs.rmSync(build, { recursive: true, force: true });
+  });
+
   async function sitio() {
     const fastify = (await import('fastify')).default;
     const { registerStaticSite } = await import('../staticSite');
@@ -109,9 +128,8 @@ describe('P3-03: caché y HEAD', () => {
   it('solo lo que lleva hash o id en el nombre es inmutable', async () => {
     const app = await sitio();
     const logo = await app.inject({ method: 'GET', url: '/logo.svg' });
-    if (logo.statusCode === 200) {
-      expect(logo.headers['cache-control']).not.toContain('immutable');
-    }
+    expect(logo.statusCode).toBe(200);
+    expect(logo.headers['cache-control']).not.toContain('immutable');
     await app.close();
   });
 });

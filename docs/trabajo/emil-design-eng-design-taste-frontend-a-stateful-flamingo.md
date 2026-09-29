@@ -12,6 +12,7 @@ La página `/galeria` ([src/pages/galeria/index.astro](src/pages/galeria/index.a
 - **Filtros genéricos** (pills grises), mucho espacio en blanco muerto, y tamaños bento **aleatorios** (hash) que recortan mal fotos de teléfono.
 
 **Decisiones del cliente (confirmadas):**
+
 1. **Contenido:** galería **curada** (no las 1.700), pero **gestionable por el cliente vía CMS** — subir fotos, crear/editar/eliminar categorías, asignar metadatos, ordenar.
 2. **Metadatos:** reales por imagen (título, categoría, alt).
 3. **Alcance:** completo production-ready (visual + rendimiento + accesibilidad).
@@ -74,13 +75,16 @@ Archivo: [src/scripts/cms-overlay.js](src/scripts/cms-overlay.js) (vanilla JS, e
 Reescribir [src/pages/galeria/index.astro](src/pages/galeria/index.astro) para leer de un nuevo helper `src/data/gallery.ts` (patrón [src/data/cms.ts](src/data/cms.ts) / [src/data/project-galleries.ts](src/data/project-galleries.ts)). Extraer componentes `src/components/gallery/GalleryGrid.astro` y `src/components/gallery/Lightbox.astro`.
 
 **Encuadre / espaciado**
+
 - Alinear con el ritmo del sitio usando `Container` ([src/components/ui/Container.astro](src/components/ui/Container.astro)); reducir el whitespace muerto (`py-20 md:py-28` → `pt-12 md:pt-16`).
 - Fila editorial sobre los filtros: contexto breve + **conteo** ("64 imágenes · 5 categorías") a un lado, control de filtros al otro (apilado en móvil).
 
 **Filtros (control segmentado industrial)**
+
 - Reemplazar pills grises por un segmented control conectado, radio 0, etiquetas en `font-mono` mayúsculas con **conteo por categoría**. Activo = relleno primario o regla cian inferior. Categorías **dinámicas desde el CMS**. Accesible (`aria-pressed`, navegación por teclado).
 
 **Tarjetas (grilla)**
+
 - Sustituir el bento **aleatorio** por **tamaños intencionales** según `featured` + `position` (destacadas 2×2 / 2×1; resto estándar) → ritmo diseñado, no recortes al azar.
 - **Caption persistente** (no solo hover): scrim inferior siempre legible con categoría (micro-label cian mono) + título (Roboto Condensed). Hover profundiza scrim, hace zoom y revela "Ver en detalle". Arregla móvil.
 - Tarjetas como `<button>` con `aria-label`, `:focus-visible` (anillo cian), activación Enter/Espacio.
@@ -88,10 +92,12 @@ Reescribir [src/pages/galeria/index.astro](src/pages/galeria/index.astro) para l
 - Entrada escalonada reutilizando `[data-reveal-group]` de [src/styles/motion.css](src/styles/motion.css) (con alternativa `prefers-reduced-motion`).
 
 **Lightbox (premium + accesible)**
+
 - Foco atrapado, mover foco al abrir, **restaurar al cerrar**, fondo `inert`/`aria-hidden`, bloquear scroll del body, diálogo etiquetado.
 - Imagen mayor + panel de caption (título/categoría/descripción), contador, prev/next (mantener), teclado (mantener), **skeleton/spinner** mientras carga, **precarga de vecinos**, y servir el derivado grande (no el original de varios MB). Filmstrip opcional de miniaturas. Cross-fade respetando reduced-motion.
 
 **Rendimiento / A11y**
+
 - `width/height` para evitar CLS; `loading="lazy"` + `decoding="async"`; `fetchpriority="high"` en las 1-2 primeras; contraste de captions ≥4.5:1 (blanco sobre scrim oscuro).
 
 ## Fase 5 — Verificación

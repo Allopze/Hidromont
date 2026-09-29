@@ -122,7 +122,9 @@ for (const r of renames) fs.renameSync(r.fromAbs, r.toAbs);
 // fuente de verdad. Basta con corregir el path del media y exportar.
 if (fs.existsSync(DB_PATH)) {
   const db = new Database(DB_PATH);
-  const update = db.prepare('UPDATE media_assets SET path = ?, name = ?, updated_at = ? WHERE path = ?');
+  const update = db.prepare(
+    'UPDATE media_assets SET path = ?, name = ?, updated_at = ? WHERE path = ?'
+  );
   const now = new Date().toISOString();
   let touched = 0;
   const tx = db.transaction(() => {

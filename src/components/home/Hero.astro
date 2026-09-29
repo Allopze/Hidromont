@@ -6,6 +6,7 @@ import Eyebrow from '../ui/Eyebrow.astro';
 import EditableText from '../cms/EditableText.astro';
 import EditableImage from '../cms/EditableImage.astro';
 import { getCmsText } from '../../data/cms';
+import { marcaDelEditor } from '../../utils/soloEditor';
 
 interface Props {
   eyebrow?: string;
@@ -63,7 +64,7 @@ const marcasFoto = cmsEditingEnabled
         fetchpriority="high"
         decoding="async"
         class="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        data-cms-fondo
+        {...marcaDelEditor('data-cms-fondo')}
       />
     ) : (
       <Image
@@ -76,7 +77,7 @@ const marcasFoto = cmsEditingEnabled
         decoding="async"
         class="absolute inset-0 w-full h-full object-cover pointer-events-none"
         style="object-position: center 35%;"
-        data-cms-fondo
+        {...marcaDelEditor('data-cms-fondo')}
         {...marcasFoto}
       />
     )
@@ -125,7 +126,10 @@ const marcasFoto = cmsEditingEnabled
   </div>
 
   <!-- Contenido: alineado a la izquierda -->
-  <div class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28" data-cms-sobre-fondo>
+  <div
+    class="relative z-10 w-full mx-auto px-6 max-w-wide py-24 lg:py-28"
+    {...marcaDelEditor('data-cms-sobre-fondo')}
+  >
     <div class="max-w-2xl">
       <Eyebrow light class="text-on-photo !text-accent-light">
         <EditableText entry={cmsEntry} field="eyebrow">{eyebrow}</EditableText>

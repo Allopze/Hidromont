@@ -1,4 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+// `z` desde `astro:content` está obsoleto en Astro 7 y desaparece en Astro 8.
+import { z } from 'astro/zod';
 import { glob, file } from 'astro/loaders';
 // A-7: vocabulario compartido con el CMS, que antes lo duplicaba a mano.
 import { CATEGORIA_PROYECTO, ICONO_SERVICIO, TIPO_PROYECTO } from './data/content-vocabulary';

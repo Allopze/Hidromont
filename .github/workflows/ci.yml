@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -80,7 +80,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -99,6 +99,13 @@ jobs:
       # sandbox (que sirve este dist/ para csp.spec y build-gate).
       - name: Run E2E tests (incluye el build gate del perfil con CMS)
         run: npx playwright test --project=chromium
+
+      # O-02 (auditoría 2026-09-28): la suite e2e publica con un comando
+      # simulado. Esta prueba publica de verdad en una copia del repositorio:
+      # editar → «Publicar» → build de los dos perfiles → cada dominio sirve el
+      # suyo con el cambio.
+      - name: Publicación real (export + build + servir por dominio)
+        run: npm run test:publicar
 
       - name: Upload e2e diagnostics
         if: failure()

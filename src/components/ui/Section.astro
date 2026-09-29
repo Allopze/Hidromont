@@ -31,10 +31,6 @@ function getPaddingClass(p: string | undefined) {
 ---
 
 {divider && <hr class="section-divider" aria-hidden="true" />}
-<Tag
-  id={id}
-  class={`${getVariantClass(variant)} ${getPaddingClass(padding)} ${className}`}
->
+<Tag id={id} class={`${getVariantClass(variant)} ${getPaddingClass(padding)} ${className}`}>
   <slot />
 </Tag>
-

@@ -26,18 +26,18 @@ No hay hallazgos **Críticos** (no se identificó un vector de compromiso explot
 
 ## 2. Estado general del proyecto
 
-| Dimensión | Estado |
-|---|---|
-| Arquitectura | Sólida. Separación clara presentación / negocio / datos. |
-| Astro | Uso correcto: `output: static`, sin islas innecesarias, imágenes optimizadas. |
-| CMS | Funcional y razonablemente seguro (auth + CSRF + rate limit + audit). |
-| Seguridad | Buena base; 2 endurecimientos pendientes antes de exponer el CMS. |
-| Build | ✓ Pasa (`astro check && astro build`). |
-| Tests | ✓ 65 unit (Vitest) + e2e (Playwright). Sin CI que los ejecute. |
-| Dependencias | ✓ 0 vulnerabilidades. Versiones modernas. |
-| SEO | ✓ Completo. |
-| Accesibilidad | Buena base semántica; auditoría visual ya documentada. |
-| Documentación | ✓ README + `.env.example` claros. |
+| Dimensión     | Estado                                                                        |
+| ------------- | ----------------------------------------------------------------------------- |
+| Arquitectura  | Sólida. Separación clara presentación / negocio / datos.                      |
+| Astro         | Uso correcto: `output: static`, sin islas innecesarias, imágenes optimizadas. |
+| CMS           | Funcional y razonablemente seguro (auth + CSRF + rate limit + audit).         |
+| Seguridad     | Buena base; 2 endurecimientos pendientes antes de exponer el CMS.             |
+| Build         | ✓ Pasa (`astro check && astro build`).                                        |
+| Tests         | ✓ 65 unit (Vitest) + e2e (Playwright). Sin CI que los ejecute.                |
+| Dependencias  | ✓ 0 vulnerabilidades. Versiones modernas.                                     |
+| SEO           | ✓ Completo.                                                                   |
+| Accesibilidad | Buena base semántica; auditoría visual ya documentada.                        |
+| Documentación | ✓ README + `.env.example` claros.                                             |
 
 El repositorio está organizado en dos dominios bien separados:
 
@@ -50,43 +50,43 @@ El flujo de publicación es: editar contenido en el overlay visual → el CMS pe
 
 ### Críticos
 
-| ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
-|---|---|---|---|---|
-| — | No se identificaron hallazgos críticos. | — | — | — |
+| ID  | Problema                                | Archivo/Ruta | Riesgo | Recomendación |
+| --- | --------------------------------------- | ------------ | ------ | ------------- |
+| —   | No se identificaron hallazgos críticos. | —            | —      | —             |
 
 ### Altos
 
-| ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
-|---|---|---|---|---|
-| H1 | El build de producción incluye el editor visual del CMS: 66 KB de JS inline (`__HIDROMONT_CMS__`, `hm-cms-bar`) y 58 atributos `data-cms-entry` reales por página. Causado por `PUBLIC_ENABLE_CMS=1` en `.env`. | `.env` (`PUBLIC_ENABLE_CMS=1`), `src/components/cms/CmsOverlay.astro:4`, `src/components/cms/EditableText.astro:23`, evidencia en `dist/index.html` | Divulgación de la estructura interna de contenido (ids de entradas/campos) y de los endpoints `/api/cms/*` a cualquier visitante; +66 KB de JS inútil en cada página afectando LCP/peso. | Construir producción con `PUBLIC_ENABLE_CMS=0` (o sin la variable). Añadir guard explícito y un test que falle si `dist/` contiene `data-cms-entry` o `__HIDROMONT_CMS__`. Ya existe el e2e que lo verifica: integrarlo en CI bloqueante. |
-| H2 | Si el CMS se sirve por red (`CMS_HOST=0.0.0.0`) con `CMS_COOKIE_SECURE=0`, la cookie de sesión viaja en texto plano (HTTP) → secuestro de sesión. El guard de arranque sólo bloquea la contraseña *por defecto*, no contraseñas débiles ni la combinación host expuesto + cookie insegura. | `.env` (`CMS_HOST=0.0.0.0`, `CMS_COOKIE_SECURE=0`), `cms/server.ts:9-19`, `cms/controllers/AuthController.ts:17-23` | Robo de la sesión de administrador en redes no confiables; acceso total al CMS. | Para uso en red: forzar HTTPS y `CMS_COOKIE_SECURE=1`, o restringir a `CMS_HOST=127.0.0.1` + túnel. Endurecer el guard de `server.ts` para exigir cookie segura cuando el host no es local. |
+| ID  | Problema                                                                                                                                                                                                                                                                                   | Archivo/Ruta                                                                                                                                        | Riesgo                                                                                                                                                                                   | Recomendación                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| H1  | El build de producción incluye el editor visual del CMS: 66 KB de JS inline (`__HIDROMONT_CMS__`, `hm-cms-bar`) y 58 atributos `data-cms-entry` reales por página. Causado por `PUBLIC_ENABLE_CMS=1` en `.env`.                                                                            | `.env` (`PUBLIC_ENABLE_CMS=1`), `src/components/cms/CmsOverlay.astro:4`, `src/components/cms/EditableText.astro:23`, evidencia en `dist/index.html` | Divulgación de la estructura interna de contenido (ids de entradas/campos) y de los endpoints `/api/cms/*` a cualquier visitante; +66 KB de JS inútil en cada página afectando LCP/peso. | Construir producción con `PUBLIC_ENABLE_CMS=0` (o sin la variable). Añadir guard explícito y un test que falle si `dist/` contiene `data-cms-entry` o `__HIDROMONT_CMS__`. Ya existe el e2e que lo verifica: integrarlo en CI bloqueante. |
+| H2  | Si el CMS se sirve por red (`CMS_HOST=0.0.0.0`) con `CMS_COOKIE_SECURE=0`, la cookie de sesión viaja en texto plano (HTTP) → secuestro de sesión. El guard de arranque sólo bloquea la contraseña _por defecto_, no contraseñas débiles ni la combinación host expuesto + cookie insegura. | `.env` (`CMS_HOST=0.0.0.0`, `CMS_COOKIE_SECURE=0`), `cms/server.ts:9-19`, `cms/controllers/AuthController.ts:17-23`                                 | Robo de la sesión de administrador en redes no confiables; acceso total al CMS.                                                                                                          | Para uso en red: forzar HTTPS y `CMS_COOKIE_SECURE=1`, o restringir a `CMS_HOST=127.0.0.1` + túnel. Endurecer el guard de `server.ts` para exigir cookie segura cuando el host no es local.                                               |
 
 ### Medios
 
-| ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
-|---|---|---|---|---|
-| M1 | El servidor estático Fastify no emite CSP (sólo 3 cabeceras básicas). La CSP completa sólo existe en `public/_headers`, que **únicamente aplica en Cloudflare Pages**. | `cms/server.ts:29-33`, `cms/staticSite.ts`, `public/_headers` | Si el sitio se sirviera vía Fastify (`server.mjs`), no habría CSP → menor defensa ante XSS. | Replicar la CSP de `_headers` en el `onSend` de `server.ts`, o documentar que el despliegue oficial es Cloudflare Pages. |
-| M2 | No hay política de fortaleza de contraseña ni rotación. El usuario admin se crea **una sola vez** (`ensureAdminUser` retorna si ya existe), por lo que cambiar `CMS_ADMIN_PASSWORD` tras el primer arranque no actualiza el hash. | `cms/services/authService.ts:9-25` | Footgun operativo: el admin cree haber cambiado la contraseña y no lo hizo. | Documentar el comportamiento; añadir script `cms:reset-password` o validación de longitud/entropía mínima en el seed. |
-| M3 | No existe CI/CD (`.github/workflows` ausente). Build, type-check, tests unit y e2e no se ejecutan automáticamente al hacer push. | (ausencia) raíz del repo | Regresiones llegan a `main`/producción sin barrera automática. | Añadir workflow que ejecute `npm run build`, `npm test`, `npm run test:e2e` y el guard anti-overlay en cada PR. |
-| M4 | No hay configuración de linter (ESLint). Sólo type-check vía `astro check`. | raíz del repo (`package.json` sin script `lint`) | Inconsistencias de estilo/calidad no detectadas; faltan reglas de seguridad estáticas. | Añadir ESLint (con `eslint-plugin-astro`) y script `lint`; integrarlo en CI. |
-| M5 | La CSP usa `script-src 'self' 'unsafe-inline'`, requerido por los scripts inline de Astro (`is:inline`) y JSON-LD. | `public/_headers` | `unsafe-inline` debilita la mitigación de XSS. | Migrar a CSP basada en hashes/nonces para los scripts inline conocidos cuando sea viable. |
+| ID  | Problema                                                                                                                                                                                                                          | Archivo/Ruta                                                  | Riesgo                                                                                      | Recomendación                                                                                                            |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| M1  | El servidor estático Fastify no emite CSP (sólo 3 cabeceras básicas). La CSP completa sólo existe en `public/_headers`, que **únicamente aplica en Cloudflare Pages**.                                                            | `cms/server.ts:29-33`, `cms/staticSite.ts`, `public/_headers` | Si el sitio se sirviera vía Fastify (`server.mjs`), no habría CSP → menor defensa ante XSS. | Replicar la CSP de `_headers` en el `onSend` de `server.ts`, o documentar que el despliegue oficial es Cloudflare Pages. |
+| M2  | No hay política de fortaleza de contraseña ni rotación. El usuario admin se crea **una sola vez** (`ensureAdminUser` retorna si ya existe), por lo que cambiar `CMS_ADMIN_PASSWORD` tras el primer arranque no actualiza el hash. | `cms/services/authService.ts:9-25`                            | Footgun operativo: el admin cree haber cambiado la contraseña y no lo hizo.                 | Documentar el comportamiento; añadir script `cms:reset-password` o validación de longitud/entropía mínima en el seed.    |
+| M3  | No existe CI/CD (`.github/workflows` ausente). Build, type-check, tests unit y e2e no se ejecutan automáticamente al hacer push.                                                                                                  | (ausencia) raíz del repo                                      | Regresiones llegan a `main`/producción sin barrera automática.                              | Añadir workflow que ejecute `npm run build`, `npm test`, `npm run test:e2e` y el guard anti-overlay en cada PR.          |
+| M4  | No hay configuración de linter (ESLint). Sólo type-check vía `astro check`.                                                                                                                                                       | raíz del repo (`package.json` sin script `lint`)              | Inconsistencias de estilo/calidad no detectadas; faltan reglas de seguridad estáticas.      | Añadir ESLint (con `eslint-plugin-astro`) y script `lint`; integrarlo en CI.                                             |
+| M5  | La CSP usa `script-src 'self' 'unsafe-inline'`, requerido por los scripts inline de Astro (`is:inline`) y JSON-LD.                                                                                                                | `public/_headers`                                             | `unsafe-inline` debilita la mitigación de XSS.                                              | Migrar a CSP basada en hashes/nonces para los scripts inline conocidos cuando sea viable.                                |
 
 ### Bajos
 
-| ID | Problema | Archivo/Ruta | Riesgo | Recomendación |
-|---|---|---|---|---|
-| L1 | Directorio `test-results/` (21 archivos, artefactos de Playwright) versionado y **no** incluido en `.gitignore`. | `test-results/`, `.gitignore` | Ruido en el repo, diffs inútiles, posible filtrado de contexto de errores. | Añadir `test-results/` y `playwright-report/` a `.gitignore` y eliminarlos del control de versiones. |
-| L2 | Documentos de trabajo y herramientas de agente versionados en la raíz (`AUDITORIA_VISUAL.md`, `PRODUCT.md`, `emil-design-eng-...md`, `hidromont_contenido_web_por_secciones.md`, `.commandcode/`, `.claude/`). | raíz del repo | Desorden; mezcla artefactos de desarrollo con el código de producto. | Mover a `docs/` o excluir del repo de producción. |
-| L3 | Numerosos `.DS_Store` en el árbol de trabajo (no rastreados, correctamente ignorados). | varios directorios | Cosmético. | Sin acción (ya en `.gitignore`). |
-| L4 | El correo de contacto se expone en cliente (`PUBLIC_CONTACT_EMAIL`) y el form usa FormSubmit.co con `_captcha=false`. | `src/components/contact/ContactForm.astro:47,54` | Spam dirigido al correo (mitigado por honeypot `_honey`). | Aceptable para el servicio elegido; considerar reCAPTCHA/hCaptcha si aumenta el spam. |
+| ID  | Problema                                                                                                                                                                                                       | Archivo/Ruta                                     | Riesgo                                                                     | Recomendación                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| L1  | Directorio `test-results/` (21 archivos, artefactos de Playwright) versionado y **no** incluido en `.gitignore`.                                                                                               | `test-results/`, `.gitignore`                    | Ruido en el repo, diffs inútiles, posible filtrado de contexto de errores. | Añadir `test-results/` y `playwright-report/` a `.gitignore` y eliminarlos del control de versiones. |
+| L2  | Documentos de trabajo y herramientas de agente versionados en la raíz (`AUDITORIA_VISUAL.md`, `PRODUCT.md`, `emil-design-eng-...md`, `hidromont_contenido_web_por_secciones.md`, `.commandcode/`, `.claude/`). | raíz del repo                                    | Desorden; mezcla artefactos de desarrollo con el código de producto.       | Mover a `docs/` o excluir del repo de producción.                                                    |
+| L3  | Numerosos `.DS_Store` en el árbol de trabajo (no rastreados, correctamente ignorados).                                                                                                                         | varios directorios                               | Cosmético.                                                                 | Sin acción (ya en `.gitignore`).                                                                     |
+| L4  | El correo de contacto se expone en cliente (`PUBLIC_CONTACT_EMAIL`) y el form usa FormSubmit.co con `_captcha=false`.                                                                                          | `src/components/contact/ContactForm.astro:47,54` | Spam dirigido al correo (mitigado por honeypot `_honey`).                  | Aceptable para el servicio elegido; considerar reCAPTCHA/hCaptcha si aumenta el spam.                |
 
 ### Informativos
 
-| ID | Observación | Archivo/Ruta | Recomendación |
-|---|---|---|---|
-| I1 | `robots.txt` bloquea correctamente `/api/cms/` y declara el sitemap. | `public/robots.txt` | Sin acción. |
-| I2 | `npm audit --omit=dev` → 0 vulnerabilidades. Dependencias modernas (Astro 4.16, Fastify 5, Zod 4). | `package.json` | Mantener actualizado. |
-| I3 | `.env` **no** está en el historial de git ni rastreado; `.env.example` usa placeholder `Hidromont-Admin-ChangeMe`. | `.gitignore`, `.env.example` | Sin acción. Buena práctica. |
+| ID  | Observación                                                                                                        | Archivo/Ruta                 | Recomendación               |
+| --- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------- | --------------------------- |
+| I1  | `robots.txt` bloquea correctamente `/api/cms/` y declara el sitemap.                                               | `public/robots.txt`          | Sin acción.                 |
+| I2  | `npm audit --omit=dev` → 0 vulnerabilidades. Dependencias modernas (Astro 4.16, Fastify 5, Zod 4).                 | `package.json`               | Mantener actualizado.       |
+| I3  | `.env` **no** está en el historial de git ni rastreado; `.env.example` usa placeholder `Hidromont-Admin-ChangeMe`. | `.gitignore`, `.env.example` | Sin acción. Buena práctica. |
 
 ## 4. Auditoría de arquitectura
 
@@ -107,6 +107,7 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 ## 5. Auditoría específica de Astro
 
 **Análisis.**
+
 - `astro.config.mjs`: `output: 'static'`, `site: 'https://hidromont.cl'`, integraciones `@astrojs/tailwind` y `@astrojs/sitemap`. Correcto para un sitio de marketing.
 - `build.assets: '_assets'` y `format: 'directory'`: URLs limpias.
 - Imágenes optimizadas en build (`generating optimized images` → WebP, cache reusado).
@@ -125,6 +126,7 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 **Validación.** Zod en todos los endpoints (`cms.schema.ts`). Slugs e IDs restringidos por regex (`/^[a-z0-9/._-]+$/`) con rechazo explícito de `..` (anti directory traversal en el nombre de archivo exportado). Casos límite cubiertos por tests (slug duplicado, id inválido, campo inexistente, media inexistente, password faltante, array de reorder vacío).
 
 **Sanitización / XSS.**
+
 - Subida de imágenes: allowlist de MIME (`jpeg/png/webp`), **SVG bloqueado para uploads de usuario** con comentario explícito sobre stored-XSS (`mediaService.ts:9-12`), verificación de coincidencia MIME↔extensión, límite de tamaño, nombre de archivo saneado + `nanoid`, contención de ruta (`fullPath.startsWith(uploadDir)`).
 - El contenido de texto se renderiza como texto en componentes Astro (auto-escapado); no hay `set:html` con valores del CMS.
 
@@ -140,20 +142,20 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 
 ## 7. Auditoría de seguridad
 
-| Vector | Estado | Evidencia |
-|---|---|---|
-| Inyección SQL | Mitigado | Sentencias preparadas en todos los repositories. |
-| XSS reflejado/almacenado | Mitigado | Auto-escape de Astro; SVG bloqueado en upload; `escapeHtml` en el overlay. |
-| CSRF | Mitigado | Doble token (`requireCsrf`, `middleware/security.ts:47-57`). |
-| Path traversal (servir) | Mitigado | `findContainedFile` (`staticSite.ts`). |
-| Path traversal (export/upload) | Mitigado | Regex de slug + rechazo de `..` + contención de ruta. |
-| AuthN / AuthZ | Mitigado | bcrypt + `requireAuth` en todas las rutas privadas. |
-| Brute force | Mitigado | Rate limit de login. |
-| Secretos en repo | OK | `.env` ignorado y ausente del historial; `.env.example` con placeholder. |
-| Dependencias | OK | `npm audit` 0 vulnerabilidades. |
-| Exposición del CMS al público | **Alto (H1)** | Overlay + `data-cms-entry` en `dist/`. |
-| Cookie en claro / host expuesto | **Alto (H2)** | `CMS_COOKIE_SECURE=0` + `CMS_HOST=0.0.0.0`. |
-| CSP en servidor Fastify | Medio (M1) | Sólo en `_headers` (Cloudflare). |
+| Vector                          | Estado        | Evidencia                                                                  |
+| ------------------------------- | ------------- | -------------------------------------------------------------------------- |
+| Inyección SQL                   | Mitigado      | Sentencias preparadas en todos los repositories.                           |
+| XSS reflejado/almacenado        | Mitigado      | Auto-escape de Astro; SVG bloqueado en upload; `escapeHtml` en el overlay. |
+| CSRF                            | Mitigado      | Doble token (`requireCsrf`, `middleware/security.ts:47-57`).               |
+| Path traversal (servir)         | Mitigado      | `findContainedFile` (`staticSite.ts`).                                     |
+| Path traversal (export/upload)  | Mitigado      | Regex de slug + rechazo de `..` + contención de ruta.                      |
+| AuthN / AuthZ                   | Mitigado      | bcrypt + `requireAuth` en todas las rutas privadas.                        |
+| Brute force                     | Mitigado      | Rate limit de login.                                                       |
+| Secretos en repo                | OK            | `.env` ignorado y ausente del historial; `.env.example` con placeholder.   |
+| Dependencias                    | OK            | `npm audit` 0 vulnerabilidades.                                            |
+| Exposición del CMS al público   | **Alto (H1)** | Overlay + `data-cms-entry` en `dist/`.                                     |
+| Cookie en claro / host expuesto | **Alto (H2)** | `CMS_COOKIE_SECURE=0` + `CMS_HOST=0.0.0.0`.                                |
+| CSP en servidor Fastify         | Medio (M1)    | Sólo en `_headers` (Cloudflare).                                           |
 
 **Clasificación:** Crítico 0 · Alto 2 · Medio 5 · Bajo 4 · Informativo 3.
 
@@ -162,6 +164,7 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 **Fortalezas.** Sitio estático sin hidratación de frameworks; imágenes a WebP con derivados responsive (`imageService.ts`: 640/1024/1600 + LQIP) y `srcset`; fuentes self-hosted con `preload` de la fuente de titulares; cache-control inmutable para assets/fuentes/imágenes en `_headers`.
 
 **Problemas.**
+
 - **H1 impacta CWV directamente:** 66 KB de JS inline del overlay en `dist/index.html` (de un total de ~150 KB de HTML), presente en **todas** las páginas. Es JS de parsing bloqueante e inútil para el visitante → degrada TBT/LCP y peso de transferencia. Eliminarlo (build con `PUBLIC_ENABLE_CMS=0`) reduce ~44 % el tamaño del HTML de la home.
 - CSP `img-src ... https:` permite imágenes de cualquier origen HTTPS (laxo pero de bajo impacto).
 
@@ -169,20 +172,20 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 
 ## 9. Auditoría SEO
 
-| Elemento | Estado | Evidencia |
-|---|---|---|
-| Title dinámico | ✓ | `BaseLayout.astro:24,64` |
-| Meta description | ✓ | `:65` |
-| Canonical | ✓ | `:67` (autogenerado por ruta) |
-| Open Graph | ✓ | `:70-76` |
-| Twitter Card | ✓ | `:79-82` |
-| JSON-LD Organization | ✓ | `:28-45` |
-| `noindex` opcional | ✓ | `:66` |
-| Sitemap | ✓ | `@astrojs/sitemap` → `dist/sitemap-index.xml` |
-| robots.txt | ✓ | bloquea `/api/cms/` |
-| `lang` | ✓ | `html lang="es-CL"` |
-| 404 | ✓ | `dist/404.html` + `_redirects` |
-| Slugs | ✓ | limpios, validados |
+| Elemento             | Estado | Evidencia                                     |
+| -------------------- | ------ | --------------------------------------------- |
+| Title dinámico       | ✓      | `BaseLayout.astro:24,64`                      |
+| Meta description     | ✓      | `:65`                                         |
+| Canonical            | ✓      | `:67` (autogenerado por ruta)                 |
+| Open Graph           | ✓      | `:70-76`                                      |
+| Twitter Card         | ✓      | `:79-82`                                      |
+| JSON-LD Organization | ✓      | `:28-45`                                      |
+| `noindex` opcional   | ✓      | `:66`                                         |
+| Sitemap              | ✓      | `@astrojs/sitemap` → `dist/sitemap-index.xml` |
+| robots.txt           | ✓      | bloquea `/api/cms/`                           |
+| `lang`               | ✓      | `html lang="es-CL"`                           |
+| 404                  | ✓      | `dist/404.html` + `_redirects`                |
+| Slugs                | ✓      | limpios, validados                            |
 
 **Riesgo SEO menor relacionado con H1:** los `data-cms-entry` en el HTML no afectan indexación, pero exponen estructura interna. El sitio público **sí está listo para indexación**; las rutas privadas del CMS no son páginas y están bloqueadas en robots.
 
@@ -206,33 +209,33 @@ El sitio (`src/`) separa correctamente datos (`src/data/`), contenido (`src/cont
 
 ## 12. Testing y confiabilidad
 
-| Tipo | Estado | Evidencia |
-|---|---|---|
-| Unit (Vitest) | ✓ 65/65 | `cms/test/*.test.ts` (auth, content, gallery, media, export, security) |
-| E2E (Playwright) | ✓ presente | `e2e/cms-overlay.spec.ts` (login, requiere auth, build sin `data-cms`) |
-| Type check | ✓ | `astro check` en `build` |
-| Cobertura | Config presente | `vitest run --coverage` |
-| Lint | ✗ | sin ESLint |
-| CI | ✗ | sin `.github/workflows` |
-| Manejo de errores | ✓ | `BaseController` + `errorTracking` (Sentry opcional) |
-| Estados vacíos/error | ✓ | cubiertos en overlay y validadores |
+| Tipo                 | Estado          | Evidencia                                                              |
+| -------------------- | --------------- | ---------------------------------------------------------------------- |
+| Unit (Vitest)        | ✓ 65/65         | `cms/test/*.test.ts` (auth, content, gallery, media, export, security) |
+| E2E (Playwright)     | ✓ presente      | `e2e/cms-overlay.spec.ts` (login, requiere auth, build sin `data-cms`) |
+| Type check           | ✓               | `astro check` en `build`                                               |
+| Cobertura            | Config presente | `vitest run --coverage`                                                |
+| Lint                 | ✗               | sin ESLint                                                             |
+| CI                   | ✗               | sin `.github/workflows`                                                |
+| Manejo de errores    | ✓               | `BaseController` + `errorTracking` (Sentry opcional)                   |
+| Estados vacíos/error | ✓               | cubiertos en overlay y validadores                                     |
 
 **Confiabilidad.** Base de pruebas notable para un proyecto de este tamaño, incluyendo un e2e que verifica que el build público **no** contiene atributos `data-cms` — exactamente el contrato que H1 rompe cuando se construye con `.env` real. El gap clave es que **nada ejecuta esas pruebas automáticamente** antes de desplegar (M3).
 
 ## 13. Checklist de producción
 
-| Área | Estado | Comentario |
-|---|---|---|
-| Build | Aprobado | `astro check && astro build` ✓, 24 páginas. |
-| Seguridad | No aprobado | Base sólida, pero H1 (overlay público) y H2 (cookie/host) pendientes. |
-| CMS | No aprobado | App segura; bloqueado por empaquetado (H1) y endurecimiento de despliegue (H2). |
-| SEO | Aprobado | Completo. |
-| Performance | No aprobado | H1 añade ~66 KB JS inline por página; resolver antes de medir CWV. |
-| Accesibilidad | Aprobado (con reservas) | Buena base; validar headings/foco con axe sobre el build final. |
-| Testing | Aprobado | 65 unit + e2e; falta ejecutarlos en CI. |
-| Variables de entorno | Aprobado | `.env.example` ejemplar; `.env` ignorado. |
-| Documentación | Aprobado | README + `.env.example` + READMEs del CMS. |
-| Deploy | No aprobado | Falta CI y fijar `PUBLIC_ENABLE_CMS=0` en el pipeline de build. |
+| Área                 | Estado                  | Comentario                                                                      |
+| -------------------- | ----------------------- | ------------------------------------------------------------------------------- |
+| Build                | Aprobado                | `astro check && astro build` ✓, 24 páginas.                                     |
+| Seguridad            | No aprobado             | Base sólida, pero H1 (overlay público) y H2 (cookie/host) pendientes.           |
+| CMS                  | No aprobado             | App segura; bloqueado por empaquetado (H1) y endurecimiento de despliegue (H2). |
+| SEO                  | Aprobado                | Completo.                                                                       |
+| Performance          | No aprobado             | H1 añade ~66 KB JS inline por página; resolver antes de medir CWV.              |
+| Accesibilidad        | Aprobado (con reservas) | Buena base; validar headings/foco con axe sobre el build final.                 |
+| Testing              | Aprobado                | 65 unit + e2e; falta ejecutarlos en CI.                                         |
+| Variables de entorno | Aprobado                | `.env.example` ejemplar; `.env` ignorado.                                       |
+| Documentación        | Aprobado                | README + `.env.example` + READMEs del CMS.                                      |
+| Deploy               | No aprobado             | Falta CI y fijar `PUBLIC_ENABLE_CMS=0` en el pipeline de build.                 |
 
 ## 14. Acciones obligatorias antes de producción
 

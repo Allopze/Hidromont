@@ -266,18 +266,34 @@ const pasos = [
  * «→ astro check» y no hubo forma de saber dónde ni por qué. Con la salida en
  * vivo, lo que haya alcanzado a imprimir queda escrito.
  */
+/**
+ * Nombres que Vite reserva para `import.meta.env` y que, si llegan en el
+ * entorno, los sustituyen: con un `DEV=1` heredado (Vitest lo define, y
+ * cualquiera puede tenerlo en su shell) el perfil PÚBLICO se compilaba como si
+ * fuera desarrollo y salía con todas las marcas del editor. Lo descubrió
+ * cms/test-lento/publicarReal.test.ts. Un build es siempre de producción.
+ */
+const RESERVADAS_DE_VITE = ['DEV', 'PROD', 'SSR', 'MODE', 'BASE_URL', 'SITE', 'ASSETS_PREFIX'];
+const entornoDelBuild = () => {
+  const env = { ...process.env };
+  for (const nombre of RESERVADAS_DE_VITE) delete env[nombre];
+  return env;
+};
+
 function ejecutar(paso) {
   return new Promise((resolver) => {
     const hijo = spawn(process.execPath, paso.args, {
       cwd: raiz,
       env: {
-        ...process.env,
+        ...entornoDelBuild(),
         // El servidor falló con `pthread_create: Resource temporarily
         // unavailable`: la cuenta tiene un tope de hilos que no aparece en
         // /proc/limits porque lo aplica LVE aparte. Acotar el grupo de hilos
         // de libuv reduce cuántos pide sharp al procesar imágenes.
         UV_THREADPOOL_SIZE: process.env.UV_THREADPOOL_SIZE ?? '2',
         ...(opciones ? { NODE_OPTIONS: opciones } : {}),
+        // Y NODE_ENV de producción, por la misma razón (ver entornoDelBuild).
+        NODE_ENV: 'production',
         // Vite da prioridad a las variables ya presentes sobre el .env.
         ...(paso.env ?? {}),
       },

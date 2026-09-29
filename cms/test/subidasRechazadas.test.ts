@@ -102,3 +102,12 @@ describe('M-01: subidas rechazadas', () => {
     creados.push(res.json().path);
   });
 });
+
+describe('B-07: nombres de archivo subidos', () => {
+  it('quita tildes y eñes, y no repite la extensión en mayúsculas', async () => {
+    const { safeFilename } = await import('../services/mediaService');
+    expect(safeFilename('ñandú ü (1) <x>.JPG')).toMatch(/^nandu-u-1-x-[\w-]{8}\.jpg$/);
+    expect(safeFilename('Válvula Mariposa.PNG')).toMatch(/^valvula-mariposa-[\w-]{8}\.png$/);
+    expect(safeFilename('../../etc/passwd.jpg')).toMatch(/^passwd-[\w-]{8}\.jpg$/);
+  });
+});
