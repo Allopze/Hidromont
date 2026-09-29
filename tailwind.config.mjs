@@ -97,15 +97,32 @@ export default {
             '--tw-prose-th-borders': '#D9E2EC',
             '--tw-prose-td-borders': '#D9E2EC',
             // headings → heading font
-            h1: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '700', letterSpacing: '-0.01em' },
-            h2: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '700', letterSpacing: '-0.01em' },
-            h3: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '600', letterSpacing: '-0.01em' },
+            h1: {
+              fontFamily: '"Roboto Condensed", Arial, sans-serif',
+              fontWeight: '700',
+              letterSpacing: '-0.01em',
+            },
+            h2: {
+              fontFamily: '"Roboto Condensed", Arial, sans-serif',
+              fontWeight: '700',
+              letterSpacing: '-0.01em',
+            },
+            h3: {
+              fontFamily: '"Roboto Condensed", Arial, sans-serif',
+              fontWeight: '600',
+              letterSpacing: '-0.01em',
+            },
             h4: { fontFamily: '"Roboto Condensed", Arial, sans-serif', fontWeight: '600' },
             // tables → design-system style
-            'thead th': { backgroundColor: '#E6F2FA', color: '#004B7D', fontWeight: '700', padding: '12px 16px' },
+            'thead th': {
+              backgroundColor: '#E6F2FA',
+              color: '#004B7D',
+              fontWeight: '700',
+              padding: '12px 16px',
+            },
             'tbody td': { padding: '12px 16px', borderBottomColor: '#D9E2EC' },
             // links
-            'a': { fontWeight: '500', textDecorationThickness: '1px', textUnderlineOffset: '4px' },
+            a: { fontWeight: '500', textDecorationThickness: '1px', textUnderlineOffset: '4px' },
             'a:hover': { color: '#004B7D' },
           },
         },

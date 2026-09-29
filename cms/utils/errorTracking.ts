@@ -22,7 +22,7 @@ export function captureException(error: unknown, context?: Record<string, unknow
     return;
   }
 
-  const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
   process.stderr.write(
     JSON.stringify({
       level: 'error',

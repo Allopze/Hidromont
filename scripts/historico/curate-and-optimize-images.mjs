@@ -17,8 +17,8 @@ const CURATION_CONFIG = [
     sources: [
       { dir: path.join(ORIGINALS_ROOT, 'Pangal', 'Helicóptero'), tag: 'helicoptero', max: 10 },
       { dir: path.join(ORIGINALS_ROOT, 'Pangal'), tag: 'terreno', max: 15 },
-      { dir: path.join(ORIGINALS_ROOT, 'Pangal', 'Whatsapp'), tag: 'obra', max: 10 }
-    ]
+      { dir: path.join(ORIGINALS_ROOT, 'Pangal', 'Whatsapp'), tag: 'obra', max: 10 },
+    ],
   },
   {
     name: 'C.H. Canal Chacayes',
@@ -28,17 +28,22 @@ const CURATION_CONFIG = [
       { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '1'), tag: 'fase1', max: 6 },
       { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '2'), tag: 'fase2', max: 6 },
       { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '3'), tag: 'fase3', max: 15 },
-      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '4'), tag: 'fase4', max: 5 }
-    ]
+      { dir: path.join(ORIGINALS_ROOT, 'Canal Chacayes', '4'), tag: 'fase4', max: 5 },
+    ],
   },
   {
     name: 'Fotos Curadas WhatsApp (Terreno / Galería)',
     slug: 'curadas-whatsapp',
     prefix: 'terreno-hidromont',
     sources: [
-      { dir: path.join(PROJECT_ROOT, 'public', 'fotos', 'curadas'), filter: (f) => f.startsWith('whatsapp-image-'), tag: 'whatsapp', max: 25 }
-    ]
-  }
+      {
+        dir: path.join(PROJECT_ROOT, 'public', 'fotos', 'curadas'),
+        filter: (f) => f.startsWith('whatsapp-image-'),
+        tag: 'whatsapp',
+        max: 25,
+      },
+    ],
+  },
 ];
 
 async function isGoodImage(filePath) {
@@ -63,14 +68,12 @@ async function processImage(srcPath, destPath) {
       width: 1920,
       height: 1200,
       fit: 'inside',
-      withoutEnlargement: true
+      withoutEnlargement: true,
     });
   }
 
   // Convert to WebP with 82 quality
-  await pipeline
-    .webp({ quality: 82, effort: 4 })
-    .toFile(destPath);
+  await pipeline.webp({ quality: 82, effort: 4 }).toFile(destPath);
 
   const origSize = fs.statSync(srcPath).size;
   const newSize = fs.statSync(destPath).size;
@@ -107,7 +110,9 @@ async function run() {
         return /\.(jpg|jpeg|png|webp)$/i.test(f);
       });
 
-      console.log(`   - Escaneando ${files.length} archivos en: ${path.relative(PROJECT_ROOT, source.dir)} (${source.tag})`);
+      console.log(
+        `   - Escaneando ${files.length} archivos en: ${path.relative(PROJECT_ROOT, source.dir)} (${source.tag})`
+      );
 
       // Shuffle or evenly sample files to get diverse photos
       const step = Math.max(1, Math.floor(files.length / (source.max * 1.5)));
@@ -136,14 +141,18 @@ async function run() {
           projectProcessed++;
 
           const savedPct = Math.round(((origSize - newSize) / origSize) * 100);
-          console.log(`     ✅ Guardado: ${fileName} | ${(origSize / 1024 / 1024).toFixed(2)}MB ➔ ${(newSize / 1024).toFixed(0)}KB (-${savedPct}%)`);
+          console.log(
+            `     ✅ Guardado: ${fileName} | ${(origSize / 1024 / 1024).toFixed(2)}MB ➔ ${(newSize / 1024).toFixed(0)}KB (-${savedPct}%)`
+          );
         } catch (err) {
           console.error(`     ❌ Error procesando ${candidate.file}:`, err.message);
         }
       }
     }
 
-    console.log(`   ✨ Proyecto ${config.slug}: ${projectProcessed} imágenes curadas y optimizadas.\n`);
+    console.log(
+      `   ✨ Proyecto ${config.slug}: ${projectProcessed} imágenes curadas y optimizadas.\n`
+    );
   }
 
   console.log('=====================================================');

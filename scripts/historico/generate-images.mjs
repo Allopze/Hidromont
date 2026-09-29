@@ -19,7 +19,8 @@ async function generateOgImage() {
     return;
   }
 
-  const W = 1200, H = 630;
+  const W = 1200,
+    H = 630;
 
   // Cargamos el logo y lo escalamos a 320px de ancho.
   //
@@ -123,7 +124,7 @@ async function generateAppleTouchIcon() {
   const lH = lMeta.height ?? logoFit;
 
   const left = Math.round((BG - lW) / 2);
-  const top  = Math.round((BG - lH) / 2);
+  const top = Math.round((BG - lH) / 2);
 
   const bgSvg = `<svg width="${BG}" height="${BG}" xmlns="http://www.w3.org/2000/svg">
     <rect width="${BG}" height="${BG}" rx="22" fill="#0065A9"/>
@@ -168,13 +169,13 @@ async function convertPngsToWebp() {
     }
 
     const { size: origSize } = fs.statSync(srcPath);
-    await sharp(srcPath)
-      .webp({ quality: 82, effort: 6 })
-      .toFile(outPath);
+    await sharp(srcPath).webp({ quality: 82, effort: 6 }).toFile(outPath);
 
     const { size: newSize } = fs.statSync(outPath);
     const pct = Math.round((1 - newSize / origSize) * 100);
-    console.log(`✅  ${path.basename(outPath)} — ${Math.round(origSize / 1024)} KB → ${Math.round(newSize / 1024)} KB (−${pct}%)`);
+    console.log(
+      `✅  ${path.basename(outPath)} — ${Math.round(origSize / 1024)} KB → ${Math.round(newSize / 1024)} KB (−${pct}%)`
+    );
   }
 }
 
@@ -199,7 +200,9 @@ async function optimizeLogo() {
   if (newSize < origSize) {
     fs.renameSync(tmpPath, logoPath);
     const pct = Math.round((1 - newSize / origSize) * 100);
-    console.log(`✅  logo.png optimizado: ${Math.round(origSize / 1024)} KB → ${Math.round(newSize / 1024)} KB (−${pct}%)`);
+    console.log(
+      `✅  logo.png optimizado: ${Math.round(origSize / 1024)} KB → ${Math.round(newSize / 1024)} KB (−${pct}%)`
+    );
   } else {
     fs.unlinkSync(tmpPath);
     console.log('⏭  logo.png ya es óptimo para su tamaño.');

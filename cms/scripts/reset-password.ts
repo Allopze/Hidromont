@@ -46,7 +46,9 @@ async function main() {
     if (result.created) {
       process.stdout.write(`[CMS] Admin ${email} creado con la nueva contraseña.\n`);
     } else {
-      process.stdout.write(`[CMS] Contraseña del admin ${email} actualizada. Sesiones previas invalidadas.\n`);
+      process.stdout.write(
+        `[CMS] Contraseña del admin ${email} actualizada. Sesiones previas invalidadas.\n`
+      );
     }
     process.stdout.write('[CMS] Reinicia el CMS para que los cambios surtan efecto.\n');
   } catch (error) {

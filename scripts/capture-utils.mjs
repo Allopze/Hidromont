@@ -65,12 +65,7 @@ export function classifyMedia(media) {
   return result;
 }
 
-const PUBLIC_CMS_MARKERS = [
-  'data-cms-entry',
-  '__HIDROMONT_CMS__',
-  'hm-cms-bar',
-  'Agregar imagen',
-];
+const PUBLIC_CMS_MARKERS = ['data-cms-entry', '__HIDROMONT_CMS__', 'hm-cms-bar', 'Agregar imagen'];
 
 export function findPublicCmsMarkers(html) {
   return PUBLIC_CMS_MARKERS.filter((marker) => html.includes(marker));

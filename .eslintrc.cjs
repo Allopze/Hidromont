@@ -84,7 +84,10 @@ module.exports = {
     // Estilo alineado al código existente.
     'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     // No forzar imports de tipo separados: `import()` in-line es una feature valida
     // de TS y el codigo existente la usa legitimamente en tests/e2e.

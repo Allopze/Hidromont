@@ -28,50 +28,67 @@ El informe debe entregarse como un archivo Markdown (`AUDITORIA_LOGICA_UIUX.md`)
 # Auditoría de Lógica / Funcionalidad + UI/UX Estética
 
 ## 1. Resumen ejecutivo
+
 [Puntaje general /10 y veredicto en una frase]
 
 ## 2. Dimensión A — Lógica y Funcionalidad
 
 ### A.1 Backend CMS
+
 #### A.1.a Flujos CRUD
+
 [Hallazgos sobre creación, lectura, actualización, eliminación de entradas, campos y media]
 
 #### A.1.b Validación y Edge Cases
+
 [Validación Zod, casos límite, entradas malformadas, concurrencia]
 
 #### A.1.c Autenticación y Sesiones
+
 [Login, logout, expiración, CSRF, rate limiting]
 
 #### A.1.d Exportación y Publicación
+
 [Flujo export → build, integridad de datos, errores de exportación]
 
 #### A.1.e Galería
+
 [CRUD de categorías e items, reorder, sync con media, featured]
 
 ### A.2 Frontend Estático
+
 #### A.2.a Content Collections
+
 [Schema Zod, proyección de datos en componentes, slugs, relaciones]
 
 #### A.2.b Contact Form
+
 [Validación cliente/servidor, estados de envío, manejo de errores, honeypot]
 
 #### A.2.c Gallery
+
 [Filtros, lightbox, lazy loading, srcset, LQIP, transiciones]
 
 #### A.2.d Motion / Interactividad
+
 [Scroll reveals, parallax, contadores, preferencias reduced-motion]
 
 ### A.3 Data Layer
+
 #### A.3.a CMS Data (cms-content.json → getCmsText)
+
 [Fallbacks, tipos, sincronización con CMS runtime]
 
 #### A.3.b Static Data (gallery.json, project-images, nav, company)
+
 [Integridad, consistencia con CMS, campos huérfanos]
 
 ### A.4 Testing
+
 [Cobertura de tests unitarios y e2e, casos faltantes, CI/CD]
 
 #### Preguntas guía:
+
 - ¿Hay tests para `staticSite.ts` (path traversal en servir archivos)?
 - ¿Hay tests para `exportService` con subdirectorios en slugs? ¿Slugs con caracteres especiales?
 - ¿Hay tests para `galleryService` cuando se elimina un media usado por items de galería? (foreign key ON DELETE SET NULL)
@@ -85,89 +102,121 @@ El informe debe entregarse como un archivo Markdown (`AUDITORIA_LOGICA_UIUX.md`)
 ## 3. Dimensión B — UI/UX Estética
 
 ### B.1 Sistema de Diseño y Tokens
+
 #### B.1.a Colores
+
 [Paleta primaria/secundaria, semántica, contraste, uso consistente]
 
 #### B.1.b Tipografía
+
 [Jerarquía, escalas fluidas, legibilidad, pairings]
 
 #### B.1.c Espaciado y Layout
+
 [Espaciado base, grid, containers, consistencia entre páginas]
 
 #### B.1.d Bordes y Sombras
+
 [border-radius: 0, uso de sombras, elevación]
 
 #### B.1.e Motion
+
 [Timing functions, duraciones, stagger delays, reduced-motion]
 
 ### B.2 Páginas y Componentes
+
 #### B.2.a Home
+
 [Hero, servicios grid, capabilities, instalaciones, proyectos destacados, clients strip, CTA]
 
 #### B.2.b Servicios (index + detalle)
+
 [PageHero, ServiceCard, grid, metodología, contenido Markdown]
 
 #### B.2.c Proyectos (index + detalle)
+
 [PageHero, ProjectCard, ProjectTable, ProjectFilters, banco de proyectos]
 
 #### B.2.d Galería
+
 [PageHero, GalleryGrid, Lightbox, filtros, metadata, LQIP]
 
 #### B.2.e Empresa
+
 [PageHero, métricas, instalaciones, maquinaria, medios de obra]
 
 #### B.2.f Clientes
+
 [ClientesHero, grid de logos, marquee, fallbacks]
 
 #### B.2.g Contacto
+
 [Layout split, formulario, mapa, info de contacto, estados]
 
 #### B.2.h Header y Footer
+
 [Navegación desktop/mobile, overlay scroll, footer map, datos de empresa]
 
 #### B.2.i 404
+
 [Mensaje, navegación de salida, tono de marca]
 
 ### B.3 Micro-interacciones
+
 #### B.3.a Hover states
+
 [Card lift, logo filters, nav items, botones, enlaces]
 
 #### B.3.b Focus states
+
 [Teclado, navegación ARIA, outline rings, skip-to-content]
 
 #### B.3.c Transiciones de página
+
 [Sin SPA, reveals al scroll, cinematic clip-path]
 
 #### B.3.d Feedback táctil
+
 [Active states en botones, touch feedback en galería]
 
 ### B.4 Responsive Design
+
 #### B.4.a Breakpoints
+
 [Comportamiento mobile/tablet/desktop, menú hamburguesa, grids responsivos]
 
 #### B.4.b Imágenes responsivas
+
 [srcset, sizes, object-fit, aspect ratios]
 
 #### B.4.c Tablas y datos
+
 [ProjectTable en mobile, scroll horizontal, listas alternativas]
 
 ### B.5 Accesibilidad
+
 #### B.5.a Semántica HTML
+
 [Landmarks, headings hierarchy, nav labels, roles ARIA]
 
 #### B.5.b Contraste y Color
+
 [WCAG 2.1 AA, text-on-photo, modo strong, enlaces]
 
 #### B.5.c Teclado
+
 [Focus order, focus trapping en lightbox, skip-to-content]
 
 #### B.5.d Screen Readers
+
 [Alt text, aria-live regions, aria-expanded, labels]
 
 ### B.6 Performance Visual Percibida
+
 [Impacto de la carga en la experiencia, no métricas de laboratorio sino percepción del usuario]
 
 #### Preguntas guía:
+
 - ¿El build de producción contiene rastros del CMS inline? (`data-cms-entry`, `__HIDROMONT_CMS__`, clases `hm-cms-*`)
 - ¿El peso del HTML de cada página es razonable para el contenido que muestra?
 - ¿Hay fuentes preloadeadas correctamente? (RC-700 está, ¿Inter está?)
@@ -176,16 +225,21 @@ El informe debe entregarse como un archivo Markdown (`AUDITORIA_LOGICA_UIUX.md`)
 - ¿El parallax y las animaciones de reveal afectan el Core Web Vital de Cumulative Layout Shift?
 
 ### B.7 Consistencia de Marca
+
 #### B.7.a Tono y Voz
+
 [UX copy, botones, CTAs, mensajes de error, empty states]
 
 #### B.7.b Personalidad Visual
+
 [Infrastructure scale, precision, industrial restraint]
 
 #### B.7.c Fotografía vs Ilustración
+
 [Uso de fotografía real de proyectos, calidad de imágenes]
 
 #### B.7.d Localización (l10n)
+
 - ¿Todo el texto visible está en español (Chile)?
 - ¿Los formatos numéricos usan separador de miles con punto (`.`)? (ej: `11.000 m²`)
 - ¿Los formatos de fecha usan locale `es-CL`? (ej: `Intl.DateTimeFormat('es-CL')`)
@@ -193,21 +247,22 @@ El informe debe entregarse como un archivo Markdown (`AUDITORIA_LOGICA_UIUX.md`)
 - ¿No hay texto hardcodeado en inglés en componentes, mensajes de error o placeholders?
 
 ## 4. Cruce de Dimensiones
+
 [Hallazgos que conectan lógica y UI/UX — ej: un error de validación que afecta la experiencia, un componente visual que oculta un problema funcional]
 
 ## 5. Matriz de Severidad
 
-| Severidad | Definición |
-|-----------|------------|
-| **Crítico** | Bloquea funcionalidad o produce resultados incorrectos/no seguros. |
-| **Alto** | Impacto significativo en la experiencia o corrección; debe resolverse antes del próximo hito. |
-| **Medio** | Degrada la calidad pero no bloquea; resolver en el ciclo actual de desarrollo. |
-| **Bajo** | Problema cosmetico o menor; resolver cuando sea conveniente. |
-| **Informativo** | Observación o sugerencia de mejora. |
+| Severidad       | Definición                                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| **Crítico**     | Bloquea funcionalidad o produce resultados incorrectos/no seguros.                            |
+| **Alto**        | Impacto significativo en la experiencia o corrección; debe resolverse antes del próximo hito. |
+| **Medio**       | Degrada la calidad pero no bloquea; resolver en el ciclo actual de desarrollo.                |
+| **Bajo**        | Problema cosmetico o menor; resolver cuando sea conveniente.                                  |
+| **Informativo** | Observación o sugerencia de mejora.                                                           |
 
 ## 6. Conclusiones y Recomendaciones
-[Resumen de los hallazgos más importantes por dimensión, puntaje final, acciones prioritarias]
 
+[Resumen de los hallazgos más importantes por dimensión, puntaje final, acciones prioritarias]
 ```
 
 ---
@@ -361,14 +416,14 @@ Para cada sección, audita:
 
 ### Criterios de evaluación
 
-| Dimensión | Peso sugerido |
-|-----------|---------------|
-| Corrección funcional | 30% |
-| Robustez (edge cases, errores) | 20% |
-| Consistencia visual y de marca | 20% |
-| Interacciones y micro-detalles | 15% |
-| Accesibilidad | 10% |
-| Rendimiento visual percibido | 5% |
+| Dimensión                      | Peso sugerido |
+| ------------------------------ | ------------- |
+| Corrección funcional           | 30%           |
+| Robustez (edge cases, errores) | 20%           |
+| Consistencia visual y de marca | 20%           |
+| Interacciones y micro-detalles | 15%           |
+| Accesibilidad                  | 10%           |
+| Rendimiento visual percibido   | 5%            |
 
 ---
 
@@ -380,32 +435,32 @@ Para cada sección, audita:
 
 ### Archivos a auditar con prioridad
 
-| Prioridad | Archivo | Razón |
-|-----------|---------|-------|
-| 🔴 | `cms/services/contentService.ts` | Núcleo del CRUD de contenido |
-| 🔴 | `cms/services/exportService.ts` | Integridad de datos exportados |
-| 🔴 | `cms/services/authService.ts` | Seguridad de autenticación |
-| 🔴 | `src/scripts/cms-overlay.js` | 66 KB de JS inline — hallazgo H1 de auditoría previa |
-| 🔴 | `src/components/gallery/GalleryGrid.astro` | Componente visual complejo con lógica de filtros |
-| 🔴 | `src/components/gallery/Lightbox.astro` | Accesibilidad + interacciones |
-| 🔴 | `src/components/contact/ContactForm.astro` | Validación dual + UX de envío |
-| 🟡 | `src/data/cms.ts` | Capa de datos con fallbacks |
-| 🟡 | `src/styles/tokens.css` | Sistema de diseño |
-| 🟡 | `src/styles/base.css` | Estilos base + utilidades |
-| 🟡 | `src/styles/motion.css` | Sistema de motion |
-| 🟡 | `src/scripts/motion.ts` | Lógica de reveals, parallax, counters |
-| 🟡 | `tailwind.config.mjs` | Configuración de tema Tailwind |
-| 🟡 | `cms/validators/cms.schema.ts` | Validación Zod |
-| 🟡 | `cms/routes/cmsRoutes.ts` | Cableado de rutas + seguridad |
-| 🟡 | `cms/services/galleryService.ts` | Sincronización con media, consistencia referencial |
-| 🟡 | `cms/services/publishService.ts` | Job tracking, logs, robustez ante crashes |
-| 🟢 | `src/data/gallery.ts`, `src/data/gallery.json` | Datos de galería |
-| 🟢 | `src/data/nav.ts`, `src/data/company.ts` | Datos de navegación/empresa |
-| 🟢 | `cms/db/schema.ts` | Esquema de base de datos |
-| 🟢 | `cms/config/unifiedConfig.ts` | Configuración del CMS |
-| 🟢 | `cms/middleware/security.ts` | Middleware de seguridad |
-| 🟢 | `cms/staticSite.ts` | Path traversal, servir estáticos |
+| Prioridad | Archivo                                        | Razón                                                |
+| --------- | ---------------------------------------------- | ---------------------------------------------------- |
+| 🔴        | `cms/services/contentService.ts`               | Núcleo del CRUD de contenido                         |
+| 🔴        | `cms/services/exportService.ts`                | Integridad de datos exportados                       |
+| 🔴        | `cms/services/authService.ts`                  | Seguridad de autenticación                           |
+| 🔴        | `src/scripts/cms-overlay.js`                   | 66 KB de JS inline — hallazgo H1 de auditoría previa |
+| 🔴        | `src/components/gallery/GalleryGrid.astro`     | Componente visual complejo con lógica de filtros     |
+| 🔴        | `src/components/gallery/Lightbox.astro`        | Accesibilidad + interacciones                        |
+| 🔴        | `src/components/contact/ContactForm.astro`     | Validación dual + UX de envío                        |
+| 🟡        | `src/data/cms.ts`                              | Capa de datos con fallbacks                          |
+| 🟡        | `src/styles/tokens.css`                        | Sistema de diseño                                    |
+| 🟡        | `src/styles/base.css`                          | Estilos base + utilidades                            |
+| 🟡        | `src/styles/motion.css`                        | Sistema de motion                                    |
+| 🟡        | `src/scripts/motion.ts`                        | Lógica de reveals, parallax, counters                |
+| 🟡        | `tailwind.config.mjs`                          | Configuración de tema Tailwind                       |
+| 🟡        | `cms/validators/cms.schema.ts`                 | Validación Zod                                       |
+| 🟡        | `cms/routes/cmsRoutes.ts`                      | Cableado de rutas + seguridad                        |
+| 🟡        | `cms/services/galleryService.ts`               | Sincronización con media, consistencia referencial   |
+| 🟡        | `cms/services/publishService.ts`               | Job tracking, logs, robustez ante crashes            |
+| 🟢        | `src/data/gallery.ts`, `src/data/gallery.json` | Datos de galería                                     |
+| 🟢        | `src/data/nav.ts`, `src/data/company.ts`       | Datos de navegación/empresa                          |
+| 🟢        | `cms/db/schema.ts`                             | Esquema de base de datos                             |
+| 🟢        | `cms/config/unifiedConfig.ts`                  | Configuración del CMS                                |
+| 🟢        | `cms/middleware/security.ts`                   | Middleware de seguridad                              |
+| 🟢        | `cms/staticSite.ts`                            | Path traversal, servir estáticos                     |
 
 ---
 
-*Última actualización: 2026-07-18*
+_Última actualización: 2026-07-18_
