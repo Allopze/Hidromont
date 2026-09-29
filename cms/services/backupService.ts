@@ -43,11 +43,17 @@ export class BackupService {
     return fs.existsSync(ruta) ? ruta : null;
   }
 
+  /**
+   * Solo los respaldos que crea este servicio (`hidromont-cms-<fecha>.sqlite`).
+   * B-09 (auditoría 2026-09-28): con `*.sqlite` entraban también las copias
+   * `antes-de-sync-*` de `scripts/sync-datos-vps.sh`, y la rotación las borraba
+   * justo cuando más falta hacían.
+   */
   listBackups(): Array<{ file: string; size: number; createdAt: string }> {
     if (!fs.existsSync(this.backupDir)) return [];
     return fs
       .readdirSync(this.backupDir)
-      .filter((name) => name.endsWith('.sqlite'))
+      .filter((name) => /^hidromont-cms-[0-9T-]+\.sqlite$/.test(name))
       .map((name) => {
         const filePath = path.join(this.backupDir, name);
         const stat = fs.statSync(filePath);

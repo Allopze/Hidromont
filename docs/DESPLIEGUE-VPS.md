@@ -357,8 +357,69 @@ sudo crontab -e
 # 0 3 * * * cd /srv/hidromont && /usr/bin/npm run cms:backup >> /srv/hidromont/_cron.log 2>&1
 ```
 
-Quedan en `cms/data/backups/`. Bájalos periódicamente a otra máquina: un
-backup que vive solo en el mismo disco que la base no es un backup.
+Quedan en `cms/data/backups/` (se conservan las 20 más recientes,
+`CMS_BACKUP_KEEP`). Son copias coherentes de la base, sin sesiones abiertas:
+útiles para volver atrás un día, no para sobrevivir a la pérdida del disco.
+
+**Respaldo de la máquina.** El VPS se respalda con el sistema del proveedor.
+Comprueba una vez, en su panel, que la copia incluye estas rutas: sin ellas no
+se puede reconstruir el sitio.
+
+| Ruta                          | Qué es                                          | ¿Se puede regenerar?              |
+| ----------------------------- | ----------------------------------------------- | --------------------------------- |
+| `/srv/hidromont/cms/data/`    | La base del CMS y sus respaldos diarios         | **No**                            |
+| `/srv/hidromont/uploads/cms/` | Los originales de todo lo subido desde el panel | **No**                            |
+| `/srv/hidromont/.env`         | Credenciales y configuración                    | A mano, desde el gestor de claves |
+| `/etc/caddy/Caddyfile`        | Configuración de Caddy                          | Sí, desde `deploy/Caddyfile`      |
+| El resto de `/srv/hidromont`  | Código, `node_modules`, `dist/`                 | Sí, con `git` + `npm ci` + build  |
+
+### Restaurar
+
+Para volver a un respaldo de la base del CMS (un borrado grave, una
+sincronización equivocada) o reconstruir tras restaurar la máquina:
+
+```bash
+cd /srv/hidromont
+systemctl stop hidromont
+
+# 1. La base. Guarda antes la actual, por si hay que volver.
+mkdir -p cms/data/backups/restauracion-$(date +%F)
+cp -p cms/data/hidromont-cms.sqlite* cms/data/backups/restauracion-$(date +%F)/
+cp cms/data/backups/hidromont-cms-<fecha>.sqlite cms/data/hidromont-cms.sqlite
+rm -f cms/data/hidromont-cms.sqlite-wal cms/data/hidromont-cms.sqlite-shm
+
+# 2. Los medios: solo si también se perdieron. Vienen del respaldo del VPS.
+#    ls uploads/cms | wc -l   debe dar del orden de 1.800 archivos
+
+# 3. Regenerar el sitio desde la base restaurada y arrancar.
+npm run cms:export && npm run build:log
+systemctl start hidromont
+```
+
+Comprueba después:
+
+- `curl -s http://127.0.0.1:8787/api/cms/health` responde `"ok":true`;
+- la portada responde 200;
+- en el editor, «Publicar cambios» no lista cambios inesperados;
+- un par de fotos de `/galeria/` cargan.
+
+Los respaldos de `cms:backup` no llevan sesiones: tras restaurar, hay que volver
+a entrar al panel.
+
+### Avisos si algo falla
+
+El proceso no avisa a nadie por sí solo. Mínimo recomendado:
+
+- **Monitor de disponibilidad externo** (UptimeRobot, Better Stack o
+  healthchecks.io; todos tienen un plan gratuito), cada 5 minutos, sobre:
+  - `https://hidromontchile.cl/`, que debe responder 200;
+  - `https://editor.hidromontchile.cl/api/cms/health`, que debe contener `"ok":true`.
+
+  Con aviso por correo al administrador.
+
+- **`SENTRY_DSN`** en el `.env`: los fallos del servidor (una publicación que
+  no compila, un error inesperado de la API) llegan como alerta. Los errores
+  que el panel ya explica a quien edita no se envían.
 
 ---
 

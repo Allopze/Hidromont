@@ -100,11 +100,13 @@ export async function registerCmsRoutes(app: FastifyInstance): Promise<void> {
       rateLimitRepository.cleanup();
       undoService.purgeExpiredSnapshots();
       userRepository.deleteExpiredSessions(new Date().toISOString());
+      publishJobRepository.prune();
     },
     5 * 60 * 1000
   );
   cleanupTimer.unref();
   userRepository.deleteExpiredSessions(new Date().toISOString());
+  publishJobRepository.prune();
 
   // A1-009: jobs de publicación que quedaron en 'running' por un fallo del
   // proceso. P2-05 (auditoría 2026-09): el cerrojo de publicación vive en este
