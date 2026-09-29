@@ -259,6 +259,20 @@ describe('P2-04: errores con su estado y un motivo en palabras', () => {
     expect(datos.mensajeUsuario).toMatch(/orden/);
     expect(datos.extra).toEqual({ job: 'job-1' });
 
+    // B-02: con la salida real de Astro 7, el mensaje nombra la ficha o, si el
+    // archivo no es de ninguna, dice que no se arregla desde el panel.
+    const salidaAstro = Object.assign(new Error('Command failed'), {
+      stdout:
+        '[InvalidContentEntryDataError] proyectos → zz-roto data does not match collection schema.\n\n  categoria: Invalid option: expected one of "tuberias"|"compuertas"\n\n  Hint:',
+    });
+    const conFicha = explicarFalloDePublicacion(salidaAstro, 'job-3', () => 'C.H. Prueba');
+    expect(conFicha.mensajeUsuario).toMatch(/La ficha «C\.H\. Prueba» tiene un dato/);
+    expect(conFicha.mensajeUsuario).toMatch(/categoria: Invalid option/);
+    const ajeno = explicarFalloDePublicacion(salidaAstro, 'job-4', () => null);
+    expect(ajeno.mensajeUsuario).toMatch(
+      /src\/content\/proyectos\/zz-roto\.md no pertenece al CMS/
+    );
+
     const ocupado = explicarFalloDePublicacion(
       Object.assign(new Error('x'), { stdout: '# Ya hay otro build en curso (ver .build.lock)' }),
       'job-2'

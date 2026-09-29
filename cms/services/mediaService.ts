@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
 import type { ContentRepository } from '../repositories/ContentRepository';
 import type { MediaRepository } from '../repositories/MediaRepository';
+import { ErrorDeUsuario } from '../utils/errorDeUsuario';
 
 const allowedMime = new Set([
   'image/jpeg',
@@ -257,16 +258,33 @@ export class MediaService {
     let metadata: { width?: number; height?: number } | undefined;
 
     if (esVideo(mime)) {
+      // M-01 (auditoría 2026-09-28): estos rechazos son del archivo, no del
+      // servidor. Como Error a secas llegaban al panel como 500 «Inténtalo de
+      // nuevo», y reintentar no arregla nada.
       if (!esVideoReal(buffer, mime))
-        throw new Error('El archivo no es un video válido (MP4 o WebM).');
+        throw new ErrorDeUsuario(
+          400,
+          'El archivo no es un video válido. Sube un video MP4 o WebM que se reproduzca en tu equipo.'
+        );
     } else if (mime === 'image/svg+xml') {
       const problema = problemaDeSvg(buffer.toString('utf8'));
-      if (problema) throw new Error(problema);
+      if (problema)
+        throw new ErrorDeUsuario(
+          400,
+          `${problema} Expórtalo de nuevo sin scripts ni enlaces externos, o súbelo como PNG.`
+        );
       // Se dibuja a PNG con fondo transparente: así se guarda y así se sirve.
-      buffer = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS, density: 300 })
-        .resize(LADO_SVG, LADO_SVG, { fit: 'inside', withoutEnlargement: false })
-        .png()
-        .toBuffer();
+      try {
+        buffer = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS, density: 300 })
+          .resize(LADO_SVG, LADO_SVG, { fit: 'inside', withoutEnlargement: false })
+          .png()
+          .toBuffer();
+      } catch {
+        throw new ErrorDeUsuario(
+          400,
+          'No se pudo dibujar este SVG: puede estar dañado. Prueba a exportarlo de nuevo o súbelo como PNG.'
+        );
+      }
       mime = 'image/png';
       filename = `${path.basename(filename, path.extname(filename))}.png`;
       const meta = await sharp(buffer).metadata();
@@ -305,10 +323,20 @@ export class MediaService {
         limitInputPixels: MAX_INPUT_PIXELS,
         animated: meta.format === 'webp',
       }).rotate();
-      if (meta.format === 'jpeg')
-        buffer = await lienzo.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
-      else if (meta.format === 'png') buffer = await lienzo.png({ compressionLevel: 9 }).toBuffer();
-      else if (meta.format === 'webp') buffer = await lienzo.webp({ quality: 90 }).toBuffer();
+      // Un JPEG cortado a medias trae una cabecera válida (pasa `metadata()`) y
+      // falla al decodificarlo entero: es el archivo, no el servidor.
+      try {
+        if (meta.format === 'jpeg')
+          buffer = await lienzo.jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+        else if (meta.format === 'png')
+          buffer = await lienzo.png({ compressionLevel: 9 }).toBuffer();
+        else if (meta.format === 'webp') buffer = await lienzo.webp({ quality: 90 }).toBuffer();
+      } catch {
+        throw new ErrorDeUsuario(
+          400,
+          'La foto está dañada o incompleta (quizás no terminó de copiarse). Ábrela en tu equipo para comprobarla y vuelve a subirla.'
+        );
+      }
       metadata = await sharp(buffer, { limitInputPixels: MAX_INPUT_PIXELS }).metadata();
     }
 

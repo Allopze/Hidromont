@@ -79,6 +79,37 @@ describe('resumirCambios', () => {
     expect(cambio.entryId).toBeUndefined();
   });
 
+  it('B-04: sigue con su nombre después de caducar el deshacer (a los ~12 s)', async () => {
+    const ctx = await createTestApp();
+    try {
+      const audit = new AuditRepository(ctx.db);
+      const id = audit.log({
+        action: 'entry.delete',
+        entityType: 'entry',
+        entityId: 'proyectos.antiguo',
+        data: { undo: { etiqueta: 'la entrada «Presa Antigua»', snapshot: { grande: true } } },
+      })!;
+      expect(audit.clearUndo(id)).toBe(true);
+      const guardado = audit.find(id);
+      expect((guardado?.data as { undo?: unknown }).undo).toBeUndefined();
+
+      const [cambio] = resumirCambios(
+        [
+          evento({
+            action: 'entry.delete',
+            entityId: 'proyectos.antiguo',
+            data: guardado?.data as Record<string, unknown>,
+          }),
+        ],
+        nombres
+      );
+      expect(cambio.titulo).toBe('Presa Antigua');
+    } finally {
+      await ctx.app.close();
+      ctx.cleanup();
+    }
+  });
+
   it('una entrada creada y borrada antes de publicar no cuenta', () => {
     const cambios = resumirCambios(
       [

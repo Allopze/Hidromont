@@ -12,6 +12,7 @@ import { ensureSession } from './auth';
 import { registerEvents } from './events';
 import { registrarChip } from './chip';
 import { mountMobileMenu } from '../mobile-menu';
+import { retomarPublicacionEnCurso } from './publish';
 
 export function mount() {
   registerEvents();
@@ -24,7 +25,12 @@ export function mount() {
   // Marca de «editor listo» (eventos registrados). Antes de esto, pulsar un
   // texto que está dentro de un enlace navega en vez de abrir el editor; las
   // pruebas e2e la esperan para no depender de la velocidad de carga.
-  ensureSession().finally(() => {
-    document.body.dataset.cmsListo = '1';
-  });
+  ensureSession()
+    .then((conSesion) => {
+      // M-02: una publicación que sigue en marcha tras recargar se enseña.
+      if (conSesion) void retomarPublicacionEnCurso();
+    })
+    .finally(() => {
+      document.body.dataset.cmsListo = '1';
+    });
 }
