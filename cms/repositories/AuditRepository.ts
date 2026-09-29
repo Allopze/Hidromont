@@ -91,6 +91,11 @@ export class AuditRepository {
     if (!row?.data_json) return false;
     const data = JSON.parse(row.data_json) as Record<string, unknown>;
     if (!data.undo) return false;
+    // B-04 (auditoría 2026-09-28): la etiqueta («la entrada «Título»») es lo
+    // único que nombra una ficha ya borrada en «Publicar cambios». Se conserva;
+    // lo que caduca es la copia para deshacer.
+    const etiqueta = (data.undo as { etiqueta?: unknown }).etiqueta;
+    if (typeof etiqueta === 'string' && data.etiqueta === undefined) data.etiqueta = etiqueta;
     delete data.undo;
     const restante = Object.keys(data).length ? JSON.stringify(data) : null;
     this.db.prepare('UPDATE audit_events SET data_json = ? WHERE id = ?').run(restante, id);

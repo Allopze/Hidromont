@@ -155,7 +155,8 @@ export function resumirCambios(eventos: EventoDeCambio[], nombres: Nombres): Cam
       cambio.borrada = true;
       // El aviso de deshacer guarda «la entrada «Título»»: sirve para
       // nombrar una entrada que ya no existe.
-      const etiqueta = (e.data?.undo as { etiqueta?: unknown } | undefined)?.etiqueta;
+      const etiqueta =
+        (e.data?.undo as { etiqueta?: unknown } | undefined)?.etiqueta ?? e.data?.etiqueta;
       const nombre = typeof etiqueta === 'string' ? /«(.+)»/.exec(etiqueta)?.[1] : undefined;
       if (!info && nombre) cambio.titulo = nombre;
     }

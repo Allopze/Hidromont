@@ -182,6 +182,11 @@ export async function createTestApp(): Promise<TestApp> {
   app.get('/api/cms/media', { preHandler: [requireAuth(authService)] }, (req, reply) =>
     mediaController.list(req, reply)
   );
+  app.post(
+    '/api/cms/media',
+    { preHandler: [requireAuth(authService), requireCsrf()] },
+    (req, reply) => mediaController.upload(req, reply)
+  );
   app.patch(
     '/api/cms/media/:id',
     { preHandler: [requireAuth(authService), requireCsrf()] },

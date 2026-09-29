@@ -220,6 +220,14 @@ export class ExportService {
     return x === 0.5 && y === 0.5 ? undefined : { x, y };
   }
 
+  /** B-02: el título de la ficha que exporta `src/content/<coleccion>/<slug>.md`. */
+  tituloDeFicha(coleccion: string, slug: string): string | null {
+    const kind =
+      coleccion === 'proyectos' ? 'proyecto' : coleccion === 'servicios' ? 'servicio' : null;
+    if (!kind) return null;
+    return this.contentRepository.findCollectionEntryBySlug(kind, slug, 'es-CL')?.title ?? null;
+  }
+
   async exportContent(): Promise<{
     files: string[];
     removed: string[];

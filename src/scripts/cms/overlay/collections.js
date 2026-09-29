@@ -362,7 +362,7 @@ export async function showEntryForm(entryId = null, kind = activeCollectionKind)
 
   openPanel(
     `
-    <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-kind="${escapeHtml(kind)}">
+    <form class="hm-cms-entry-form" data-entry-form data-entry-id="${escapeHtml(entryId || '')}" data-entry-version="${escapeHtml(String(entry?.version ?? ''))}" data-kind="${escapeHtml(kind)}">
       ${
         // Un solo título: el que muestra el sitio. El de la entrada es el
         // nombre en la lista del panel y lo sigue en silencio (events.js).
@@ -554,23 +554,46 @@ export async function saveEntryForm(form) {
         return;
       }
 
+      // M-05 (auditoría 2026-09-28): la ficha se guardaba sin control de
+      // versión, así que si otra pestaña u otra persona la había cambiado
+      // desde que se abrió, lo suyo se pisaba en silencio. Antes de escribir
+      // nada se comprueba que sigue en la versión con que se abrió; después,
+      // cada campo viaja con la versión que devolvió el anterior.
+      let version = Number(form.dataset.entryVersion) || undefined;
+      if (version !== undefined) {
+        const actual = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
+        if (actual?.version !== version) {
+          throw Object.assign(
+            new Error(
+              'Esta ficha cambió desde que la abriste (en otra pestaña o por otra persona). No se guardó nada para no pisar esos cambios. Lo que escribiste queda como borrador: vuelve a abrir la ficha para ver la versión actual y recuperarlo.'
+            ),
+            { conflicto: true }
+          );
+        }
+      }
+
       if (meta.some(cambio)) {
         await api(`/api/cms/entries/${encodeURIComponent(entryId)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, slug, status: entryStatus }),
         });
+        // Cambiar la dirección también mueve la foto y la galería de la ficha:
+        // la versión se relee en vez de suponerla.
+        if (version !== undefined) {
+          const releida = await api(`/api/cms/entries/${encodeURIComponent(entryId)}`);
+          if (typeof releida?.version === 'number') version = releida.version;
+        }
         meta.forEach(marcarGuardado);
         // Los metadatos ya quedaron guardados aunque un PATCH de campo
         // posterior falle: la barra no debe seguir diciendo «publicado».
         setGlobalState('unsaved');
       }
 
-      // A-3: secuencial y SIN `expectedVersion`, a diferencia de saveEdit.
-      // Cada PATCH incrementa la versión de la misma entrada, así que en
-      // paralelo y con control de concurrencia estos guardados se
-      // conflictuarían entre sí. En serie el orden es además determinista.
-      // El bucle ya sabe cuántos campos va a mandar, así que puede decirlo.
+      // A-3: secuencial. Cada PATCH incrementa la versión de la misma
+      // entrada, así que en paralelo se conflictuarían entre sí; en serie,
+      // cada uno manda la versión que dejó el anterior (M-05). El bucle ya
+      // sabe cuántos campos va a mandar, así que puede decirlo.
       let hechos = 0;
 
       for (const [name, input] of campos) {
@@ -589,26 +612,32 @@ export async function saveEntryForm(form) {
           }
         }
         try {
-          await api(
+          const tras = await api(
             `/api/cms/entries/${encodeURIComponent(entryId)}/fields/${encodeURIComponent(key)}`,
             {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ value }),
+              body: JSON.stringify({ value, expectedVersion: version }),
             }
           );
+          if (typeof tras?.version === 'number') version = tras.version;
         } catch (error) {
           // El servidor nombra la clave («orden»); quien edita ve el rótulo
           // («Orden de aparición»). Se dice cuál falló y cuántos sí entraron.
           const rotulo = rotuloDeCampo(input, key);
-          throw new Error(
-            `No se pudo guardar «${rotulo}»: ${error.message}${hechos ? ` (los ${hechos} campos anteriores sí se guardaron)` : ''}`
+          throw Object.assign(
+            new Error(
+              `No se pudo guardar «${rotulo}»: ${error.message}${hechos ? ` (los ${hechos} campos anteriores sí se guardaron)` : ''}`
+            ),
+            { status: error.status }
           );
         }
         marcarGuardado(input);
         hechos += 1;
         if (status) status.textContent = `Guardando campo ${hechos} de ${campos.length}...`;
       }
+      // El siguiente «Guardar» de esta misma ficha parte de lo recién escrito.
+      if (version !== undefined) form.dataset.entryVersion = String(version);
     }
 
     if (status) status.textContent = mensajeGuardado();
@@ -620,6 +649,10 @@ export async function saveEntryForm(form) {
     setFormDirty(false);
   } catch (error) {
     if (status)
-      status.innerHTML = `<span class="hm-cms-error" role="alert">${escapeHtml(error.message)}</span>`;
+      status.innerHTML = `<span class="hm-cms-error" role="alert">${escapeHtml(error.message)}</span>${
+        error?.conflicto || error?.status === 409
+          ? ` <button type="button" class="secondary small" data-action="edit-entry" data-entry-id="${escapeHtml(entryId)}">Volver a abrir la ficha</button>`
+          : ''
+      }`;
   }
 }

@@ -19,7 +19,7 @@ import { openPanel, setPanelTitle } from './panel';
 import { ensureSession } from './auth';
 import { entornoDePublicacion } from './entorno';
 import { icon } from './icons';
-import { setGlobalState } from './shell';
+import { marcarPublicando, setGlobalState } from './shell';
 import { duracion, haceCuanto, reloj } from './tiempo';
 import { limpiarMarcasSinPublicar, refrescarPendientes } from './pendientes';
 
@@ -203,51 +203,92 @@ function detallesTecnicos(job) {
     </details>`;
 }
 
-/** Pasos 2 y 3: publicar con avance visible y enseñar el resultado. */
-export async function publicar() {
-  if (publicando || !(await ensureSession())) return;
-  publicando = true;
-  const inicio = Date.now();
-
+/**
+ * El avance: reloj, aviso de no cerrar y panel bloqueado. Devuelve la función
+ * que detiene el reloj.
+ */
+function pintarAvance(titulo, texto, inicio) {
   setPanelTitle('Publicando…');
   openPanel(
     `
-    <div class="hm-cms-progress" data-busy="true">
+    <div class="hm-cms-progress" data-busy="true" data-publish-progress>
       <span class="hm-cms-spinner hm-cms-spinner-lg" aria-hidden="true"></span>
       <div role="status" aria-live="polite">
-        <p><strong>Publicando los cambios…</strong></p>
-        <p class="hm-cms-hint">Se preparan los archivos y se actualiza el sitio. Suele tardar unos minutos: no cierres esta pestaña.</p>
+        <p><strong>${escapeHtml(titulo)}</strong></p>
+        <p class="hm-cms-hint">${escapeHtml(texto)}</p>
       </div>
-      <p class="hm-cms-progress-clock" data-publish-clock aria-hidden="true">0:00</p>
+      <p class="hm-cms-progress-clock" data-publish-clock aria-hidden="true">${escapeHtml(reloj(Date.now() - inicio))}</p>
     </div>
   `,
     { autofocus: 'panel' }
   );
-  const marcador = () => document.querySelector('[data-publish-clock]');
   const tic = setInterval(() => {
-    const el = marcador();
+    const el = document.querySelector('[data-publish-clock]');
     if (el) el.textContent = reloj(Date.now() - inicio);
   }, 1000);
+  return () => clearInterval(tic);
+}
 
-  let result = null;
-  let error = null;
-  try {
-    result = await api('/api/cms/publish', { method: 'POST' });
-  } catch (e) {
-    error = e;
-  } finally {
-    clearInterval(tic);
-    publicando = false;
+/** La publicación más reciente del historial, o null. */
+async function ultimaPublicacion() {
+  const { items = [] } = await api('/api/cms/publish/jobs');
+  return items.find((j) => j.action === 'publish') || null;
+}
+
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+/** Cada cuánto se pregunta por el trabajo mientras se espera. */
+const INTERVALO_DE_SONDEO = 3000;
+
+/**
+ * M-02 (auditoría 2026-09-28): el resultado real de una publicación cuya
+ * respuesta no llegó. La compilación sigue en el servidor aunque la conexión se
+ * corte, así que se consulta el historial hasta que no quede ninguna en curso.
+ *
+ * `previo` es el id de la última publicación antes de pulsar: si al terminar la
+ * más reciente sigue siendo esa, la nuestra no llegó a empezar y se devuelve
+ * null. Con `laEnCurso`, se espera a esa (la que ya estaba en marcha).
+ */
+async function esperarPublicacion({ previo = null, laEnCurso = null } = {}) {
+  const limite = Date.now() + 20 * 60 * 1000;
+  let fallosSeguidos = 0;
+  while (Date.now() < limite) {
+    await espera(INTERVALO_DE_SONDEO);
+    let publicaciones;
+    try {
+      const { items = [] } = await api('/api/cms/publish/jobs');
+      publicaciones = items.filter((j) => j.action === 'publish');
+      fallosSeguidos = 0;
+    } catch {
+      // Sin conexión todavía: se sigue esperando, pero no para siempre.
+      if (++fallosSeguidos >= 40) return null;
+      continue;
+    }
+    if (laEnCurso) {
+      const esa = publicaciones.find((j) => j.id === laEnCurso);
+      if (!esa) return null;
+      if (esa.status !== 'running') return esa;
+      continue;
+    }
+    const ultima = publicaciones[0];
+    if (!ultima || ultima.status === 'running') continue;
+    return ultima.id === previo ? null : ultima;
   }
+  return null;
+}
 
+/** «⚠» en el registro: lo que el export omitió o avisó (ver noticeLines). */
+const conAvisosEnRegistro = (job) => (job?.logs || []).some((l) => l.startsWith('⚠'));
+
+function mostrarResultado({ result, error, inicio, recuperado = false }) {
   const tardo = duracion(Date.now() - inicio);
   const job = result?.job;
   const bien = !error && job?.status === 'succeeded';
   if (bien) limpiarMarcasSinPublicar();
-  const conOmisiones =
-    (result?.exported?.skipped || []).length > 0 ||
-    (result?.exported?.revertedToFallback || []).length > 0 ||
-    (result?.exported?.missingFiles || []).length > 0;
+  const conOmisiones = result?.exported
+    ? (result.exported.skipped || []).length > 0 ||
+      (result.exported.revertedToFallback || []).length > 0 ||
+      (result.exported.missingFiles || []).length > 0
+    : conAvisosEnRegistro(job);
 
   setPanelTitle(bien ? 'Publicación terminada' : 'No se pudo publicar');
   openPanel(`
@@ -261,9 +302,14 @@ export async function publicar() {
                 <h3>No se pudo publicar</h3>
                 <p>El sitio sigue mostrando la versión anterior y no se perdió nada de lo guardado. Puedes intentarlo otra vez; si vuelve a fallar, avisa a quien administra el CMS.</p>
                 ${error ? `<p class="hm-cms-hint">${escapeHtml(error.message)}</p>` : ''}
-                ${error?.job ? `<p class="hm-cms-muted">Identificador para soporte: <code>${escapeHtml(error.job)}</code></p>` : ''}
+                ${error?.job || (!error && job) ? `<p class="hm-cms-muted">Identificador para soporte: <code>${escapeHtml(error?.job || job.id)}</code></p>` : ''}
               </div>
             </div>`
+      }
+      ${
+        recuperado && bien && conOmisiones
+          ? `<div class="hm-cms-notice is-warn">${icon('alert')}<p>Hubo avisos durante la publicación. Están en «Detalles técnicos».</p></div>`
+          : ''
       }
       ${exportNoticeMarkup(result?.exported)}
       ${detallesTecnicos(job)}
@@ -298,6 +344,115 @@ export async function publicar() {
   // Tras un fallo no se recuenta: los pendientes son los mismos que antes y el
   // aviso de error tiene que seguir a la vista aunque se cierre el panel.
   if (bien) refrescarPendientes();
+}
+
+/** ¿La respuesta se perdió por el camino (y la publicación puede seguir)? */
+const seCortoLaConexion = (e) => [0, 502, 503, 504].includes(Number(e?.status));
+const otraEnCurso = (e) =>
+  Number(e?.status) === 409 && /en curso|compilando/i.test(e?.message || '');
+
+/** Pasos 2 y 3: publicar con avance visible y enseñar el resultado. */
+export async function publicar() {
+  if (publicando || !(await ensureSession())) return;
+  publicando = true;
+  marcarPublicando(true);
+  const inicio = Date.now();
+  let detener = pintarAvance(
+    'Publicando los cambios…',
+    'Se preparan los archivos y se actualiza el sitio. Suele tardar unos minutos: no cierres esta pestaña.',
+    inicio
+  );
+
+  let result = null;
+  let error = null;
+  let recuperado = false;
+  try {
+    // Con qué publicación terminaba el historial antes de pulsar: sirve para
+    // reconocer la nuestra si la respuesta no llega.
+    const previo = await ultimaPublicacion()
+      .then((j) => j?.id ?? null)
+      .catch(() => undefined);
+    try {
+      result = await api('/api/cms/publish', { method: 'POST' });
+    } catch (e) {
+      error = e;
+    }
+    if (error && (seCortoLaConexion(error) || otraEnCurso(error)) && previo !== undefined) {
+      const ajena = otraEnCurso(error);
+      detener();
+      detener = pintarAvance(
+        ajena ? 'Ya había una publicación en marcha…' : 'Se perdió la conexión con el servidor',
+        ajena
+          ? 'Se espera a que termine para enseñarte el resultado. Después revisa si quedan cambios por publicar.'
+          : 'La publicación sigue en el servidor. Comprobando si terminó… no cierres esta pestaña.',
+        inicio
+      );
+      const ultima = ajena
+        ? await ultimaPublicacion()
+            .then((j) => (j?.status === 'running' ? esperarPublicacion({ laEnCurso: j.id }) : j))
+            .catch(() => null)
+        : await esperarPublicacion({ previo });
+      if (ultima) {
+        result = { job: ultima };
+        error =
+          ultima.status === 'succeeded'
+            ? null
+            : Object.assign(new Error('La compilación del sitio falló. Mira «Ver historial».'), {
+                job: ultima.id,
+              });
+        recuperado = true;
+      }
+    }
+  } finally {
+    detener();
+    publicando = false;
+    marcarPublicando(false);
+  }
+  mostrarResultado({ result, error, inicio, recuperado });
+}
+
+/**
+ * M-02: al abrir el editor con una publicación todavía en marcha (se recargó
+ * la página o se cerró la pestaña mientras compilaba), se enseña su avance y,
+ * al terminar, su resultado; antes el panel no sabía nada y «Publicar» daba 409.
+ */
+export async function retomarPublicacionEnCurso() {
+  if (publicando) return;
+  let ultima;
+  try {
+    ultima = await ultimaPublicacion();
+  } catch {
+    return;
+  }
+  if (ultima?.status !== 'running') return;
+  publicando = true;
+  marcarPublicando(true);
+  const inicio = new Date(ultima.createdAt).getTime() || Date.now();
+  const detener = pintarAvance(
+    'Hay una publicación en marcha…',
+    'Empezó antes de abrir esta página. Se enseñará el resultado al terminar: no cierres esta pestaña.',
+    inicio
+  );
+  let terminada = null;
+  try {
+    terminada = await esperarPublicacion({ laEnCurso: ultima.id });
+  } finally {
+    detener();
+    publicando = false;
+    marcarPublicando(false);
+  }
+  if (!terminada) return;
+  mostrarResultado({
+    result: { job: terminada },
+    error:
+      terminada.status === 'succeeded'
+        ? null
+        : Object.assign(new Error('La compilación del sitio falló. Mira «Ver historial».'), {
+            job: terminada.id,
+          }),
+    inicio,
+    recuperado: true,
+  });
 }
 
 const ESTADOS_DE_TRABAJO = {

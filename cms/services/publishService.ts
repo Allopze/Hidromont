@@ -79,7 +79,11 @@ interface ExecFailure extends Error {
  * a algo que la persona editora pueda entender o contar a soporte, y siempre
  * viaja el identificador del job.
  */
-export function explicarFalloDePublicacion(error: unknown, jobId: string): ErrorDeUsuario {
+export function explicarFalloDePublicacion(
+  error: unknown,
+  jobId: string,
+  tituloDeFicha?: (coleccion: string, slug: string) => string | null
+): ErrorDeUsuario {
   const mensaje = error instanceof Error ? error.message : String(error);
   const salida = [
     (error as ExecFailure)?.stdout ?? '',
@@ -101,13 +105,33 @@ export function explicarFalloDePublicacion(error: unknown, jobId: string): Error
   const datoInvalido =
     /InvalidContentEntryDataError[^\n]*|data does not match collection schema[^\n]*/.exec(salida);
   if (datoInvalido) {
-    const detalle = salida
-      .split('\n')
-      .map((l) => l.trim())
-      .find((l) => /\*\*[a-z]+\*\*|Expected|Required/i.test(l));
+    const lineas = salida.split('\n').map((l) => l.trim());
+    // Astro imprime «proyectos → <slug> data does not match…» y, en la línea
+    // siguiente con texto, el campo y el motivo («categoria: Invalid option…»).
+    const i = lineas.findIndex((l) => /data does not match collection schema/.test(l));
+    const detalle =
+      (i >= 0 ? lineas.slice(i + 1).find(Boolean) : undefined) ??
+      lineas.find((l) => /\*\*[a-z]+\*\*|Expected|Required/i.test(l));
+    const motivo = detalle ? ` (${detalle.replace(/\*\*/g, '')})` : '';
+    // B-02 (auditoría 2026-09-28): el mensaje no decía qué ficha era, y un
+    // archivo que el CMS no conoce bloqueaba toda publicación sin que quien
+    // edita pudiera hacer nada.
+    const cual = /(proyectos|servicios)\s*→\s*([a-z0-9-]+)\s+data does not match/.exec(salida);
+    if (cual && tituloDeFicha) {
+      const [, coleccion, slug] = cual;
+      const titulo = tituloDeFicha(coleccion, slug);
+      return new ErrorDeUsuario(
+        422,
+        titulo
+          ? `La ficha «${titulo}» tiene un dato que el sitio no acepta${motivo}. Corrígelo y vuelve a publicar.`
+          : `El archivo src/content/${coleccion}/${slug}.md no pertenece al CMS y tiene un dato que el sitio no acepta${motivo}. No se puede arreglar desde el panel: avisa a quien administra el sitio para corregirlo o quitarlo del servidor.`,
+        extra,
+        mensaje
+      );
+    }
     return new ErrorDeUsuario(
       422,
-      `Una ficha tiene un dato que el sitio no acepta${detalle ? ` (${detalle.replace(/\*\*/g, '')})` : ''}. Corrígelo y vuelve a publicar.`,
+      `Una ficha tiene un dato que el sitio no acepta${cual ? ` (${cual[1]}/${cual[2]})` : ''}${motivo}. Corrígelo y vuelve a publicar.`,
       extra,
       mensaje
     );
@@ -308,7 +332,9 @@ export class PublishService {
         };
       } catch (error) {
         const completed = this.failJob(job, error);
-        throw explicarFalloDePublicacion(error, completed.id);
+        throw explicarFalloDePublicacion(error, completed.id, (coleccion, slug) =>
+          this.exportService.tituloDeFicha(coleccion, slug)
+        );
       }
     } finally {
       this.busy = false;

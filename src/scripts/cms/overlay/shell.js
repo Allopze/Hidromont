@@ -191,8 +191,18 @@ export function setFormDirty(value) {
   if (indicator) indicator.classList.toggle('visible', value);
 }
 
+/**
+ * M-02 (auditoría 2026-09-28): cerrar la pestaña a mitad de una publicación no
+ * la detiene, pero deja a quien edita sin saber cómo terminó. El navegador lo
+ * avisa igual que con un formulario sin guardar.
+ */
+let publicandoAhora = false;
+export function marcarPublicando(value) {
+  publicandoAhora = value;
+}
+
 window.addEventListener('beforeunload', (event) => {
-  if (isFormDirty) {
+  if (isFormDirty || publicandoAhora) {
     event.preventDefault();
   }
 });
