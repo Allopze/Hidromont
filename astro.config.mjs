@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { unified } from '@astrojs/markdown-remark';
 import rehypeSinHtml from './src/utils/rehypeSinHtml.mjs';
 import rehypeDiametros from './src/utils/rehypeDiametros.mjs';
 import enlacesConBarra from './src/utils/enlacesConBarra.mjs';
@@ -22,7 +23,11 @@ export default defineConfig({
   ],
   // P2-02: el cuerpo de las fichas no publica HTML crudo (ver el plugin).
   // P3-09: y la misma notación de DN y Ø que el resto de la ficha.
-  markdown: { rehypePlugins: [rehypeSinHtml, rehypeDiametros] },
+  // Astro 7 deja obsoleto `markdown.rehypePlugins`: los plugins van en el
+  // procesador. Si una versión futura dejara de leer la forma antigua, el HTML
+  // de las fichas volvería a publicarse sin avisar; `src/test/markdown-sin-html`
+  // lo comprueba contra esta misma configuración.
+  markdown: { processor: unified({ rehypePlugins: [rehypeSinHtml, rehypeDiametros] }) },
   // La barra de desarrollo de Astro se pinta abajo al centro, encima de la
   // barra del CMS, y en las pruebas E2E intercepta los clics de sus botones.
   // Playwright la apaga con ASTRO_DEV_TOOLBAR=0; en `npm run dev` sigue igual.
