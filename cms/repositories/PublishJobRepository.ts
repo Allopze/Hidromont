@@ -17,6 +17,10 @@ interface StoredLogs {
   lines?: string[];
 }
 
+const MAX_LINEAS_INICIO = 40;
+const MAX_LINEAS_FINAL = 200;
+const MAX_LARGO_LINEA = 500;
+
 export class PublishJobRepository {
   constructor(private readonly db: Database.Database) {}
 
@@ -121,8 +125,45 @@ export class PublishJobRepository {
     return row ? this.fromRow(row) : undefined;
   }
 
+  /**
+   * M-07 (auditoría 2026-09-28): los trabajos no se borraban nunca. Se quitan
+   * los terminados hace más de `dias`, salvo la última publicación correcta:
+   * `PendingService` cuenta los cambios pendientes desde ella.
+   */
+  prune(dias = 90, now = Date.now()): number {
+    const corte = new Date(now - dias * 24 * 60 * 60 * 1000).toISOString();
+    return this.db
+      .prepare(
+        `DELETE FROM publish_jobs
+          WHERE status != 'running'
+            AND COALESCE(completed_at, updated_at) < ?
+            AND id NOT IN (
+              SELECT id FROM publish_jobs
+               WHERE action = 'publish' AND status = 'succeeded' AND completed_at IS NOT NULL
+               ORDER BY completed_at DESC LIMIT 1
+            )`
+      )
+      .run(corte).changes;
+  }
+
+  /**
+   * M-07: la salida del build llegaba entera, con líneas de JavaScript
+   * minificado de miles de caracteres (hasta 112 KB por trabajo). Se guardan
+   * el principio y el final, que es donde están el resumen y el error, y cada
+   * línea se corta a un largo legible.
+   */
   private serializeLogs(lines: string[]): string {
-    return JSON.stringify(lines);
+    const corta = (l: string) =>
+      l.length > MAX_LARGO_LINEA ? `${l.slice(0, MAX_LARGO_LINEA)}… (recortada)` : l;
+    const recortadas =
+      lines.length > MAX_LINEAS_INICIO + MAX_LINEAS_FINAL
+        ? [
+            ...lines.slice(0, MAX_LINEAS_INICIO),
+            `… ${lines.length - MAX_LINEAS_INICIO - MAX_LINEAS_FINAL} línea(s) omitida(s) …`,
+            ...lines.slice(-MAX_LINEAS_FINAL),
+          ]
+        : lines;
+    return JSON.stringify(recortadas.map(corta));
   }
 
   private fromRow(row: PublishJobRow): PublishJob {
