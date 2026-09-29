@@ -11,6 +11,7 @@ import { categoriaLabels } from '../../data/categories';
 import { entrySlug } from '../../utils/contentId';
 import { formatDiameters } from '../../utils/format';
 import { getCmsText } from '../../data/cms';
+import { marcaDelEditor } from '../../utils/soloEditor';
 
 interface Props {
   proyecto: CollectionEntry<'proyectos'>;
@@ -40,7 +41,7 @@ const verDetalle = getCmsText('plantilla.tarjetas', 'verDetalle', 'Ver detalle')
 <article
   class="group relative card-lift bg-surface border border-border rounded-none overflow-hidden flex flex-col hover:border-primary hover:shadow-md"
   data-reveal
-  data-cms-tarjeta-enlace
+  {...marcaDelEditor('data-cms-tarjeta-enlace')}
 >
   <!-- Project photo (only for destacado projects that have a curated image) -->
   {

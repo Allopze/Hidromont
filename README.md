@@ -79,7 +79,7 @@ La documentación técnica completa está en [`docs/`](./docs/):
 
 ### 1. Requisitos previos
 
-- Node.js (v18 o superior)
+- Node.js 22.12 o superior (`engines` en `package.json`; el VPS y la CI usan Node 24)
 - NPM
 
 ### 2. Clonar e Instalar dependencias
@@ -164,10 +164,8 @@ Utiliza el usuario y la contraseña entregados por la persona que administra el 
 
 ### Paso 5: Preparar y publicar los cambios
 
-**Exportar** prepara los archivos fuente, pero no compila ni publica el sitio.
-
-1. En el editor, usa **Exportar** o ejecuta `npm run cms:export`. Esto escribe los datos en `src/data/cms-content.json` y actualiza las colecciones Markdown de Astro.
-2. En la barra del CMS, haz clic en **Publicar cambios**. La acción exporta y compila el sitio con el comando configurado en `CMS_PUBLISH_CHECK_COMMAND`.
+1. En la barra del CMS, haz clic en **Publicar cambios**. El panel enseña primero qué cambios van a salir; al confirmar, exporta la base a `src/data/cms-content.json`, `src/data/gallery.json` y las colecciones Markdown, y compila el sitio con el comando de `CMS_PUBLISH_CHECK_COMMAND` (`npm run build:log`).
+2. Sin el panel, `npm run cms:export` hace solo la exportación (la misma reconciliación que el servidor al arrancar), sin compilar.
 3. Si estás en local, esto solo compila esa instalación y aún debes desplegar el resultado para actualizar producción. En `hidromontchile.cl`, el mismo proceso sirve el `dist/` regenerado y el sitio queda actualizado al terminar.
 
 ---
@@ -224,7 +222,7 @@ silencio— los dos scripts inline del sitio.
 | `NODE_ENV`                  | `production`             | Activa los defaults de producción (cookie segura).                                                                                  |
 | `PUBLIC_CONTACT_EMAIL`      | `hidromont@hidromont.cl` | Destinatario del formulario. El fallback del código es el mismo buzón.                                                              |
 | `PUBLIC_CMS_API_BASE`       | (vacío)                  | El overlay habla con el mismo origen que sirve la página.                                                                           |
-| `CMS_PUBLISH_CHECK_COMMAND` | `npm run build`          | Es lo que hace que publicar actualice el sitio servido. `npm run check` solo valida.                                                |
+| `CMS_PUBLISH_CHECK_COMMAND` | `npm run build:log`      | Compila los dos perfiles en `*.nuevo` y solo sustituye `dist/` si terminan bien. `npm run build` no es atómico.                     |
 | `CMS_PUBLISH_TIMEOUT_MS`    | medido en el servidor    | Un build completo tarda bastante más en hosting compartido que en local.                                                            |
 
 > Si en algún momento se vuelve a un hosting puramente estático, compila con
@@ -261,7 +259,7 @@ El CMS cuenta con características de seguridad robustas para evitar problemas d
 
 - **Historial de revisiones (Rollback)**: Cada vez que modificas una entrada, se guarda una versión en SQLite. Desde el panel del overlay, puedes presionar el botón "Revisiones" de cualquier elemento y restaurar versiones anteriores en cualquier momento.
 - **Registro de auditoría**: El sistema registra automáticamente en la base de datos (`audit_events`) acciones críticas como inicios de sesión, cierres de sesión, modificaciones de campos, subidas de archivos y exportaciones.
-- **Validación de archivos subidos**: Restringe la subida únicamente a formatos seguros (`.jpg`, `.jpeg`, `.png`, `.webp`) y verifica la correspondencia entre la extensión y el tipo MIME real del archivo para prevenir ataques de inyección de código.
-- **Límite de intentos de acceso**: Bloqueo temporal persistente de IP después de 10 intentos fallidos de inicio de sesión.
+- **Validación de archivos subidos**: fotos JPEG, PNG y WebP (comprobadas por su contenido real y re-codificadas sin metadatos), SVG revisados y convertidos a PNG, y videos MP4 o WebM. Un archivo rechazado se explica en palabras.
+- **Límite de intentos de acceso**: 10 intentos por minuto y por IP (persistidos en SQLite, con `Retry-After`); pasado el minuto se puede volver a intentar.
 - **Copias de seguridad**: Realiza copias de seguridad de la base de datos con regularidad ejecutando `npm run cms:backup`.
 - **Cabeceras del sitio público**: las pone `cms/security/headers.ts` (CSP con los hashes de los scripts inline del build servido, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` y HSTS). Detalle en [docs/SECURITY.md](docs/SECURITY.md).

@@ -100,11 +100,16 @@ export function problemaDeSvg(texto: string): string | null {
   return null;
 }
 
-function safeFilename(name: string): string {
-  const ext = path.extname(name).toLowerCase();
+export function safeFilename(name: string): string {
+  const extOriginal = path.extname(name);
+  const ext = extOriginal.toLowerCase();
+  // B-07 (auditoría 2026-09-28): «ñandú (1).JPG» quedaba «n-andu-1-jpg-…»:
+  // la extensión en mayúsculas no se recortaba (basename distingue
+  // mayúsculas) y NFKD separaba la tilde de la ñ sin quitarla.
   const base = path
-    .basename(name, ext)
+    .basename(name, extOriginal)
     .normalize('NFKD')
+    .replace(/\p{M}/gu, '')
     .replace(/[^\w-]+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')

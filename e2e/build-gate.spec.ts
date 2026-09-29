@@ -156,6 +156,19 @@ test.describe('Build gate — perfil público (sin CMS)', () => {
     expect(conMarcas).toEqual([]);
   });
 
+  // B-05 (auditoría 2026-09-28): `data-cms-entry` no era el único. Se colaban
+  // `data-cms-tarjeta-enlace`, `data-cms-video-field`, `data-cms-fondo` y
+  // `data-cms-sobre-fondo` (47 en 21 páginas) sin que este gate los viera.
+  test('ningún atributo data-cms-*', () => {
+    const conMarcas = readAll()
+      .map(({ file, content }) => ({ file, marcas: content.match(/\sdata-cms-[a-z-]+/g) ?? [] }))
+      .filter(({ marcas }) => marcas.length > 0)
+      .map(
+        ({ file, marcas }) => `${file}: ${[...new Set(marcas.map((m) => m.trim()))].join(', ')}`
+      );
+    expect(conMarcas).toEqual([]);
+  });
+
   test('ningún marcador __HIDROMONT_CMS__', () => {
     const conMarcas = readAll()
       .filter(({ content }) => content.includes('__HIDROMONT_CMS__'))

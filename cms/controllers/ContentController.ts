@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { resolvePublicAssetPath } from '../config/unifiedConfig';
+import path from 'node:path';
+import { config, resolvePublicAssetPath } from '../config/unifiedConfig';
 import type { ContentService } from '../services/contentService';
 import { ENUM_FIELDS } from '../../src/data/content-vocabulary';
 import {
@@ -29,6 +30,30 @@ export function esCampoObligatorio(kind: string, entryId: string, key: string): 
   if (entryId.endsWith('.hero') && key === 'title') return true;
   if (entryId === 'layout.header' && /^nav[A-Z]/.test(key)) return true;
   return false;
+}
+
+/** B-01: largo máximo por tipo de campo (lo más largo guardado hoy: 131, 333 y 1.968). */
+const LARGO_MAXIMO: Record<string, number> = { text: 300, textarea: 5000, richtext: 50000 };
+const MAXIMO_ELEMENTOS_DE_LISTA = 100;
+
+/**
+ * ¿Es la ruta pública de un archivo que existe dentro de `public/` o de las
+ * subidas? Rechaza direcciones externas, `javascript:`, rutas relativas y
+ * cualquier `..` que salga de esas carpetas.
+ */
+export function esArchivoDelSitio(valor: string): boolean {
+  if (!valor.startsWith('/') || valor.startsWith('//')) return false;
+  if (valor.split(/[\\/]/).includes('..')) return false;
+  const fisica = path.resolve(resolvePublicAssetPath(valor));
+  const raices = [path.join(config.rootDir, 'public'), config.cms.uploadDir].map((r) =>
+    path.resolve(r)
+  );
+  if (!raices.some((r) => fisica.startsWith(`${r}${path.sep}`))) return false;
+  try {
+    return fs.statSync(fisica).isFile();
+  } catch {
+    return false;
+  }
 }
 
 export class ContentController extends BaseController {
@@ -98,16 +123,42 @@ export class ContentController extends BaseController {
       }
       // P3-12: «Ruta del archivo» aceptaba rutas que no existen: se guardaba y,
       // al publicar, la cabecera salía vacía.
+      //
+      // B-01 (auditoría 2026-09-28): solo se comprobaba si la ruta empezaba por
+      // «/», así que una dirección externa, `javascript:…` o una ruta relativa
+      // se guardaban y publicaban una cabecera rota. Ahora solo vale un archivo
+      // del sitio que exista (o vacío, que es quitar la foto).
       if (
         (fieldMeta?.type === 'image' || fieldMeta?.type === 'video') &&
         typeof body.value === 'string' &&
-        body.value.startsWith('/') &&
-        !fs.existsSync(resolvePublicAssetPath(body.value))
+        body.value !== '' &&
+        !esArchivoDelSitio(body.value)
       ) {
         reply.status(400).send({
           error: `No hay ningún archivo en «${body.value}». Elige uno de la biblioteca o súbelo.`,
         });
         return;
+      }
+      // B-01: un rótulo de botón admitía 100.000 caracteres y se publicaba.
+      const tope = typeof body.value === 'string' ? LARGO_MAXIMO[fieldMeta?.type ?? ''] : undefined;
+      if (tope && typeof body.value === 'string' && body.value.length > tope) {
+        reply.status(400).send({
+          error: `«${fieldMeta?.label || params.key}» es demasiado largo: ${body.value.length.toLocaleString('es-CL')} caracteres (máximo ${tope.toLocaleString('es-CL')}).`,
+        });
+        return;
+      }
+      if (fieldMeta?.type === 'list' && Array.isArray(body.value)) {
+        const largo = body.value.find(
+          (v) => typeof v === 'string' && v.length > LARGO_MAXIMO.text
+        ) as string | undefined;
+        if (body.value.length > MAXIMO_ELEMENTOS_DE_LISTA || largo) {
+          reply.status(400).send({
+            error: largo
+              ? `Un elemento de «${fieldMeta.label || params.key}» es demasiado largo (máximo ${LARGO_MAXIMO.text} caracteres).`
+              : `«${fieldMeta.label || params.key}» tiene demasiados elementos (máximo ${MAXIMO_ELEMENTOS_DE_LISTA}).`,
+          });
+          return;
+        }
       }
       // P2-15: los campos que el sitio no puede mostrar vacíos —el título de
       // cada ficha, su descripción, los títulos y textos para buscadores, los
@@ -216,6 +267,30 @@ export class ContentController extends BaseController {
   async createEntry(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const body = createEntrySchema.parse(request.body);
+      // B-01 (auditoría 2026-09-28): los campos que llegan al crear no pasaban
+      // por las reglas de la edición: un proyecto nacía con una categoría que
+      // no existe y el export lo omitía en silencio al publicar.
+      for (const [key, campo] of Object.entries(body.fields ?? {})) {
+        const permitidos =
+          body.kind === 'proyecto' && key === 'servicio'
+            ? this.contentService.serviceOptions().map((o) => o.value)
+            : ENUM_FIELDS[body.kind]?.[key];
+        const valor = campo.value;
+        const vacio = valor === null || valor === undefined || valor === '';
+        if (permitidos && !vacio && !permitidos.includes(String(valor))) {
+          reply.status(400).send({
+            error: `El campo "${key}" debe ser uno de: ${permitidos.join(', ')}`,
+          });
+          return;
+        }
+        const tope = LARGO_MAXIMO[campo.type];
+        if (tope && typeof valor === 'string' && valor.length > tope) {
+          reply.status(400).send({
+            error: `El campo "${key}" es demasiado largo (máximo ${tope.toLocaleString('es-CL')} caracteres).`,
+          });
+          return;
+        }
+      }
       const entry = this.contentService.createEntry({
         ...body,
         fields: body.fields as Record<string, { type: string; value: unknown }> | undefined,
