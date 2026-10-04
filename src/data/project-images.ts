@@ -33,10 +33,10 @@ const projectImageFallbacks: Record<string, ProjectImageData> = {
     height: 259,
   },
   'ch-queltehues': {
-    src: '/fotos/curadas/tuberia-terreno-queltehues.webp',
-    alt: 'Instalación de tubería en terreno',
-    width: 605,
-    height: 310,
+    src: '/fotos/proyectos/ch-queltehues/20160323_144441.webp',
+    alt: 'Grúa telescópica y cuadrilla en la explanada de obra de C.H. Queltehues, en plena cordillera',
+    width: 1600,
+    height: 900,
   },
   'ch-rio-frio': {
     src: '/fotos/curadas/proyecto-tuberia-montana.webp',

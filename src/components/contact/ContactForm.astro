@@ -5,28 +5,16 @@ import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
 
-// A2-005 / A-12: fallback al buzón corporativo, nunca a una cuenta personal.
-// La variable llegó a apuntar a un gmail personal, así que el fallback es la
-// última defensa si el build de producción no la define.
+// M-03 (auditoría 2026-09-28): el formulario postea a /api/contacto, en el
+// mismo dominio. El servidor guarda el buzón de destino y las copias en su
+// `.env` y reenvía a FormSubmit (cms/routes/contactRoutes.ts), así que ningún
+// correo queda en este HTML. Sin JavaScript, el envío nativo termina en
+// /contacto/gracias/; con JavaScript, el script de abajo usa el mismo `action`.
+const accion = '/api/contacto';
+
+// El buzón público que la página de contacto ya muestra a la vista; solo se
+// ofrece aquí si el envío falla. Fallback al corporativo, nunca a uno personal.
 const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL || 'hidromont@hidromont.cl';
-
-// UIUX-L5 fix: the form always POSTs via fetch to the `/ajax/` endpoint and
-// never navigates, so `/contacto/gracias` was unreachable. `action`/`_next`
-// now target the non-ajax endpoint so a no-JS submission redirects there
-// natively; the JS-enabled path below reads `data-ajax-action` instead of
-// `form.action` to keep using the JSON endpoint.
-const ajaxAction = `https://formsubmit.co/ajax/${contactEmail}`;
-const nativeAction = `https://formsubmit.co/${contactEmail}`;
-const nextUrl = new URL('/contacto/gracias', Astro.site).href;
-
-const ccEmails = [
-  import.meta.env.FORMSUBMIT_CC_1,
-  import.meta.env.FORMSUBMIT_CC_2,
-  import.meta.env.FORMSUBMIT_CC_3,
-  import.meta.env.FORMSUBMIT_CC_4,
-]
-  .filter(Boolean)
-  .join(',');
 
 // P2-12 (auditoría 2026-09): las opciones eran una lista aparte en el CMS y
 // faltaban Infraestructuras y Tanques Especiales. Salen de las fichas de
@@ -74,22 +62,12 @@ const validationMessages = {
 };
 ---
 
-<form
-  id="contacto-form"
-  action={nativeAction}
-  method="POST"
-  class="space-y-6"
-  data-ajax-action={ajaxAction}
->
-  <!-- FormSubmit.co config -->
+<form id="contacto-form" action={accion} method="POST" class="space-y-6">
   <input
     type="hidden"
     name="_subject"
     value={getCmsText('contact.form', 'subject', 'Nuevo contacto desde hidromontchile.cl')}
   />
-  <input type="hidden" name="_captcha" value="false" />
-  <input type="hidden" name="_next" value={nextUrl} />
-  {ccEmails && <input type="hidden" name="_cc" value={ccEmails} />}
   <!-- Honeypot anti-spam (FORM-002): campo oculto que los bots rellenan y hace descartar el envío. -->
   <input
     type="text"
@@ -321,7 +299,7 @@ const validationMessages = {
   </span>
   {' '}
   <a
-    href={`mailto:${contactEmail}?subject=${encodeURIComponent('Consulta desde Hidromont.cl')}`}
+    href={`mailto:${contactEmail}?subject=${encodeURIComponent('Consulta desde hidromontchile.cl')}`}
     class="font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error"
   >
     Contactar por correo ({contactEmail})
@@ -419,7 +397,7 @@ const validationMessages = {
       // A2-004: anti-spam ligero del lado del cliente. Limita a 3 envíos por ventana
       // de 5 minutos (persistente en sessionStorage para sobrevivir recargas dentro de
       // la sesión). Es defensa en profundidad junto al honeypot _honey; el rate-limit
-      // server-side real lo provee FormSubmit.co.
+      // límite real por IP lo aplica el servidor en /api/contacto.
       const RATE_LIMIT_MAX = 3;
       const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
       // Store only provider-accepted submissions. Transport failures and
@@ -484,8 +462,7 @@ const validationMessages = {
       submitBtn?.setAttribute('aria-busy', 'true');
 
       try {
-        const ajaxAction =
-          (form as HTMLFormElement).dataset.ajaxAction ?? (form as HTMLFormElement).action;
+        const accion = (form as HTMLFormElement).action;
         // P2-32: sin límite, una respuesta que no llegaba dejaba «Enviando…»
         // para siempre. A los 20 s se corta y se ofrece el correo directo,
         // con lo escrito intacto.
@@ -493,9 +470,13 @@ const validationMessages = {
         const temporizador = window.setTimeout(() => corte.abort(), 20_000);
         let res: Response;
         try {
-          res = await fetch(ajaxAction, {
+          res = await fetch(accion, {
             method: 'POST',
-            body: new FormData(form as HTMLFormElement),
+            // Codificado como formulario, igual que el envío nativo: el
+            // servidor lee un solo formato.
+            body: new URLSearchParams(
+              new FormData(form as HTMLFormElement) as unknown as Record<string, string>
+            ),
             headers: { Accept: 'application/json' },
             signal: corte.signal,
           });

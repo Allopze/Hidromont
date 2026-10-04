@@ -43,15 +43,15 @@ Decisiones del propietario que este documento da por fijadas: no hay
 Las pone `cms/server.ts` en `onSend`. `public/_headers` es una convención de
 Cloudflare Pages que aquí no se usa.
 
-| Cabecera                    | Valor                                                                                                                                                                                                                                                                                   |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Content-Security-Policy`   | HTML: `default-src 'self'`, `script-src 'self'` más los hashes de cada script inline del build servido (`cms/security/headers.ts`), `connect-src` y `form-action` a FormSubmit, `frame-src` a Google Maps, `frame-ancestors 'self'`. API: `default-src 'none'; frame-ancestors 'none'`. |
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` con cookie segura                                                                                                                                                                                                                                 |
-| `X-Frame-Options`           | `SAMEORIGIN` en el sitio, `DENY` en la API                                                                                                                                                                                                                                              |
-| `X-Content-Type-Options`    | `nosniff`                                                                                                                                                                                                                                                                               |
-| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                                                                                                                                                                                                                                       |
-| `Permissions-Policy`        | cámara, micrófono, geolocalización, pago, USB y `interest-cohort` desactivados                                                                                                                                                                                                          |
-| `Cache-Control`             | HTML `no-cache`; `/_assets/` e imágenes, un año `immutable`; videos de `public/`, un día                                                                                                                                                                                                |
+| Cabecera                    | Valor                                                                                                                                                                                                                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Content-Security-Policy`   | HTML: `default-src 'self'`, `script-src 'self'` más los hashes de cada script inline del build servido (`cms/security/headers.ts`), `connect-src` y `form-action` solo a `'self'`, `frame-src` a Google Maps, `frame-ancestors 'self'`. API: `default-src 'none'; frame-ancestors 'none'`. |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` con cookie segura                                                                                                                                                                                                                                    |
+| `X-Frame-Options`           | `SAMEORIGIN` en el sitio, `DENY` en la API                                                                                                                                                                                                                                                 |
+| `X-Content-Type-Options`    | `nosniff`                                                                                                                                                                                                                                                                                  |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                                                                                                                                                                                                                                          |
+| `Permissions-Policy`        | cámara, micrófono, geolocalización, pago, USB y `interest-cohort` desactivados                                                                                                                                                                                                             |
+| `Cache-Control`             | HTML `no-cache`; `/_assets/` e imágenes, un año `immutable`; videos de `public/`, un día                                                                                                                                                                                                   |
 
 Los hashes de la CSP se recalculan al cambiar el build (la caché se invalida
 por la fecha de `index.html` de cada perfil), así que no hay que mantenerlos a
@@ -60,12 +60,15 @@ componente.
 
 ## Formulario de contacto
 
-- `fetch` a FormSubmit.co, con un tiempo máximo de 20 s y respaldo sin
-  JavaScript (envío nativo a `/contacto/gracias`).
-- Honeypot `_honey` y límite en el navegador de 3 envíos aceptados cada 5
-  minutos. El límite real lo aplica FormSubmit.
-- El destinatario sale de `PUBLIC_CONTACT_EMAIL`, con respaldo en el buzón
-  corporativo.
+- El formulario postea a `POST /api/contacto` en el mismo dominio
+  (`cms/routes/contactRoutes.ts`), con un tiempo máximo de 20 s en el
+  navegador. Es la única ruta de `/api/` que responde en el dominio público.
+- El servidor valida los campos, descarta lo que llena el honeypot `_honey`,
+  limita a 5 envíos aceptados por IP cada 10 minutos (60 por hora en total) y
+  reenvía a FormSubmit.co. Sin JavaScript, redirige a `/contacto/gracias/`.
+- El destinatario (`PUBLIC_CONTACT_EMAIL`) y las copias (`FORMSUBMIT_CC_1`…`4`)
+  los lee el servidor de su `.env`: ningún correo del formulario aparece en el
+  HTML.
 
 ## Auditoría y observabilidad
 

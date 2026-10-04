@@ -1,6 +1,7 @@
 import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
 import { ContentRepository } from '../repositories/ContentRepository';
+import { GalleryRepository } from '../repositories/GalleryRepository';
 import { BackupService } from '../services/backupService';
 import { config } from '../config/unifiedConfig';
 import { copyFixRules, type CopyFixRule } from '../content/copyFixes';
@@ -46,7 +47,45 @@ function arg(nombre: string): string | undefined {
   return found?.split('=').slice(1).join('=');
 }
 
-function analizar(repository: ContentRepository, rule: CopyFixRule): Analisis {
+/**
+ * Una regla con `entryId: 'galeria:<id>'` corrige el título, el texto
+ * alternativo o el álbum (`projectSlug`; `null` la saca del álbum) de una foto
+ * de la galería, que viven en `gallery_items` y no en las fichas. Solo valor
+ * completo: son frases cortas.
+ */
+const PREFIJO_GALERIA = 'galeria:';
+const CAMPOS_GALERIA = ['alt', 'title', 'projectSlug'] as const;
+
+function analizarGaleria(galeria: GalleryRepository, rule: CopyFixRule): Analisis {
+  const id = rule.entryId.slice(PREFIJO_GALERIA.length);
+  const item = galeria.getItem(id);
+  if (!item) return { rule, estado: 'campo-inexistente', detalle: `no existe la foto ${id}` };
+  if (!(CAMPOS_GALERIA as readonly string[]).includes(rule.key) || rule.mode === 'substring') {
+    return {
+      rule,
+      estado: 'campo-inexistente',
+      detalle: `en la galería solo se corrigen ${CAMPOS_GALERIA.join(', ')}, con valor completo`,
+    };
+  }
+  const actual = item[rule.key as (typeof CAMPOS_GALERIA)[number]];
+  if (actual === rule.to) return { rule, estado: 'ya-aplicada', actual };
+  if (actual !== rule.from) {
+    return {
+      rule,
+      estado: 'valor-inesperado',
+      actual,
+      detalle: 'el valor actual no es el esperado',
+    };
+  }
+  return { rule, estado: 'aplicable', actual, siguiente: rule.to };
+}
+
+function analizar(
+  repository: ContentRepository,
+  galeria: GalleryRepository,
+  rule: CopyFixRule
+): Analisis {
+  if (rule.entryId.startsWith(PREFIJO_GALERIA)) return analizarGaleria(galeria, rule);
   const entry = repository.findEntry(rule.entryId);
   if (!entry) {
     return { rule, estado: 'campo-inexistente', detalle: `no existe la entrada ${rule.entryId}` };
@@ -181,15 +220,18 @@ async function main() {
   migrate();
   const db = getDb();
   const repository = new ContentRepository(db);
+  const galeria = new GalleryRepository(db);
 
-  const analisis = reglas.map((rule) => analizar(repository, rule));
+  const analisis = reglas.map((rule) => analizar(repository, galeria, rule));
   const por = (estado: Estado) => analisis.filter((a) => a.estado === estado);
 
   for (const a of por('aplicable')) {
-    process.stdout.write(`~ ${a.rule.entryId}.${a.rule.key}  [v${a.version}]\n`);
+    process.stdout.write(
+      `~ ${a.rule.entryId}.${a.rule.key}${a.version !== undefined ? `  [v${a.version}]` : ''}\n`
+    );
     process.stdout.write(`  - ${recorte(a.actual)}\n`);
     process.stdout.write(`  + ${recorte(a.siguiente)}\n`);
-    if (a.entryStatus !== 'published') {
+    if (a.entryStatus && a.entryStatus !== 'published') {
       // Un campo en borrador no llega al sitio: el informe diría «aplicado» y
       // el visitante seguiría viendo el fallback del .astro.
       process.stdout.write(`  ! la entrada está en «${a.entryStatus}»: no se publica\n`);
@@ -234,9 +276,33 @@ async function main() {
 
   const ahora = new Date().toISOString();
   for (const a of por('aplicable')) {
-    // expectedVersion: si alguien editó la entrada desde el panel entre la
-    // revisión y este momento, la transacción aborta en vez de pisarlo.
-    repository.updateField(a.rule.entryId, a.rule.key, a.siguiente, ahora, undefined, a.version);
+    // Se vuelve a analizar justo antes de escribir: dos reglas de la misma
+    // ficha comparten versión, y la primera la sube; con la versión de la
+    // revisión, la segunda chocaba con el cambio de su propia tanda. El valor
+    // previo se sigue comprobando, así que una edición del panel no se pisa.
+    const fresco = analizar(repository, galeria, a.rule);
+    if (fresco.estado !== 'aplicable') {
+      throw new Error(
+        `${a.rule.entryId}.${a.rule.key} cambió durante la tanda (${fresco.estado}); revise y repita.`
+      );
+    }
+    if (a.rule.entryId.startsWith(PREFIJO_GALERIA)) {
+      galeria.updateItem(a.rule.entryId.slice(PREFIJO_GALERIA.length), {
+        [a.rule.key]: fresco.siguiente as string | null,
+      });
+      process.stdout.write(`  ✓ ${a.rule.entryId}.${a.rule.key}\n`);
+      continue;
+    }
+    // expectedVersion: si alguien editó la entrada desde el panel entre esta
+    // lectura y la escritura, la transacción aborta en vez de pisarlo.
+    repository.updateField(
+      a.rule.entryId,
+      a.rule.key,
+      fresco.siguiente,
+      ahora,
+      undefined,
+      fresco.version
+    );
     process.stdout.write(`  ✓ ${a.rule.entryId}.${a.rule.key}\n`);
   }
   process.stdout.write(`\n${por('aplicable').length} campo(s) actualizado(s).\n`);

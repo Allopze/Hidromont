@@ -59,13 +59,12 @@ export function buildContentSecurityPolicy(hashes: string[]): string {
     // se queda sin la mitad de su CSS. No hay hash estable que sirva aquí.
     "style-src 'self' 'unsafe-inline'",
     `script-src ${scriptSrc}`,
-    // Sin `connect-src` explícito, todo fetch cae en `default-src 'self'` y el
-    // envío del formulario de contacto queda bloqueado: el visitante rellena,
-    // pulsa enviar y recibe «Ocurrió un error». Reproducido en auditoría.
-    // `form-action` no cubre esto: gobierna el submit nativo, no el fetch.
-    "connect-src 'self' https://formsubmit.co",
+    // El formulario de contacto postea a /api/contacto, en el mismo dominio
+    // (M-03): ya no hace falta abrir la CSP a formsubmit.co, ni para el fetch
+    // (`connect-src`) ni para el envío nativo (`form-action`).
+    "connect-src 'self'",
     'frame-src https://maps.google.com https://www.google.com',
-    "form-action 'self' https://formsubmit.co",
+    "form-action 'self'",
     'upgrade-insecure-requests',
   ].join('; ');
 }

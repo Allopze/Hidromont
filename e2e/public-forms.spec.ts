@@ -10,6 +10,13 @@ test.describe('Formulario de contacto: validaciones y manejo de errores', () => 
     await page.goto('/contacto');
   });
 
+  test('M-03: el formulario envía al propio sitio y no lleva ningún correo', async ({ page }) => {
+    const form = page.locator('#contacto-form');
+    await expect(form).toHaveAttribute('action', '/api/contacto');
+    await expect(form.locator('input[name="_cc"]')).toHaveCount(0);
+    expect(await form.evaluate((f) => f.outerHTML)).not.toMatch(/@hidromont/);
+  });
+
   test('validación en cliente con campos vacíos activa mensajes accesibles', async ({ page }) => {
     const submitBtn = page.locator('#contacto-submit');
     await submitBtn.click();
@@ -55,7 +62,7 @@ test.describe('Formulario de contacto: validaciones y manejo de errores', () => 
     page,
   }) => {
     // Interceptar llamada a FormSubmit simulando caída de servicio
-    await page.route('**/formsubmit.co/**', (route) =>
+    await page.route('**/api/contacto', (route) =>
       route.fulfill({
         status: 500,
         contentType: 'application/json',

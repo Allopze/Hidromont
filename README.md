@@ -99,8 +99,8 @@ cp .env.example .env
 
 Y configura las variables necesarias:
 
-- `PUBLIC_CONTACT_EMAIL`: Correo de destino al que FormSubmit.co envía las consultas del formulario de contacto.
-- `FORMSUBMIT_CC_1` a `FORMSUBMIT_CC_4`: Correos adicionales en copia (opcionales).
+- `PUBLIC_CONTACT_EMAIL`: Correo de destino de las consultas del formulario de contacto (el servidor las reenvía por FormSubmit.co desde `/api/contacto`).
+- `FORMSUBMIT_CC_1` a `FORMSUBMIT_CC_4`: Correos adicionales en copia (opcionales). Los lee el servidor y no aparecen en el HTML; tras cambiarlos, reiniciar el servicio.
 - `CMS_ADMIN_EMAIL`: Correo del administrador para el CMS (por defecto `admin@hidromont.local`).
 - `CMS_ADMIN_PASSWORD`: Contraseña del administrador. Cambiarla es obligatorio si el CMS escuchará fuera del equipo local.
 - `CMS_HOST`: Host del CMS. Por defecto debe ser `127.0.0.1`; usa `0.0.0.0` solo si necesitas acceso desde la LAN.

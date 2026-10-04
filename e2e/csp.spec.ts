@@ -52,8 +52,8 @@ test.describe('CSP del sitio servido por Node', () => {
 
   test('el formulario de contacto puede enviarse', async ({ page }) => {
     const violations = watchCspViolations(page);
-    // No se envía nada real: se intercepta la llamada al servicio externo.
-    await page.route('**/formsubmit.co/**', (route) =>
+    // No se envía nada real: se intercepta el envío a /api/contacto.
+    await page.route('**/api/contacto', (route) =>
       route.fulfill({ status: 200, contentType: 'application/json', body: '{"success":"true"}' })
     );
 

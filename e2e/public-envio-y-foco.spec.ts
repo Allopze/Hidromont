@@ -16,7 +16,7 @@ test('enviar con Intro no saca el foco del botón, y un error lo lleva al aviso'
 }) => {
   let liberar: () => void = () => {};
   const listo = new Promise<void>((r) => (liberar = r));
-  await page.route('**/formsubmit.co/**', async (route) => {
+  await page.route('**/api/contacto', async (route) => {
     await listo;
     await route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
   });
@@ -36,7 +36,7 @@ test('enviar con Intro no saca el foco del botón, y un error lo lleva al aviso'
 
 test('si el servicio no responde, a los 20 s avisa y deja reintentar', async ({ page }) => {
   await page.clock.install();
-  await page.route('**/formsubmit.co/**', () => {
+  await page.route('**/api/contacto', () => {
     /* nunca responde */
   });
   await page.goto('/contacto/');
@@ -68,7 +68,7 @@ test('P3-13: el mensaje lleva contador y un nombre de espacios no vale', async (
   await page.fill('#nombre', '   ');
   await page.fill('#email', 'carlos@ejemplo.cl');
   let enviado = false;
-  await page.route('**/formsubmit.co/**', (route) => {
+  await page.route('**/api/contacto', (route) => {
     enviado = true;
     return route.fulfill({
       status: 200,

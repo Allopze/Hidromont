@@ -2,6 +2,7 @@ import path from 'node:path';
 import fastify from 'fastify';
 import { config } from './config/unifiedConfig';
 import { registerCmsRoutes } from './routes/cmsRoutes';
+import { esRutaApiPublica, registerContactRoutes } from './routes/contactRoutes';
 import { publicContentSecurityPolicy } from './security/headers';
 import { apiFueraDeEsteHost, distParaHost, registerStaticSite } from './staticSite';
 import { captureException, initErrorTracking } from './utils/errorTracking';
@@ -133,8 +134,13 @@ const app = fastify({
 
 // P2-01 (auditoría 2026-09): con los dos perfiles desplegados, la API del CMS
 // solo responde en editor.* (y en local): el dominio público no la necesita.
+// La excepción es el formulario de contacto, que es del sitio público.
 app.addHook('onRequest', async (request, reply) => {
-  if (request.url.startsWith('/api/') && apiFueraDeEsteHost(request.hostname)) {
+  if (
+    request.url.startsWith('/api/') &&
+    !esRutaApiPublica(request.url) &&
+    apiFueraDeEsteHost(request.hostname)
+  ) {
     return reply.status(404).send({ error: 'Not found' });
   }
 });
@@ -219,6 +225,7 @@ async function rechazarCuentasConContrasenaPorDefecto(): Promise<void> {
 try {
   await rechazarCuentasConContrasenaPorDefecto();
   await registerCmsRoutes(app);
+  await registerContactRoutes(app);
   registerStaticSite(app);
   await app.listen({ host: config.cms.host, port: config.cms.port });
 } catch (error) {
