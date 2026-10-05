@@ -206,7 +206,7 @@ import { company } from '../data/company';
     </Container>
   </Section>
 
-  <!-- Maquinaria + Medios de obra -->
+  <!-- Maquinaria + Medios -->
   <Section variant="default">
     <Container>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -223,7 +223,7 @@ import { company } from '../data/company';
             class="font-heading font-bold text-primary-dark mb-6"
             style="font-size: var(--font-size-h2);"
           >
-            {getCmsText('empresa.maquinaria', 'title', 'Maquinaria especializada')}
+            {getCmsText('empresa.maquinaria', 'title', 'Maquinaria')}
           </EditableText>
           <EditableText
             as="p"
@@ -237,38 +237,10 @@ import { company } from '../data/company';
               getCmsText(
                 'empresa.maquinaria',
                 'subtitle',
-                'Contamos con maquinaria para fabricar, mecanizar, soldar y cortar los equipos descritos en nuestras líneas de servicio.'
+                'El taller cuenta con equipos de calderería, mecanizado, soldadura y corte para la fabricación de componentes hidromecánicos. Disponemos de tornos y fresadoras para piezas de gran tamaño, estaciones de soldadura automática por arco sumergido y equipos de corte por plasma y oxicorte.'
               )
             }
           </EditableText>
-          <ul class="space-y-2.5">
-            {
-              ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
-                <li class="flex items-start gap-2.5 text-sm text-text-muted">
-                  <span
-                    class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                  <EditableText entry="empresa.maquinaria" field={`item${i}`}>
-                    {getCmsText(
-                      'empresa.maquinaria',
-                      `item${i}`,
-                      [
-                        'Estaciones de soldadura automática de arco sumergido (4 unidades)',
-                        'Fresadora DYE600 de carrera 7 m',
-                        'Tornos paralelos de 2 m y 6 m',
-                        'Torno al aire con volteo 4,5 m',
-                        'Cizalla LOIRE 3 m/16 mm',
-                        'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm',
-                        'Plegadora MEBUSA 200 t × 3 m',
-                        'Oxicorte hasta 100 mm',
-                      ][i - 1]
-                    )}
-                  </EditableText>
-                </li>
-              ))
-            }
-          </ul>
         </div>
 
         <div>
@@ -284,7 +256,7 @@ import { company } from '../data/company';
             class="font-heading font-bold text-primary-dark mb-6"
             style="font-size: var(--font-size-h2);"
           >
-            {getCmsText('empresa.mediosdeobra', 'title', 'Medios de obra')}
+            {getCmsText('empresa.mediosdeobra', 'title', 'Medios')}
           </EditableText>
           <EditableText
             as="p"
@@ -298,38 +270,26 @@ import { company } from '../data/company';
               getCmsText(
                 'empresa.mediosdeobra',
                 'subtitle',
-                'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.'
+                'Contamos con grúa autopropulsada, camiones pluma y equipos de apoyo para el montaje en terreno. Disponemos de plataformas, teleférico y winches de alto tonelaje.'
               )
             }
           </EditableText>
-          <ul class="space-y-2.5">
+          <EditableText
+            as="p"
+            entry="empresa.mediosdeobra"
+            field="p2"
+            type="textarea"
+            class="text-text-muted"
+            style="font-size: var(--font-size-lead);"
+          >
             {
-              ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((i) => (
-                <li class="flex items-start gap-2.5 text-sm text-text-muted">
-                  <span
-                    class="mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                  <EditableText entry="empresa.mediosdeobra" field={`item${i}`}>
-                    {getCmsText(
-                      'empresa.mediosdeobra',
-                      `item${i}`,
-                      [
-                        'Grúa autopropulsada 50 t',
-                        'Camiones pluma de hasta 9.000 kg de capacidad de levante',
-                        'Vehículos Pick-Up 4×4 para acceso a terreno',
-                        'Grupos electrógenos de 100 a 200 kVA',
-                        'Equipos de arenado y pintura industrial',
-                        'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
-                        'Plataformas y teleférico para montajes en pendiente',
-                        'Winches de alto tonelaje',
-                      ][i - 1]
-                    )}
-                  </EditableText>
-                </li>
-              ))
+              getCmsText(
+                'empresa.mediosdeobra',
+                'p2',
+                'Los grupos electrógenos, equipos de arenado y pintura y bastidores de armado completan los medios disponibles para la ejecución de las obras.'
+              )
             }
-          </ul>
+          </EditableText>
         </div>
       </div>
     </Container>

@@ -1035,23 +1035,12 @@ const semilla: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Equipamiento' },
-      title: { type: 'text', value: 'Maquinaria especializada' },
+      title: { type: 'text', value: 'Maquinaria' },
       subtitle: {
         type: 'textarea',
         value:
-          'El taller dispone de equipos para fabricación, mecanizado, soldadura, corte y montaje de componentes hidromecánicos.',
+          'El taller cuenta con equipos de calderería, mecanizado, soldadura y corte para la fabricación de componentes hidromecánicos. Disponemos de tornos y fresadoras para piezas de gran tamaño, estaciones de soldadura automática por arco sumergido y equipos de corte por plasma y oxicorte.',
       },
-      item1: {
-        type: 'text',
-        value: 'Estaciones de soldadura automática de arco sumergido (4 unidades)',
-      },
-      item2: { type: 'text', value: 'Fresadora DYE600 de carrera 7 m' },
-      item3: { type: 'text', value: 'Tornos paralelos de 2 m y 6 m' },
-      item4: { type: 'text', value: 'Torno al aire con volteo 4,5 m' },
-      item5: { type: 'text', value: 'Cizalla LOIRE 3 m/16 mm' },
-      item6: { type: 'text', value: 'Mesa de corte ESAB SHARK CS 12 m × 3 m, plasma hasta 32 mm' },
-      item7: { type: 'text', value: 'Plegadora MEBUSA 200 t × 3 m' },
-      item8: { type: 'text', value: 'Oxicorte hasta 100 mm' },
     },
   },
   {
@@ -1063,23 +1052,17 @@ const semilla: EntrySeed[] = [
     status: 'published',
     fields: {
       eyebrow: { type: 'text', value: 'Capacidad de montaje' },
-      title: { type: 'text', value: 'Medios de obra' },
+      title: { type: 'text', value: 'Medios' },
       subtitle: {
         type: 'textarea',
         value:
-          'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.',
+          'Contamos con grúa autopropulsada, camiones pluma y equipos de apoyo para el montaje en terreno. Disponemos de plataformas, teleférico y winches de alto tonelaje.',
       },
-      item1: { type: 'text', value: 'Grúa autopropulsada 50 t' },
-      item2: { type: 'text', value: 'Camiones pluma para maniobras de montaje en terreno' },
-      item3: { type: 'text', value: 'Vehículos Pick-Up 4×4 para acceso a terreno' },
-      item4: { type: 'text', value: 'Grupos electrógenos de 100 a 200 KVA' },
-      item5: { type: 'text', value: 'Equipos de arenado y pintura industrial' },
-      item6: {
-        type: 'text',
-        value: 'Bastidores y equipos de armado para tuberías de mediano y gran diámetro',
+      p2: {
+        type: 'textarea',
+        value:
+          'Los grupos electrógenos, equipos de arenado y pintura y bastidores de armado completan los medios disponibles para la ejecución de las obras.',
       },
-      item7: { type: 'text', value: 'Plataformas y teleférico para montajes en pendiente' },
-      item8: { type: 'text', value: 'Winches de alto tonelaje' },
     },
   },
   {

@@ -446,4 +446,38 @@ export const copyFixRules: CopyFixRule[] = [
     to: null,
     nota: 'Foto de una compuerta en un canal, no de la tubería de Queltehues. Pedido de Hidromont (2026-10-04): sale del álbum y sigue en /galeria bajo Infraestructuras.',
   },
+
+  // Textos de Empresa aprobados el 4 de octubre de 2026.
+  {
+    batch: 'empresa-capacidades',
+    entryId: 'empresa.maquinaria',
+    key: 'title',
+    from: 'Maquinaria especializada',
+    to: 'Maquinaria',
+    nota: 'Sustituye el inventario por los párrafos y títulos aprobados por Hidromont.',
+  },
+  {
+    batch: 'empresa-capacidades',
+    entryId: 'empresa.maquinaria',
+    key: 'subtitle',
+    from: 'El taller dispone de equipos para fabricación, mecanizado, soldadura, corte y montaje de componentes hidromecánicos.',
+    to: 'El taller cuenta con equipos de calderería, mecanizado, soldadura y corte para la fabricación de componentes hidromecánicos. Disponemos de tornos y fresadoras para piezas de gran tamaño, estaciones de soldadura automática por arco sumergido y equipos de corte por plasma y oxicorte.',
+    nota: 'Sustituye el inventario por los párrafos y títulos aprobados por Hidromont.',
+  },
+  {
+    batch: 'empresa-capacidades',
+    entryId: 'empresa.mediosdeobra',
+    key: 'title',
+    from: 'Medios de obra',
+    to: 'Medios',
+    nota: 'Sustituye el inventario por los párrafos y títulos aprobados por Hidromont.',
+  },
+  {
+    batch: 'empresa-capacidades',
+    entryId: 'empresa.mediosdeobra',
+    key: 'subtitle',
+    from: 'Disponemos de medios propios para ejecutar montajes en terreno, incluyendo obras de acceso difícil que requieren medios especiales de transporte.',
+    to: 'Contamos con grúa autopropulsada, camiones pluma y equipos de apoyo para el montaje en terreno. Disponemos de plataformas, teleférico y winches de alto tonelaje.',
+    nota: 'Sustituye el inventario por los párrafos y títulos aprobados por Hidromont.',
+  },
 ];
