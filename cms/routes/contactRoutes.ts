@@ -15,6 +15,7 @@
  * envío nativo (sin JS).
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { CONTACT_FORM_ENABLED } from '../../src/data/contactFormConfig';
 
 /** Rutas de `/api/` que responden también en el dominio público. */
 export const RUTAS_API_PUBLICAS = ['/api/contacto'];
@@ -108,6 +109,15 @@ export function registerContactRoutes(app: FastifyInstance, opciones: OpcionesCo
     );
 
     sub.post('/api/contacto', { bodyLimit: CUERPO_MAXIMO }, async (request, reply) => {
+      if (!CONTACT_FORM_ENABLED) {
+        return responder(
+          request,
+          reply,
+          503,
+          'El formulario de contacto está temporalmente suspendido. Visite la página de contacto para ver nuestros datos.'
+        );
+      }
+
       const cuerpo = (request.body ?? {}) as Record<string, unknown>;
 
       // Honeypot: un bot lo rellena. Se le dice que salió bien y no se manda.

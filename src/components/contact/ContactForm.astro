@@ -4,6 +4,7 @@ import ArrowIcon from '../ui/ArrowIcon.astro';
 import { getCollection } from 'astro:content';
 import { getCmsText } from '../../data/cms';
 import { safeJsonForScript } from '../../utils/safeJson';
+import { CONTACT_FORM_ENABLED } from '../../data/contactFormConfig';
 
 // M-03 (auditoría 2026-09-28): el formulario postea a /api/contacto, en el
 // mismo dominio. El servidor guarda el buzón de destino y las copias en su
@@ -62,7 +63,29 @@ const validationMessages = {
 };
 ---
 
-<form id="contacto-form" action={accion} method="POST" class="space-y-6">
+<div
+  hidden={CONTACT_FORM_ENABLED}
+  class="mb-6 border border-primary bg-primary-light p-4 text-sm text-text"
+  role="status"
+>
+  <p class="font-semibold">El formulario de contacto está temporalmente suspendido.</p>
+  <p class="mt-1">
+    Mientras se restablece el envío automático, puede escribirnos directamente a{' '}
+    <a
+      href={`mailto:${contactEmail}`}
+      class="font-semibold text-primary underline underline-offset-2"
+    >
+      {contactEmail}
+    </a>.
+  </p>
+</div>
+
+<form
+  id="contacto-form"
+  action={accion}
+  method="POST"
+  class={CONTACT_FORM_ENABLED ? 'space-y-6' : 'hidden'}
+>
   <input
     type="hidden"
     name="_subject"
