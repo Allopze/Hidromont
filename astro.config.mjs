@@ -5,6 +5,7 @@ import rehypeSinHtml from './src/utils/rehypeSinHtml.mjs';
 import rehypeDiametros from './src/utils/rehypeDiametros.mjs';
 import enlacesConBarra from './src/utils/enlacesConBarra.mjs';
 import imagenesParaRedes from './src/utils/imagenesParaRedes.mjs';
+import unidadesSinCorte from './src/utils/unidadesSinCorte.mjs';
 
 export default defineConfig({
   site: 'https://hidromontchile.cl',
@@ -20,6 +21,8 @@ export default defineConfig({
     sitemap({ filter: (pagina) => !/\/(contacto\/gracias|404)\/?$/.test(pagina) }),
     enlacesConBarra(),
     imagenesParaRedes(),
+    // Una cifra no queda en un renglón y su unidad en el siguiente.
+    unidadesSinCorte(),
   ],
   // P2-02: el cuerpo de las fichas no publica HTML crudo (ver el plugin).
   // P3-09: y la misma notación de DN y Ø que el resto de la ficha.
