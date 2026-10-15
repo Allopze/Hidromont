@@ -9,7 +9,7 @@ categoria: compuertas
 cliente: Constructora OHL
 contratista: Constructora OHL
 diametro: Ø 1.000 / Ø 1.600
-mandante: M.O.P. / D.O.H.
+mandante: MOP / DOH
 nombre: Embalse Chacrillas
 orden: 7
 tipo: destacado
@@ -31,7 +31,7 @@ El Embalse Chacrillas fue un proyecto integral que incluyó tanto la fabricació
 - 2 válvulas mariposa DN 1000 y 1 válvula mariposa DN 1600, PN 25.
 - 2 válvulas Howell-Bunger DN 760, PN 16.
 
-**Caudal ecológico (M.O.P. / D.O.H.):**
+**Caudal ecológico (MOP / DOH):**
 
 - Tubería de descarga Ø 500.
 - Válvula mariposa DN 500.

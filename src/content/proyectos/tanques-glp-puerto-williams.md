@@ -12,7 +12,7 @@ tipo: destacado
 ubicacion: 'Puerto Williams, Región de Magallanes, Chile'
 ---
 
-Hidromont fabricó tres tanques aéreos para almacenar GLP en la planta de distribución de Puerto Williams. Cada unidad tiene una capacidad nominal de 18.000 galones.
+Hidromont Chile fabricó tres tanques aéreos para almacenar GLP en la planta de distribución de Puerto Williams. Cada unidad tiene una capacidad nominal de 18.000 galones.
 
 ## Alcance del proyecto
 

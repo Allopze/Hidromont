@@ -4,7 +4,7 @@ aplicaciones:
   - Plantas industriales y de celulosa
   - Obras de conducción
   - Infraestructura de embalses
-  - Reparaciones post-siniestro
+  - Reparaciones tras siniestros
 icono: crane
 orden: 4
 procesos:
@@ -41,7 +41,7 @@ tipos:
 titulo: Montajes y Fabricaciones Especiales
 ---
 
-Hidromont realiza montajes electromecánicos y fabrica estructuras metálicas y equipos especiales para obras hidráulicas e instalaciones industriales.
+Hidromont Chile realiza montajes electromecánicos y fabrica estructuras metálicas y equipos especiales para obras hidráulicas e instalaciones industriales.
 
 ## Obturación de desagües de fondo
 
@@ -49,7 +49,7 @@ En la **presa de Belesar** fabricamos cuatro obturadores para el desagüe de fon
 
 ## Proyectos destacados en montajes y fabricaciones especiales
 
-Para la **planta Santa Fe de C.M.P.C.** fabricamos el cuerpo de vapores Ø 4.632, de 17,7 t y 6.300 mm de altura, y el evaporador Ø 4.132 / Ø 2.900, de 11,43 t y 6.237 mm de altura.
+Para la **planta Santa Fe de CMPC** fabricamos el cuerpo de vapores Ø 4.632, de 17,7 t y 6.300 mm de altura, y el evaporador Ø 4.132 / Ø 2.900, de 11,43 t y 6.237 mm de altura.
 
 En **C.H. Puclaro** fabricamos el repartidor de aducción Ø 1.800 a dos ramales Ø 1.200, y en **C.H. La Higuera** la junta de desmontaje Ø 3.700 y el mejoramiento y blindaje de la chimenea de equilibrio Ø 18.800.
 

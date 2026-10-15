@@ -2,6 +2,7 @@ import { getDb } from '../db/connection';
 import { migrate } from '../db/schema';
 import { ContentRepository } from '../repositories/ContentRepository';
 import { GalleryRepository } from '../repositories/GalleryRepository';
+import { MediaRepository } from '../repositories/MediaRepository';
 import { BackupService } from '../services/backupService';
 import { config } from '../config/unifiedConfig';
 import { copyFixRules, type CopyFixRule } from '../content/copyFixes';
@@ -56,18 +57,36 @@ function arg(nombre: string): string | undefined {
 const PREFIJO_GALERIA = 'galeria:';
 const CAMPOS_GALERIA = ['alt', 'title', 'projectSlug'] as const;
 
-function analizarGaleria(galeria: GalleryRepository, rule: CopyFixRule): Analisis {
-  const id = rule.entryId.slice(PREFIJO_GALERIA.length);
-  const item = galeria.getItem(id);
-  if (!item) return { rule, estado: 'campo-inexistente', detalle: `no existe la foto ${id}` };
-  if (!(CAMPOS_GALERIA as readonly string[]).includes(rule.key) || rule.mode === 'substring') {
+/**
+ * Del mismo modo, `album:<slug>` corrige el nombre visible de un álbum (`name`;
+ * el slug, que es su dirección, no cambia) y `medio:<id>` el texto alternativo
+ * de una imagen de la biblioteca (`alt`), que es el que se propone al volver a
+ * usarla.
+ */
+const PREFIJO_ALBUM = 'album:';
+const PREFIJO_MEDIO = 'medio:';
+
+interface Repositorios {
+  repository: ContentRepository;
+  galeria: GalleryRepository;
+  medios: MediaRepository;
+}
+
+function analizarSuelto(
+  rule: CopyFixRule,
+  registro: Record<string, unknown> | undefined,
+  que: string,
+  campos: readonly string[]
+): Analisis {
+  if (!registro) return { rule, estado: 'campo-inexistente', detalle: `no existe ${que}` };
+  if (!campos.includes(rule.key) || rule.mode === 'substring') {
     return {
       rule,
       estado: 'campo-inexistente',
-      detalle: `en la galería solo se corrigen ${CAMPOS_GALERIA.join(', ')}, con valor completo`,
+      detalle: `aquí solo se corrige ${campos.join(', ')}, con valor completo`,
     };
   }
-  const actual = item[rule.key as (typeof CAMPOS_GALERIA)[number]];
+  const actual = registro[rule.key];
   if (actual === rule.to) return { rule, estado: 'ya-aplicada', actual };
   if (actual !== rule.from) {
     return {
@@ -80,12 +99,22 @@ function analizarGaleria(galeria: GalleryRepository, rule: CopyFixRule): Analisi
   return { rule, estado: 'aplicable', actual, siguiente: rule.to };
 }
 
-function analizar(
-  repository: ContentRepository,
-  galeria: GalleryRepository,
-  rule: CopyFixRule
-): Analisis {
-  if (rule.entryId.startsWith(PREFIJO_GALERIA)) return analizarGaleria(galeria, rule);
+function analizar({ repository, galeria, medios }: Repositorios, rule: CopyFixRule): Analisis {
+  const separador = rule.entryId.indexOf(':') + 1;
+  const prefijo = rule.entryId.slice(0, separador);
+  const id = rule.entryId.slice(separador);
+  if (prefijo === PREFIJO_GALERIA) {
+    const item = galeria.getItem(id);
+    return analizarSuelto(rule, item ? { ...item } : undefined, `la foto ${id}`, CAMPOS_GALERIA);
+  }
+  if (prefijo === PREFIJO_ALBUM) {
+    const album = galeria.getAlbum(id);
+    return analizarSuelto(rule, album ? { ...album } : undefined, `el álbum ${id}`, ['name']);
+  }
+  if (prefijo === PREFIJO_MEDIO) {
+    const medio = medios.find(id);
+    return analizarSuelto(rule, medio ? { ...medio } : undefined, `la imagen ${id}`, ['alt']);
+  }
   const entry = repository.findEntry(rule.entryId);
   if (!entry) {
     return { rule, estado: 'campo-inexistente', detalle: `no existe la entrada ${rule.entryId}` };
@@ -221,8 +250,10 @@ async function main() {
   const db = getDb();
   const repository = new ContentRepository(db);
   const galeria = new GalleryRepository(db);
+  const medios = new MediaRepository(db);
+  const repos: Repositorios = { repository, galeria, medios };
 
-  const analisis = reglas.map((rule) => analizar(repository, galeria, rule));
+  const analisis = reglas.map((rule) => analizar(repos, rule));
   const por = (estado: Estado) => analisis.filter((a) => a.estado === estado);
 
   for (const a of por('aplicable')) {
@@ -280,7 +311,7 @@ async function main() {
     // ficha comparten versión, y la primera la sube; con la versión de la
     // revisión, la segunda chocaba con el cambio de su propia tanda. El valor
     // previo se sigue comprobando, así que una edición del panel no se pisa.
-    const fresco = analizar(repository, galeria, a.rule);
+    const fresco = analizar(repos, a.rule);
     if (fresco.estado !== 'aplicable') {
       throw new Error(
         `${a.rule.entryId}.${a.rule.key} cambió durante la tanda (${fresco.estado}); revise y repita.`
@@ -289,6 +320,23 @@ async function main() {
     if (a.rule.entryId.startsWith(PREFIJO_GALERIA)) {
       galeria.updateItem(a.rule.entryId.slice(PREFIJO_GALERIA.length), {
         [a.rule.key]: fresco.siguiente as string | null,
+      });
+      process.stdout.write(`  ✓ ${a.rule.entryId}.${a.rule.key}\n`);
+      continue;
+    }
+    if (a.rule.entryId.startsWith(PREFIJO_ALBUM)) {
+      galeria.updateAlbum(a.rule.entryId.slice(PREFIJO_ALBUM.length), {
+        name: fresco.siguiente as string,
+        now: ahora,
+      });
+      process.stdout.write(`  ✓ ${a.rule.entryId}.${a.rule.key}\n`);
+      continue;
+    }
+    if (a.rule.entryId.startsWith(PREFIJO_MEDIO)) {
+      medios.update({
+        id: a.rule.entryId.slice(PREFIJO_MEDIO.length),
+        alt: fresco.siguiente as string,
+        now: ahora,
       });
       process.stdout.write(`  ✓ ${a.rule.entryId}.${a.rule.key}\n`);
       continue;

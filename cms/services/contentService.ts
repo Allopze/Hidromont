@@ -217,7 +217,7 @@ export const CAMPOS_RETIRADOS: ReadonlyArray<{
       'logo-engie',
       'logo-fcc',
       'logo-gas-natural-fenosa',
-      'logo-mop-doh',
+      'logo-m-o-p-d-o-h',
       'logo-naturener',
       'logo-navarro-sic',
       'logo-norvento',

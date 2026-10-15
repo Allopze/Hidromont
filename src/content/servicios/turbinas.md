@@ -35,7 +35,7 @@ tipos:
 titulo: Turbinas Hidráulicas
 ---
 
-Hidromont realiza montaje, mantenimiento y reparación mecánica de turbinas hidráulicas y sus equipos asociados, con experiencia en máquinas de fabricantes como Sulzer-VA Tech y Neyrpic-Alstom. El trabajo puede incluir la recuperación de componentes afectados por cavitación, además de alineación, equilibrado y mecanizado.
+Hidromont Chile realiza montaje, mantenimiento y reparación mecánica de turbinas hidráulicas y sus equipos asociados, con experiencia en máquinas de fabricantes como Sulzer-VA Tech y Neyrpic-Alstom. El trabajo puede incluir la recuperación de componentes afectados por cavitación, además de alineación, equilibrado y mecanizado.
 
 ## Proyectos destacados en turbinas
 

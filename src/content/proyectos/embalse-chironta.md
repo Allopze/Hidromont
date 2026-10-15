@@ -2,13 +2,13 @@
 alcance: >-
   Ingeniería, suministro y montaje de equipamiento hidromecánico completo:
   tubería DN 1.600 de 360 m, válvulas Bureau, mariposa y Howell-Bunger.
-  Fabricación de válvulas de repuesto para la M.O.P.
+  Fabricación de válvulas de repuesto para el MOP.
 categoria: compuertas
 cliente: Consorcio Dragados–Besalco
 contratista: Consorcio Dragados–Besalco
 diametro: DN 1600 / DN 1400 / DN 800 / DN 700 / DN 350
 longitud: 360 m
-mandante: M.O.P. / D.O.H.
+mandante: MOP / DOH
 nombre: Embalse Chironta
 orden: 2
 tipo: destacado
@@ -23,4 +23,4 @@ El proyecto Embalse Chironta contempló el suministro e instalación completa de
 - **Válvulas Bureau:** 2 unidades 0,7 × 0,9 m.
 - **Válvulas mariposa:** DN 1.600, DN 1.400 y DN 700.
 - **Válvulas Howell-Bunger:** DN 800 y DN 350.
-- **Repuestos para M.O.P. / D.O.H.:** fabricación de nuevas válvulas Howell-Bunger como equipos de repuesto.
+- **Repuestos para MOP / DOH:** fabricación de nuevas válvulas Howell-Bunger como equipos de repuesto.

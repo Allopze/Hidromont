@@ -13,7 +13,7 @@ tipo: destacado
 ubicacion: Chile
 ---
 
-En C.H. Los Cóndores, Hidromont fabricó y montó blindaje para la conducción a presión de la central.
+En C.H. Los Cóndores, Hidromont Chile fabricó y montó blindaje para la conducción a presión de la central.
 
 ## Alcance del proyecto
 

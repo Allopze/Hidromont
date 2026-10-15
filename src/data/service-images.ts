@@ -33,7 +33,7 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
   },
   'otros-montajes': {
     src: '/fotos/curadas/cuerpo-vapor-taller.webp',
-    alt: 'Cuerpo de vapor de gran diámetro fabricado por Hidromont sobre cama baja en el taller',
+    alt: 'Cuerpo de vapor de gran diámetro fabricado por Hidromont Chile sobre cama baja en el taller',
     width: 1600,
     height: 1200,
   },
@@ -45,7 +45,7 @@ const serviceImageFallbacks: Record<string, CmsImageData> = {
   },
   'tanques-especiales': {
     src: '/fotos/curadas/tanque-glp-izaje-despacho.webp',
-    alt: 'Tanque de GLP pintado izado con pórtico grúa durante su despacho desde el taller de Hidromont',
+    alt: 'Tanque de GLP pintado izado con pórtico grúa durante su despacho desde el taller de Hidromont Chile',
     width: 1600,
     height: 900,
   },

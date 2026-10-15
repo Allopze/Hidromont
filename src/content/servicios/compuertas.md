@@ -22,7 +22,7 @@ procesos:
       según las cargas y dimensiones del conducto.
   - titulo: Fabricación
     descripcion: >-
-      Fabricación en taller con control de calidad, pre-montaje y pruebas
+      Fabricación en taller con control de calidad, premontaje y pruebas
       funcionales antes del despacho.
   - titulo: Montaje
     descripcion: >-

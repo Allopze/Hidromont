@@ -14,7 +14,7 @@ normas:
   - Criterios de diseño USBR
   - Recomendaciones C.E.C.T.
   - Materiales según ASME
-  - Directiva de Equipos a Presión 2014/68/EU (PED)
+  - Directiva de Equipos a Presión 2014/68/UE (PED)
 orden: 8
 procesos:
   - titulo: Ingeniería
@@ -52,7 +52,7 @@ tipos:
 titulo: Válvulas Hidráulicas
 ---
 
-Las válvulas diseñadas y fabricadas por Hidromont van desde las de pequeño diámetro para control de caudal ecológico hasta las Bureau y Howell-Bunger de gran tamaño para desagüe de fondo en embalses. En las estanqueidades de superficie se emplean teflón, cestilene y neopreno, y en las sumergidas se conserva el cierre bronce-inoxidable.
+Las válvulas diseñadas y fabricadas por Hidromont Chile van desde las de pequeño diámetro para control de caudal ecológico hasta las Bureau y Howell-Bunger de gran tamaño para desagüe de fondo en embalses. En las estanqueidades de superficie se emplean teflón, cestilene y neopreno, y en las sumergidas se conserva el cierre bronce-inoxidable.
 
 ## Capacidad técnica
 

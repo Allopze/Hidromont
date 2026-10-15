@@ -22,7 +22,7 @@ El proyecto contempla la fabricación de cúpulas de protección para ocho pasar
 - **Arco Principal:** Diseñado en tubo de acero galvanizado de 2" con 3 mm de espesor, distanciados a 150 cm.
 - **Elementos Horizontales:** Tubo de acero galvanizado de 1 ½" con 2 mm de espesor.
 - **Refuerzo y Seguridad:** Malla electrosoldada de 150x50 mm en todo el recorrido de los arcos y barandas de seguridad de acero A240ES.
-- **Cubierta:** Instalación de planchas de policarbonato transparente de 4 mm de espesor a partir de una altura de 1.40 m.
+- **Cubierta:** Instalación de planchas de policarbonato transparente de 4 mm de espesor a partir de una altura de 1,40 m.
 - **Montaje:** Posicionamiento e izaje de las cúpulas metálicas sobre las pasarelas viales con andamios mecano tubulares y equipos de elevación.
 
 ## Pasarelas cubiertas

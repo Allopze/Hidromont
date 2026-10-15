@@ -4,7 +4,7 @@ aplicaciones:
   - Canales de riego y conducción
   - Infraestructura de embalses
   - Obras públicas MOP / DOH
-  - Reparaciones post-siniestro
+  - Reparaciones tras siniestros
 icono: infrastructure
 orden: 2
 procesos:
