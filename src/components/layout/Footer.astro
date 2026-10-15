@@ -47,7 +47,7 @@ const enlacesEmpresa = [
   <!-- Main footer -->
   <div class="w-full mx-auto px-6 max-w-container py-16">
     <div
-      class={`grid grid-cols-1 md:grid-cols-2 ${hideMap ? 'lg:grid-cols-5' : 'lg:grid-cols-6'} gap-10`}
+      class={`grid grid-cols-1 md:grid-cols-2 ${hideMap ? 'lg:grid-cols-[repeat(4,minmax(0,1fr))_max-content]' : 'lg:grid-cols-[repeat(5,minmax(0,1fr))_max-content]'} gap-10`}
     >
       {/* Brand & location panel (Spans 3 columns on desktop) — hidden when hideMap */}
       {
@@ -209,11 +209,9 @@ const enlacesEmpresa = [
             </EditableText>
             <a
               href={`mailto:${company.email}`}
-              class="inline-flex min-h-[24px] items-center hover:text-white no-underline transition-colors duration-fast [overflow-wrap:anywhere]"
+              class="inline-flex min-h-[24px] items-center whitespace-nowrap hover:text-white no-underline transition-colors duration-fast"
             >
-              <EditableText entry="site.company" field="email">
-                {company.email.split('@')[0]}@<wbr />{company.email.split('@')[1]}
-              </EditableText>
+              <EditableText entry="site.company" field="email">{company.email}</EditableText>
             </a>
           </p>
         </div>
